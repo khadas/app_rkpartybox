@@ -3,14 +3,13 @@
 #include <stdbool.h>
 #include <RkBtSink.h>
 #include "pbox_common.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 #define RKBTSINK_SERVER_SOCKET_PATH "/tmp/rockchip_btsink_server"
 #define RKBTSINK_CLIENT_SOCKET_PATH "/tmp/rockchip_btsink_client"
 
-enum _rk_cmd_msg_t{
+typedef enum _rk_cmd_msg_t{
 	//command id
 	RK_BT_NULL,
 	RK_BT_PLAY = 1,
@@ -35,11 +34,8 @@ enum _rk_cmd_msg_t{
 	BT_SINK_MUSIC_TRACK,
 	BT_SINK_MUSIC_POSITIONS,
     BT_SINK_ADPTER_INFO,
-};
-typedef int rk_cmd_msg_t;
-
-#define BT_MSG_DISCOVERABLE 1
-
+	BT_SINK_ADPTER_DISCOVERABLE,
+} rk_bt_opcode_t;
 
 typedef enum {
 	BT_NONE,
@@ -60,15 +56,14 @@ typedef enum {
 
 } btsink_ad2p_state_t;
 
-enum {
+typedef enum {
 	RK_BT_CMD = 1,
 	RK_BT_EVT,
-};
-typedef int rk_bt_msg_t;
+} bt_msg_t;
 
 typedef struct {
-	rk_bt_msg_t type;
-	rk_cmd_msg_t msgId;
+	bt_msg_t type;
+	rk_bt_opcode_t msgId;
 	union {
 		struct {
 			char addr[24];
@@ -88,7 +83,10 @@ typedef struct {
                     unsigned int current;
                     unsigned int total;
                 }positions;
-				pbox_audioFormat_t audioFormat;
+                struct {
+                    int sampingFreq;
+                    int channel;
+                } audioFormat;
 			};
 		} btinfo;
 		struct {
@@ -99,9 +97,9 @@ typedef struct {
 			};
 		} adpter;
 	};
-} bt_msg_t;
+} rk_bt_msg_t;
 
-int bt_sink_send_cmd(rk_cmd_msg_t command, char *data, int len);
+int bt_sink_send_cmd(rk_bt_opcode_t command, char *data, int len);
 int run_btsink_server(void);
 bool isBtA2dpConnected(void);
 bool isBtA2dpStreaming(void);

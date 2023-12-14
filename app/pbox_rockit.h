@@ -33,7 +33,6 @@ typedef enum {
     PBOX_ROCKIT_GETRECORDERVOLUME,
     PBOX_ROCKIT_SET_RECORDER_REVERT,
     PBOX_ROCKIT_SET_RECORDER_3A,
-    PBOX_ROCKIT_GETRECORDERPARAM,
 
     //event
     PBOX_ROCKIT_ENERGY_EVT = 0x100,
@@ -56,8 +55,8 @@ typedef struct {
     union {
         //PBOX_ROCKIT_SETDATASOURCE
         struct {
-            char track_uri[256];
-            char headers[256];
+            char track_uri[MAX_APP_NAME_LENGTH +1];
+            char headers[MAX_APP_NAME_LENGTH +1];
         } dataSource;
         //PBOX_ROCKIT_SETPLAYERLOOPING
         RK_BOOL loop;
@@ -92,5 +91,4 @@ int pbox_create_rockitTask(void);
 #ifdef __cplusplus
 }
 #endif
-
 #endif//_PBOX_ROCKIT_H_

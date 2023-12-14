@@ -17,7 +17,7 @@
 #include "rk_comm_karaoke.h"
 #include "pbox_common.h"
 #include "pbox_rockit.h"
-#include "pbox_socket_server.h"
+#include "pbox_socket.h"
 
 
 static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, RK_S32 ext1, RK_VOID *ptr);
@@ -244,7 +244,7 @@ static int rockit_pbbox_notify_awaken(RK_S32 wakeCmd)
     msg.msgId = PBOX_ROCKIT_AWAKEN_EVT;
     msg.wake_up.wakeCmd = wakeCmd;
 
-    unix_socket_send_msg(PBOX_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
 static int rockit_pbbox_notify_playback_status(RK_S32 ext1)
@@ -255,7 +255,7 @@ static int rockit_pbbox_notify_playback_status(RK_S32 ext1)
     if(ext1 == KARAOKE_EVT_PLAYBACK_COMPLETE || KARAOKE_EVT_PLAYBACK_ERROR == KARAOKE_EVT_PLAYBACK_ERROR)
         msg.msgId = PBOX_ROCKIT_PLAY_COMPLETED_EVT;
 
-    unix_socket_send_msg(PBOX_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
 static int rockit_pbbox_notify_duration(RK_S64 duration)
@@ -265,7 +265,7 @@ static int rockit_pbbox_notify_duration(RK_S64 duration)
     msg.msgId = PBOX_ROCKIT_MUSIC_DURATION_EVT;
     msg.duration = duration;
 
-    unix_socket_send_msg(PBOX_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
 static int rockit_pbbox_notify_current_postion(RK_S64 current)
@@ -275,7 +275,7 @@ static int rockit_pbbox_notify_current_postion(RK_S64 current)
     msg.msgId = PBOX_ROCKIT_MUSIC_POSITION_EVT;
     msg.usecPosition = current;
 
-    unix_socket_send_msg(PBOX_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
 static int rockit_pbbox_notify_volume(RK_U32 volume)
@@ -285,7 +285,7 @@ static int rockit_pbbox_notify_volume(RK_U32 volume)
     msg.msgId = PBOX_ROCKIT_MUSIC_VOLUME_EVT;
     msg.volume = volume;
 
-    unix_socket_send_msg(PBOX_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
 static int rockit_pbbox_notify_energy(struct energy_info energy)
@@ -295,7 +295,7 @@ static int rockit_pbbox_notify_energy(struct energy_info energy)
     msg.msgId = PBOX_ROCKIT_ENERGY_EVT;
     msg.energy_data = energy;
 
-    unix_socket_send_msg(PBOX_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
 static RK_S32 pbox_rockit_music_setDataSource(const char *track_uri, const char *headers)
@@ -638,7 +638,7 @@ static void pbox_rockit_music_destroy() {
 static void *pbox_rockit_server(void *arg)
 {
     int rockit_fds[1] = {0};
-    int maxfd;
+    int maxfd, i;
     char buff[sizeof(pbox_rockit_msg_t)] = {0};
     pbox_rockit_msg_t *msg;
     pthread_setname_np(pthread_self(), "party_rockit");
@@ -654,17 +654,16 @@ static void *pbox_rockit_server(void *arg)
 
     fd_set read_fds;
     FD_ZERO(&read_fds);
-    for (int i= 0, maxfd = rockit_fds[0]; i < sizeof(rockit_fds)/sizeof(int); i++) {
+    for (i= 0, maxfd = rockit_fds[0]; i < sizeof(rockit_fds)/sizeof(int); i++) {
         FD_SET(rockit_fds[i], &read_fds);
         if (maxfd < rockit_fds[i])
             maxfd = rockit_fds[i];
     }
 
     while(true) {
-        //memset(buff, 0, sizeof(buff));
         fd_set read_set = read_fds;
 
-        int result = select(maxfd+1, &read_fds, NULL, NULL, NULL);
+        int result = select(maxfd+1, &read_set, NULL, NULL, NULL);
         if ((result == 0) || (result < 0 && (errno != EINTR))) {
             printf("select timeout");
             continue;
@@ -701,7 +700,6 @@ static void *pbox_rockit_server(void *arg)
             case PBOX_ROCKIT_STARTBTPLAYER: {
                 pbox_audioFormat_t audioFormat = msg->audioFormat;
                 pbox_rockit_music_start_bt(audioFormat.sampingFreq, audioFormat.channel);
-                pbox_rockit_music_start();
             } break;
 
             case PBOX_ROCKIT_STOPBTPLAYER: {

@@ -14,15 +14,25 @@ extern "C" {
 #define SOCKET_PATH_LVGL_CLINET "/tmp/rockchip_lvgl_client"
 #define SOCKET_PATH_KEY_SCAN_SERVER "/tmp/rockchip_keyscan_server"
 #define SOCKET_PATH_KEY_SCAN_CLINET "/tmp/rockchip_keyscan_client"
-#define MAX(A,B) (A > B ? A : B)
+#define MAX(A, B) (A > B ? A : B)
+#define MIN(A, B) (A < B ? A : B)
+#define MAX_APP_NAME_LENGTH 255
 
 typedef enum {
-    PBOX_LVGL = 0,
-    PBOX_BT,
-    PBOX_ROCKIT,
-    PBOX_KEYSCAN,
-    PBOX_NUM
-} pb_source_t;
+    PBOX_MAIN_LVGL,
+    PBOX_MAIN_BT,
+    PBOX_MAIN_ROCKIT,
+    PBOX_MAIN_KEYSCAN,
+    PBOX_MAIN_NUM
+} pb_module_main_t;
+
+typedef enum {
+    PBOX_CHILD_LVGL = 0,
+    PBOX_CHILD_BT,
+    PBOX_CHILD_ROCKIT,
+    PBOX_CHILD_LED,
+    PBOX_CHILD_NUM
+} pb_module_child_t;
 
 typedef enum {
     PBOX_CMD = 1,
