@@ -24,6 +24,8 @@ static int quit = 0;
 int maintask_read_event(int source, int fd) {
     int result = 0;
 
+    //printf("%s source:%d fd:%d\n", __func__, source, fd);
+
     switch (source) {
         case PBOX_MAIN_LVGL: {
             maintask_lvgl_fd_process(fd);
@@ -57,8 +59,8 @@ void main(int argc, char **argv) {
 	signal(SIGINT, sigterm_handler);
 
     pbox_fds[PBOX_MAIN_LVGL] = create_udp_socket(SOCKET_PATH_LVGL_CLINET);
-    pbox_fds[PBOX_MAIN_BT] = create_udp_socket(SOCKET_PATH_ROCKIT_CLINET);
-    pbox_fds[PBOX_MAIN_ROCKIT] = create_udp_socket(SOCKET_PATH_BTSINK_CLIENT);
+    pbox_fds[PBOX_MAIN_BT] = create_udp_socket(SOCKET_PATH_BTSINK_CLIENT);
+    pbox_fds[PBOX_MAIN_ROCKIT] = create_udp_socket(SOCKET_PATH_ROCKIT_CLINET);
     pbox_fds[PBOX_MAIN_KEYSCAN] = create_udp_socket(SOCKET_PATH_KEY_SCAN_CLINET);
     //battery_fd, usb_fd;
 
@@ -78,8 +80,8 @@ void main(int argc, char **argv) {
     }
 
     while (!quit) {
-        fd_set read_fds = read_fds;
-        int result = select(max_fd+1, &read_fds, NULL, NULL, NULL);
+        fd_set read_set = read_fds;
+        int result = select(max_fd+1, &read_set, NULL, NULL, NULL);
         if ((result == 0) || (result < 0 && (errno != EINTR))) {
             printf("select timeout");
             continue;
@@ -88,6 +90,8 @@ void main(int argc, char **argv) {
         if(result < 0) {
             break;
         }
+
+        //printf("%s result:%d\n", __func__, result);
 
         for (int i = 0; i < sizeof(pbox_fds)/sizeof(int); i++) {
             if(FD_ISSET(pbox_fds[i], &read_fds) == 0)

@@ -120,10 +120,9 @@ void update_music_positions(unsigned current, unsigned total) {
 void bt_sink_data_recv(pbox_bt_msg_t *msg) {
     switch (msg-> msgId) {
         case BT_SINK_STATE: {
-            printf("%s recv msg: btsink state: %d\n", __func__, msg->btinfo.state);
+            printf("%s btState:[%d -> %d]\n", __func__, rkbtsinkData.btState, msg->btinfo.state);
             if(rkbtsinkData.btState != msg->btinfo.state)
                 setBtSinkState(msg->btinfo.state);
-
             if(rkbtsinkData.btState == BT_ON || rkbtsinkData.btState == BT_DISCONNECT) {
                 if(rkbtsinkData.btState == BT_DISCONNECT) {
                     pbox_app_rockit_stop_BTplayer();

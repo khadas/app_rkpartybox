@@ -65,6 +65,7 @@ void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel) {
 
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
+    printf("zdm %s sampleFreq:%d, channel:%d \n", __func__, sampleFreq, channel);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 

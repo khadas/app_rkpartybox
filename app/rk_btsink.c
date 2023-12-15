@@ -16,6 +16,11 @@
 #define PRINT_FLAG_ERR "[RK_BT_ERROR]"
 #define PRINT_FLAG_SUCESS "[RK_BT_SUCESS]"
 
+int unix_socket_bt_notify_msg(void *info, int length)
+{
+	unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
+}
+
 int bt_sink_notify_btstate(btsink_state_t state)
 {
 	rk_bt_msg_t msg = {0};
@@ -79,11 +84,6 @@ int bt_sink_notify_pcm_format(int sampleFreq, int channel)
     msg.btinfo.audioFormat.channel = channel;
     printf("FUNC:%s sampleFreq:%d, channel=%d!\n", __func__, sampleFreq, channel);
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
-}
-
-int unix_socket_bt_notify_msg(void *info, int length)
-{
-	unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
 }
 
 static RkBtContent bt_content;
