@@ -5,9 +5,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/socket.h>
-
-
-
 #include <sys/un.h>
 #include <pthread.h>
 #include <RkBtBase.h>
@@ -121,16 +118,19 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
     switch (msg-> msgId) {
         case BT_SINK_STATE: {
             printf("%s btState:[%d -> %d]\n", __func__, rkbtsinkData.btState, msg->btinfo.state);
-            if(rkbtsinkData.btState != msg->btinfo.state)
-                setBtSinkState(msg->btinfo.state);
-            if(rkbtsinkData.btState == BT_ON || rkbtsinkData.btState == BT_DISCONNECT) {
+            if(rkbtsinkData.btState == msg->btinfo.state) {
+                break;
+            }
+            setBtSinkState(msg->btinfo.state);
+            if(rkbtsinkData.btState == BT_INIT_ON || rkbtsinkData.btState == BT_DISCONNECT) {
                 if(rkbtsinkData.btState == BT_DISCONNECT) {
                     pbox_app_rockit_stop_BTplayer();
+                    bt_sink_send_cmd(RK_BT_PAIRABLE, NULL, 0);
                 }
-                if(rkbtsinkData.btState == BT_ON) {
-                    exec_command_system("hciconfig hci0 iac giac");
+                if(rkbtsinkData.btState == BT_INIT_ON) {
+                    bt_sink_send_cmd(RK_BT_START_BLUEALSA, NULL, 0);
+                    bt_sink_send_cmd(RK_BT_PAIRABLE, NULL, 0);
                 }
-                bt_sink_send_cmd(RK_BT_PAIRABLE, NULL, 0);
             }
             else if(rkbtsinkData.btState == BT_CONNECTED) {
                 bt_sink_send_cmd(RK_BT_CONNECTABLE, NULL, 0);
@@ -143,11 +143,11 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         } break;
 
         case BT_SINK_A2DP_STATE: {
-            printf("%s recv msg: a2dpsink state: %d, prev[%d]\n", __func__, msg->btinfo.state, rkbtsinkData.a2dpState);
-            if(rkbtsinkData.a2dpState != msg->btinfo.a2dpState) {
-                rkbtsinkData.a2dpState = msg->btinfo.a2dpState;
+            btsink_ad2p_state_t a2dpState = msg->btinfo.a2dpState;
+            printf("%s recv msg: a2dpsink state: %d <- prev[%d]\n", __func__, a2dpState, rkbtsinkData.a2dpState);
+            if(rkbtsinkData.a2dpState != a2dpState) {
+                rkbtsinkData.a2dpState = a2dpState;
                 if(rkbtsinkData.a2dpState == A2DP_STREAMING) {
-                    printf("%s set: rkbtsinkData: freq:%d channel: %d\n", __func__, rkbtsinkData.pcmSampeFreq, rkbtsinkData.pcmChannel);
                     update_bt_karaoke_playing_status(true);
                     //notity ui player or rockit that bt is playing
                 } else {
@@ -184,9 +184,12 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         } break;
 
         case BT_SINK_ADPTER_INFO: {
-            switch (msg->adpter.adpter_id) {
-                case 1: //bt_discoverable state
-                    rkbtsinkData.discoverable = msg->adpter.discoverable;
+            switch (msg->btinfo.adpter.adpter_id) {
+                case BT_SINK_ADPTER_DISCOVERABLE:
+                    rkbtsinkData.discoverable = msg->btinfo.adpter.discoverable;
+                    if (!rkbtsinkData.discoverable && (rkbtsinkData.btState != BT_CONNECTED)) {
+                        bt_sink_send_cmd(RK_BT_PAIRABLE, NULL, 0);
+                    }
                     break;
 
                 default:

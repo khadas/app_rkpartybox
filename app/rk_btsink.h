@@ -6,8 +6,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define RKBTSINK_SERVER_SOCKET_PATH "/tmp/rockchip_btsink_server"
-#define RKBTSINK_CLIENT_SOCKET_PATH "/tmp/rockchip_btsink_client"
+
+#define BT_SINK_ADPTER_DISCOVERABLE 1
+#define BT_SINK_ADPTER_ADDRESS		2
+#define BT_SINK_ADPTER_NAME 		3
+/**
+ * Convenient macro for getting "on the stack" array size. */
+#define ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
 
 typedef enum _rk_cmd_msg_t{
 	//command id
@@ -34,14 +39,14 @@ typedef enum _rk_cmd_msg_t{
 	BT_SINK_MUSIC_TRACK,
 	BT_SINK_MUSIC_POSITIONS,
     BT_SINK_ADPTER_INFO,
-	BT_SINK_ADPTER_DISCOVERABLE,
 } rk_bt_opcode_t;
 
 typedef enum {
 	BT_NONE,
     BT_TURNING_TRUNNING_OFF,
-	BT_ON = (BT_TURNING_TRUNNING_OFF+1),
-	BT_DISCONNECT = (BT_TURNING_TRUNNING_OFF+1),
+	BT_INIT_ON = (BT_TURNING_TRUNNING_OFF+1),
+	BT_DISCONNECT = (BT_INIT_ON+1),
+	BT_IDLE = (BT_DISCONNECT),
 	BT_CONNECTING,
 	BT_CONNECTED,
 } btsink_state_t;
@@ -62,6 +67,11 @@ typedef enum {
 } bt_msg_t;
 
 typedef struct {
+	int sampingFreq;
+	int channel;
+} bt_audio_format_t;
+
+typedef struct {
 	bt_msg_t type;
 	rk_bt_opcode_t msgId;
 	union {
@@ -69,7 +79,6 @@ typedef struct {
 			char addr[24];
 			char data[24];
 		} btcmd;
-
 		struct {
 			char addr[24];
 			union {
@@ -78,24 +87,20 @@ typedef struct {
                 struct {
                     char title[MAX_NAME_LENGTH + 1];
                     char artist[MAX_NAME_LENGTH + 1];
-                }track;
+                } track;
                 struct {
                     unsigned int current;
                     unsigned int total;
                 }positions;
-                struct {
-                    int sampingFreq;
-                    int channel;
-                } audioFormat;
+				bt_audio_format_t audioFormat;
+				struct {
+					unsigned int adpter_id;
+					union {
+						unsigned int discoverable;
+					};
+				} adpter;
 			};
 		} btinfo;
-		struct {
-			char addr[24];
-            unsigned int adpter_id;
-			union {
-				unsigned int discoverable;
-			};
-		} adpter;
 	};
 } rk_bt_msg_t;
 

@@ -13,6 +13,7 @@ int kill_task(char *name);
 int get_ps_pid(const char Name[]);
 int test_pthread(pthread_t tid); /*pthread_kill的返回值：成功（0） 线程不存在（ESRCH） 信号不合法（EINVAL）*/
 int get_psgrep_pid(const char Name[]);
+void set_vocal_separate_thread_cpu(void);
 
 #define msleep(x) usleep(x * 1000)
 

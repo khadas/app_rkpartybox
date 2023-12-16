@@ -19,6 +19,12 @@ extern "C" {
 //old gcc
 #define g_memdup2 g_memdup
 
+#define MAX_NAME_LENGTH			247
+#define MAX_UUID_STR_LENGTH		36
+#define MAX_UUID_INDEX			36
+#define MAX_MTPOINT_STR_LENGTH	64
+#define MAX_MTPOINT_MAX			36
+
 //pre-defile (CONST)
 #define MAX_GATT_SERVICE			8
 #define MAX_GATT_CHARACTERISTIC		8
@@ -35,7 +41,7 @@ extern "C" {
 #define RK_BT_TRANSPORT_BR_EDR		1
 #define RK_BT_TRANSPORT_LE			2
 
-//UUID
+//UUID						 0000110A-0000-1000-8000-00805F9B34FB
 #define BT_UUID_A2DP_SOURCE "0000110A-0000-1000-8000-00805F9B34FB"
 #define BT_UUID_A2DP_SINK   "0000110B-0000-1000-8000-00805F9B34FB"
 #define BT_UUID_HSP_HS      "00001108-0000-1000-8000-00805F9B34FB"
@@ -116,8 +122,8 @@ typedef enum {
 	RK_BT_STATE_SINK_PLAY,
 	RK_BT_STATE_SINK_PAUSE,
 	RK_BT_STATE_SINK_STOP,
-    RK_BT_STATE_SINK_TRACK,        /** track info */
-    RK_BT_STATE_SINK_POSITION,        /** track info */
+	RK_BT_STATE_SINK_TRACK,        /** track info */
+	RK_BT_STATE_SINK_POSITION,        /** track position */
 
 	/* a2dp event */
 	RK_BT_STATE_SINK_ADD,
@@ -181,7 +187,6 @@ typedef struct {
 	const char *ble_name;
 
 	/** standard ble advtertise data */
-
 	/**
 	 * SERVICE UUID
 	 * GAP and GATT service UUIDs should not be included in a Service UUIDs AD type,
@@ -244,12 +249,87 @@ typedef struct {
 	void (*cb_ble_recv_fun)(const char *uuid, char *data, int *len, RK_BLE_GATT_STATE event);
 } RkBleContent;
 
+/**
+ * A2dp Media
+ */
+typedef enum {
+	TRANSPORT_STATE_IDLE,			/* Not acquired and suspended */
+	TRANSPORT_STATE_PENDING,		/* Playing but not acquired */
+	TRANSPORT_STATE_REQUESTING,		/* Acquire in progress */
+	TRANSPORT_STATE_ACTIVE,			/* Acquired and playing */
+	TRANSPORT_STATE_SUSPENDING,		/* Release in progress */
+} Rk_transport_state_t;
+
+/**
+ * Channel_Mode
+ * #define SBC_CHANNEL_MODE_MONO			(1 << 3)
+ * #define SBC_CHANNEL_MODE_DUAL_CHANNEL	(1 << 2)
+ * #define SBC_CHANNEL_MODE_STEREO			(1 << 1)
+ * #define SBC_CHANNEL_MODE_JOINT_STEREO	(1 << 0)
+ *
+ * Frequency
+ * #define SBC_SAMPLING_FREQ_16000			(1 << 3)
+ * #define SBC_SAMPLING_FREQ_32000			(1 << 2)
+ * #define SBC_SAMPLING_FREQ_44100			(1 << 1)
+ * #define SBC_SAMPLING_FREQ_48000			(1 << 0)
+ *
+ * Block_length
+ * #define SBC_BLOCK_LENGTH_4				(1 << 3)
+ * #define SBC_BLOCK_LENGTH_8				(1 << 2)
+ * #define SBC_BLOCK_LENGTH_12				(1 << 1)
+ * #define SBC_BLOCK_LENGTH_16				(1 << 0)
+ * 
+ * Subbands
+ * #define SBC_SUBBANDS_4					(1 << 1)
+ * #define SBC_SUBBANDS_8					(1 << 0)
+ *
+ * Allocation_Method
+ * #define SBC_ALLOCATION_SNR				(1 << 1)
+ * #define SBC_ALLOCATION_LOUDNESS			(1 << 0)
+ * 
+ * Bitpool
+ * #define SBC_MIN_BITPOOL					2
+ * #define SBC_MAX_BITPOOL					250
+ */
 typedef struct {
-	bool ble;
-	bool a2dp_sink_hfp_hf;
-	bool a2dp_source_hfp_ag;
-	bool spp;
-} RkBtProfile;
+	uint8_t channel_mode:4;
+	uint8_t frequency:4;
+	uint8_t allocation_method:2;
+	uint8_t subbands:2;
+	uint8_t block_length:4;
+	uint8_t min_bitpool;
+	uint8_t max_bitpool;
+} __attribute__ ((packed)) Rk_a2dp_sbc_t;
+
+typedef struct {
+	/** 
+	 * Available sep
+	 * '/org/bluez/hci0/dev_F0_13_C3_50_FF_26/sep1'
+	 */
+	char endpoint[MAX_MTPOINT_STR_LENGTH + 1];
+	char remote_uuids[MAX_UUID_STR_LENGTH + 1];
+
+	/** 
+	 * CODEC
+	 * #define A2DP_CODEC_SBC			0x00
+	 * #define A2DP_CODEC_MPEG12 		0x01
+	 * #define A2DP_CODEC_MPEG24 		0x02
+	 * #define A2DP_CODEC_ATRAC			0x04
+	 * #define A2DP_CODEC_VENDOR 		0xFF
+	 */
+	uint8_t codec;
+
+	//Config
+	Rk_a2dp_sbc_t sbc;
+
+	RK_BT_STATE state;
+
+	//transport volume
+	uint16_t volume;
+
+	/** /org/bluez/hci0/dev_F0_13_C3_50_FF_26/sep1/fd0 */
+	//char transport[MAX_MTPOINT_STR_LENGTH + 1];
+} RkBtMedia;
 
 typedef struct {
 	/** adapter name for BREDR */
@@ -262,7 +342,6 @@ typedef struct {
 #define IO_CAPABILITY_KEYBOARDONLY		0x02
 #define IO_CAPABILITY_NOINPUTNOOUTPUT	0x03
 #define IO_CAPABILITY_KEYBOARDDISPLAY	0x04
-#define IO_CAPABILITY_INVALID			0xFF
 	/** io capability for adapter*/
 	uint8_t io_capability;
 
@@ -276,23 +355,23 @@ typedef struct {
 	bool discoverable;
 	bool scanning;
 
-	/** profile */
-	RkBtProfile profile;
+	/**
+	 * audio server
+	 * Only one can be enabled
+	 */
+	bool bluealsa;
+	//bool pulseaudio;
 
-	/** advtertising */
-	bool ble_advertised;
+	/** profile */
+#define PROFILE_A2DP_SINK_HF			(1 << 0)
+#define PROFILE_A2DP_SOURCE_AG			(1 << 1)
+#define PROFILE_SPP						(1 << 2)
+#define PROFILE_BLE						(1 << 3)
+	uint8_t profile;
 
 	/** ble context */
 	RkBleContent ble_content;
 } RkBtContent;
-
-#define MAX_NAME_LENGTH		247
-
-#define MAX_UUID_STR_LENGTH	36
-#define MAX_UUID_INDEX		36
-
-#define MAX_MTPOINT_STR_LENGTH	64
-#define MAX_MTPOINT_MAX			36
 
 /**
  * @brief Indicates a remote Bluetooth device
@@ -355,15 +434,7 @@ typedef struct remote_dev {
 	//EIR UUID
 	char remote_uuids[MAX_UUID_INDEX][MAX_UUID_STR_LENGTH + 1];
 
-	//media state
-	char transpoint_cnt;
-	char transpoint[MAX_MTPOINT_MAX][MAX_MTPOINT_STR_LENGTH + 1];
-	char endpoint_cnt;
-	char endpoint[MAX_MTPOINT_MAX][MAX_MTPOINT_STR_LENGTH + 1];
-	RK_BT_STATE state;
-
-	//transport volume
-	uint16_t volume;
+	RkBtMedia media;
 
 	bool exist;
 
@@ -399,8 +470,17 @@ typedef struct remote_dev {
 	void *data;
 } RkBtRemoteDev;
 
+typedef bool (*RK_BT_VENDOR_CALLBACK)(bool enable);
+typedef bool (*RK_BT_AUDIO_SERVER_CALLBACK)(void);
+
 typedef void (*RK_BT_STATE_CALLBACK)(RkBtRemoteDev *rdev, RK_BT_STATE state);
 typedef void (*RK_BLE_GATT_CALLBACK)(const char *bd_addr, unsigned int mtu);
+
+void rk_bt_register_vendor_callback(RK_BT_VENDOR_CALLBACK cb);
+void rk_bt_register_audio_server_callback(RK_BT_AUDIO_SERVER_CALLBACK cb);
+
+void rk_bt_set_profile(uint8_t profile);
+
 
 /**
  * @ingroup  rk_bt_basic

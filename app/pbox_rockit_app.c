@@ -8,6 +8,7 @@
 #include "pbox_socket.h"
 #include "pbox_rockit.h"
 
+
 typedef enum
 {
     IDLE = 0,
@@ -63,6 +64,28 @@ void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel) {
         .msgId = PBOX_ROCKIT_STARTBTPLAYER,
     };
 
+    switch (sampleFreq) {
+        case 16000:
+        case 24000:
+        case 32000:
+        case 44100:
+        case 48000:{
+            //do nothing..
+        } break;
+
+        default: {
+           sampleFreq = 44100;
+        } break;
+    }
+
+    switch (channel) {
+        case 0: {
+            channel = 2;
+        } break;
+
+        default: {
+        } break;
+    }
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
     printf("zdm %s sampleFreq:%d, channel:%d \n", __func__, sampleFreq, channel);

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include "pbox_common.h"
@@ -67,7 +68,7 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
     int ret = sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     if (ret < 0)
     {
-        printf("%s: Socket send failed! ret = %d\n", __func__, ret);
+        printf("%s: Socket send failed!  source = %d, ret = %d, errno: %d\n", __func__, module, ret, errno);
         close(sockfd);
         return -1;
     }

@@ -25,7 +25,6 @@ int maintask_read_event(int source, int fd) {
     int result = 0;
 
     //printf("%s source:%d fd:%d\n", __func__, source, fd);
-
     switch (source) {
         case PBOX_MAIN_LVGL: {
             maintask_lvgl_fd_process(fd);

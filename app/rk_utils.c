@@ -345,3 +345,53 @@ retry:
 		return 0;
 }
 
+static void *vocal_separate_cpu(void *arg)
+{
+    int pid;
+    static int old_vocal_neet=0 , old_vocal_separate= 0, old_guitar_neet =0;
+    //usleep(200*1000);
+    for (int i = 0; i < 10; i ++) {
+        if (((pid = get_thread_pid("vocal_neet")) > 0)&&(old_vocal_neet != pid)) {
+            char cmdline[512];
+            printf("%s %d roud:%d\n", __func__, pid, i);
+            sprintf(cmdline, "taskset -p 08 %d", pid);
+            exec_command_system(cmdline);
+            old_vocal_neet = pid;
+            break;
+        }
+        usleep(100*1000);
+    }
+
+    for (int i = 0; i < 10; i ++) {
+        if (((pid = get_thread_pid("vocal_separate-")) > 0)&&(old_vocal_separate != pid)) {
+            char cmdline[512];
+            printf("%s %d roud:%d\n", __func__, pid, i);
+            sprintf(cmdline, "taskset -p 08 %d", pid);
+            exec_command_system(cmdline);
+            old_vocal_separate= pid;
+            break;
+        }
+        usleep(100*1000);
+    }
+
+    for (int i = 0; i < 10; i ++) {
+        if (((pid = get_thread_pid("guitar_neet")) > 0)&&(old_guitar_neet != pid)) {
+            char cmdline[512];
+            printf("%s %d roud:%d\n", __func__, pid, i);
+            sprintf(cmdline, "taskset -p 04 %d", pid);
+            exec_command_system(cmdline);
+            old_guitar_neet = pid;
+            break;
+        }
+        usleep(100*1000);
+    }
+}
+
+void set_vocal_separate_thread_cpu(void) {
+    pthread_t vocal_cpuset;
+    int ret = pthread_create(&vocal_cpuset, NULL, vocal_separate_cpu, NULL);
+    if (ret < 0)
+    {
+        printf("vocal_separate_cpu_set fail\n");
+    }
+}

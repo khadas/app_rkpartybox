@@ -325,7 +325,7 @@ static RK_S32 pbox_rockit_music_start(void)
 
     printf("%s\n", __func__);
     RK_MPI_KARAOKE_StartPlayer_func(player_ctx);
-    //set_vocal_separate_thread_cpu();
+    set_vocal_separate_thread_cpu();
 }
 
 static void pbox_rockit_music_stop(void) {
@@ -349,16 +349,26 @@ static void pbox_rockit_music_pause(void)
 static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
 {
     KARAOKE_BT_ATTR_S attr;
-    if(sampleFreq == 0) {
-        attr.u32Sample = 44100;
-    } else {
-        attr.u32Sample = sampleFreq;
+    switch (sampleFreq) {
+        case 0: {
+            attr.u32Sample = 44100;
+        } break;
+
+        default: {
+            attr.u32Sample = sampleFreq;
+        } break;
     }
-    if(channel == 0) {
-        attr.u32Channels = 2;
-    } else {
-        attr.u32Channels = channel;
+
+    switch (channel) {
+        case 0: {
+            attr.u32Channels = 2;
+        } break;
+
+        default: {
+            attr.u32Channels = channel;
+        } break;
     }
+
     attr.u32BitWidth = 16;
 
     assert(player_ctx);
@@ -369,7 +379,7 @@ static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
     pbox_rockit_music_stop();
     RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
     RK_MPI_KARAOKE_StartBTPlayer_func(player_ctx, &attr);
-    //set_vocal_separate_thread_cpu();
+    set_vocal_separate_thread_cpu();
 }
 
 static void pbox_rockit_music_resume(RK_U32 volume)
