@@ -1,5 +1,5 @@
-#ifndef _PTBOX_LVGL_APP_H_
-#define _PTBOX_LVGL_APP_H_
+#ifndef _PTBOX_KEYSCAN_APP_H_
+#define _PTBOX_KEYSCAN_APP_H_
 #include <stdint.h>
 #include <stdbool.h>
 #ifdef __cplusplus

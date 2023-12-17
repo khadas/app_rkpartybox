@@ -1,8 +1,11 @@
 #ifndef _PTBOX_ROCKIT_APP_H_
 #define _PTBOX_ROCKIT_APP_H_
+
 #include <stdint.h>
 #include <stdbool.h>
+#include "rk_type.h"
 #include "pbox_common.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -8,9 +8,9 @@
 #include <pthread.h>
 #include <RkBtBase.h>
 #include <RkBtSink.h>
+#include "pbox_common.h"
 #include "rk_btsink.h"
 #include "rk_utils.h"
-#include "pbox_common.h"
 #include "pbox_socket.h"
 
 #define PRINT_FLAG_ERR "[RK_BT_ERROR]"
@@ -18,7 +18,7 @@
 
 int unix_socket_bt_notify_msg(void *info, int length)
 {
-	unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
+	//unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
 }
 
 int bt_sink_notify_btstate(btsink_state_t state)
@@ -570,7 +570,7 @@ static void *btsink_server(void *arg)
 		if (sscanf(bt_name, "%2X:%2X:%2X:%2X:%2X:%2X",
 				&addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]) != 6) {
 			fprintf(stderr, "Failed to parse Bluetooth address.\n");
-			return EXIT_FAILURE;
+			return (void*)-1;
 		}
 	}
 

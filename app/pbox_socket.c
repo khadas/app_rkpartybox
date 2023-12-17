@@ -15,7 +15,7 @@ int create_udp_socket(char *socket_path)
 {
     if ((socket_path == NULL) || (strlen(socket_path) == 0))
         return -1;
-    printf("----- rkbtsink_server -----\n");
+    printf("----- %s server -----\n", socket_path);
 
     unlink(socket_path);
     int sockfd = socket(AF_UNIX, SOCK_DGRAM, 0);

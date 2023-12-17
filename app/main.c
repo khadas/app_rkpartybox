@@ -16,8 +16,12 @@
 #include "rk_btsink.h"
 #include "pbox_common.h"
 #include "pbox_rockit.h"
-//#include "pbox_socket.h"
+#include "pbox_socket.h"
 #include "pbox_btsink_app.h"
+#include "pbox_rockit_app.h"
+#include "pbox_lvgl_app.h"
+#include "pbox_lvgl.h"
+#include "pbox_keyscan_app.h"
 
 static int quit = 0;
 
@@ -63,11 +67,12 @@ void main(int argc, char **argv) {
     pbox_fds[PBOX_MAIN_KEYSCAN] = create_udp_socket(SOCKET_PATH_KEY_SCAN_CLINET);
     //battery_fd, usb_fd;
 
-    //pbox_create_lvglTask();
+    pbox_create_lvglTask();
     pbox_create_rockitTask();
     //pbox_create_ledEffectTask();
     //pbox_create_KeyScanTask();
     pbox_create_bttask();
+
 
     fd_set read_fds;
     FD_ZERO(&read_fds);
@@ -79,7 +84,9 @@ void main(int argc, char **argv) {
     }
 
     while (!quit) {
+        int ret;
         fd_set read_set = read_fds;
+
         int result = select(max_fd+1, &read_set, NULL, NULL, NULL);
         if ((result == 0) || (result < 0 && (errno != EINTR))) {
             printf("select timeout");
@@ -91,9 +98,8 @@ void main(int argc, char **argv) {
         }
 
         //printf("%s result:%d\n", __func__, result);
-
         for (int i = 0; i < sizeof(pbox_fds)/sizeof(int); i++) {
-            if(FD_ISSET(pbox_fds[i], &read_fds) == 0)
+            if((ret = FD_ISSET(pbox_fds[i], &read_set)) == 0)
                 continue;
             maintask_read_event(i , pbox_fds[i]);
         }

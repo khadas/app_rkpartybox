@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-int maintask_lvgl_fd_process(int fd);
+void maintask_lvgl_fd_process(int fd);
 
 #ifdef __cplusplus
 }

@@ -9,15 +9,14 @@
 #include <pthread.h>
 #include <RkBtBase.h>
 #include <RkBtSink.h>
-#include "rk_btsink.h"
 #include "pbox_common.h"
-#include "pbox_socket.h"
-#include "pbox_rockit.h"
+#include "rk_btsink.h"
 #include "pbox_btsink_app.h"
+#include "pbox_socket.h"
 #include "pbox_rockit_app.h"
+#include "pbox_lvgl_app.h"
 
-typedef struct _rk_btsink
-{
+typedef struct {
 	char localAddr[6];
 	char remoteAddr[6];
 	btsink_state_t btState;
@@ -91,16 +90,14 @@ void update_bt_karaoke_playing_status(bool playing)
 void update_music_track_info(char *title, char *artist) {
     printf("%s track:[%s]-[%s]\n", __func__, title, artist);
 
-    /*if(title != NULL && (title[0] != 0))
-        todo lv_label_set_text(title_label, title);
-    if(artist != NULL && (artist[0] != 0))
-        todo lv_label_set_text(artist_label, artist);
-    */
+    pbox_app_lcd_displayTrackInfo(title, artist);
 }
+
 
 void update_music_positions(unsigned current, unsigned total) {
     static int  prev_total = 0;
     printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
+    pbox_app_lcd_displayTrackPosition(current, total);
     if(prev_total != total) {
         prev_total = total;
         total = total/1000;

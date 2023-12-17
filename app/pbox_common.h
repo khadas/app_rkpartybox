@@ -21,8 +21,8 @@ extern "C" {
 typedef enum {
     PBOX_MAIN_LVGL,
     PBOX_MAIN_BT,
-    PBOX_MAIN_ROCKIT,
     PBOX_MAIN_KEYSCAN,
+    PBOX_MAIN_ROCKIT,
     PBOX_MAIN_NUM
 } pb_module_main_t;
 
@@ -59,6 +59,16 @@ typedef enum {
     PBOX_REVERT_CONCERT,
     PBOX_REVERT_BUTT,
 } pbox_revertb_t;
+
+typedef struct {
+    int freq;
+    int energy;
+}energy_t;
+
+typedef struct energy_info {
+    int size;
+    energy_t energykeep[10];
+} energy_info_t;
 
 void start_fd_timer(int timer_fd, int start, int interval, int loop);
 int create_fd_timer (void);

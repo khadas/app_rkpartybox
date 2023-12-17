@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/un.h>
+#include <sys/socket.h>
 #include "pbox_common.h"
 #include "pbox_socket.h"
 #include "pbox_rockit.h"
@@ -200,10 +202,10 @@ void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t
         .msgId = PBOX_ROCKIT_SETPLAYER_SEPERATE,
     };
 
-    msg.vocal.enable = enable;
-    msg.vocal.u32HumanLevel = hlevel;
-    msg.vocal.u32OtherLevel = mlevel;
-    msg.vocal.u32GuitarLevel = glevel;
+    msg.vocalSeperate.enable = enable;
+    msg.vocalSeperate.u32HumanLevel = hlevel;
+    msg.vocalSeperate.u32OtherLevel = mlevel;
+    msg.vocalSeperate.u32GuitarLevel = glevel;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -278,7 +280,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
     assert(msg);
     switch (msg->msgId) {
         case PBOX_ROCKIT_ENERGY_EVT: {
-            struct energy_info energy_data = msg->energy_data;
+            energy_info_t energy_data = msg->energy_data;
             int size = energy_data.size;
             for(int i = 0; i< energy_data.size; i++) {
     		    printf("freq[%05d]HZ energyData[%05d]db\n",
@@ -463,7 +465,6 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
         } break;
         default: break;
     } //end switch (msg->msgId)
-
 }
 
 void maintask_rockit_fd_process(int fd) 

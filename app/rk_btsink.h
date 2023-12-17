@@ -1,5 +1,5 @@
-#ifndef _RK_BTSINK_H
-#define _RK_BTSINK_H
+#ifndef _RK_BTSINK_H_
+#define _RK_BTSINK_H_
 #include <stdbool.h>
 #include <RkBtSink.h>
 #include "pbox_common.h"
@@ -105,11 +105,10 @@ typedef struct {
 } rk_bt_msg_t;
 
 int bt_sink_send_cmd(rk_bt_opcode_t command, char *data, int len);
-int run_btsink_server(void);
 bool isBtA2dpConnected(void);
 bool isBtA2dpStreaming(void);
 void *btsink_watcher(void *arg);
-
+int pbox_create_bttask(void);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

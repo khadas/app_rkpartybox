@@ -1,9 +1,11 @@
-#ifndef _PTBOX_ROCKIT_APP_H_
-#define _PTBOX_ROCKIT_APP_H_
+#ifndef _PTBOX_BTSINK_APP_H_
+#define _PTBOX_BTSINK_APP_H_
+
 #include <stdint.h>
 #include <stdbool.h>
-#include "rk_btsink.h"
 #include "pbox_common.h"
+#include "rk_btsink.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

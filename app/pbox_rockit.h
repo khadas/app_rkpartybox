@@ -45,11 +45,6 @@ typedef enum {
 } pbox_rockit_opcode_t;
 
 typedef struct {
-    int freq;
-    int energy;
-}energy_t;
-
-typedef struct {
     pbox_msg_t type;
     pbox_rockit_opcode_t msgId;
     union {
@@ -67,7 +62,7 @@ typedef struct {
         //PBOX_ROCKIT_GETPLAYERVOLUME
         RK_U32 volume;
         pbox_revertb_t      reverbMode;
-        pbox_vocal_t        vocal;
+        pbox_vocal_t        vocalSeperate;
         RK_BOOL             echo3A_On;
         pbox_audioFormat_t  audioFormat;
 
@@ -78,10 +73,7 @@ typedef struct {
             };
         } wake_up;
         RK_S64 duration;
-        struct energy_info {
-            int size;
-            energy_t energykeep[10];
-        } energy_data;
+        energy_info_t energy_data;
     };
 } pbox_rockit_msg_t;
 

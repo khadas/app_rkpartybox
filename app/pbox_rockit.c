@@ -288,7 +288,7 @@ static int rockit_pbbox_notify_volume(RK_U32 volume)
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
-static int rockit_pbbox_notify_energy(struct energy_info energy)
+static int rockit_pbbox_notify_energy(energy_info_t energy)
 {
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
@@ -583,7 +583,7 @@ static void mapDataToNewRange(int energyData[], int length, int nowMin, int nowM
     }
 }
 
-static void pbox_rockit_music_energyLevel_get(struct energy_info* pEnergy) {
+static void pbox_rockit_music_energyLevel_get(energy_info_t* pEnergy) {
     KARAOKE_ENERGY_LEVEL_S energy;
     int energyData[10];
     static int energyDataPrev[10];
@@ -631,7 +631,7 @@ static void pbox_rockit_music_energyLevel_get(struct energy_info* pEnergy) {
     RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func(player_ctx, &energy);
 }
 
-static void pbox_rockit_music_destroy() {
+static void pbox_rockit_music_destroy(void) {
    if (RK_MPI_KARAOKE_StopPlayer_func != NULL) {
        RK_MPI_KARAOKE_StopPlayer_func(player_ctx);
    }
@@ -761,7 +761,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SETPLAYER_SEPERATE: {
-                pbox_vocal_t vocal = msg->vocal;
+                pbox_vocal_t vocal = msg->vocalSeperate;
                 pbox_rockit_music_voice_seperate(vocal);
             } break;
 
@@ -770,7 +770,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_GETPLAYERENERGYLEVEL: {
-                struct energy_info energy;
+                energy_info_t energy;
                 pbox_rockit_music_energyLevel_get(&energy);
                 rockit_pbbox_notify_energy(energy);
             } break;
