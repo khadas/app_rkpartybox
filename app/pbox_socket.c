@@ -34,7 +34,7 @@ int create_udp_socket(char *socket_path)
         return -1;
     }
 
-    struct timeval t = {4, 0};
+    struct timeval t = {0, 100*1000};
     setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&t, sizeof(t));
 
     return sockfd;

@@ -41,6 +41,7 @@ set(ROCKIT_FILE_LIBS
        ./lib64/libavformat.so.58     
        ./lib64/librkaudio_common.so  
        ./lib64/librkaudio_effect_vocal.so
+       ./lib64/librkwifibt.so
 )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
