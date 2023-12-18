@@ -198,25 +198,24 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
 void maintask_lvgl_fd_process(int fd) {
     int bytesAvailable = -1;
     char buff[sizeof(pbox_lcd_msg_t)] = {0};
-    int ret = recvfrom(fd, buff, sizeof(buff), 0, NULL, NULL);
-    if ((ret == 0) || (ret < 0 && (errno != EINTR))) {
-        int flags = fcntl(fd, F_GETFL, 0);
-        if (flags == -1) {
-            perror("fcntl");
-            return;
-        }
 
-        printf("%s ret:%d , error:%s, blockmode:%s\n", 
-            __func__, ret, strerror(errno), (flags & O_NONBLOCK)? "no":"yes");
+    int ret = recvfrom(fd, buff, sizeof(buff), 0, NULL, NULL);
+    if (ret <= 0) {
+        if (ret == 0) {
+            printf("%s: Connection closed\n", __func__);
+        } else if (errno != EINTR) {
+            perror("recvfrom");
+        }
         return;
     }
-    pbox_lcd_msg_t *msg = (pbox_lcd_msg_t *)buff;
-    printf("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
-    if (msg->type != (pbox_msg_t)PBOX_EVT)
+    pbox_lcd_msg_t *msg = (pbox_lcd_msg_t *)buff;
+    printf("%s: Socket received - type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+
+    if (msg->type != PBOX_EVT) {
+        printf("%s: Invalid message type\n", __func__);
         return;
+    }
 
     maintask_touch_lcd_data_recv(msg);
-
-    return;
 }

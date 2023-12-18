@@ -45,6 +45,10 @@ int maintask_read_event(int source, int fd) {
         case PBOX_MAIN_KEYSCAN: {
             maintask_keyscan_fd_process(fd);
         } break;
+
+        case PBOX_MAIN_USBDISK: {
+            maintask_usb_fd_process(fd);
+        } break;
     }
     return 0;
 }
@@ -57,7 +61,7 @@ static void sigterm_handler(int sig)
 
 void main(int argc, char **argv) {
     int max_fd, i;
-    int pbox_fds[PBOX_MAIN_NUM] = {-1, -1, -1, -1};//lvgl canceled
+    int pbox_fds[PBOX_MAIN_NUM] = {-1, -1, -1, -1, -1};
 	pthread_setname_np(pthread_self(), "party_main");
 	signal(SIGINT, sigterm_handler);
 
@@ -65,6 +69,7 @@ void main(int argc, char **argv) {
     pbox_fds[PBOX_MAIN_BT] = create_udp_socket(SOCKET_PATH_BTSINK_CLIENT);
     pbox_fds[PBOX_MAIN_ROCKIT] = create_udp_socket(SOCKET_PATH_ROCKIT_CLINET);
     pbox_fds[PBOX_MAIN_KEYSCAN] = create_udp_socket(SOCKET_PATH_KEY_SCAN_CLINET);
+    pbox_fds[PBOX_MAIN_USBDISK] = create_udp_socket(SOCKET_PATH_USB_CLIENT);
     //battery_fd, usb_fd;
 
     pbox_create_lvglTask();
@@ -72,6 +77,7 @@ void main(int argc, char **argv) {
     //pbox_create_ledEffectTask();
     //pbox_create_KeyScanTask();
     pbox_create_bttask();
+    pbox_create_usb_task();
 
 
     fd_set read_fds;

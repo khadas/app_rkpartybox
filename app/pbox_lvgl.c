@@ -286,7 +286,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
 };
 
 // Function to process an incoming pbox_lcd_msg_t event
-void processPboxLcdCmd(const pbox_lcd_msg_t* msg) {
+void process_pbox_lcd_cmd(const pbox_lcd_msg_t* msg) {
     if (msg == NULL) {
         printf("Error: Null event message received.\n");
         return;
@@ -357,7 +357,7 @@ static void *pbox_touchLCD_server(void *arg)
         if(msg->type == PBOX_EVT)
             continue;
 
-        processPboxLcdCmd(msg);
+        process_pbox_lcd_cmd(msg);
     }
 }
 

@@ -6,13 +6,19 @@ extern "C" {
 
 #define SOCKET_PATH_BTSINK_SERVER "/tmp/rockchip_btsink_server"
 #define SOCKET_PATH_BTSINK_CLIENT "/tmp/rockchip_btsink_client"
+
 #define SOCKET_PATH_ROCKIT_SERVER "/tmp/rockchip_rockit_server"
 #define SOCKET_PATH_ROCKIT_CLINET "/tmp/rockchip_rockit_client"
+
 #define SOCKET_PATH_LED_EFFECT_SERVER "/tmp/rockchip_led_effect_server"
 //#define SOCKET_PATH_LED_EFFECT_CLINET "/tmp/rockchip_led_effect_client" //no need
+
 #define SOCKET_PATH_LVGL_SERVER "/tmp/rockchip_lvgl_server"
 #define SOCKET_PATH_LVGL_CLINET "/tmp/rockchip_lvgl_client"
-#define SOCKET_PATH_KEY_SCAN_SERVER "/tmp/rockchip_keyscan_server"
+
+//#define SOCKET_PATH_USB_SERVER "/tmp/rockchip_usb_server"
+#define SOCKET_PATH_USB_CLIENT "/tmp/rockchip_usb_client"
+
 #define SOCKET_PATH_KEY_SCAN_CLINET "/tmp/rockchip_keyscan_client"
 #define MAX(A, B) (A > B ? A : B)
 #define MIN(A, B) (A < B ? A : B)
@@ -23,6 +29,7 @@ typedef enum {
     PBOX_MAIN_BT,
     PBOX_MAIN_KEYSCAN,
     PBOX_MAIN_ROCKIT,
+    PBOX_MAIN_USBDISK,
     PBOX_MAIN_NUM
 } pb_module_main_t;
 

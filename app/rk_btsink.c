@@ -18,7 +18,7 @@
 
 int unix_socket_bt_notify_msg(void *info, int length)
 {
-	//unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
+	unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
 }
 
 int bt_sink_notify_btstate(btsink_state_t state)
@@ -715,4 +715,3 @@ int pbox_create_bttask(void)
 
     return ret;
 }
-
