@@ -9,8 +9,10 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sys/un.h>
+#include <sys/socket.h>
 #include "pbox_common.h"
 #include "pbox_usb.h"
+
 
 typedef void (*usb_event_handle)(const pbox_usb_msg_t*);
 static void handleUsbChangeEvent(const pbox_usb_msg_t* msg);

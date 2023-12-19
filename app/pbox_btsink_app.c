@@ -14,7 +14,7 @@
 #include "pbox_btsink_app.h"
 #include "pbox_socket.h"
 #include "pbox_rockit_app.h"
-#include "pbox_lvgl_app.h"
+#include "pbox_multi_display.h"
 
 typedef struct {
 	char localAddr[6];
@@ -90,14 +90,14 @@ void update_bt_karaoke_playing_status(bool playing)
 void update_music_track_info(char *title, char *artist) {
     printf("%s track:[%s]-[%s]\n", __func__, title, artist);
 
-    pbox_app_lcd_displayTrackInfo(title, artist);
+    pbox_multi_displayTrackInfo(title, artist);
 }
 
 
 void update_music_positions(unsigned current, unsigned total) {
     static int  prev_total = 0;
     printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
-    pbox_app_lcd_displayTrackPosition(current, total);
+    pbox_multi_displayTrackPosition(current, total);
     if(prev_total != total) {
         prev_total = total;
         total = total/1000;

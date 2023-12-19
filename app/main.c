@@ -17,11 +17,12 @@
 #include "pbox_common.h"
 #include "pbox_rockit.h"
 #include "pbox_socket.h"
+#include "pbox_lvgl.h"
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
 #include "pbox_lvgl_app.h"
-#include "pbox_lvgl.h"
 #include "pbox_keyscan_app.h"
+#include "pbox_usb_app.h"
 
 static int quit = 0;
 

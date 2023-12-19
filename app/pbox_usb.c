@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <sys/un.h>
 #include <sys/socket.h>
@@ -59,7 +60,7 @@ static void *pbox_usb_server(void *arg)
     #endif
 
     #define USB_DETECT_PATH "path_to_usb_detect_kernel_file"
-    int usb_detect_fd = open(USB_DETECT_PATH);
+    int usb_detect_fd = open(USB_DETECT_PATH, O_RDONLY);
     fd_set read_fds;
     FD_ZERO(&read_fds);
     FD_SET(usb_detect_fd, &read_fds);
