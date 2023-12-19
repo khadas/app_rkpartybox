@@ -30,6 +30,7 @@ typedef enum {
     PBOX_MAIN_KEYSCAN,
     PBOX_MAIN_ROCKIT,
     PBOX_MAIN_USBDISK,
+    PBOX_MAIN_FD_TIMER,
     PBOX_MAIN_NUM
 } pb_module_main_t;
 

@@ -253,17 +253,31 @@ void handleLcdLoopModeCmd(const pbox_lcd_msg_t* msg) {
 // Function to handle the energy info command
 void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
     energy_info_t energyData = msg->energy_data;
-    printf("Energy Info Command: Size - %d\n", energyData.size);
+    printf("\nEnergy Info Command, Size: %d\n", energyData.size);
     // For each energy data, print its value
     for (int i = 0; i < energyData.size; i++) {
-        printf("Energy %d: freq:%d, value:%d\n", i, energyData.energykeep[i].freq, energyData.energykeep[i].energy);
+        if(i==0) printf("freq  :\t");
+        printf("%05d%c", energyData.energykeep[i].freq, i<(energyData.size-1)?'\t':' ');
     }
+    printf("\n");
+    for (int i = 0; i < energyData.size; i++) {
+        if(i==0) printf("energy:\t");
+        printf("%02d%c", energyData.energykeep[i].energy, i<(energyData.size-1)?'\t':' ');
+    }
+    printf("\n");
 }
 
 // Function to handle the guitar level command
 void handleLcdGuitarLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t guitar_music_level = msg->guitar_music_level;
     printf("Guitar Level Command: Level - %u\n", guitar_music_level);
+}
+
+// Function to handle the gui reflash command //exec lv_task_handler
+void handleLcdGuiReflushCmd(const pbox_lcd_msg_t* msg) {
+    (void*)(msg);
+    printf("GUI reflash Command\n");
+    //lv_task_handler();
 }
 
 // Array of event handlers
@@ -282,6 +296,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_LOOP_MODE, handleLcdLoopModeCmd },
     { PBOX_LCD_DISP_ENERGY_INFO, handleLcdEnergyInfoCmd },
     { PBOX_LCD_DISP_GUITAR_LEVEL, handleLcdGuitarLevelCmd },
+    { PBOX_LCD_DISP_REFLASH, handleLcdGuiReflushCmd}
     // Add other as needed...
 };
 
@@ -352,7 +367,7 @@ static void *pbox_touchLCD_server(void *arg)
         }
 
         pbox_lcd_msg_t *msg = (pbox_lcd_msg_t *)buff;
-        printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+        //printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
         if(msg->type == PBOX_EVT)
             continue;

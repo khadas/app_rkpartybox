@@ -9,6 +9,7 @@
 #define _PBOX_MULTI_DISPLAY_H_
 #include <stdint.h>
 #include <stdbool.h>
+#include "pbox_common.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,6 +25,7 @@ void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level);
 void pbox_multi_displayHumanMusicLevel(uint32_t human_music_level);
 void pbox_multi_displayGuitarLevel(uint32_t guitar_music_level);
 void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t glevel);
+void pbox_multi_displayEnergyInfo(energy_info_t energy);
 
 #ifdef __cplusplus
 }

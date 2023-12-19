@@ -9,7 +9,7 @@
 #include "pbox_common.h"
 #include "pbox_socket.h"
 #include "pbox_rockit.h"
-
+#include "pbox_multi_display.h"
 
 typedef enum
 {
@@ -282,12 +282,14 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
         case PBOX_ROCKIT_ENERGY_EVT: {
             energy_info_t energy_data = msg->energy_data;
             int size = energy_data.size;
+            /*
             for(int i = 0; i< energy_data.size; i++) {
-    		    printf("freq[%05d]HZ energyData[%05d]db\n",
-                                energy_data.energykeep[i].freq,
+                printf("%s freq[%05d]HZ energyData[%05d]db\n",
+                                __func__, energy_data.energykeep[i].freq,
                                 energy_data.energykeep[i].energy);
-            }
-            //send to ui
+            }*/
+            pbox_multi_displayEnergyInfo(energy_data);
+
         } break;
         case PBOX_ROCKIT_MUSIC_POSITION_EVT: {
             //send to ui
@@ -476,7 +478,7 @@ void maintask_rockit_fd_process(int fd)
         return;
 
     pbox_rockit_msg_t *msg = (pbox_rockit_msg_t *)buff;
-    printf("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+    //printf("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
     if (msg->type != PBOX_EVT)
         return;

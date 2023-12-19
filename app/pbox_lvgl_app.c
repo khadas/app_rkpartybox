@@ -22,7 +22,6 @@
 
 int unix_socket_lcd_send(void *info, int length)
 {
-    printf("%s\n", __func__);
 	return unix_socket_send_cmd(PBOX_CHILD_LVGL, info, length);
 }
 
@@ -133,6 +132,25 @@ void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint3
 
     msg.vocalSeparate = vocalSeparate;
 
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
+void pbox_app_lcd_dispplayReflash(void) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_REFLASH,
+    };
+
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
+void pbox_app_lcd_dispplayEnergy(energy_info_t energy) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_ENERGY_INFO,
+    };
+
+    msg.energy_data = energy;
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 

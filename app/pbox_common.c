@@ -30,7 +30,7 @@ void pause_fd_timer(int timer_fd) {
     }
 }
 
-void start_fd_timer(int timer_fd, int start, int interval, int loop) {
+void start_fd_timer(int timer_fd, int start, int interval, bool loop) {
     struct itimerspec its;
     its.it_value.tv_sec = start/1000;
     its.it_value.tv_nsec = (start%1000)*1000*1000;

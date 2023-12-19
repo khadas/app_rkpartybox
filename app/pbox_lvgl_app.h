@@ -26,6 +26,8 @@ void pbox_app_lcd_displayGuitarLevel(uint32_t guitar_music_level);
 
 void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t glevel);
 
+void pbox_app_lcd_dispplayEnergy(energy_info_t energy);
+
 void maintask_lvgl_fd_process(int fd);
 
 #ifdef __cplusplus

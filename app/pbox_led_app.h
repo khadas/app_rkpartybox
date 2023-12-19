@@ -18,6 +18,7 @@ void pbox_app_led_AccompMusicLevel(uint32_t accomp_music_level);
 void pbox_app_led_HumanMusicLevel(uint32_t human_music_level);
 void pbox_app_led_GuitarLevel(uint32_t guitar_music_level);
 void pbox_app_led_MusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t glevel);
+void pbox_app_led_energyInfo(energy_info_t energy);
 
 #ifdef __cplusplus
 }

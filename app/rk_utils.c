@@ -350,7 +350,7 @@ static void *vocal_separate_cpu(void *arg)
     int pid;
     static int old_vocal_neet=0 , old_vocal_separate= 0, old_guitar_neet =0;
     //usleep(200*1000);
-    for (int i = 0; i < 10; i ++) {
+    for (int i = 0; i < 3; i ++) {
         if (((pid = get_thread_pid("vocal_neet")) > 0)&&(old_vocal_neet != pid)) {
             char cmdline[512];
             printf("%s %d roud:%d\n", __func__, pid, i);
@@ -362,7 +362,7 @@ static void *vocal_separate_cpu(void *arg)
         usleep(100*1000);
     }
 
-    for (int i = 0; i < 10; i ++) {
+    for (int i = 0; i < 3; i ++) {
         if (((pid = get_thread_pid("vocal_separate-")) > 0)&&(old_vocal_separate != pid)) {
             char cmdline[512];
             printf("%s %d roud:%d\n", __func__, pid, i);
@@ -374,7 +374,7 @@ static void *vocal_separate_cpu(void *arg)
         usleep(100*1000);
     }
 
-    for (int i = 0; i < 10; i ++) {
+    for (int i = 0; i < 3; i ++) {
         if (((pid = get_thread_pid("guitar_neet")) > 0)&&(old_guitar_neet != pid)) {
             char cmdline[512];
             printf("%s %d roud:%d\n", __func__, pid, i);

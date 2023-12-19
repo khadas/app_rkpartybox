@@ -65,3 +65,8 @@ void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_
     pbox_app_lcd_displayMusicSeparateSwitch(enable, hlevel, mlevel, glevel);
     pbox_app_led_MusicSeparateSwitch(enable, hlevel, mlevel, glevel);
 }
+
+void pbox_multi_displayEnergyInfo(energy_info_t energy) {
+    pbox_app_lcd_dispplayEnergy(energy);
+    pbox_app_led_energyInfo(energy);
+}

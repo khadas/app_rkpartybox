@@ -583,7 +583,7 @@ static void mapDataToNewRange(int energyData[], int length, int nowMin, int nowM
     }
 }
 
-static void pbox_rockit_music_energyLevel_get(energy_info_t* pEnergy) {
+static bool pbox_rockit_music_energyLevel_get(energy_info_t* pEnergy) {
     KARAOKE_ENERGY_LEVEL_S energy;
     int energyData[10];
     static int energyDataPrev[10];
@@ -605,30 +605,37 @@ static void pbox_rockit_music_energyLevel_get(energy_info_t* pEnergy) {
                                 energy.ps16EnergyVec[i], energy.ps16EnergyVec[10 + i], energyData[i]);
             }
         }
-    }
-    mapDataToNewRange(energyData, sizeof(energyData)/sizeof(int), 0 , 100);
 
-    for(RK_S32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
-        if(abs(energyDataPrev[i] - energyData[i]) < 3){
-            energykeep[i]++;
-        } else {
-            energykeep[i]=0;
+        mapDataToNewRange(energyData, sizeof(energyData)/sizeof(int), 0 , 100);
+
+        for(RK_S32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
+            if(abs(energyDataPrev[i] - energyData[i]) < 3){
+                energykeep[i]++;
+            } else {
+                energykeep[i]=0;
+            }
+
+            if(energykeep[i] > 2) {
+                energykeep[i]=0;
+                energyData[i] = energyData[i]<5 ? energyData[i] : (energyData[i] - rand()%5);
+            }
+        }
+        memcpy(energyDataPrev, energyData, sizeof(energyData)/sizeof(int) * sizeof(int));
+
+        pEnergy->size = 10;
+        for(int i = 0; i < pEnergy->size; i++) {
+            pEnergy->energykeep[i].freq = energy.ps16EnergyVec[i];
+
+            printf("\t");
+
+            pEnergy->energykeep[i].energy = energyData[i];
         }
 
-        if(energykeep[i] > 2) {
-            energykeep[i]=0;
-            energyData[i] = energyData[i]<5 ? energyData[i] : (energyData[i] - rand()%5);
-        }
-    }
-    memcpy(energyDataPrev, energyData, sizeof(energyData)/sizeof(int) * sizeof(int));
+        RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func(player_ctx, &energy);
 
-    pEnergy->size = 10;
-    for(int i = 0; i < pEnergy->size; i++) {
-        pEnergy->energykeep[i].freq = energy.ps16EnergyVec[i];
-        pEnergy->energykeep[i].energy = energyData[i];
+        return true;
     }
-
-    RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func(player_ctx, &energy);
+    return 0;
 }
 
 static void pbox_rockit_music_destroy(void) {
@@ -688,7 +695,8 @@ static void *pbox_rockit_server(void *arg)
             continue;
 
         pbox_rockit_msg_t *msg = (pbox_rockit_msg_t *)buff;
-        printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+        if(msg->msgId != 18)
+            printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
         if(msg->type == PBOX_EVT)
             continue;
@@ -771,8 +779,9 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_GETPLAYERENERGYLEVEL: {
                 energy_info_t energy;
-                pbox_rockit_music_energyLevel_get(&energy);
-                rockit_pbbox_notify_energy(energy);
+                if(pbox_rockit_music_energyLevel_get(&energy)) {
+                    rockit_pbbox_notify_energy(energy);
+                }
             } break;
 
             case PBOX_ROCKIT_SETRECORDERVOLUME: {
