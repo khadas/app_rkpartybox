@@ -237,7 +237,7 @@ int rk_demo_music_create() {
     printf("rockit media player created successfully, player_ctx=%p\n", player_ctx);
 }
 
-static int rockit_pbbox_notify_awaken(RK_S32 wakeCmd)
+static void rockit_pbbox_notify_awaken(uint32_t wakeCmd)
 {
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
@@ -247,7 +247,7 @@ static int rockit_pbbox_notify_awaken(RK_S32 wakeCmd)
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
-static int rockit_pbbox_notify_playback_status(RK_S32 ext1)
+static void rockit_pbbox_notify_playback_status(uint32_t ext1)
 {
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
@@ -258,7 +258,8 @@ static int rockit_pbbox_notify_playback_status(RK_S32 ext1)
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
-static int rockit_pbbox_notify_duration(RK_S64 duration)
+//before call this func, duration shoud covert to ms(msecond), not us.
+static void rockit_pbbox_notify_duration(uint32_t duration)
 {
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
@@ -268,17 +269,18 @@ static int rockit_pbbox_notify_duration(RK_S64 duration)
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
-static int rockit_pbbox_notify_current_postion(RK_S64 current)
+//before call this func, duration shoud covert to ms(msecond), not us.
+static void rockit_pbbox_notify_current_postion(uint32_t current)
 {
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
     msg.msgId = PBOX_ROCKIT_MUSIC_POSITION_EVT;
-    msg.usecPosition = current;
+    msg.mPosition = current;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
-static int rockit_pbbox_notify_volume(RK_U32 volume)
+static void rockit_pbbox_notify_volume(uint32_t volume)
 {
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
@@ -288,7 +290,7 @@ static int rockit_pbbox_notify_volume(RK_U32 volume)
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
-static int rockit_pbbox_notify_energy(energy_info_t energy)
+static void rockit_pbbox_notify_energy(energy_info_t energy)
 {
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
@@ -298,14 +300,13 @@ static int rockit_pbbox_notify_energy(energy_info_t energy)
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
 }
 
-static RK_S32 pbox_rockit_music_setDataSource(const char *track_uri, const char *headers)
+static void pbox_rockit_music_setDataSource(const char *track_uri, const char *headers)
 {
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_SetDataSource_func);
 
     printf("%s :%s, ctx=%p\n", __func__, track_uri, player_ctx);
     RK_MPI_KARAOKE_SetDataSource_func(player_ctx, track_uri, headers);  
-
 }
 
 
@@ -318,7 +319,7 @@ static void pbox_rockit_music_stop_bt(void)
     RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
 }
 
-static RK_S32 pbox_rockit_music_start(void)
+static void pbox_rockit_music_start(void)
 {
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_StartPlayer_func);
@@ -382,7 +383,7 @@ static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
     set_vocal_separate_thread_cpu();
 }
 
-static void pbox_rockit_music_resume(RK_U32 volume)
+static void pbox_rockit_music_resume(uint32_t volume)
 {
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_ResumePlayer_func);
@@ -428,9 +429,9 @@ static void pbox_rockit_music_reverb_mode(pbox_revertb_t mode) {
    assert(RK_MPI_KARAOKE_SetRecorderParam_func);
 
    if (mode == KARAOKE_REVERB_MODE_USER) 
-       param.stReverbParam.bBypass = RK_TRUE;
+       param.stReverbParam.bBypass = true;
    else 
-       param.stReverbParam.bBypass = RK_FALSE;
+       param.stReverbParam.bBypass = false;
    RK_MPI_KARAOKE_SetRecorderParam_func(player_ctx, &param);
 }
 
@@ -457,7 +458,7 @@ static void pbox_rockit_music_voice_seperate(pbox_vocal_t vocal) {
     RK_BOOL enable = vocal.enable;
     int32_t hLevel = vocal.u32HumanLevel;
     int32_t mLevel = vocal.u32OtherLevel;
-    int32_t gLevel = vocal.u32GuitarLevel;
+    int32_t rLevel = vocal.u32ReservLevel;
 
     if(hLevel > 100) hLevel = 15;
     else if(hLevel < 3) hLevel = 3;
@@ -465,30 +466,24 @@ static void pbox_rockit_music_voice_seperate(pbox_vocal_t vocal) {
     if(mLevel > 100 ) mLevel = 100;
     else if(mLevel < 0) mLevel = 0;
 
-    if(gLevel > 100 ) gLevel = 100;
-    else if(gLevel < 0) gLevel = 0;
-    printf("%s hLevel:%d, mLevel:%d gLevel:%d , on:%d\n",__func__, hLevel, mLevel, gLevel, enable);
+    if(rLevel > 100 ) rLevel = 100;
+    else if(rLevel < 0) rLevel = 0;
+    printf("%s hLevel:%d, mLevel:%d rLevel:%d , on:%d\n",__func__, hLevel, mLevel, rLevel, enable);
 
     int ret = RK_MPI_KARAOKE_GetPlayerParam_func(player_ctx, &param);
 
     if (enable)
-        param.stVolcalSeparateParam.bBypass = RK_FALSE;
+        param.stVolcalSeparateParam.bBypass = false;
     else
-        param.stVolcalSeparateParam.bBypass = RK_TRUE;
+        param.stVolcalSeparateParam.bBypass = true;
     param.stVolcalSeparateParam.u32HumanLevel = hLevel;
     param.stVolcalSeparateParam.u32OtherLevel = mLevel;
-    param.stVolcalSeparateParam.u32GuitarLevel = gLevel;
+    param.stVolcalSeparateParam.u32ReservLevel = rLevel;
     ret = RK_MPI_KARAOKE_SetPlayerParam_func(player_ctx, &param);
     printf("%s RK_MPI_KARAOKE_SetPlayerParam_func res:%d\n" ,__func__, ret);
 }
 
-static RK_U32 pbox_rockit_music_master_volume_adjust(int Level) {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_SetPlayerVolume_func);
-    RK_MPI_KARAOKE_SetPlayerVolume_func(player_ctx, Level);
-}
-
-static RK_U32 pbox_rockit_music_master_volume_get() {
+static uint32_t pbox_rockit_music_master_volume_get() {
     RK_U32 volume = 0; 
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_GetPlayerVolume_func);
@@ -497,13 +492,22 @@ static RK_U32 pbox_rockit_music_master_volume_get() {
     return volume;
 }
 
+static uint32_t pbox_rockit_music_master_volume_adjust(int Level) {
+    int volume;
+    assert(player_ctx);
+    assert(RK_MPI_KARAOKE_SetPlayerVolume_func);
+    RK_MPI_KARAOKE_SetPlayerVolume_func(player_ctx, Level);
+
+    return pbox_rockit_music_master_volume_get();
+}
+
 static void pbox_rockit_music_mic_volume_adjust(int micLevel) {
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_SetRecorderVolume_func);
     RK_MPI_KARAOKE_SetRecorderVolume_func(player_ctx, micLevel);
 }
 
-static void pbox_rockit_music_seek_set(RK_S64 usec) {
+static void pbox_rockit_music_seek_set(uint64_t usec) {
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_SetPlayerSeekTo_func);
     RK_MPI_KARAOKE_SetPlayerSeekTo_func(player_ctx, usec);
@@ -625,9 +629,6 @@ static bool pbox_rockit_music_energyLevel_get(energy_info_t* pEnergy) {
         pEnergy->size = 10;
         for(int i = 0; i < pEnergy->size; i++) {
             pEnergy->energykeep[i].freq = energy.ps16EnergyVec[i];
-
-            printf("\t");
-
             pEnergy->energykeep[i].energy = energyData[i];
         }
 
@@ -702,8 +703,6 @@ static void *pbox_rockit_server(void *arg)
             continue;
 
         switch (msg->msgId) {
-            //case PBOX_ROCKIT_CREATE: {
-            //} break;
             case PBOX_ROCKIT_DESTROY: {
                 pbox_rockit_music_destroy();
             } break;
@@ -754,17 +753,21 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SETPLAYERSEEKTO: {
-                RK_S64 seek = msg->usecPosition;
+                uint64_t seek = msg->mPosition*1000;
                 pbox_rockit_music_seek_set(seek);
             } break;
 
             case PBOX_ROCKIT_SETPLAYERVOLUME: {
-                RK_U32 volume = msg->volume;
-                pbox_rockit_music_master_volume_adjust(volume);
+                uint32_t volume = msg->volume;
+                uint32_t vol_ret = pbox_rockit_music_master_volume_adjust(volume);
+                if (volume != vol_ret) {
+                    rockit_pbbox_notify_volume(volume);
+                }
+
             } break;
 
             case PBOX_ROCKIT_GETPLAYERVOLUME: {
-                RK_U32 volume = pbox_rockit_music_master_volume_get();
+                uint32_t volume = pbox_rockit_music_master_volume_get();
                 rockit_pbbox_notify_volume(volume);
             } break;
 
@@ -824,11 +827,9 @@ void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, RK_S32 ext1, R
     switch (event) {
         case KARAOKE_EVT_PLAYBACK_COMPLETE:
         case KARAOKE_EVT_PLAYBACK_ERROR: {
-            //mPlaybackCompleted = RK_TRUE;
             rockit_pbbox_notify_playback_status(event);
         } break;
         case KARAOKE_EVT_AWAKEN: {
-            //mWakeCmd = ext1;
             rockit_pbbox_notify_awaken(ext1);
         }
         break;

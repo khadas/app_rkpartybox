@@ -18,6 +18,7 @@
 #include "pbox_common.h"
 #include "pbox_lvgl.h"
 #include "pbox_lvgl_app.h"
+#include "pbox_app.h"
 //xxx_app means it works in main thread...
 
 int unix_socket_lcd_send(void *info, int length)
@@ -57,7 +58,7 @@ void pbox_app_lcd_displayTrackInfo(const char* title, const char* artist) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_displayTrackPosition(unsigned int mCurrent, unsigned int mDuration) {
+void pbox_app_lcd_displayTrackPosition(uint32_t mCurrent, uint32_t mDuration) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_TRACK_POSITION,
@@ -108,17 +109,17 @@ void pbox_app_lcd_displayHumanMusicLevel(uint32_t human_music_level) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_displayGuitarLevel(uint32_t guitar_music_level) {
+void pbox_app_lcd_displayReservLevel(uint32_t reserv_music_level) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_LCD_DISP_GUITAR_LEVEL,
+        .msgId = PBOX_LCD_DISP_RESERV_LEVEL,
     };
-    msg.guitar_music_level = guitar_music_level;
+    msg.reserv_music_level = reserv_music_level;
 
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t glevel) {
+void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t rlevel) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH,
@@ -127,10 +128,30 @@ void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint3
         .enable = enable,
         .u32HumanLevel = hlevel,
         .u32OtherLevel = mlevel,
-        .u32GuitarLevel = glevel,
+        .u32ReservLevel = rlevel,
     };
 
     msg.vocalSeparate = vocalSeparate;
+
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
+void pbox_app_lcd_displayEcho3A(bool on) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_ECHO_3A_SWITCH,
+    };
+    msg.echo3A_On = on;
+
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
+void pbox_app_lcd_displayRevertbMode(pbox_revertb_t mode) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_REVERT_MODE,
+    };
+    msg.reverbMode = mode;
 
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
@@ -160,26 +181,29 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
     switch (msg->msgId) {
         case PBOX_LCD_PLAY_PAUSE_EVT: {
             bool play = msg->play;
-            //send to ledtask
-            //send to bt or rockit
+            if(play) {
+                pbox_app_music_resume(DISP_LED);
+            } else {
+                pbox_app_music_pause(DISP_LED);
+            }
         } break;
         case PBOX_LCD_PREV_NEXT_EVT: {
             bool next = msg->next;
-            //send to bt or rockit
+            pbox_app_music_album_next(next, DISP_LED);
         } break;
         case PBOX_LCD_LOOP_MODE_EVT: {
-            bool next = msg->loop;
-            //send to ledtask;
-            //send to bt or rockit;
+            bool mode = msg->loop;
+            pbox_app_music_album_loop((uint32_t)(mode), DISP_LED);
         } break;
         case PBOX_LCD_SEEK_POSITION_EVT: {
             unsigned int msecSeekTo = msg->positions.mCurrent;
             unsigned int msecDuration = msg->positions.mDuration;
-            //send to rockit in case not bt mode.
+            if (msecSeekTo <= msecDuration)
+                pbox_app_music_seek_position(msecSeekTo, msecDuration, DISP_LED);
         } break;
         case PBOX_LCD_MAIN_VOL_LEVEL_EVT: {
             int32_t volume = msg->mainVolume;
-            //send to rockit
+            pbox_app_music_set_volume(volume, DISP_LED);
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             int32_t mic_volume = msg->micVolume;
@@ -193,13 +217,13 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
             int32_t human_level = msg->human_music_level;
             //send to rockit
         } break;
-        case PBOX_LCD_GUITAR_MUSIC_LEVEL_EVT: {
-            int32_t human_level = msg->guitar_music_level;
+        case PBOX_LCD_RESERV_MUSIC_LEVEL_EVT: {
+            int32_t human_level = msg->reserv_music_level;
             //send to rockit
         } break;
         case PBOX_LCD_SEPERATE_SWITCH_EVT: {
             bool enable = msg->enable;
-            //send to rockit
+            pbox_app_music_original_singer_open(!enable, DISP_LED);
         } break;
         case PBOX_LCD_ECHO_3A_EVT: {
             bool enable = msg->enable;

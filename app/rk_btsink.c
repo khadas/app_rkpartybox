@@ -41,7 +41,6 @@ int bt_sink_notify_a2dpstate(btsink_ad2p_state_t state)
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
 }
 
-
 int bt_sink_notify_avrcp_track(char *tile, char *artist)
 {
 	rk_bt_msg_t msg = {0};
@@ -75,7 +74,7 @@ int bt_sink_notify_adapter_discoverable(bool discoverable) {
 }
 
 
-int bt_sink_notify_avrcp_position(unsigned int posistion, unsigned int total)
+int bt_sink_notify_avrcp_position(uint32_t posistion, uint32_t total)
 {
     rk_bt_msg_t msg = {0};
     msg.type = RK_BT_EVT;
@@ -641,32 +640,6 @@ static void *btsink_server(void *arg)
     			case RK_BT_PREV:
     				rk_bt_sink_media_control("previous");
     				break;
-                #if 0
-    			case RK_BT_VOL_DOWN:
-    				rkbtsinkData.volume--;
-    				if(rkbtsinkData.volume < 0)
-    					rkbtsinkData.volume = 0;
-    				printf("%s, bt volume:%d", __func__, rkbtsinkData.volume);
-    				rk_bt_sink_set_volume(volumeTable[rkbtsinkData.volume]);
-    				break;
-    			case RK_BT_VOL_UP:
-    				rkbtsinkData.volume++;
-    				if(rkbtsinkData.volume>=sizeof(volumeTable)/sizeof(int))
-    					rkbtsinkData.volume = sizeof(volumeTable)/sizeof(int) -1;
-    				printf("%s, bt volume:%d", __func__, rkbtsinkData.volume);
-    				rk_bt_sink_set_volume(volumeTable[rkbtsinkData.volume]);
-    				break;
-    			case RK_BT_ABS_VOL: {
-    				int vol = (int)(msg->btcmd.data[0]);
-    				rkbtsinkData.volume=vol/10;
-    				if(rkbtsinkData.volume > 10)
-    					rkbtsinkData.volume = 10;
-    				else if(rkbtsinkData.volume < 0)
-    					rkbtsinkData.volume = 0;
-    				printf("%s, abs volume:%d", __func__, rkbtsinkData.volume);
-    				rk_bt_sink_set_volume(volumeTable[rkbtsinkData.volume]);
-    			} break;
-                #endif
     			case RK_BT_PAIRABLE:{
 					//exec_command_system("hciconfig hci0 class 0x240404");
     				rk_bt_set_discoverable(true);

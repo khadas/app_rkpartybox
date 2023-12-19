@@ -48,31 +48,25 @@ typedef struct {
     pbox_msg_t type;
     pbox_rockit_opcode_t msgId;
     union {
-        //PBOX_ROCKIT_SETDATASOURCE
         struct {
             char track_uri[MAX_APP_NAME_LENGTH +1];
             char headers[MAX_APP_NAME_LENGTH +1];
         } dataSource;
-        //PBOX_ROCKIT_SETPLAYERLOOPING
-        RK_BOOL loop;
-        //PBOX_ROCKIT_SETPLAYERSEEKTO
-        //PBOX_ROCKIT_MUSIC_DURATION_EVT
-        RK_S64 usecPosition;
-        //PBOX_ROCKIT_SETPLAYERVOLUME
-        //PBOX_ROCKIT_GETPLAYERVOLUME
-        RK_U32 volume;
+        bool loop;
+        uint32_t mPosition;
+        uint32_t volume;
         pbox_revertb_t      reverbMode;
         pbox_vocal_t        vocalSeperate;
-        RK_BOOL             echo3A_On;
+        bool             echo3A_On;
         pbox_audioFormat_t  audioFormat;
 
         struct _wake_up {
             KARAOKE_WAKE_UP_CMD_E wakeCmd;
             union {
-                RK_U32 volume;
+                uint32_t volume;
             };
         } wake_up;
-        RK_S64 duration;
+        uint32_t duration;
         energy_info_t energy_data;
     };
 } pbox_rockit_msg_t;

@@ -55,7 +55,7 @@ typedef struct {
 typedef struct {
     bool enable;
     unsigned int  u32HumanLevel;    /* RW; Range: [0, 100];*/
-    unsigned int  u32GuitarLevel;   /* RW; Range: [0, 100];*/
+    unsigned int  u32ReservLevel;   /* RW; Range: [0, 100];*/
     unsigned int  u32OtherLevel;    /* RW; Range: [0, 100];*/
 } pbox_vocal_t;
 
@@ -77,6 +77,15 @@ typedef struct energy_info {
     int size;
     energy_t energykeep[10];
 } energy_info_t;
+
+typedef enum
+{
+    IDLE = 0,
+    PLAYING, 
+    _PAUSE,
+    _STOP,
+    PLAY_NUM
+} play_status_t;
 
 void start_fd_timer(int timer_fd, int start, int interval, int loop);
 int create_fd_timer (void);

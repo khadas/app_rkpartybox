@@ -348,7 +348,8 @@ retry:
 static void *vocal_separate_cpu(void *arg)
 {
     int pid;
-    static int old_vocal_neet=0 , old_vocal_separate= 0, old_guitar_neet =0;
+    static int old_vocal_neet=0 , old_vocal_separate= 0, old_reserv_neet =0;
+	(void*)old_reserv_neet;
     //usleep(200*1000);
     for (int i = 0; i < 3; i ++) {
         if (((pid = get_thread_pid("vocal_neet")) > 0)&&(old_vocal_neet != pid)) {
@@ -369,18 +370,6 @@ static void *vocal_separate_cpu(void *arg)
             sprintf(cmdline, "taskset -p 08 %d", pid);
             exec_command_system(cmdline);
             old_vocal_separate= pid;
-            break;
-        }
-        usleep(100*1000);
-    }
-
-    for (int i = 0; i < 3; i ++) {
-        if (((pid = get_thread_pid("guitar_neet")) > 0)&&(old_guitar_neet != pid)) {
-            char cmdline[512];
-            printf("%s %d roud:%d\n", __func__, pid, i);
-            sprintf(cmdline, "taskset -p 04 %d", pid);
-            exec_command_system(cmdline);
-            old_guitar_neet = pid;
             break;
         }
         usleep(100*1000);

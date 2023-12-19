@@ -155,13 +155,13 @@ void lcd_pbox_notifyReverbMode(pbox_revertb_t reverbMode) {
     unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-// Notify function for the guitar music level event
-void lcd_pbox_notifyGuitarMusicLevel(uint32_t guitar_music_level) {
+// Notify function for the reserv music level event
+void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_EVT,
-        .msgId = PBOX_LCD_GUITAR_MUSIC_LEVEL_EVT,
+        .msgId = PBOX_LCD_RESERV_MUSIC_LEVEL_EVT,
     };
-    msg.guitar_music_level = guitar_music_level;
+    msg.reserv_music_level = reserv_music_level;
 
     unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
 }
@@ -193,8 +193,8 @@ void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
 
 // Function to handle the track position command
 void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
-    unsigned int mCurrent = msg->positions.mCurrent;
-    unsigned int mDuration = msg->positions.mDuration;
+    uint32_t mCurrent = msg->positions.mCurrent;
+    uint32_t mDuration = msg->positions.mDuration;
     printf("Track Position Command: Current - %u, Duration - %u\n", mCurrent, mDuration);
 }
 
@@ -225,10 +225,10 @@ void handleLcdHumanMusicLevelCmd(const pbox_lcd_msg_t* msg) {
 // Function to handle the music separate switch command
 void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
     pbox_vocal_t vocalSeparate = msg->vocalSeparate;
-    printf("Music Separate Switch Command: Enable - %s, Human Level - %u, Guitar Level - %u, Other Level - %u\n", 
+    printf("Music Separate Switch Command: Enable - %s, Human Level - %u, Reserv Level - %u, Other Level - %u\n", 
            vocalSeparate.enable ? "Enabled" : "Disabled", 
            vocalSeparate.u32HumanLevel, 
-           vocalSeparate.u32GuitarLevel, 
+           vocalSeparate.u32ReservLevel, 
            vocalSeparate.u32OtherLevel);
 }
 
@@ -253,7 +253,7 @@ void handleLcdLoopModeCmd(const pbox_lcd_msg_t* msg) {
 // Function to handle the energy info command
 void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
     energy_info_t energyData = msg->energy_data;
-    printf("\nEnergy Info Command, Size: %d\n", energyData.size);
+    printf("Energy Info Command, Size: %d\n", energyData.size);
     // For each energy data, print its value
     for (int i = 0; i < energyData.size; i++) {
         if(i==0) printf("freq  :\t");
@@ -267,16 +267,16 @@ void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
     printf("\n");
 }
 
-// Function to handle the guitar level command
-void handleLcdGuitarLevelCmd(const pbox_lcd_msg_t* msg) {
-    uint32_t guitar_music_level = msg->guitar_music_level;
-    printf("Guitar Level Command: Level - %u\n", guitar_music_level);
+// Function to handle the reserv level command
+void handleLcdReservLevelCmd(const pbox_lcd_msg_t* msg) {
+    uint32_t reserv_music_level = msg->reserv_music_level;
+    printf("Reserv Level Command: Level - %u\n", reserv_music_level);
 }
 
 // Function to handle the gui reflash command //exec lv_task_handler
 void handleLcdGuiReflushCmd(const pbox_lcd_msg_t* msg) {
     (void*)(msg);
-    printf("GUI reflash Command\n");
+    //printf("GUI reflash Command\n");
     //lv_task_handler();
 }
 
@@ -295,7 +295,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_REVERT_MODE, handleLcdReverbModeCmd },
     { PBOX_LCD_DISP_LOOP_MODE, handleLcdLoopModeCmd },
     { PBOX_LCD_DISP_ENERGY_INFO, handleLcdEnergyInfoCmd },
-    { PBOX_LCD_DISP_GUITAR_LEVEL, handleLcdGuitarLevelCmd },
+    { PBOX_LCD_DISP_RESERV_LEVEL, handleLcdReservLevelCmd },
     { PBOX_LCD_DISP_REFLASH, handleLcdGuiReflushCmd}
     // Add other as needed...
 };

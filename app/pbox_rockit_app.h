@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "rk_type.h"
 #include "pbox_common.h"
 
 #ifdef __cplusplus
@@ -32,15 +31,15 @@ void pbox_app_rockit_get_music_current_postion(void);
 
 void pbox_app_rockit_get_player_duration(void);
 
-void pbox_app_rockit_set_player_loop(RK_BOOL loop);
+void pbox_app_rockit_set_player_loop(bool loop);
 
-void pbox_app_rockit_set_player_seek(RK_S64 usecPosition);
+void pbox_app_rockit_set_player_seek(uint32_t mPosition);
 
-void pbox_app_rockit_set_player_volume(RK_U32 volume);
+void pbox_app_rockit_set_player_volume(uint32_t volume);
 
 void pbox_app_rockit_get_player_volume(void);
 
-void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t glevel);
+void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel);
 
 void pbox_app_rockit_get_player_energy(void);
 
@@ -48,13 +47,13 @@ void pbox_app_rockit_start_recorder(void);
 
 void pbox_app_rockit_stop_recorder(void);
 
-void pbox_app_rockit_set_recoder_volume(RK_U32 volume);
+void pbox_app_rockit_set_recoder_volume(uint32_t volume);
 
 void pbox_app_rockit_get_recoder_volume(void);
 
 void pbox_app_rockit_set_recoder_revert(pbox_revertb_t reverbMode);
 
-void pbox_app_rockit_set_recoder_3A(RK_BOOL echo3A_On);
+void pbox_app_rockit_set_recoder_3A(uint32_t echo3A_On);
 
 bool maintask_rockit_fd_process(int fd);
 #ifdef __cplusplus

@@ -10,22 +10,7 @@
 #include "pbox_socket.h"
 #include "pbox_rockit.h"
 #include "pbox_multi_display.h"
-
-typedef enum
-{
-    IDLE = 0,
-    PLAYING, 
-    _PAUSE,
-    _STOP,
-    PLAY_NUM
-} play_status_t;
-
-static play_status_t play_status = IDLE;
-static play_status_t play_status_prev = IDLE;
-int32_t mHumanLevel=15, mMusicLevel=100, mGuitarLevel = 100;
-int32_t mVolumeLevel=50, mMicVolumeLevel=50;
-bool mEchoReductionEnable = true;
-bool mVocalSeperateEnable = false;
+#include "pbox_app.h"
 
 int unix_socket_rockit_send(void *info, int length)
 {
@@ -157,7 +142,7 @@ void pbox_app_rockit_get_player_duration(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_loop(RK_BOOL loop) {
+void pbox_app_rockit_set_player_loop(bool loop) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYERLOOPING,
@@ -167,17 +152,17 @@ void pbox_app_rockit_set_player_loop(RK_BOOL loop) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_seek(RK_S64 usecPosition) {
+void pbox_app_rockit_set_player_seek(uint32_t mPosition) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYERSEEKTO,
     };
 
-    msg.usecPosition = usecPosition;
+    msg.mPosition = mPosition;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_volume(RK_U32 volume) {
+void pbox_app_rockit_set_player_volume(uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYERVOLUME,
@@ -196,7 +181,7 @@ void pbox_app_rockit_get_player_volume(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t glevel) {
+void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYER_SEPERATE,
@@ -205,7 +190,7 @@ void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t
     msg.vocalSeperate.enable = enable;
     msg.vocalSeperate.u32HumanLevel = hlevel;
     msg.vocalSeperate.u32OtherLevel = mlevel;
-    msg.vocalSeperate.u32GuitarLevel = glevel;
+    msg.vocalSeperate.u32ReservLevel = rlevel;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -236,7 +221,7 @@ void pbox_app_rockit_stop_recorder(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_recoder_volume(RK_U32 volume) {
+void pbox_app_rockit_set_recoder_volume(uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETRECORDERVOLUME,
@@ -265,7 +250,7 @@ void pbox_app_rockit_set_recoder_revert(pbox_revertb_t reverbMode) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_recoder_3A(RK_BOOL echo3A_On) {
+void pbox_app_rockit_set_recoder_3A(bool echo3A_On) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_RECORDER_3A,
@@ -277,6 +262,8 @@ void pbox_app_rockit_set_recoder_3A(RK_BOOL echo3A_On) {
 
 int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
 {
+    static uint32_t music_duration = 0;
+    static uint32_t music_position = 0;
     assert(msg);
     switch (msg->msgId) {
         case PBOX_ROCKIT_ENERGY_EVT: {
@@ -288,179 +275,129 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                                 __func__, energy_data.energykeep[i].freq,
                                 energy_data.energykeep[i].energy);
             }*/
-            pbox_multi_displayEnergyInfo(energy_data);
+            pbox_multi_displayEnergyInfo(energy_data, DISP_All);
 
         } break;
         case PBOX_ROCKIT_MUSIC_POSITION_EVT: {
-            //send to ui
+            printf("duration: %d", music_duration);
+            music_position = msg->mPosition;
+            if ((music_duration != 0) && (music_position !=0)) {
+                pbox_multi_displayTrackPosition(music_position, music_duration, DISP_All);
+            }
         } break;
         case PBOX_ROCKIT_MUSIC_DURATION_EVT: {
-            RK_S64 duration = msg->duration;
-            printf("duration: %d", duration);
-            //send to ui
+            music_duration = msg->duration;
+            printf("duration: %d", music_duration);
+            if ((music_duration != 0) && (music_position !=0)) {
+                pbox_multi_displayTrackPosition(music_position, music_duration, DISP_All);
+            }
         } break;
         case PBOX_ROCKIT_MUSIC_VOLUME_EVT: {
-            RK_U32 volume = msg->volume;
+            uint32_t volume = msg->volume;
             printf("volume: %d", volume);
-            //send to ui
+            pboxUIdata->mVolumeLevel = volume;
+            pbox_multi_displayMainVolumeLevel(volume, DISP_All);
         } break;
         case PBOX_ROCKIT_PLAY_COMPLETED_EVT: {
-            //send to ui
+            music_position = 0;
         } break;
         case PBOX_ROCKIT_PLAY_ERROR_EVT: {
-            //send to ui
+            music_position = 0;
         } break;
 
         case PBOX_ROCKIT_AWAKEN_EVT: {
             struct _wake_up mWakeUp = msg->wake_up;
-            RK_S32 mWakeCmd = mWakeUp.wakeCmd;
+            uint32_t mWakeCmd = mWakeUp.wakeCmd;
 
             printf("%s WakeCmd:%d\n",__func__, mWakeUp);
             switch (mWakeCmd) {
                 case KARAOKE_WAKE_UP_CMD_RECIEVE: {
                     printf("wakeup command receive\n");
-                    play_status_prev= play_status;
-                    if (play_status == PLAYING) {
-                            //rockit_pause_cmd();
-                            //bt pause
-                            //_lv_demo_music_pause(); //ui
-                            // led ui update
-                    }
+                    pboxUIdata->play_status_prev= pboxUIdata->play_status;
+                    pbox_app_music_pause(DISP_All);
                 } break;
                 case KARAOKE_WAKE_UP_CMD_RECIEVE_BUT_NO_TASK: {
                         printf("wakeup command receive but no task\n");
-                        if ((play_status == _PAUSE) && (play_status_prev == PLAYING)) {
-                            //_lv_demo_music_resume();
+                        if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
+                            pbox_app_music_resume(DISP_All);
                         }
                     } break;
 
                 case KARAOKE_WAKE_UP_CMD_VOLUME_UP: {
-                    RK_U32 volume = mWakeUp.volume;
-                    printf("volume up:%d\n", volume);
+                    uint32_t *const volume = &pboxUIdata->mVolumeLevel;
 
-                    if (true) {
-                        if (volume <= 5)
-                        volume += 5;
-                        else if (volume <= 10)
-                        volume += 15;
-                        else if (volume <= 75)
-                        volume += 25;
+                    if (*volume <= 5)
+                        *volume += 5;
+                    else if (*volume <= 10)
+                        *volume += 15;
+                    else if (*volume <= 75)
+                        *volume += 25;
+                    printf("%s volume up:%d\n", __func__, *volume);
 
-                        //rockit volume up cmd
-                        //ui update.
-                    }
-                    if ((play_status == _PAUSE) && (play_status_prev == PLAYING)) {
-                        //_lv_demo_music_resume(); //rockit and ui update
+                    pbox_app_music_set_volume(*volume, DISP_All);
+                    if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
+                        pbox_app_music_resume(DISP_All);
                     }
                     } break;
 
                 case KARAOKE_WAKE_UP_CMD_VOLUME_DOWN: {
-                    RK_U32 volume = mWakeUp.volume;
-                    printf("volume up:%d\n", volume);
+                    uint32_t *const volume = &pboxUIdata->mVolumeLevel;
+
+                    printf("%s volume down:%d\n", __func__, *volume);
 
                     if (true) {
-                        if (volume >= 50)
-                            volume -= 25;
-                        else if (volume >= 25) 
-                            volume -= 15; 
-                        else if (volume >= 5)
-                            volume -= 5;
+                        if (*volume >= 50)
+                            *volume -= 25;
+                        else if (*volume >= 25) 
+                            *volume -= 15; 
+                        else if (*volume >= 5)
+                            *volume -= 5;
 
-                        //rockit volume down cmd
-                        //ui update.
+                        pbox_app_music_set_volume(*volume, DISP_All);
                     }
-                    if ((play_status == _PAUSE) && (play_status_prev == PLAYING)) {
-                        //_lv_demo_music_resume(); //rockit and ui update
+                    if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
+                        pbox_app_music_resume(DISP_All);
                     }
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_PAUSE_PLARER: {
-                    //_lv_demo_music_pause();
+                    pbox_app_music_pause(DISP_All);
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_START_PLAYER: {
-                    //_lv_demo_music_resume();
+                    pbox_app_music_start(DISP_All);
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_STOP_PLARER: {
-                    /*if(isBtA2dpConnected()) {
-                        bt_sink_send_cmd(RK_BT_STOP, NULL, 0);
-                    }
-                    lv_timer_pause(sec_counter_timer);
-                    lv_obj_clear_state(play_obj, LV_STATE_CHECKED);
-                    lv_obj_invalidate(play_obj);
-                    rk_demo_music_stop(player_ctx);*/
-                    play_status = _STOP;
+                    pbox_app_music_stop(DISP_All);
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_PREV: {
-                    uint32_t id;// = track_id;
-                    printf("wakeup prev track command\n");
-                    /*if(isBtA2dpConnected()) {
-                        bt_sink_send_cmd(RK_BT_PREV, NULL, 0);
-                        rk_demo_music_pause(player_ctx);
-                        play_status = _PAUSE;
+                    pbox_app_music_album_next(false, DISP_All);
+                    if(pboxUIdata->play_status != PLAYING) {
+                        pbox_app_music_resume(DISP_All);
                     }
-                    else {
-                        id = track_id;
-                        if(id == 0) {
-                            id = track_num - 1;
-                        }
-                        else {
-                            id--;
-                        }
-                        char *track_name = _lv_demo_music_get_title(id);
-                        char track_uri[256];
-                        sprintf(track_uri, MUSIC_PATH"%s", track_name);
-                        printf("wakecmd play track [%s]\n", track_uri);
-                        rk_demo_music_stop(player_ctx);
-                        play_status = _STOP;
-                    }
-                    _lv_demo_music_play(id);*/
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_NEXT: {
-                    uint32_t id;// = track_id;
-                    printf("wakeup next track command\n");
-                    /*if(isBtA2dpConnected()) {
-                        bt_sink_send_cmd(RK_BT_NEXT, NULL, 0);
-                        rk_demo_music_pause(player_ctx);
-                        play_status = _PAUSE;
+                    pbox_app_music_album_next(true, DISP_All);
+                    if(pboxUIdata->play_status != PLAYING) {
+                        pbox_app_music_resume(DISP_All);
                     }
-                    else {
-                        id = track_id;
-                        id++;
-                        if(id >= track_num) id = 0;
-                        char *track_name = _lv_demo_music_get_title(id);
-                        char track_uri[256];
-                        sprintf(track_uri, MUSIC_PATH"%s", track_name);
-                        printf("wakecmd play track [%s]\n", track_uri);
-                        rk_demo_music_stop(player_ctx);
-                        play_status = _STOP;
-                    }
-                    _lv_demo_music_play(id);*/
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_ORIGINAL_SINGER_OPEN: {
-                    mVocalSeperateEnable = false;
-                    /*rk_demo_music_voice_seperate(mHumanLevel, mMusicLevel, mGuitarLevel);
-                    lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
-                    lv_obj_add_state(vocal_slider, LV_STATE_DISABLED);
-                    lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
-                    if((play_status == _PAUSE) && (play_status_prev == PLAYING))
-                        _lv_demo_music_resume();
-                        */
+                    pbox_app_music_original_singer_open(true, DISP_All);
+                    if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
+                        pbox_app_music_resume(DISP_All);
+                    }
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_ORIGINAL_SINGER_CLOSE: {
-                    mVocalSeperateEnable = true;
-                    /*rk_demo_music_voice_seperate(mHumanLevel, mMusicLevel, mGuitarLevel);
-                    lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
-                    lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
-                    lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
-                    if((play_status == _PAUSE) && (play_status_prev == PLAYING))
-                        _lv_demo_music_resume();
-                    */
+                    pbox_app_music_original_singer_open(false, DISP_All);
+                    if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
+                        pbox_app_music_resume(DISP_All);
+                    }
                 } break;
                 default: break;
             } //end switch (mWakeCmd)

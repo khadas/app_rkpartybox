@@ -10,22 +10,25 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "pbox_common.h"
+#include "pbox_app.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Function declarations
-void pbox_multi_displayPlayPause(bool play);
-void pbox_multi_displayPrevNext(bool next);
-void pbox_multi_displayTrackInfo(const char* title, const char* artist);
-void pbox_multi_displayTrackPosition(unsigned int mCurrent, unsigned int mDuration);
-void pbox_multi_displayMainVolumeLevel(uint32_t mainVolume);
-void pbox_multi_displayMicVolumeLevel(uint32_t micVolume);
-void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level);
-void pbox_multi_displayHumanMusicLevel(uint32_t human_music_level);
-void pbox_multi_displayGuitarLevel(uint32_t guitar_music_level);
-void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t glevel);
-void pbox_multi_displayEnergyInfo(energy_info_t energy);
+void pbox_multi_displayIsPlaying(bool play, display_t policy);
+void pbox_multi_displayPrevNext(bool next, display_t policy);
+void pbox_multi_displayTrackInfo(const char* title, const char* artist, display_t policy);
+void pbox_multi_displayTrackPosition(unsigned int mCurrent, unsigned int mDuration, display_t policy);
+void pbox_multi_displayMainVolumeLevel(uint32_t mainVolume, display_t policy);
+void pbox_multi_displayMicVolumeLevel(uint32_t micVolume, display_t policy);
+void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy);
+void pbox_multi_displayHumanMusicLevel(uint32_t human_music_level, display_t policy);
+void pbox_multi_displayReservLevel(uint32_t reserv_music_level, display_t policy);
+void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t rlevel, display_t policy);
+void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy);
+void pbox_multi_displayEcho3A(bool enable, display_t policy);
+void pbox_multi_displayRevertMode(pbox_revertb_t mode, display_t policy);
 
 #ifdef __cplusplus
 }

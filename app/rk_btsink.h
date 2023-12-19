@@ -89,8 +89,8 @@ typedef struct {
                     char artist[MAX_NAME_LENGTH + 1];
                 } track;
                 struct {
-                    unsigned int current;
-                    unsigned int total;
+                    uint32_t current;
+                    uint32_t total;
                 }positions;
 				bt_audio_format_t audioFormat;
 				struct {
@@ -104,7 +104,6 @@ typedef struct {
 	};
 } rk_bt_msg_t;
 
-int bt_sink_send_cmd(rk_bt_opcode_t command, char *data, int len);
 bool isBtA2dpConnected(void);
 bool isBtA2dpStreaming(void);
 void *btsink_watcher(void *arg);

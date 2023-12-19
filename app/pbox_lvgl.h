@@ -22,7 +22,7 @@ typedef enum {
     PBOX_LCD_DISP_REVERT_MODE,
     PBOX_LCD_DISP_LOOP_MODE,
     PBOX_LCD_DISP_ENERGY_INFO,
-    PBOX_LCD_DISP_GUITAR_LEVEL,
+    PBOX_LCD_DISP_RESERV_LEVEL,
     PBOX_LCD_DISP_REFLASH,
 
     //event
@@ -37,7 +37,7 @@ typedef enum {
     PBOX_LCD_SEPERATE_SWITCH_EVT,
     PBOX_LCD_ECHO_3A_EVT,
     PBOX_LCD_REVERT_MODE_EVT,
-    PBOX_LCD_GUITAR_MUSIC_LEVEL_EVT,
+    PBOX_LCD_RESERV_MUSIC_LEVEL_EVT,
 } pbox_lcd_opcode_t;
 
 typedef struct {
@@ -55,14 +55,14 @@ typedef struct {
         uint32_t        micVolume;
         uint32_t        accomp_music_level;//surroundings/environment sound level
         uint32_t        human_music_level;
-        uint32_t        guitar_music_level;
+        uint32_t        reserv_music_level;
         pbox_revertb_t      reverbMode;
         pbox_vocal_t        vocalSeparate;
         bool                echo3A_On;
         bool                enable;
         struct {
-            unsigned int mCurrent;
-            unsigned int mDuration;
+            uint32_t mCurrent;
+            uint32_t mDuration;
         } positions;
         energy_info_t energy_data;
     };

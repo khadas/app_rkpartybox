@@ -28,6 +28,7 @@ void maintask_timer_fd_process(int timer_fd);
 
 static int quit = 0;
 #define PBOX_TIMER_INTERVAL 10
+
 int maintask_read_event(int source, int fd) {
     int result = 0;
 
@@ -139,15 +140,15 @@ void maintask_timer_fd_process(int timer_fd) {
         return;
     }
 
-    msTimePassed +=PBOX_TIMER_INTERVAL;
+    msTimePassed += PBOX_TIMER_INTERVAL;
     //printf("working time:%llu\n", msTimePassed);
 
-    if (msTimePassed%10) {
+    if (0 == msTimePassed%10) {
         //every 10ms send command to reflash lvgl ui.
         pbox_app_lcd_dispplayReflash();
     }
 
-    if(msTimePassed%40) {
+    if(0 == msTimePassed%40) {
         //send commamd to get engery.
         pbox_app_rockit_get_player_energy();
     }
