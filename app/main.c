@@ -85,7 +85,8 @@ void main(int argc, char **argv) {
     pbox_create_lvglTask();
     pbox_create_rockitTask();
     pbox_create_lightEffectTask();
-    //pbox_create_KeyScanTask();
+    pbox_create_KeyScanTask();
+    pbox_create_KeyProcessTask();
     pbox_create_bttask();
     pbox_create_usb_task();
 
