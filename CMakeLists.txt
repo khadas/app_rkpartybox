@@ -47,4 +47,5 @@ set(ROCKIT_FILE_LIBS
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES ${ROCKIT_FILE_LIBS} DESTINATION "lib")
 install(FILES bins/asound.conf DESTINATION /etc)
+install(FILES bins/led_effect.json DESTINATION /etc)
 install(PROGRAMS bins/S99-rkpartybox DESTINATION /etc/init.d)

@@ -1,5 +1,6 @@
 #ifndef _PTBOX_COMMON_H_
 #define _PTBOX_COMMON_H_
+#include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

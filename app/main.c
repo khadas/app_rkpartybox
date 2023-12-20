@@ -23,6 +23,7 @@
 #include "pbox_lvgl_app.h"
 #include "pbox_keyscan_app.h"
 #include "pbox_usb_app.h"
+#include "pbox_light_effect.h"
 
 void maintask_timer_fd_process(int timer_fd);
 
@@ -83,11 +84,13 @@ void main(int argc, char **argv) {
 
     pbox_create_lvglTask();
     pbox_create_rockitTask();
-    //pbox_create_ledEffectTask();
+    pbox_create_lightEffectTask();
     //pbox_create_KeyScanTask();
     pbox_create_bttask();
     pbox_create_usb_task();
 
+    pbox_light_effect_send_cmd(RK_ECHO_LED_OFF_EVT, NULL, NULL);
+    pbox_light_effect_send_cmd(RK_ECHO_SYSTEM_BOOTING_EVT, NULL, NULL);
 
     fd_set read_fds;
     FD_ZERO(&read_fds);

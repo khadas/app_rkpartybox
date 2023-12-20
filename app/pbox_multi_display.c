@@ -14,7 +14,7 @@
 #include <string.h>
 #include "pbox_common.h"
 #include "pbox_lvgl_app.h"
-#include "pbox_led_app.h"
+#include "pbox_light_effect_app.h"
 #include "pbox_app.h"
 
 #define LED_DISPLAY_MASK DISP_LED
