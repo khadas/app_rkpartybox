@@ -69,6 +69,18 @@ typedef struct {
 } pbox_lcd_msg_t;
 
 int pbox_create_lvglTask(void);
+void lcd_pbox_notifyPlayPause(bool play);
+void lcd_pbox_notifyPrevNext(bool next);
+void lcd_pbox_notifyLoopMode(bool loop);
+void lcd_pbox_notifySeekPosition(unsigned int mCurrent, unsigned int mDuration);
+void lcd_pbox_notifyMainVolLevel(uint32_t mainVolume);
+void lcd_pbox_notifyMicVolLevel(uint32_t micVolume);
+void lcd_pbox_notifyAccompMusicLevel(uint32_t accomp_music_level);
+void lcd_pbox_notifyHumanMusicLevel(uint32_t human_music_level);
+void lcd_pbox_notifySeparateSwitch(bool enable);
+void lcd_pbox_notifyEcho3A(bool echo3A_On);
+void lcd_pbox_notifyReverbMode(pbox_revertb_t reverbMode);
+void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level);
 #ifdef __cplusplus
 }
 #endif

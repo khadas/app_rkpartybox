@@ -19,6 +19,9 @@
 #include <sys/time.h>
 #include "pbox_common.h"
 #include "pbox_lvgl.h"
+#if LV_USE_DEMO_MUSIC
+#include "lv_demo_music.h"
+#endif
 
 // Define a function pointer type for event handlers
 typedef void (*LcdCmdHandler)(const pbox_lcd_msg_t*);
@@ -168,6 +171,9 @@ void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level) {
 
 void pbox_lvgl_init(void) {
     //lvgl init. it leed to display the lvgl UI.
+#if LV_USE_DEMO_MUSIC
+    lv_demo_music();
+#endif
 }
 
 // Function to handle the play/pause command
@@ -279,7 +285,9 @@ void handleLcdReservLevelCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdGuiReflushCmd(const pbox_lcd_msg_t* msg) {
     (void*)(msg);
     //printf("GUI reflash Command\n");
-    //lv_task_handler();
+#if LV_USE_DEMO_MUSIC
+    lv_task_handler();
+#endif
 }
 
 // Array of event handlers

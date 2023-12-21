@@ -23,11 +23,27 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 message("CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
 
+if (LV_USE_DEMO_MUSIC)
+add_definitions(-DLV_USE_DEMO_MUSIC=1)
+include_directories(${PROJECT_SOURCE_DIR}/app/music_ui/)
+include_directories(${CMAKE_SYSROOT}/usr/include/libdrm/)
+include_directories(${CMAKE_SYSROOT}/usr/include/lvgl/)
+include_directories(${CMAKE_SYSROOT}/usr/include/lvgl/lv_drivers/)
+aux_source_directory(${PROJECT_SOURCE_DIR}/lvgl/ SRCS)
+aux_source_directory(./app/music_ui SRCS)
+aux_source_directory(./app/music_ui/lvgl SRCS)
+aux_source_directory(./app/music_ui/assets SRCS)
+endif()
+
 add_executable(${PROJECT_NAME} ${SRCS})
 
 target_link_libraries(${PROJECT_NAME}
 	pthread m freetype rkwifibt
 )
+
+if (LV_USE_DEMO_MUSIC)
+target_link_libraries(${PROJECT_NAME} lvgl lv_drivers drm)
+endif()
 
 set(ROCKIT_FILE_LIBS
        ./lib64/librockit.so
