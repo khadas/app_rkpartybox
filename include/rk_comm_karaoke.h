@@ -80,9 +80,9 @@ typedef struct _RTKaraokeReverbParam {
 
 typedef struct rkKARAOKE_VOCAL_SEPARATE_PARAM_S {
     RK_BOOL bBypass;
-    RK_U32  u32HumanLevel;    /* RW; Range: [0, 100];*/
-    RK_U32  u32ReservLevel;   /* RW; Range: [0, 100];*/
-    RK_U32  u32OtherLevel;    /* RW; Range: [0, 100];*/
+    RK_U32  u32HumanLevel;         /* RW; Range: [0, 100];*/
+    RK_U32  u32OtherLevel;         /* RW; Range: [0, 100];*/
+    RK_U32  u32ReserveLevel[32];   /* RW; Range: [0, 100];*/
 } KARAOKE_VOCAL_SEPARATE_PARAM_S;
 
 typedef struct rkKARAOKE_ENERGY_LEVEL_S {

@@ -477,7 +477,7 @@ static void pbox_rockit_music_voice_seperate(pbox_vocal_t vocal) {
         param.stVolcalSeparateParam.bBypass = true;
     param.stVolcalSeparateParam.u32HumanLevel = hLevel;
     param.stVolcalSeparateParam.u32OtherLevel = mLevel;
-    param.stVolcalSeparateParam.u32ReservLevel = rLevel;
+    param.stVolcalSeparateParam.u32ReserveLevel[0] = rLevel;
     ret = RK_MPI_KARAOKE_SetPlayerParam_func(player_ctx, &param);
     printf("%s RK_MPI_KARAOKE_SetPlayerParam_func res:%d\n" ,__func__, ret);
 }
