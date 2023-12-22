@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2005-2017 Fuzhou Rockchip Electronics Co.Ltd
+ *  Copyright (c) 2020 Rockchip Electronics Co.Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

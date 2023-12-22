@@ -389,7 +389,7 @@ static void pbox_rockit_music_resume(uint32_t volume)
     assert(RK_MPI_KARAOKE_SetPlayerVolume_func);
 
     RK_MPI_KARAOKE_ResumePlayer_func(player_ctx);
-    RK_MPI_KARAOKE_SetPlayerVolume_func(player_ctx, volume);
+    //RK_MPI_KARAOKE_SetPlayerVolume_func(player_ctx, volume);
 
 }
 

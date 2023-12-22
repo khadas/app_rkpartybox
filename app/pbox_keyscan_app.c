@@ -14,12 +14,12 @@ void keyscan_data_recv();
 struct dot_key support_keys [] =
 {
     /*短按*/
-    {KEY_PLAY, 0, 0, 1, 0, enter_playpause_mode},
-    {KEY_VOLUMEDOWN, 0, 0, 1, 0, volume_step_down},/*VOL_DOWN*/
-    {KEY_VOLUMEUP, 0, 0, 1, 0, volume_step_up},/*VOL_UP*/
-    {KEY_MODE, 0, 0, 1, 0 , enter_key_mode},
-    {KEY_PLAYPAUSE, 0, 0, 1,  0, enter_playpause_mode},
-    {KEY_MICMUTE, 0, 0, 1, 0,  mute_mic},/*MIC_MUTE*/
+    {KEY_PLAY, 0, 0, 1, 0, pbox_app_key_set_playpause},
+    {KEY_VOLUMEUP, 0, 0, 1, 0, pbox_app_key_set_volume_up},/*VOL_UP*/
+    {KEY_VOLUMEDOWN, 0, 0, 1, 0, pbox_app_key_set_volume_down},/*VOL_DOWN*/
+    {KEY_MODE, 0, 0, 1, 0 , pbox_app_key_set_mode},
+    {KEY_PLAYPAUSE, 0, 0, 1,  0, pbox_app_key_set_playpause},
+    {KEY_MICMUTE, 0, 0, 1, 0,  pbox_app_key_set_mic},/*MIC_MUTE*/
 
     /*长按> 3s */
    	{KEY_PLAY, 0, 1, 1, 0, enter_long_playpause_mode},
@@ -35,11 +35,11 @@ struct dot_key support_keys [] =
     {KEY_PLAY, KEY_MODE, 3, 1, 0, enter_combain_mode},       //adc 不支持组合键
 
     /*双击*/
-    //{KEY_PLAY, 0, 4, 1, 0 , enter_double_play_mode},
+    {KEY_PLAY, 0, 4, 1, 0 , pbox_key_music_album_next},
     //{KEY_VOLUMEDOWN, 0, 4, 1, 0 , enter_double_voldown_mode},
     //{KEY_VOLUMEUP, 0, 4, 1, 0 , enter_double_volup_mode},
-    {KEY_MODE, 0, 4, 1, 0 , enter_double_key_mode},
-    {KEY_MICMUTE, 0, 4, 1, 0 , enter_double_mic_mode},
+    //{KEY_MODE, 0, 4, 1, 0 , enter_double_key_mode},
+    //{KEY_MICMUTE, 0, 4, 1, 0 , enter_double_mic_mode},
 };
 
 const size_t support_keys_size = sizeof(support_keys) / sizeof(struct dot_key);
@@ -76,9 +76,9 @@ void maintask_keyscan_fd_process(int fd) {
     return;
 }
 
-int enter_playpause_mode()
+int pbox_app_key_set_playpause()
 {
-    printf("enter_playpause_mode\n");
+    printf("pbox_app_key_set_playpause =====!\n");
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP || pboxUIdata->play_status == _PAUSE)
         pbox_app_music_resume(DISP_All);
     else
@@ -86,28 +86,32 @@ int enter_playpause_mode()
     return 1;
 }
 
-int volume_step_up()
+int pbox_app_key_set_volume_up()
 {
-    printf("---set volume up to--\n");
+    printf("---pbox_app_key_set_volume_up =====!\n");
     pbox_app_music_volume_up(DISP_All);
     return 1;
 }
 
-int volume_step_down()
+int pbox_app_key_set_volume_down()
 {
-    printf("---set volume down to\n");
+    printf("---pbox_app_key_set_volume_down =====!\n");
     pbox_app_music_volume_down(DISP_All);
     return 1;
 }
 
-int mute_mic()
+int pbox_app_key_set_mic()
 {
-    printf("---set mute_mic to        --\n");
+    printf("pbox_app_key_set_mic =====!\n");
+    if (pboxUIdata->mMute)
+        pbox_app_music_set_mic_mute(false, DISP_All);
+    else
+        pbox_app_music_set_mic_mute(true, DISP_All);
     return 0;
 }
 
-int enter_key_mode() {
-    printf("enter_key_mode =====!\n");
+int pbox_app_key_set_mode() {
+    printf("pbox_app_key_set_mode =====!\n");
     //pbox_app_music_switch_mode( ,DISP_All);
     return 0;
 }
@@ -148,8 +152,9 @@ int enter_combain_mode() {
 	return 0;
 }
 
-int enter_double_play_mode() {
-    printf("enter_double_play_mode =====!\n");
+int pbox_key_music_album_next() {
+    printf("pbox_key_music_album_next =====!\n");
+    pbox_app_music_album_next(true, DISP_All);
     return 0;
 }
 

@@ -51,6 +51,7 @@ typedef struct {
         bool mEchoReductionEnable;
         bool mVocalSeperateEnable;
         bool echo3A;
+        bool mMute;
         pbox_revertb_t reverbMode;
         play_status_t play_status;
         play_status_t play_status_prev;
@@ -75,6 +76,9 @@ void pbox_app_music_original_singer_open(bool original, display_t policy);
 void pbox_app_music_album_loop(uint32_t mode, display_t policy);
 void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t policy);
 char* pbox_app_usb_get_title(uint32_t trackId);
+void pbox_app_music_set_mic_volume(uint32_t volume, display_t policy);
+void pbox_app_music_set_mic_mute(bool mute, display_t policy);
+
 #ifdef __cplusplus
 }
 #endif

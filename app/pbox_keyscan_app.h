@@ -43,11 +43,12 @@ struct dot_key
 
 void maintask_keyscan_fd_process(int fd);
 int  pbox_create_KeyProcessTask(void);
-int enter_playpause_mode();
-int volume_step_down();
-int volume_step_up();
-int mute_mic();
-int enter_key_mode();
+
+int pbox_app_key_set_playpause();
+int pbox_app_key_set_volume_up();
+int pbox_app_key_set_volume_down();
+int pbox_app_key_set_mic();
+int pbox_app_key_set_mode();
 
 int enter_long_playpause_mode();
 int long_volume_step_down();
@@ -57,7 +58,7 @@ int enter_long_key_mode();
 int enter_recovery_mode();
 int enter_combain_mode();
 
-int enter_double_play_mode();
+int pbox_key_music_album_next();
 int enter_double_voldown_mode();
 int enter_double_volup_mode();
 int enter_double_key_mode();
