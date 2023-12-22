@@ -10,6 +10,8 @@
 #if LV_USE_DEMO_MUSIC
 
 #include "lv_demo_music_list.h"
+#include "pbox_lvgl.h"
+#include "pbox_app.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,20 +60,14 @@ static uint32_t time_act;
 static lv_timer_t  * sec_counter_timer;
 static const lv_font_t * font_small;
 static const lv_font_t * font_large;
-static uint32_t track_id;
+static uint32_t track_id = 0;
 static lv_obj_t * play_obj;
 static lv_obj_t * voice_obj;
 
 //karaoke control
-#define MUSIC_PATH "/data/"
-extern int track_num;
 extern lv_ft_info_t ttf_main_s;
 extern lv_ft_info_t ttf_main_m;
 extern lv_ft_info_t ttf_main_l;
-void lv_demo_music_exit(void);
-//int rk_demo_music_create(void);
-void rk_demo_music_pause();
-void rk_demo_music_resume();
 //int32_t mHumanLevel=15, mMusicLevel=100, mGuitarLevel = 100;
 //int32_t mVolumeLevel=50, mMicVolumeLevel=50;
 //bool mEchoReductionEnable = true;
@@ -89,16 +85,6 @@ lv_obj_t *echo_3a_switch = NULL;
 lv_style_t accomp_style_disabled;
 lv_style_t vocal_style_disabled;
 lv_style_t guitar_style_disabled;
-
-typedef enum
-{
-    IDLE = 0,
-    PLAYING, 
-    _PAUSE,
-    _STOP,
-} play_status_t;
-static play_status_t play_status = IDLE;
-static play_status_t play_status_prev = IDLE;
 
 /**********************
  *      MACROS
@@ -216,6 +202,8 @@ lv_obj_t * _lv_demo_music_main_create(lv_obj_t * parent)
 void _lv_demo_music_album_next(bool next)
 {
     uint32_t id = track_id;
+    uint32_t track_num = _lv_demo_music_get_track_num();
+    play_status_t play_status = pboxUIdata->play_status;
 
     printf("%s, next:%d\n", __func__, next);
     if(next) {
@@ -232,13 +220,19 @@ void _lv_demo_music_album_next(bool next)
     }
 
     if(play_status == PLAYING) {
-    	    rk_demo_music_pause();
-    	    play_status = _PAUSE;
         _lv_demo_music_play(id);
     } else {
-            rk_demo_music_stop();  //firstly stop media player
-            track_load(id);   //load the next track
-            play_status = _STOP;  //player status change from pause  to stop
+        track_load(id);   //load the next track
+        play_status = _STOP;  //player status change from pause  to stop
+    }
+}
+
+void _lv_demo_music_update_track_info(uint32_t id) {
+    play_status_t play_status = pboxUIdata->play_status;
+    if (play_status == IDLE) {
+         lv_label_set_text(title_label, _lv_demo_music_get_title(id));
+         lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
+         lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
     }
 }
 
@@ -249,59 +243,6 @@ void _lv_demo_music_play(uint32_t id)
 }
 
 void _lv_demo_music_stop() {
-    if (play_status == PLAYING || play_status == _PAUSE)
-        rk_demo_music_stop();
-    play_status = _STOP;
-}
-
-void rk_demo_music_destroy() {
-   printf("destroy karaoke player\n");
-}
-
-void lv_demo_music_exit(void) {
-   rk_demo_music_destroy();
-}
-
-void rk_demo_music_start() 
-{
-    char *track_name;
-    char track_uri[256];
-    track_name = _lv_demo_music_get_title(track_id);
-    sprintf(track_uri, MUSIC_PATH"%s", track_name);
-    printf("play track %s\n", track_uri);
-}
-
-void rk_demo_music_stop() {
-}
-
-void rk_demo_music_pause()
-{
-}
-
-void rk_demo_music_resume()
-{
-}
-
-int64_t rk_demo_music_get_duration() {
-   int64_t duration = 0;;
-   return duration;
-}
-
-void rk_demo_music_reverb_mode(int mode) {
-}
-
-void rk_demo_music_echo_reduction(bool on) {
-    printf(" RK_MPI_KARAOKE_SetRecorderParam bypass:\n");
-}
-
-void rk_demo_music_voice_seperate(int32_t hLevel, int32_t mLevel, int gLevel) {
-      printf("%s RK_MPI_KARAOKE_SetPlayerParam_func res:%d\n" ,__func__);
-}
-
-void rk_demo_music_master_volume_adjust(int Level) {
-}
-
-void rk_demo_music_mic_volume_adjust(int micLevel) {
 }
 
 void _lv_demo_music_resume(void)
@@ -309,30 +250,84 @@ void _lv_demo_music_resume(void)
     uint32_t duration;
     lv_obj_add_state(play_obj, LV_STATE_CHECKED);
     lv_obj_invalidate(play_obj);
-   
+#if 0
     {
         if (play_status == IDLE || play_status == _STOP) {
-            rk_demo_music_start();
             //lv_timer_resume(sec_counter_timer);
             duration = (uint32_t)(rk_demo_music_get_duration()/(1000*1000));
             lv_slider_set_range(slider_obj, 0, duration);
             lv_slider_set_left_value(slider_obj, 0, LV_ANIM_OFF);
             lv_label_set_text_fmt(duration_obj, "%"LV_PRIu32":%02"LV_PRIu32, duration/ 60, duration % 60);
         } else if (play_status == _PAUSE) {
-    	    rk_demo_music_resume();
         }
         lv_timer_resume(sec_counter_timer);
     }
-    play_status = PLAYING;
+#endif
+    lcd_pbox_notifyPlayPause(1);
 }
 
 void _lv_demo_music_pause(void)
 {
-    play_status = _PAUSE;
     lv_timer_pause(sec_counter_timer);
     lv_obj_clear_state(play_obj, LV_STATE_CHECKED);
     lv_obj_invalidate(play_obj);
-    rk_demo_music_pause();
+    lcd_pbox_notifyPlayPause(0);
+}
+
+void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg)
+{
+    switch(widget) {
+	  case UI_WIDGET_PLAY_PAUSE: {
+		 bool play = msg->play;
+		 if (play) {
+		     lv_obj_add_state(play_obj, LV_STATE_CHECKED);
+                     lv_obj_invalidate(play_obj);
+		 } else {
+		     lv_obj_clear_state(play_obj, LV_STATE_CHECKED);
+                     lv_obj_invalidate(play_obj);
+		 }
+		 break;
+	  }
+	  case UI_WIDGET_MAIN_VOLUME: {
+		 uint32_t mainVolume = msg->mainVolume;
+		 char buf[16];
+                 lv_snprintf(buf, sizeof(buf), "主音量 %d", mainVolume);
+		 lv_label_set_text(volume_label, buf);
+		 break;
+	  }
+	  case UI_WIDGET_TRACK_INFO: {
+		 break;
+	  }
+	  case UI_WIDGET_POSITION_INFO: {
+		 break;
+	  }
+	  case UI_WIDGET_VOCAL_SEPERATE: {
+		 pbox_vocal_t vocalSeperate = msg->vocalSeparate;
+		 bool seperateEnable = vocalSeperate.enable;
+                 if(seperateEnable) {
+                    lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
+                    lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
+                    if (guitar_slider != NULL)
+                        lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
+                 }
+                 else {
+                    lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
+                    lv_obj_add_state(vocal_slider, LV_STATE_DISABLED);
+                    if (guitar_slider != NULL)
+                        lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
+                 }
+		 break;
+	  }
+	  case UI_WIDGET_SPECTRUM_CHART: {
+		 energy_info_t energyData = msg->energy_data;
+                 for (int i = 0; i < energyData.size; i++) {
+		     lv_chart_set_next_value(chart_obj, serdata, energyData.energykeep[i].energy);
+                 }
+		 break;
+	  }
+	  default:
+		 break;
+   };
 }
 
 /**********************
@@ -451,7 +446,6 @@ static void reverb_event_handler(lv_event_t *e) {
         mode = KARAOKE_REVERB_MODE_USER;
 #endif
     printf("'%s' is selected\n", buf);
-    //rk_demo_music_reverb_mode(mode);
 }
 
 void echol_3a_seperate_event_handler(lv_event_t * e) {
@@ -462,7 +456,6 @@ void echol_3a_seperate_event_handler(lv_event_t * e) {
     }
     bool enable = lv_obj_has_state(obj, LV_STATE_CHECKED) ? true : false;
 
-    rk_demo_music_echo_reduction(enable);
 }
 
 static void guitar_slider_event_cb(lv_event_t *e) {
@@ -477,7 +470,6 @@ static void guitar_slider_event_cb(lv_event_t *e) {
         lv_label_set_text(guitar_label, buf);
        // mGuitarLevel = (int)lv_slider_get_value(slider);
     }
-    //rk_demo_music_voice_seperate(mHumanLevel, mMusicLevel, mGuitarLevel);
     }
 }
 
@@ -517,7 +509,6 @@ static void accomp_slider_event_cb(lv_event_t *e) {
         printf("last slider value%s\n", buf);
 	lv_label_set_text(accomp_label, buf);
 	//mMusicLevel = (int)lv_slider_get_value(slider);
-	//rk_demo_music_voice_seperate(mHumanLevel, mMusicLevel, mGuitarLevel);
     }
 }
 
@@ -535,7 +526,6 @@ static void vocal_slider_event_cb(lv_event_t * e)
     mHumanLevel = (int)lv_slider_get_value(slider);
     if (mHumanLevel < 3)
         mHumanLevel = 3;
-        rk_demo_music_voice_seperate(mHumanLevel, mMusicLevel, mGuitarLevel);
 #endif
     }
 }
@@ -550,7 +540,6 @@ static void master_volume_change_event_cb(lv_event_t *e) {
         printf("master volume value %s\n", buf);
         lv_label_set_text(volume_label, buf);
         //mVolumeLevel = (int)lv_slider_get_value(slider);
-        //rk_demo_music_master_volume_adjust(mVolumeLevel);
     }
 }
 
@@ -564,7 +553,6 @@ static void mic_volume_change_event_cb(lv_event_t * e) {
         printf("mic volume value %s\n", buf);
         lv_label_set_text(mic_volume_label, buf);
         //mMicVolumeLevel = (int)lv_slider_get_value(slider);
-        //rk_demo_music_mic_volume_adjust(mMicVolumeLevel);
     }
 }
 
@@ -868,6 +856,7 @@ static lv_obj_t * create_handle(lv_obj_t * parent)
 
 static void track_load(uint32_t id)
 {
+    uint32_t track_num = _lv_demo_music_get_track_num();
     time_act = 0;
     lv_slider_set_value(slider_obj, 0, LV_ANIM_OFF);
     lv_label_set_text(time_obj, "0:00");

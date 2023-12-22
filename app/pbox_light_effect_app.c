@@ -78,3 +78,7 @@ void pbox_app_led_echo3A(bool enable) {
 void pbox_app_led_revertMode(pbox_revertb_t mode) {
 
 }
+
+void pbox_app_led_usbState(usb_state_t mode) {
+
+}

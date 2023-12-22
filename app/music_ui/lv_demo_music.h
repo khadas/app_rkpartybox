@@ -14,6 +14,7 @@ extern "C" {
  *      INCLUDES
  *********************/
 #include "lv_demos.h"
+#include "pbox_lvgl.h"
 
 #if LV_USE_DEMO_MUSIC
 
@@ -37,8 +38,19 @@ extern "C" {
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
+typedef enum {
+    UI_WIDGET_PLAY_PAUSE,
+    UI_WIDGET_MAIN_VOLUME,
+    UI_WIDGET_TRACK_INFO,
+    UI_WIDGET_POSITION_INFO,
+    UI_WIDGET_VOCAL_SEPERATE,
+    UI_WIDGET_SPECTRUM_CHART,
+}ui_widget_t;
 
 void lv_demo_music(void);
+int _lv_demo_music_get_track_num();
+void _lv_demo_music_update_list();
+void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg);
 const char * _lv_demo_music_get_title(uint32_t track_id);
 const char * _lv_demo_music_get_artist(uint32_t track_id);
 const char * _lv_demo_music_get_genre(uint32_t track_id);

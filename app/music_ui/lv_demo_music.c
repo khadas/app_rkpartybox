@@ -19,6 +19,7 @@
 
 #include "lv_demo_music_main.h"
 #include "lv_demo_music_list.h"
+#include "pbox_app.h"
 
 #include <lvgl/lv_conf.h>
 #include "lvgl/lv_port_file.h"
@@ -48,8 +49,8 @@ static lv_obj_t * list;
 #define TRACK_MAX_NUM 10
 #define MUSIC_PATH "/data/"
 #define MAIN_FONT         "/data/SmileySans-Oblique.ttf"
-int track_num = 0;
-char title_list[TRACK_MAX_NUM][256] = {};
+//int track_num = 0;
+//char title_list[TRACK_MAX_NUM][256] = {};
 char *artist_list[TRACK_MAX_NUM][256] = {};
 char *genre_list[TRACK_MAX_NUM][256] = {};
 uint32_t time_list[TRACK_MAX_NUM] = {};
@@ -65,6 +66,7 @@ lv_ft_info_t ttf_main_l;
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
+#if 0
 static char *strlwr(char *s)
 {
   char *p = s;
@@ -111,7 +113,6 @@ static int file_is_supported(char *filepath)
 
     return ret;
 }
-#if 0
 int scan_dir(const char *path, int depth)
 {
     DIR *dir;
@@ -183,11 +184,21 @@ void lv_demo_music(void)
 #endif
 }
 
+int _lv_demo_music_get_track_num() {
+    return pboxTrackdata->track_num;
+}
+
+void _lv_demo_music_update_list() {
+    _lv_demo_music_update_track_list(list);
+    _lv_demo_music_update_track_info(pboxTrackdata->track_id);
+}
+
 const char *_lv_demo_music_get_title(uint32_t track_id)
 {
     if (track_id >= TRACK_MAX_NUM)
         return NULL;
-    return title_list[track_id];
+    //return title_list[track_id];
+    return pbox_app_usb_get_title(track_id);
 }
 
 const char *_lv_demo_music_get_artist(uint32_t track_id)

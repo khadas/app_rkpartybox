@@ -28,7 +28,7 @@ extern lv_ft_info_t ttf_main_l;
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-extern int track_num;
+//extern int track_num;
 static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id);
 static void btn_click_event_cb(lv_event_t * e);
 
@@ -146,6 +146,7 @@ lv_obj_t * _lv_demo_music_list_create(lv_obj_t * parent)
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
 
     uint32_t track_id;
+    uint32_t track_num = _lv_demo_music_get_track_num();
     for(track_id = 0; track_id < track_num; track_id++) {
         add_list_btn(list,  track_id);
     }
@@ -158,6 +159,14 @@ lv_obj_t * _lv_demo_music_list_create(lv_obj_t * parent)
         _lv_demo_music_list_btn_check(0, true);
 
     return list;
+}
+
+void _lv_demo_music_update_track_list(lv_obj_t * list) {
+    uint32_t track_id;
+    uint32_t track_num = _lv_demo_music_get_track_num();
+    for(track_id = 0; track_id < track_num; track_id++) {
+        add_list_btn(list,  track_id);
+    }
 }
 
 void _lv_demo_music_list_btn_check(uint32_t track_id, bool state)

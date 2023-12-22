@@ -13,6 +13,7 @@ typedef enum {
     PBOX_LCD_DISP_PREV_NEXT,
     PBOX_LCD_DISP_TRACK_INFO,
     PBOX_LCD_DISP_TRACK_POSITION,
+    PBOX_LCD_DISP_USB_STATE,
     PBOX_LCD_DISP_MAIN_VOL_LEVEL,
     PBOX_LCD_DISP_MIC_VOL_LEVEL,
     PBOX_LCD_DISP_ACCOMP_MUSIC_LEVEL,
@@ -65,6 +66,7 @@ typedef struct {
             uint32_t mDuration;
         } positions;
         energy_info_t energy_data;
+        usb_state_t usbState;
     };
 } pbox_lcd_msg_t;
 

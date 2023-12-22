@@ -123,5 +123,13 @@ void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy) {
         pbox_app_led_energyInfo(energy);
 }
 
+void pbox_multi_displayUsbState(usb_state_t state, display_t policy) {
+
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_dispplayUsbState(state);
+
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_usbState(state);
+}
 #undef LED_DISPLAY_MASK
 #undef LCD_DISPLAY_MASK

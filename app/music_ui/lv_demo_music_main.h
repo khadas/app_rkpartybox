@@ -33,6 +33,7 @@ void _lv_demo_music_stop(void);
 void _lv_demo_music_resume(void);
 void _lv_demo_music_pause(void);
 void _lv_demo_music_album_next(bool next);
+void _lv_demo_music_update_track_info(uint32_t id);
 /**********************
  *      MACROS
  **********************/

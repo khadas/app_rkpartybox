@@ -69,6 +69,7 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
     }
 
     pboxUsbdata->usbState = usbDiskState;
+    pbox_multi_displayUsbState(USB_SCANNED, DISP_All);
     switch(usbDiskState) {
         case USB_DISCONNECTED: {
             for (int i = 0; i < pboxTrackdata->track_num; i++) {

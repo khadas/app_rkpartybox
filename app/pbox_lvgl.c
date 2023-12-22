@@ -182,6 +182,7 @@ void pbox_lvgl_init(void) {
 void handleLcdPlayPauseCmd(const pbox_lcd_msg_t* msg) {
     bool play = msg->play;
     printf("Play/Pause Command: %s\n", play ? "Play" : "Pause");
+    _lv_demo_music_update_ui_info(UI_WIDGET_PLAY_PAUSE, msg);
 }
 
 // Function to handle the previous/next track command
@@ -206,10 +207,22 @@ void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
     printf("Track Position Command: Current - %u, Duration - %u\n", mCurrent, mDuration);
 }
 
+//Function to handle the track list update commmand
+void handleLcdUsbStateUpdateCmd(const pbox_lcd_msg_t *msg) {
+    printf("%s \n", __func__);
+    switch (msg->usbState) {
+        case USB_SCANNED: {
+            printf("USB Scanned!! Track list update command \n");
+            _lv_demo_music_update_list();
+        } break;
+    }
+}
+
 // Function to handle the main volume level command
 void handleLcdMainVolLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t mainVolume = msg->mainVolume;
     printf("Main Volume Level Command: Level - %u\n", mainVolume);
+    _lv_demo_music_update_ui_info(UI_WIDGET_MAIN_VOLUME, msg);
 }
 
 // Function to handle the mic volume level command
@@ -238,6 +251,7 @@ void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
            vocalSeparate.u32HumanLevel, 
            vocalSeparate.u32ReservLevel, 
            vocalSeparate.u32OtherLevel);
+    _lv_demo_music_update_ui_info(UI_WIDGET_VOCAL_SEPERATE, msg);
 }
 
 // Function to handle the echo 3A switch command
@@ -276,6 +290,7 @@ void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
     }
     printf("\n");
     #endif
+    _lv_demo_music_update_ui_info(UI_WIDGET_SPECTRUM_CHART, msg);
 }
 
 // Function to handle the reserv level command
@@ -299,6 +314,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_PREV_NEXT, handleLcdPrevNextCmd },
     { PBOX_LCD_DISP_TRACK_INFO, handleLcdTrackInfoCmd },
     { PBOX_LCD_DISP_TRACK_POSITION, handleLcdTrackPositionCmd },
+    { PBOX_LCD_DISP_USB_STATE, handleLcdUsbStateUpdateCmd },
     { PBOX_LCD_DISP_MAIN_VOL_LEVEL, handleLcdMainVolLevelCmd },
     { PBOX_LCD_DISP_MIC_VOL_LEVEL, handleLcdMicVolLevelCmd },
     { PBOX_LCD_DISP_ACCOMP_MUSIC_LEVEL, handleLcdAccompMusicLevelCmd },
