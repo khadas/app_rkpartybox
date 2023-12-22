@@ -28,23 +28,28 @@ extern "C" {
 #define MIN(A, B) (A < B ? A : B)
 #define MAX_APP_NAME_LENGTH 255
 #define TRACK_MAX_NUM 30
+#define ENABLE_LCD_DISPLAY 0
 
 typedef enum {
-    PBOX_MAIN_LVGL,
     PBOX_MAIN_BT,
     PBOX_MAIN_KEYSCAN,
     PBOX_MAIN_ROCKIT,
     PBOX_MAIN_USBDISK,
     PBOX_MAIN_FD_TIMER,
+#if ENABLE_LCD_DISPLAY
+    PBOX_MAIN_LVGL,
+#endif
     PBOX_MAIN_NUM
 } pb_module_main_t;
 
 typedef enum {
-    PBOX_CHILD_LVGL = 0,
     PBOX_CHILD_BT,
     PBOX_CHILD_ROCKIT,
     PBOX_CHILD_LED,
     PBOX_CHILD_USBDISK,
+#if ENABLE_LCD_DISPLAY
+    PBOX_CHILD_LVGL,
+#endif
     PBOX_CHILD_NUM
 } pb_module_child_t;
 

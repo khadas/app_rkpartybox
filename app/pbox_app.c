@@ -21,6 +21,10 @@ pbox_data_t pbox_data = {
         .play_status = IDLE,
         .play_status_prev = IDLE,
     },
+    .track= {
+        .track_num = 0,
+        .track_id = 0,
+    }
 };
 
 struct _pbox_btsink *const pboxBtSinkdata  = &(pbox_data.btsink);
@@ -46,6 +50,10 @@ void pbox_app_music_start(display_t policy) {
     char *track_name = NULL;
     char track_uri[256];
     if (!isBtA2dpConnected()) {
+        printf("pboxTrackdata->track_id:%d, track_num:%d\n", pboxTrackdata->track_id, pboxTrackdata->track_num);
+        for (int i=0 ; i< pboxTrackdata->track_num; i++) {
+            printf("pboxTrackdata->track_list[%d]:%s\n", i, pboxTrackdata->track_list[i].title);
+        }
         track_name = pbox_app_usb_get_title(pboxTrackdata->track_id);
         sprintf(track_uri, MUSIC_PATH"%s", track_name);
         printf("play track [%s]\n", track_uri);

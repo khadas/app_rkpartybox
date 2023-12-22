@@ -7,6 +7,13 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include "pbox_common.h"
+#include "pbox_usb.h"
+#include "pbox_keyscan_app.h"
+#include "pbox_lvgl.h"
+#include "pbox_rockit.h"
+#include "rk_btsink.h"
+#include "pbox_btsink_app.h"
+#include "pbox_light_effect.h"
 
 #define PRINT_FLAG_ERR "[RK_SKT_ERROR]"
 #define PRINT_FLAG_SUCESS "[RK_SKT_SUCESS]"
@@ -51,9 +58,11 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
 
     serverAddr.sun_family = AF_UNIX;
     switch (module) { 
+        #if ENABLE_LCD_DISPLAY
         case PBOX_MAIN_LVGL: {
             strcpy(serverAddr.sun_path, SOCKET_PATH_LVGL_CLINET);
         } break;
+        #endif
         case PBOX_MAIN_BT: {
             strcpy(serverAddr.sun_path, SOCKET_PATH_BTSINK_CLIENT);
         } break;
@@ -71,7 +80,27 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
     int ret = sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     if (ret < 0)
     {
-        printf("%s: Socket send failed!  source = %d, ret = %d, errno: %d\n", __func__, module, ret, errno);
+        int id = -1;
+        switch(module) {
+            #if ENABLE_LCD_DISPLAY
+            case PBOX_MAIN_LVGL:
+                id = ((pbox_lcd_msg_t*)info)->msgId;
+                break;
+            #endif
+            case PBOX_MAIN_BT:
+                id = ((pbox_bt_msg_t*)info)->msgId;
+                break;
+            case PBOX_MAIN_ROCKIT:
+                id = ((pbox_rockit_msg_t*)info)->msgId;
+                break;
+            case PBOX_MAIN_USBDISK:
+                id = ((pbox_usb_msg_t*)info)->msgId;
+                break;
+            case PBOX_MAIN_KEYSCAN:
+                id = ((pbox_keyevent_msg_t*)info)->key_code;
+                break;
+        }
+        printf("%s: Socket send failed!  source = %d, id:%d, ret = %d, errno: %d\n", __func__, module, id, ret, errno);
         close(sockfd);
         return -1;
     }
@@ -91,10 +120,12 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
     }
 
     serverAddr.sun_family = AF_UNIX;
-    switch (module) { 
+    switch (module) {
+        #if ENABLE_LCD_DISPLAY
         case PBOX_CHILD_LVGL: {
             strcpy(serverAddr.sun_path, SOCKET_PATH_LVGL_SERVER);
         } break;
+        #endif
         case PBOX_CHILD_BT: {
             strcpy(serverAddr.sun_path, SOCKET_PATH_BTSINK_SERVER);
         } break;
@@ -112,7 +143,27 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
     int ret = sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     if (ret < 0)
     {
-        printf("%s: Socket send failed! ret = %d\n", __func__, ret);
+        int id = -1;
+        switch(module) {
+            #if ENABLE_LCD_DISPLAY
+            case PBOX_CHILD_LVGL:
+                id = ((pbox_lcd_msg_t*)info)->msgId;
+                break;
+            #endif
+            case PBOX_CHILD_BT:
+                id = ((pbox_bt_msg_t*)info)->msgId;
+                break;
+            case PBOX_CHILD_ROCKIT:
+                id = ((pbox_rockit_msg_t*)info)->msgId;
+                break;
+            case PBOX_CHILD_LED:
+                id = ((pbox_light_effect_msg_t*)info)->msgId;
+                break;
+            case PBOX_CHILD_USBDISK:
+                id = ((pbox_usb_msg_t*)info)->msgId;
+                break;
+        }
+        printf("%s: module:%d, id:%d, Socket send failed! ret = %d\n", __func__, module, id, ret);
         close(sockfd);
         return -1;
     }

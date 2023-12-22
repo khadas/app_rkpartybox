@@ -35,10 +35,11 @@ int maintask_read_event(int source, int fd) {
 
     //printf("%s source:%d fd:%d\n", __func__, source, fd);
     switch (source) {
+        #if ENABLE_LCD_DISPLAY
         case PBOX_MAIN_LVGL: {
             maintask_lvgl_fd_process(fd);
         } break;
-
+        #endif
         case PBOX_MAIN_BT: {
             maintask_bt_fd_process(fd);
         } break;
@@ -73,16 +74,18 @@ void main(int argc, char **argv) {
     int pbox_fds[PBOX_MAIN_NUM] = {-1, -1, -1, -1, -1};
 	pthread_setname_np(pthread_self(), "party_main");
 	signal(SIGINT, sigterm_handler);
-
+#if ENABLE_LCD_DISPLAY
     pbox_fds[PBOX_MAIN_LVGL] = create_udp_socket(SOCKET_PATH_LVGL_CLINET);
+#endif
     pbox_fds[PBOX_MAIN_BT] = create_udp_socket(SOCKET_PATH_BTSINK_CLIENT);
     pbox_fds[PBOX_MAIN_ROCKIT] = create_udp_socket(SOCKET_PATH_ROCKIT_CLINET);
     pbox_fds[PBOX_MAIN_KEYSCAN] = create_udp_socket(SOCKET_PATH_KEY_SCAN_CLINET);
     pbox_fds[PBOX_MAIN_USBDISK] = create_udp_socket(SOCKET_PATH_USB_CLIENT);
     pbox_fds[PBOX_MAIN_FD_TIMER] = create_fd_timer();
     //battery_fd;
-
+#if ENABLE_LCD_DISPLAY
     pbox_create_lvglTask();
+#endif
     pbox_create_rockitTask();
     pbox_create_lightEffectTask();
     pbox_create_KeyScanTask();

@@ -33,7 +33,9 @@ typedef struct {
 } LcdCmdHandler_t;
 
 int unix_socket_lcd_notify(void *info, int length) {
+    #if ENABLE_LCD_DISPLAY
     return unix_socket_notify_msg(PBOX_MAIN_LVGL, info, length);
+    #endif
 }
 
 // Notify function for the play/pause event

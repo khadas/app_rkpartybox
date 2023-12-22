@@ -73,7 +73,7 @@ int scan_dir(const char *path, int depth, void (*call_back)(music_format_t, char
         printf("Error opening directory /oem\n");
         return -1;
     }
-    printf("open dir %s ok!", path);
+    //printf("open dir %s ok!", path);
     while ((entry = readdir(dir)) != NULL)
     {
         if (entry->d_type == DT_REG) {

@@ -24,7 +24,9 @@
 
 int unix_socket_lcd_send(void *info, int length)
 {
-	return unix_socket_send_cmd(PBOX_CHILD_LVGL, info, length);
+    #if ENABLE_LCD_DISPLAY
+    return unix_socket_send_cmd(PBOX_CHILD_LVGL, info, length);
+    #endif
 }
 
 void pbox_app_lcd_displayPlayPause(bool play) {

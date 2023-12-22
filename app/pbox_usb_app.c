@@ -79,6 +79,7 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
         } break;
 
         case USB_SCANNING: {
+            printf("%s USB_SCANNING", __func__);
             for (int i = 0; i < pboxTrackdata->track_num; i++) {
                 pbox_free(pboxTrackdata->track_list[i].title);
                 pbox_free(pboxTrackdata->track_list[i].artist);
@@ -93,16 +94,17 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
 void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
     usb_music_file_t usbMusicFile = msg->usbMusicFile;
 
-    char *pTitle = pboxTrackdata->track_list[pboxTrackdata->track_num].title;
+    char **pTitle = &(pboxTrackdata->track_list[pboxTrackdata->track_num].title);
     int len = strlen(msg->usbMusicFile.fileName);
-    pTitle = malloc(len + 1);
-    if(pTitle) {
-        strncpy(pTitle, msg->usbMusicFile.fileName, len);
-        pTitle[len] = 0;
+    *pTitle = malloc(len + 1);
+    if(*pTitle) {
+        strncpy(*pTitle, msg->usbMusicFile.fileName, len);
+        (*pTitle)[len] = 0;
+        printf("adding[%d]:%s, len=%d\n", 
+                pboxTrackdata->track_num, pboxTrackdata->track_list[pboxTrackdata->track_num].title, len);
     }
-    pboxTrackdata->track_num++;
 
-    printf("%s format: %d, file name[%s]\n", __func__, usbMusicFile.format, usbMusicFile.fileName);
+    pboxTrackdata->track_num++;
 }
 
 // Function to process an incoming pbox_usb_msg_t event
