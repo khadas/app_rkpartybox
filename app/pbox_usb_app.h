@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+void pbox_app_usb_startScan(void);
 void maintask_usb_fd_process(int fd);
 
 #ifdef __cplusplus

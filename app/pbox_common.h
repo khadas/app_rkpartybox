@@ -1,6 +1,7 @@
 #ifndef _PTBOX_COMMON_H_
 #define _PTBOX_COMMON_H_
 #include <stdbool.h>
+#include <stdint.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,13 +18,16 @@ extern "C" {
 #define SOCKET_PATH_LVGL_SERVER "/tmp/rockchip_lvgl_server"
 #define SOCKET_PATH_LVGL_CLINET "/tmp/rockchip_lvgl_client"
 
-//#define SOCKET_PATH_USB_SERVER "/tmp/rockchip_usb_server"
+#define SOCKET_PATH_USB_SERVER "/tmp/rockchip_usb_server"
 #define SOCKET_PATH_USB_CLIENT "/tmp/rockchip_usb_client"
 
 #define SOCKET_PATH_KEY_SCAN_CLINET "/tmp/rockchip_keyscan_client"
+
+#define MUSIC_PATH "/mnt/udisk/"
 #define MAX(A, B) (A > B ? A : B)
 #define MIN(A, B) (A < B ? A : B)
 #define MAX_APP_NAME_LENGTH 255
+#define TRACK_MAX_NUM 30
 
 typedef enum {
     PBOX_MAIN_LVGL,
@@ -40,6 +44,7 @@ typedef enum {
     PBOX_CHILD_BT,
     PBOX_CHILD_ROCKIT,
     PBOX_CHILD_LED,
+    PBOX_CHILD_USBDISK,
     PBOX_CHILD_NUM
 } pb_module_child_t;
 
@@ -88,9 +93,36 @@ typedef enum
     PLAY_NUM
 } play_status_t;
 
-void start_fd_timer(int timer_fd, int start, int interval, int loop);
+typedef enum {
+    MUSIC_FILE_NONE,
+    MUSIC_FILE_MP3,
+    MUSIC_FILE_WAV,
+    MUSIC_FILE_FLAC,
+    MUSIC_FILE_OGG
+} music_format_t;
+
+typedef enum {
+    USB_DISCONNECTED,
+    USB_CONNECTED,
+    USB_SCANNING,
+    USB_SCANNED,
+} usb_state_t;
+
+typedef struct {
+    usb_state_t usbState;
+    char usbDiskName[MAX_APP_NAME_LENGTH+1];//reserved
+} usb_disk_info_t;
+
+typedef struct {
+    music_format_t format;//reserved
+    char fileName[MAX_APP_NAME_LENGTH+1];
+} usb_music_file_t;
+
+void start_fd_timer(int timer_fd, int start, int interval, bool loop);
 int create_fd_timer (void);
 void pause_fd_timer(int timer_fd);
+uint64_t time_get_os_boot_us(void);
+uint64_t time_get_os_boot_ms(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

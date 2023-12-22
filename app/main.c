@@ -131,6 +131,7 @@ void main(int argc, char **argv) {
 }
 
 static uint64_t msTimePassed = 0;
+static bool isPoweron = false;
 void maintask_timer_fd_process(int timer_fd) {
     uint64_t expirations;
 
@@ -155,5 +156,10 @@ void maintask_timer_fd_process(int timer_fd) {
     if(0 == msTimePassed%40) {
         //send commamd to get engery.
         pbox_app_rockit_get_player_energy();
+    }
+
+    if((isPoweron == false) && (0 == msTimePassed%100)) {
+        isPoweron = true;
+        pbox_app_usb_startScan();
     }
 }

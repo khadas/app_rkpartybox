@@ -184,8 +184,8 @@ void handleLcdPrevNextCmd(const pbox_lcd_msg_t* msg) {
 
 // Function to handle the track info command
 void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
-    char title[MAX_APP_NAME_LENGTH + 1];
-    char artist[MAX_APP_NAME_LENGTH + 1];
+    char title[MAX_APP_NAME_LENGTH + 1] = {0};
+    char artist[MAX_APP_NAME_LENGTH + 1] = {0};
     strncpy(title, msg->track.title, MAX_APP_NAME_LENGTH);
     strncpy(artist, msg->track.artist, MAX_APP_NAME_LENGTH);
     printf("Track Info Command: Title - %s, Artist - %s\n", title, artist);
@@ -255,6 +255,7 @@ void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
     energy_info_t energyData = msg->energy_data;
     printf("Energy Info Command, Size: %d\n", energyData.size);
     // For each energy data, print its value
+    #if 0
     for (int i = 0; i < energyData.size; i++) {
         if(i==0) printf("freq  :\t");
         printf("%05d%c", energyData.energykeep[i].freq, i<(energyData.size-1)?'\t':' ');
@@ -265,6 +266,7 @@ void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
         printf("%02d%c", energyData.energykeep[i].energy, i<(energyData.size-1)?'\t':' ');
     }
     printf("\n");
+    #endif
 }
 
 // Function to handle the reserv level command

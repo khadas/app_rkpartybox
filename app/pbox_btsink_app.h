@@ -13,7 +13,7 @@ extern "C" {
 typedef rk_bt_msg_t     pbox_bt_msg_t;
 typedef rk_bt_opcode_t  pbox_bt_opcode_t;
 
-int getBtDiscoverable (void);
+int getBtDiscoverable(void);
 btsink_state_t getBtSinkState(void);
 void setBtSinkState(btsink_state_t state);
 bool isBtA2dpConnected(void);

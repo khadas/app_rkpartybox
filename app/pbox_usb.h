@@ -8,32 +8,8 @@ extern "C" {
 #endif
 
 typedef enum {
-    MUSIC_FILE_MP3,
-    MUSIC_FILE_WAV,
-    MUSIC_FILE_WMA,
-    MUSIC_FILE_AAC,
-    MUSIC_FILE_FLAC,
-} music_format_t;
-
-typedef enum {
-    USB_CONNECTED,
-    USB_SCANNING,
-    USB_DISCONNECTED,
-} usb_state_t;
-
-typedef struct {
-    usb_state_t usbState;
-    char usbDiskName[MAX_APP_NAME_LENGTH+1];//reserved
-} usb_disk_info_t;
-
-typedef struct {
-    music_format_t format;//reserved
-    char fileName[MAX_APP_NAME_LENGTH+1];
-} usb_music_file_t;
-
-typedef enum {
     //command
-    // may be usb part no command need.
+    PBOX_USB_START_SCAN,
 
     //event
     PBOX_USB_DISK_CHANGE_EVT = 0x100,
@@ -49,6 +25,7 @@ typedef struct {
     };
 } pbox_usb_msg_t;
 
+void usb_pbox_notify_audio_file_added(music_format_t format, char *fileName);
 int pbox_create_usb_task(void);
 #ifdef __cplusplus
 }

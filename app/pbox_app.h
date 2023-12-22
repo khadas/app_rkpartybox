@@ -10,8 +10,6 @@
 extern "C" {
 #endif
 
-#define TRACK_MAX_NUM 30
-
 typedef enum {
     DISP_NONE = 0,
     DISP_LED = 1<<0,
@@ -22,7 +20,7 @@ typedef enum {
 typedef struct {
     char *title;
     char *artist;
-    char *genre;
+    //char *genre;
     uint32_t duration;
 } music_track_t;
 
@@ -43,7 +41,7 @@ typedef struct {
         uint32_t track_id;
         music_track_t track_list[TRACK_MAX_NUM];
     } track;
-
+    usb_disk_info_t usbDisk;
     struct _pbox_ui {
         uint32_t mVolumeLevel;
         uint32_t mMicVolumeLevel;
@@ -61,6 +59,8 @@ typedef struct {
 
 extern struct _pbox_btsink *const pboxBtSinkdata;
 extern struct _pbox_ui *const pboxUIdata;
+extern struct _pbox_track *const pboxTrackdata;
+extern usb_disk_info_t *const pboxUsbdata;
 
 void pbox_app_music_pause(display_t policy);
 void pbox_app_music_start(display_t policy);
@@ -74,7 +74,7 @@ uint32_t pbox_app_music_switch_mode(uint32_t mode, display_t policy);
 void pbox_app_music_original_singer_open(bool original, display_t policy);
 void pbox_app_music_album_loop(uint32_t mode, display_t policy);
 void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t policy);
-
+char* pbox_app_usb_get_title(uint32_t trackId);
 #ifdef __cplusplus
 }
 #endif

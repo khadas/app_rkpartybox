@@ -12,11 +12,26 @@
 #include <sys/socket.h>
 #include "pbox_common.h"
 #include "pbox_usb.h"
-
+#include "pbox_app.h"
+#include "pbox_socket.h"
 
 typedef void (*usb_event_handle)(const pbox_usb_msg_t*);
 static void handleUsbChangeEvent(const pbox_usb_msg_t* msg);
 static void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg);
+
+int unix_socket_usb_send(void *info, int length)
+{
+	return unix_socket_send_cmd(PBOX_CHILD_USBDISK, info, length);
+}
+
+void pbox_app_usb_startScan(void) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_USB_START_SCAN,
+    };
+    printf("%s\n", __func__);
+    unix_socket_usb_send(&msg, sizeof(pbox_usb_msg_t));
+}
 
 // Define a struct to associate opcodes with handles
 typedef struct {
@@ -30,18 +45,62 @@ const usb_event_handle_t usbEventTable[] = {
     // Add other as needed...
 };
 
-void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
-    usb_disk_info_t usbDiskState;
-    usbDiskState.usbState = msg->usbDiskInfo.usbState;
-    strncpy(usbDiskState.usbDiskName, msg->usbDiskInfo.usbDiskName, MAX_APP_NAME_LENGTH);
+char* pbox_app_usb_get_title(uint32_t trackId) {//(pboxTrackdata->track_id)
+    if(trackId < pboxTrackdata->track_num)
+        return pboxTrackdata->track_list[trackId].title;
+    return NULL;
+}
 
-    printf("%s usbState: %d, file name[%s]\n", __func__, usbDiskState.usbState, usbDiskState.usbDiskName);
+#define pbox_free(a) do { if(a) {free(a); a = NULL;}} while(0)
+
+void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
+    usb_state_t usbDiskState= msg->usbDiskInfo.usbState;
+
+    switch(usbDiskState) {
+        case USB_DISCONNECTED: {
+            for (int i = 0; i < pboxTrackdata->track_num; i++) {
+                pbox_free(pboxTrackdata->track_list[i].title);
+                pbox_free(pboxTrackdata->track_list[i].artist);
+                pboxTrackdata->track_list[i].duration = 0;
+            }
+            pboxTrackdata->track_num = 0;
+            pboxTrackdata->track_id = 0;
+        } break;
+
+        case USB_CONNECTED: {
+            pboxUsbdata->usbState = usbDiskState;
+            strncpy(&pboxUsbdata->usbDiskName[0], msg->usbDiskInfo.usbDiskName, MAX_APP_NAME_LENGTH);
+            pboxUsbdata->usbDiskName[MAX_APP_NAME_LENGTH] = 0;
+            printf("%s usbState: %d, usb name[%s]\n", __func__, usbDiskState, pboxUsbdata->usbDiskName);
+        } break;
+
+        case USB_SCANNED: {
+
+        } break;
+
+        case USB_SCANNING: {
+            for (int i = 0; i < pboxTrackdata->track_num; i++) {
+                pbox_free(pboxTrackdata->track_list[i].title);
+                pbox_free(pboxTrackdata->track_list[i].artist);
+                pboxTrackdata->track_list[i].duration = 0;
+            }
+            pboxTrackdata->track_num = 0;
+            pboxTrackdata->track_id = 0;
+        } break;
+    }
 }
 
 void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
-    usb_music_file_t usbMusicFile;
-    usbMusicFile.format = msg->usbMusicFile.format;
-    strncpy(usbMusicFile.fileName, msg->usbMusicFile.fileName, MAX_APP_NAME_LENGTH);
+    usb_music_file_t usbMusicFile = msg->usbMusicFile;
+
+    char *pTitle = pboxTrackdata->track_list[pboxTrackdata->track_num].title;
+    int len = strlen(msg->usbMusicFile.fileName);
+    pTitle = malloc(len + 1);
+    if(pTitle) {
+        strncpy(pTitle, msg->usbMusicFile.fileName, len);
+        pTitle[len] = 0;
+    }
+    pboxTrackdata->track_num++;
 
     printf("%s format: %d, file name[%s]\n", __func__, usbMusicFile.format, usbMusicFile.fileName);
 }

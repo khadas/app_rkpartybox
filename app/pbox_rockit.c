@@ -344,7 +344,6 @@ static void pbox_rockit_music_pause(void)
 
     printf("%s\n", __func__);
     RK_MPI_KARAOKE_PausePlayer_func(player_ctx);
-
 }
 
 static void pbox_rockit_music_start_bt(int sampleFreq, int channel)

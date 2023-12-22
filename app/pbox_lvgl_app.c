@@ -19,6 +19,7 @@
 #include "pbox_lvgl.h"
 #include "pbox_lvgl_app.h"
 #include "pbox_app.h"
+#include "pbox_socket.h"
 //xxx_app means it works in main thread...
 
 int unix_socket_lcd_send(void *info, int length)

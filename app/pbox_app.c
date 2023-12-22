@@ -26,8 +26,8 @@ pbox_data_t pbox_data = {
 struct _pbox_btsink *const pboxBtSinkdata  = &(pbox_data.btsink);
 struct _pbox_ui *const pboxUIdata  = &(pbox_data.ui);
 struct _pbox_track *const pboxTrackdata  = &(pbox_data.track);
+usb_disk_info_t *const pboxUsbdata  = &(pbox_data.usbDisk);
 
-#define MUSIC_PATH "/mnt/udisk/"
 void pbox_app_music_pause(display_t policy)
 {
     if(pboxUIdata->play_status != PLAYING)
@@ -43,13 +43,14 @@ void pbox_app_music_pause(display_t policy)
 }
 
 void pbox_app_music_start(display_t policy) {
-    char *track_name = "test.wav";
+    char *track_name = NULL;
     char track_uri[256];
     if (!isBtA2dpConnected()) {
-        //track_name = pbox_app_usb_get_title(pboxTrackdata->track_id);
+        track_name = pbox_app_usb_get_title(pboxTrackdata->track_id);
         sprintf(track_uri, MUSIC_PATH"%s", track_name);
         printf("play track [%s]\n", track_uri);
         pbox_app_rockit_set_datasource(track_uri, NULL);
+        pbox_multi_displayTrackInfo(track_uri, NULL, policy);
     }
     pbox_app_rockit_start_player();
     pbox_multi_displayIsPlaying(true, policy);
@@ -88,7 +89,7 @@ void pbox_app_music_set_volume(uint32_t volume, display_t policy) {
 
 void pbox_app_music_album_next(bool next, display_t policy)
 {
-    uint32_t *const pId = pboxTrackdata->track_id;
+    uint32_t *const pId = &(pboxTrackdata->track_id);
 
     printf("%s, next:%d\n", __func__, next);
     if (isBtA2dpConnected()) {
@@ -112,10 +113,10 @@ void pbox_app_music_album_next(bool next, display_t policy)
                 (*pId)--;
             }
         }
-    }
 
-    if(!isBtA2dpConnected()) {
-        //track_load(*pId);
+        if(*pId < pboxTrackdata->track_num) {
+            pbox_multi_displayTrackInfo(pboxTrackdata->track_list[*pId].title, NULL,  DISP_All);
+        }
     }
 
     if(pboxUIdata->play_status == PLAYING) {

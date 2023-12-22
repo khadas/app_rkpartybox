@@ -63,6 +63,9 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
         case PBOX_MAIN_KEYSCAN: {
             strcpy(serverAddr.sun_path, SOCKET_PATH_KEY_SCAN_CLINET);
         } break;
+        case PBOX_MAIN_USBDISK: {
+            strcpy(serverAddr.sun_path, SOCKET_PATH_USB_CLIENT);
+        } break;
     }
 
     int ret = sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
@@ -100,6 +103,9 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
         } break;
         case PBOX_CHILD_LED: {
             strcpy(serverAddr.sun_path, SOCKET_PATH_LED_EFFECT_SERVER);
+        } break;
+        case PBOX_CHILD_USBDISK: {
+            strcpy(serverAddr.sun_path, SOCKET_PATH_USB_SERVER);
         } break;
     }
 
