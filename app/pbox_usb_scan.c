@@ -31,7 +31,7 @@ static char *strrstr(const char *str, const char *token)
     return NULL;
 }
 
-bool file_is_supported(char *filepath, music_format_t* found)
+bool file_is_supported(char *filepath, music_format_t* file_type)
 {
     bool result = false;
 
@@ -51,7 +51,7 @@ bool file_is_supported(char *filepath, music_format_t* found)
 
     for (int i = 0; i < sizeof(formats) / sizeof(*formats); i++) {
         if (strcasecmp(suffix, formats[i].support_suffix) == 0) {
-            *found = formats[i].format;
+            *file_type = formats[i].format;
             result = true;
             break;
         }

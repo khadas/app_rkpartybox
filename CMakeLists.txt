@@ -22,7 +22,7 @@ aux_source_directory(./sys SRCS)
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 message("CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
-
+message("CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
 if (LV_USE_DEMO_MUSIC)
 add_definitions(-DLV_USE_DEMO_MUSIC=1)
 include_directories(${PROJECT_SOURCE_DIR}/app/music_ui/)
@@ -35,8 +35,13 @@ aux_source_directory(./app/music_ui/lvgl SRCS)
 aux_source_directory(./app/music_ui/assets SRCS)
 endif()
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(UDEV libudev REQUIRED)
+include_directories(${UDEV_INCLUDE_DIRS})
+
 add_executable(${PROJECT_NAME} ${SRCS})
 
+target_link_libraries(${PROJECT_NAME} ${UDEV_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}
 	pthread m freetype rkwifibt
 )

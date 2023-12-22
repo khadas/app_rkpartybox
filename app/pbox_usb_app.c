@@ -33,6 +33,15 @@ void pbox_app_usb_startScan(void) {
     unix_socket_usb_send(&msg, sizeof(pbox_usb_msg_t));
 }
 
+void pbox_app_usb_pollState(void) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_USB_POLL_STATE,
+    };
+    printf("%s\n", __func__);
+    unix_socket_usb_send(&msg, sizeof(pbox_usb_msg_t));
+}
+
 // Define a struct to associate opcodes with handles
 typedef struct {
     pbox_usb_opcode_t opcode;
@@ -55,7 +64,11 @@ char* pbox_app_usb_get_title(uint32_t trackId) {//(pboxTrackdata->track_id)
 
 void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
     usb_state_t usbDiskState= msg->usbDiskInfo.usbState;
+    if ( pboxUsbdata->usbState == usbDiskState) {
+        return;
+    }
 
+    pboxUsbdata->usbState = usbDiskState;
     switch(usbDiskState) {
         case USB_DISCONNECTED: {
             for (int i = 0; i < pboxTrackdata->track_num; i++) {
@@ -68,7 +81,7 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
         } break;
 
         case USB_CONNECTED: {
-            pboxUsbdata->usbState = usbDiskState;
+            pbox_app_usb_startScan();
             strncpy(&pboxUsbdata->usbDiskName[0], msg->usbDiskInfo.usbDiskName, MAX_APP_NAME_LENGTH);
             pboxUsbdata->usbDiskName[MAX_APP_NAME_LENGTH] = 0;
             printf("%s usbState: %d, usb name[%s]\n", __func__, usbDiskState, pboxUsbdata->usbDiskName);

@@ -9,6 +9,7 @@ extern "C" {
 
 typedef enum {
     //command
+    PBOX_USB_POLL_STATE,
     PBOX_USB_START_SCAN,
 
     //event

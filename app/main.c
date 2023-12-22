@@ -163,6 +163,6 @@ void maintask_timer_fd_process(int timer_fd) {
 
     if((isPoweron == false) && (0 == msTimePassed%100)) {
         isPoweron = true;
-        pbox_app_usb_startScan();
+        pbox_app_usb_pollState();
     }
 }
