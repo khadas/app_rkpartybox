@@ -1,7 +1,7 @@
 #include "pbox_led_cjson.h"
 //获取json文本的数据
 
-const char *jsonfile = "/oem/led_effect.json";
+const char *jsonfile = "/etc/led_effect.json";
 const char *jsonfile1 = "/userdata/led_effect.json";
 // static struct led_config led_config;
 

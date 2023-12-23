@@ -1055,8 +1055,10 @@ int pbox_create_lightEffectTask(void)
 	int ret;
 
 	ret = pbox_light_effect_init();
-	if (ret < 0)
+	if (ret < 0) {
 		printf("pbox light effect init failed\n");
+		return ret;
+	}
 
 	ret = pthread_create(&light_effect_task_id, NULL, pbox_light_effect_server, NULL);
 	if (ret < 0)
