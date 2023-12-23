@@ -220,19 +220,19 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             int32_t mic_volume = msg->micVolume;
-            //send to rockit
+            pbox_app_music_set_mic_volume(mic_volume, DISP_LED);
         } break;
         case PBOX_LCD_ACCOMP_MUSIC_LEVEL_EVT: {
             int32_t accomp_level = msg->accomp_music_level;
-            //send to rockit
+            pbox_app_music_set_accomp_music_level(accomp_level, DISP_LED);
         } break;
         case PBOX_LCD_HUMAN_MUSIC_LEVEL_EVT: {
             int32_t human_level = msg->human_music_level;
-            //send to rockit
+            pbox_app_music_set_human_music_level(human_level, DISP_LED);
         } break;
         case PBOX_LCD_RESERV_MUSIC_LEVEL_EVT: {
-            int32_t human_level = msg->reserv_music_level;
-            //send to rockit
+            int32_t reserv_level = msg->reserv_music_level;
+            pbox_app_music_set_reserv_music_level(reserv_level, DISP_LED);
         } break;
         case PBOX_LCD_SEPERATE_SWITCH_EVT: {
             bool enable = msg->enable;
@@ -240,11 +240,11 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         } break;
         case PBOX_LCD_ECHO_3A_EVT: {
             bool enable = msg->enable;
-            //send to rockit
+            pbox_app_music_set_echo_3a(enable, DISP_LED);
         } break;
         case PBOX_LCD_REVERT_MODE_EVT: {
             pbox_revertb_t revertb = msg->reverbMode;
-            //send to rockit
+            pbox_app_music_set_recoder_revert(revertb, DISP_LED);
         } break;
         default: break;
     } //end switch (msg->msgId)

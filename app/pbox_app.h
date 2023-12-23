@@ -78,6 +78,11 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
 char* pbox_app_usb_get_title(uint32_t trackId);
 void pbox_app_music_set_mic_volume(uint32_t volume, display_t policy);
 void pbox_app_music_set_mic_mute(bool mute, display_t policy);
+void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy);
+void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy);
+void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy);
+void pbox_app_music_set_echo_3a(bool enable, display_t policy);
+void pbox_app_music_set_recoder_revert(pbox_revertb_t reverbMode, display_t policy);
 
 #ifdef __cplusplus
 }

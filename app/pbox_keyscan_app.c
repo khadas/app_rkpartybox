@@ -17,7 +17,7 @@ struct dot_key support_keys [] =
     {KEY_PLAY, 0, 0, 1, 0, pbox_app_key_set_playpause},
     {KEY_VOLUMEUP, 0, 0, 1, 0, pbox_app_key_set_volume_up},/*VOL_UP*/
     {KEY_VOLUMEDOWN, 0, 0, 1, 0, pbox_app_key_set_volume_down},/*VOL_DOWN*/
-    {KEY_MODE, 0, 0, 1, 0 , pbox_app_key_set_mode},
+    {KEY_MODE, 0, 0, 1, 0 , pbox_app_key_set_echo_3a},
     {KEY_PLAYPAUSE, 0, 0, 1,  0, pbox_app_key_set_playpause},
     {KEY_MICMUTE, 0, 0, 1, 0,  pbox_app_key_set_mic},/*MIC_MUTE*/
 
@@ -110,9 +110,12 @@ int pbox_app_key_set_mic()
     return 0;
 }
 
-int pbox_app_key_set_mode() {
-    printf("pbox_app_key_set_mode =====!\n");
-    //pbox_app_music_switch_mode( ,DISP_All);
+int pbox_app_key_set_echo_3a() {
+    printf("pbox_app_key_set_echo_3a =====!\n");
+    if (pboxUIdata->echo3A)
+        pbox_app_music_set_echo_3a(false, DISP_All);
+    else
+        pbox_app_music_set_echo_3a(true, DISP_All);
     return 0;
 }
 

@@ -12,6 +12,7 @@
 #include "lv_demo_music_list.h"
 #include "pbox_lvgl.h"
 #include "pbox_app.h"
+#include "../pbox_common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,14 +69,15 @@ static lv_obj_t * voice_obj;
 extern lv_ft_info_t ttf_main_s;
 extern lv_ft_info_t ttf_main_m;
 extern lv_ft_info_t ttf_main_l;
-//int32_t mHumanLevel=15, mMusicLevel=100, mGuitarLevel = 100;
-//int32_t mVolumeLevel=50, mMicVolumeLevel=50;
+int32_t mHumanLevel=15, mMusicLevel=100, mGuitarLevel = 100;
+int32_t mVolumeLevel=50, mMicVolumeLevel=50;
 //bool mEchoReductionEnable = true;
-//bool mVocalSeperateEnable = false;
+bool mVocalSeperateEnable = false;
 lv_obj_t * vocal_label = NULL;
 lv_obj_t * accomp_label = NULL;
 lv_obj_t * guitar_label = NULL;
 lv_obj_t * volume_label = NULL;
+lv_obj_t * volume_slider = NULL;
 lv_obj_t * mic_volume_label = NULL;
 lv_obj_t * accomp_slider = NULL;
 lv_obj_t * guitar_slider = NULL;
@@ -206,6 +208,8 @@ void _lv_demo_music_album_next(bool next)
     play_status_t play_status = pboxUIdata->play_status;
 
     printf("%s, next:%d\n", __func__, next);
+    lcd_pbox_notifyPrevNext(next);
+#if 0
     if(next) {
             id++;
             if(id >= track_num) id = 0;
@@ -225,6 +229,7 @@ void _lv_demo_music_album_next(bool next)
         track_load(id);   //load the next track
         play_status = _STOP;  //player status change from pause  to stop
     }
+#endif
 }
 
 void _lv_demo_music_update_track_info(uint32_t id) {
@@ -293,6 +298,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
 		 char buf[16];
                  lv_snprintf(buf, sizeof(buf), "主音量 %d", mainVolume);
 		 lv_label_set_text(volume_label, buf);
+         lv_slider_set_value(volume_slider, mainVolume, LV_ANIM_OFF);
 		 break;
 	  }
 	  case UI_WIDGET_TRACK_INFO: {
@@ -433,19 +439,21 @@ static lv_obj_t * create_title_box(lv_obj_t * parent)
 
 static void reverb_event_handler(lv_event_t *e) {
     lv_obj_t * dropdown = lv_event_get_target(e);
+    pbox_revertb_t mode;
     char buf[64];
     lv_dropdown_get_selected_str(dropdown, buf, sizeof(buf));
-#if 0
+
     if (!strcmp(buf, "STUDIO"))
-        mode = KARAOKE_REVERB_MODE_STUDIO;
+        mode = PBOX_REVERT_STUDIO;
     else if (!strcmp(buf, "KTV"))
-	mode = KARAOKE_REVERB_MODE_KTV;
+        mode = PBOX_REVERT_KTV;
     else if (!strcmp(buf, "CONCERT"))
-	mode = KARAOKE_REVERB_MODE_CONCERT;
+        mode = PBOX_REVERT_CONCERT;
     else 
-        mode = KARAOKE_REVERB_MODE_USER;
-#endif
+         mode = PBOX_REVERT_USER;
+
     printf("'%s' is selected\n", buf);
+    lcd_pbox_notifyReverbMode(mode);
 }
 
 void echol_3a_seperate_event_handler(lv_event_t * e) {
@@ -455,6 +463,7 @@ void echol_3a_seperate_event_handler(lv_event_t * e) {
         printf("State: %s\n", lv_obj_has_state(obj, LV_STATE_CHECKED) ? "On" : "Off");
     }
     bool enable = lv_obj_has_state(obj, LV_STATE_CHECKED) ? true : false;
+    lcd_pbox_notifyEcho3A(enable);
 
 }
 
@@ -466,10 +475,11 @@ static void guitar_slider_event_cb(lv_event_t *e) {
 
     if (code == LV_EVENT_RELEASED) {
         printf("last slider value%s\n", buf);
-    if (guitar_label != NULL) {
-        lv_label_set_text(guitar_label, buf);
-       // mGuitarLevel = (int)lv_slider_get_value(slider);
-    }
+        if (guitar_label != NULL) {
+            lv_label_set_text(guitar_label, buf);
+            mGuitarLevel = (int)lv_slider_get_value(slider);
+            lcd_pbox_notifyReservMusicLevel(mGuitarLevel);
+        }
     }
 }
 
@@ -479,7 +489,6 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
     if(code == LV_EVENT_VALUE_CHANGED) {
         printf("State: %s\n", lv_obj_has_state(obj, LV_STATE_CHECKED) ? "On" : "Off");
     }
-#if 0
     mVocalSeperateEnable = lv_obj_has_state(obj, LV_STATE_CHECKED) ? true : false;
 
     if(mVocalSeperateEnable) {
@@ -494,9 +503,8 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
         if (guitar_slider != NULL)
             lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
     }
-#endif
 
-      printf("%s RK_MPI_KARAOKE_GetPlayerParam_func res:\n" ,__func__);
+    lcd_pbox_notifySeparateSwitch(mVocalSeperateEnable);
 }
 
 static void accomp_slider_event_cb(lv_event_t *e) {
@@ -507,8 +515,9 @@ static void accomp_slider_event_cb(lv_event_t *e) {
 
     if (code == LV_EVENT_RELEASED) {
         printf("last slider value%s\n", buf);
-	lv_label_set_text(accomp_label, buf);
-	//mMusicLevel = (int)lv_slider_get_value(slider);
+        lv_label_set_text(accomp_label, buf);
+        mMusicLevel = (int)lv_slider_get_value(slider);
+        lcd_pbox_notifyAccompMusicLevel(mMusicLevel);
     }
 }
 
@@ -521,12 +530,10 @@ static void vocal_slider_event_cb(lv_event_t * e)
 
     if (code == LV_EVENT_RELEASED) {
         printf("slider2 value %s\n", buf);
-    lv_label_set_text(vocal_label, buf);
-#if 0
-    mHumanLevel = (int)lv_slider_get_value(slider);
-    if (mHumanLevel < 3)
-        mHumanLevel = 3;
-#endif
+        lv_label_set_text(vocal_label, buf);
+
+        mHumanLevel = (int)lv_slider_get_value(slider);
+        lcd_pbox_notifyHumanMusicLevel(mHumanLevel);
     }
 }
 
@@ -539,7 +546,8 @@ static void master_volume_change_event_cb(lv_event_t *e) {
     if (code == LV_EVENT_RELEASED) {
         printf("master volume value %s\n", buf);
         lv_label_set_text(volume_label, buf);
-        //mVolumeLevel = (int)lv_slider_get_value(slider);
+        mVolumeLevel = (int)lv_slider_get_value(slider);
+        lcd_pbox_notifyMainVolLevel(mVolumeLevel);
     }
 }
 
@@ -552,7 +560,8 @@ static void mic_volume_change_event_cb(lv_event_t * e) {
     if (code == LV_EVENT_RELEASED) {
         printf("mic volume value %s\n", buf);
         lv_label_set_text(mic_volume_label, buf);
-        //mMicVolumeLevel = (int)lv_slider_get_value(slider);
+        mMicVolumeLevel = (int)lv_slider_get_value(slider);
+        lcd_pbox_notifyMicVolLevel(mMicVolumeLevel);
     }
 }
 
@@ -640,7 +649,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_label_set_text(volume_label, "主音量 50");
     lv_obj_set_style_text_font(volume_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(volume_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
-    lv_obj_t * volume_slider = lv_slider_create(cont);
+    volume_slider = lv_slider_create(cont);
     lv_obj_set_width(volume_slider, LV_PCT(50));
     lv_obj_set_grid_cell(volume_slider, LV_GRID_ALIGN_END, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
     lv_obj_add_event_cb(volume_slider, master_volume_change_event_cb, LV_EVENT_RELEASED, NULL);
@@ -933,7 +942,7 @@ static void timer_cb(lv_timer_t * t)
     time_act++;
 
     if (time_act > lv_slider_get_max_value(slider_obj)) {
-        printf("%s time_act=%d max: %d\n",__func__, time_act, lv_slider_get_max_value(slider_obj));
+        //printf("%s time_act=%d max: %d\n",__func__, time_act, lv_slider_get_max_value(slider_obj));
         return;
     }
 

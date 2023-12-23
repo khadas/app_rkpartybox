@@ -198,6 +198,7 @@ void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
     strncpy(title, msg->track.title, MAX_APP_NAME_LENGTH);
     strncpy(artist, msg->track.artist, MAX_APP_NAME_LENGTH);
     printf("Track Info Command: Title - %s, Artist - %s\n", title, artist);
+    _lv_demo_music_update_ui_info(UI_WIDGET_TRACK_INFO, msg);
 }
 
 // Function to handle the track position command
@@ -205,6 +206,7 @@ void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
     uint32_t mCurrent = msg->positions.mCurrent;
     uint32_t mDuration = msg->positions.mDuration;
     printf("Track Position Command: Current - %u, Duration - %u\n", mCurrent, mDuration);
+    _lv_demo_music_update_ui_info(UI_WIDGET_POSITION_INFO, msg);
 }
 
 //Function to handle the track list update commmand
@@ -274,9 +276,8 @@ void handleLcdLoopModeCmd(const pbox_lcd_msg_t* msg) {
 
 // Function to handle the energy info command
 void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
-	return;
     energy_info_t energyData = msg->energy_data;
-    printf("Energy Info Command, Size: %d\n", energyData.size);
+    //printf("Energy Info Command, Size: %d\n", energyData.size);
     // For each energy data, print its value
     #if 0
     for (int i = 0; i < energyData.size; i++) {
