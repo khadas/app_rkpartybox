@@ -260,6 +260,7 @@ void handleLcdLoopModeCmd(const pbox_lcd_msg_t* msg) {
 
 // Function to handle the energy info command
 void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
+	return;
     energy_info_t energyData = msg->energy_data;
     printf("Energy Info Command, Size: %d\n", energyData.size);
     // For each energy data, print its value

@@ -22,9 +22,14 @@
 #include <stdbool.h>
 #include "pbox_ledctrl.h"
 
-extern light_effect_ctrl_t light_effect_ctrl;
-#define msleep(x) usleep(x * 1000)
+struct effect_calcule_data *cal_data;
+extern struct led_effect *leffect;
+struct light_effect_ctrl * ctrl = NULL;
+int foreground_leffect_job;
+struct led_effect  foreground_leffect;
 
+#define msleep(x) usleep(x * 1000)
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 /* this array holds the RGB values to represent 
  * a color wheel using 256 steps on each emitter
@@ -187,94 +192,583 @@ double calculateVariance(const int data[], int n) {
 	return variance;
 }
 
-void pbox_light_effect_soundreactive_1(energy_data_t energy_data)
+void pbox_light_effect_soundreactive_analysis(energy_data_t energy_data)
 {
 	double variance = 0.0;
-	light_effect_ctrl.energy_total = 0;
+	ctrl->energy_total = 0;
 	double standarddeviation = 0.0;
 
 
 	for (int i = 0; i < energy_data.size; i++) {
-		light_effect_ctrl.energy_total += energy_data.energykeep[i].energy;
+		ctrl->energy_total += energy_data.energykeep[i].energy;
 	}
 
-	light_effect_ctrl.energy_total_data_record[light_effect_ctrl.energy_data_index] = light_effect_ctrl.energy_total;
-	light_effect_ctrl.energy_data_index++;
-	if (light_effect_ctrl.energy_data_index >= sizeof(light_effect_ctrl.energy_total_data_record)/sizeof(light_effect_ctrl.energy_total_data_record[0]))
-		light_effect_ctrl.energy_data_index = 0;
+	ctrl->energy_total_data_record[ctrl->energy_data_index] = ctrl->energy_total;
+	ctrl->energy_data_index++;
+	if (ctrl->energy_data_index >= ARRAY_SIZE(ctrl->energy_total_data_record))
+		ctrl->energy_data_index = 0;
 
-	light_effect_ctrl.energy_total_average = 0;
-	for (int i = 0; i < sizeof(light_effect_ctrl.energy_total_data_record)/sizeof(light_effect_ctrl.energy_total_data_record[0]); i++) {
-		light_effect_ctrl.energy_total_average += light_effect_ctrl.energy_total_data_record[i];
+	ctrl->energy_total_average = 0;
+	for (int i = 0; i < ARRAY_SIZE(ctrl->energy_total_data_record); i++) {
+		ctrl->energy_total_average += ctrl->energy_total_data_record[i];
 	}
-	light_effect_ctrl.energy_total_average = light_effect_ctrl.energy_total_average / (sizeof(light_effect_ctrl.energy_total_data_record)/sizeof(light_effect_ctrl.energy_total_data_record[0]));
+	ctrl->energy_total_average = ctrl->energy_total_average / ARRAY_SIZE(ctrl->energy_total_data_record);
 
-	variance = calculateVariance(light_effect_ctrl.energy_total_data_record, (sizeof(light_effect_ctrl.energy_total_data_record)/sizeof(light_effect_ctrl.energy_total_data_record[0])));
+	variance = calculateVariance(ctrl->energy_total_data_record, ARRAY_SIZE(ctrl->energy_total_data_record));
 
-	//printf("==========variance:%lf standarddeviation:%lf energy_total:%d energy_total_average:%d============\n",variance,sqrt(variance),light_effect_ctrl.energy_total, light_effect_ctrl.energy_total_average);
+	//printf("==========variance:%lf standarddeviation:%lf energy_total:%d energy_total_average:%d============\n",variance,sqrt(variance),ctrl->energy_total, ctrl->energy_total_average);
 
 
-	if ((light_effect_ctrl.energy_total  > light_effect_ctrl.energy_total_average))
-		light_effect_ctrl.light_effect_drew = 1;
+	if ((ctrl->energy_total  > ctrl->energy_total_average))
+		leffect->led_effect_type =  9;
 	else
-		light_effect_ctrl.light_effect_drew = 2;
+		leffect->led_effect_type =  10;
 }
 
-void get_rgb_form_color_wheel(int setp, int *r, int *g, int *b)
+void get_rgb_form_color_wheel(int step, int *r, int *g, int *b)
 {
 
-	*r = color_wheel[light_effect_ctrl.colors_wheel_index][0];
-	*g = color_wheel[light_effect_ctrl.colors_wheel_index][1];
-	*b = color_wheel[light_effect_ctrl.colors_wheel_index][2];
+	*r = color_wheel[ctrl->colors_wheel_index][0];
+	*g = color_wheel[ctrl->colors_wheel_index][1];
+	*b = color_wheel[ctrl->colors_wheel_index][2];
 
-	light_effect_ctrl.colors_wheel_index = light_effect_ctrl.colors_wheel_index + setp;
-	if (light_effect_ctrl.colors_wheel_index >= (sizeof(color_wheel)/sizeof(color_wheel[0])))
-		light_effect_ctrl.colors_wheel_index = 0;
+	ctrl->colors_wheel_index = ctrl->colors_wheel_index + step;
+	if (ctrl->colors_wheel_index >= ARRAY_SIZE(color_wheel))
+		ctrl->colors_wheel_index = 0;
 }
 
-void *pbox_light_effect_drew(void *arg)
+int mode_switching = 0;
+
+
+int led_effect_switching(int step)
 {
+	int i,colorIndex;
+	int r, g, b;
+
+	while (step --) {
+		for (i = 0; i < ctrl->unit_num; i++) {
+			colorIndex = (ctrl->colors_wheel_index + i * (ARRAY_SIZE(color_wheel) / ctrl->unit_num)) % ARRAY_SIZE(color_wheel);
+			userspace_set_rgb_color(ctrl, i, color_wheel[colorIndex][0], color_wheel[colorIndex][1], color_wheel[colorIndex][2]);
+		}
+		ctrl->colors_wheel_index += (ARRAY_SIZE(color_wheel) / ctrl->unit_num);
+		ctrl->colors_wheel_index %= ARRAY_SIZE(color_wheel);
+	}
+}
+
+int led_effect_egre_ebb(int action)
+{
+	int r, g, b;
 	int end = 0;
-	int r,g,b;
 
-	while (true) {
+	cal_data->steps_time = 10;
+	
+	if(ctrl->light_effect_drew)
+		return 0;
 
-		if (!light_effect_ctrl.light_effect_drew ) {
+	if(mode_switching)
+		led_effect_switching(500);
+
+	mode_switching = 0;
+
+
+	get_rgb_form_color_wheel(5, &r, &g, &b);
+
+	if (action == 0) {
+		end = ctrl->unit_num/2;
+		for (int j = 0; j < end; j++) {
+			userspace_set_rgb_color(ctrl, j, r*(end-j)/end, g*(end-j)/end, b*(end-j)/end);
+			userspace_set_rgb_color(ctrl, ctrl->unit_num -1 - j, r*(end-j)/end, g*(end-j)/end, b*(end-j)/end);
+			msleep(20);
+		}
+	} else if (action == 1) {
+		end = rand()%2;
+		for (int j = ctrl->unit_num/2; j > end; j--) {
+			userspace_set_rgb_color(ctrl, j, 0, 0, 0);
+			userspace_set_rgb_color(ctrl, ctrl->unit_num -1 - j, 0, 0, 0);
 			msleep(10);
+		}
+		userspace_set_rgb_color(ctrl, end - 1, r/2, g/2, b/2);
+		userspace_set_rgb_color(ctrl, ctrl->unit_num - end, r/2, g/2, b/2);
+	}
+	ctrl->light_effect_drew = 0;
+}
+
+
+int led_effect_volume_analysis(int type, int volume)
+{
+	if (type == 1) {
+		foreground_leffect.led_effect_type =  1;
+		foreground_leffect.start = 1;
+		foreground_leffect.fore_color = 0x00ff00;
+		if (volume) {
+			foreground_leffect.num = (volume + ctrl->unit_num - 1) * ctrl->unit_num / 100;
+		} else {
+			foreground_leffect.num = 0;
+		}
+		foreground_leffect.period = 500;
+		//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
+	} else if (type == 2){
+		foreground_leffect.led_effect_type =  2;
+		foreground_leffect.start = 1;
+		if (volume) {
+			foreground_leffect.num = (volume + ctrl->unit_num - 1) * ctrl->unit_num / 100;
+			foreground_leffect.fore_color = 0x00ff00;
+			//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
+		}else {
+			foreground_leffect.fore_color = 0xff0000;
+			foreground_leffect.num = ctrl->unit_num;
+			//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
+		}
+
+		foreground_leffect.period = 1000;
+		//printf("===%s:volume:%d num:%d====\n", __func__, volume, foreground_leffect.num);
+	}
+		foreground_leffect_job = 1;
+}
+
+void led_effect_init_bright(struct led_effect* effect,int init_led)
+{
+	int i;
+
+	memset(cal_data->force_bright,0,sizeof(cal_data->force_bright));
+	memset(cal_data->back_bright,0,sizeof(cal_data->back_bright));
+
+	for (i = effect->start*3; i < effect->num*3; i++) {
+		if(i%3 == 0)
+			cal_data->force_bright[i] = (effect->fore_color & 0xFF0000) >> 16;
+		if(i%3 == 1)
+			cal_data->force_bright[i] = (effect->fore_color & 0x00FF00) >> 8;
+		if(i%3 == 2)
+			cal_data->force_bright[i] = (effect->fore_color & 0x0000FF);
+
+		cal_data->bright[i] = cal_data->force_bright[i];
+
+		if(i%3 == 0)
+			cal_data->back_bright[i] = (effect->back_color & 0xFF0000) >> 16;
+		if(i%3 == 1)
+			cal_data->back_bright[i] = (effect->back_color & 0x00FF00) >> 8;
+		if(i%3 == 2)
+			cal_data->back_bright[i] = (effect->back_color & 0x0000FF);
+
+		if(init_led == FG_COLOR) {
+			cal_data->step_bright[i] = abs(cal_data->back_bright[i] - cal_data->force_bright[i]) / effect->actions_per_period;
+			// pk_debug("step_brightness[%d]=%d",i,cal_data->step_bright[i]);
+			// pk_debug("start_bright[%d]=%d",i,cal_data->force_bright[i]);
+			// pk_debug("end_brightness[%d]=%d",i,cal_data->back_bright[i]);
+			userspace_set_led_brightness(ctrl, i, cal_data->force_bright[i]);
+		}
+		if(init_led == BG_COLOR) {
+			// cal_data->step_bright[i] = abs(cal_data->back_bright[i] - cal_data->force_bright[i]) / effect->actions_per_period;
+			userspace_set_led_brightness(ctrl, i, cal_data->back_bright[i]);
+		}
+	}
+}
+
+void led_forcebright_to_back(int i,struct led_effect* effect)
+{
+	int x;
+	if(cal_data->force_bright[i] < cal_data->back_bright[i]) {
+		cal_data->bright[i] += cal_data->step_bright[i];
+
+		userspace_set_led_brightness(ctrl, i,cal_data->bright[i]);
+		if(cal_data->bright[i] >= cal_data->back_bright[i]) {
+			for (x = effect->start*3; x < effect->num*3; x++) {
+				cal_data->bright[x] = cal_data->back_bright[x];
+				userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+			}
+			cal_data->data_valid = 2;
+			// pk_debug("led[%d]=%d",i,cal_data->bright[i]);
+		}
+		// pk_debug("led[%d]=%d",i,cal_data->bright[i]);
+		userspace_set_led_brightness(ctrl, i, cal_data->bright[i]);
+	}
+
+	if(cal_data->force_bright[i] > cal_data->back_bright[i]) {
+		cal_data->bright[i] -= cal_data->step_bright[i];
+
+		userspace_set_led_brightness(ctrl, i, cal_data->bright[i]);
+		if(cal_data->bright[i] <= cal_data->back_bright[i]) {
+			for (x = effect->start*3; x < effect->num*3; x++) {
+				cal_data->bright[x] = cal_data->back_bright[x];
+				userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+			}
+			cal_data->data_valid = 2;
+			// pk_debug("led[%d]=%d",i,cal_data->bright[i]);
+		}
+		// pk_debug("led[%d]=%d\n",i,cal_data->bright[i]);
+	}
+}
+
+void led_backbright_to_force(int i,struct led_effect* effect)
+{
+	int x;
+	if(cal_data->force_bright[i] < cal_data->back_bright[i]) {
+		cal_data->bright[i] -= cal_data->step_bright[i];
+		// pk_debug("led[%d]=%d",i,cal_data->bright[i]);
+		userspace_set_led_brightness(ctrl, i, cal_data->bright[i]);
+		if(cal_data->bright[i] <= cal_data->force_bright[i]) {
+			for (x = effect->start*3; x < effect->num*3; x++) {
+				cal_data->bright[x] = cal_data->force_bright[x];
+				userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+			}
+			cal_data->data_valid = 1;
+			// pk_debug("led[%d]=%d",i,cal_data->bright[i]);
+		}
+
+	}
+
+	if(cal_data->force_bright[i] > cal_data->back_bright[i]) {
+		cal_data->bright[i] += cal_data->step_bright[i];
+
+		userspace_set_led_brightness(ctrl, i, cal_data->bright[i]);
+		// pk_debug("led[%d]=%d",i,cal_data->bright[i]);
+		if(cal_data->bright[i] >= cal_data->force_bright[i]) {
+			for (x = effect->start*3; x < effect->num*3; x++) {
+				cal_data->bright[x] = cal_data->force_bright[x];
+				userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+			}
+			cal_data->data_valid = 1;
+			// pk_debug("led[%d]=%d",i,cal_data->bright[i]);
+		}
+
+	}
+}
+
+static void led_effect_breath(struct led_effect* effect)
+{
+	int i = 0;
+	// pk_debug("cal_data->data_valid=%d",cal_data->data_valid);
+
+	if(cal_data->data_valid == 0) {
+		led_effect_init_bright(effect,FG_COLOR);
+		cal_data->data_valid = 1;
+	}
+
+	for (i = effect->start*3; i < effect->num*3; i++) {
+		// pk_debug("cal_data->data_valid=%d",cal_data->data_valid);
+		if(cal_data->data_valid == 1) {
+			// pk_debug("cal_data->data_valid=%d",cal_data->data_valid);
+			led_forcebright_to_back(i,effect);
+		}
+		if(cal_data->data_valid == 2) {
+			// pk_debug("cal_data->data_valid=%d",cal_data->data_valid);
+			led_backbright_to_force(i,effect);
+		}
+	}
+}
+
+static void led_effect_fade(struct led_effect* effect)
+{
+	int i;
+	 //printf("cal_data->data_valid=%d\n",cal_data->data_valid);
+	if(cal_data->data_valid == 0) {
+		led_effect_init_bright(effect,FG_COLOR);
+		cal_data->data_valid = 1;
+	}
+
+	for (i = effect->start*3; i < effect->num*3; i++) {
+		//printf("red[%d]=%d\n",i,cal_data->bright[i]);
+		if(cal_data->data_valid == 1 ) {
+			led_forcebright_to_back(i,effect);
+		}
+
+		if(cal_data->data_valid == 2) {
+			memset(cal_data->force_bright,0,sizeof(cal_data->force_bright));
+			memset(cal_data->back_bright,0,sizeof(cal_data->back_bright));
+		}
+	}
+}
+
+static int led_effect_blink(struct led_effect* effect)
+{
+	int i;
+	// pk_debug("cal_data->data_valid=%d\n",cal_data->data_valid);
+
+	switch (cal_data->data_valid)
+	{
+		case 0:
+			led_effect_init_bright(effect,FG_COLOR);
+			cal_data->data_valid = 1;
+			break;
+		case 1:
+			for (i = effect->start*3; i < effect->num*3; i++) {
+				// pk_debug("red[%d]=%d",i,cal_data->bright[i]);
+				cal_data->bright[i] = 0;
+				userspace_set_led_brightness(ctrl, i, cal_data->bright[i]);
+			}
+			cal_data->data_valid = 0;
+			break;
+		default:
+			printf("led data_valid not used");
+			break;
+	}
+
+	return 0;
+}
+
+//互换
+static void led_effect_exchange(struct led_effect* effect)
+{
+	// pk_debug("cal_data->data_valid=%d\n",cal_data->data_valid);
+
+	switch (cal_data->data_valid)
+	{
+		case 0:
+			led_effect_init_bright(effect,FG_COLOR);
+			cal_data->data_valid = 1;
+			break;
+		case 1:
+			led_effect_init_bright(effect,BG_COLOR);
+			cal_data->data_valid = 0;
+			break;
+		default:
+			printf("led data_valid not used");
+			break;
+	}
+}
+
+//跑马灯
+static int led_effect_marquee(struct led_effect* effect)
+{
+	int led_bit;
+	int x;
+	if(cal_data->data_valid == 0){
+		led_effect_init_bright(effect,BG_COLOR);
+		cal_data->data_valid = 1;
+		led_bit=0;
+	}
+
+	if(cal_data->data_valid == 1){
+		for(x = effect->start*3; x < (led_bit+3*effect->scroll_num-3); x++) {
+			userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+		}
+
+		if((led_bit+3*effect->scroll_num) > effect->num*3) {
+			led_bit=0;
+		}
+		for(x=led_bit;x < (led_bit+3*effect->scroll_num); x++) {
+			userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+		}
+		led_bit = led_bit+3;
+
+		// if((led_bit+3*effect->scroll_num) >= (effect->num*3+effect->scroll_num+3)) {
+		//     // for (x = effect->start*3; x < effect->num*3; x++){
+		//     //     set_led_data(x, (effect->num*3-1),cal_data->back_bright[x]);
+		//     // }
+		//     pk_debug("-----------------led[%d]=%d",led_bit,cal_data->bright[led_bit]);
+		//     led_bit=0;
+		// }
+
+		// if(led_bit >= effect->num*3+3) {
+		//     led_bit=0;
+		// }
+	}
+
+	return 0;
+}
+
+static int led_effect_light_add(struct led_effect* effect)
+{
+	int i;
+	int x;
+	if(cal_data->data_valid == 0){
+		led_effect_init_bright(effect,BG_COLOR);
+		cal_data->data_valid = 1;
+		i=0;
+	}
+
+	if(cal_data->data_valid == 2){
+		i=i-3;
+		if(i < 0) {
+			cal_data->data_valid = 1;
+			i=0;
+		}
+		for(x = i;x < (i+3); x++){
+			userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+		}
+	}
+
+	if(cal_data->data_valid == 1){
+		for(x=i;x < (i+3); x++){
+			userspace_set_led_brightness(ctrl, x, cal_data->bright[x]);
+		}
+		i=i+3;
+		if(i >= (effect->num*3)) {
+			cal_data->data_valid = 2;
+			i = effect->num*3;
+		}
+	}
+
+	return 0;
+}
+
+//一个灯以RGB方式循环
+static int led_effect_scroll_one(struct led_effect* effect)
+{
+	int i;
+	static int x;
+	int brightness[3];
+	int bri;
+
+	// pk_debug("cal_data->data_valid=%d\n",cal_data->data_valid);
+	if(cal_data->data_valid == 0) {
+		x = 0;
+		cal_data->data_valid = 1;
+	}
+	memset(brightness,0,sizeof(brightness));
+	if(cal_data->data_valid == 1) {
+		brightness[x] = (effect->fore_color & (0x0000FF<<((2-x)*8)));
+		for (i = effect->start; i < effect->num*3; i++) {
+			bri = brightness[i] >> ((2-i)*8);
+			userspace_set_led_brightness(ctrl, i, bri);
+		}
+		x++;
+		if(x > (effect->num*3-1)) {
+			x=0;
+		}
+	}
+	return 0;
+}
+
+//常亮
+static void led_effect_open(struct led_effect* effect)
+{
+	led_effect_init_bright(effect,FG_COLOR);
+}
+
+static void led_effect_close(struct led_effect* effect)
+{
+	int i;
+	for (i = effect->start*3; i < effect->num*3; i++) {
+		cal_data->bright[i] = 0;
+		userspace_set_led_brightness(ctrl, i, cal_data->bright[i]);
+	}
+
+	// pk_debug("timer_status=%d",timer_status);
+	if(ctrl->light_effect_drew) {
+		ctrl->light_effect_drew = 0;
+	}
+}
+int led_effect_handle(struct led_effect *effect)
+{
+	int ret = 0;
+
+	int total_num;
+	total_num = get_led_total_num(ctrl);
+
+	if(effect->start*3 > effect->num*3 || effect->start*3 > (total_num -1)) {
+		printf("ERROR: %s(%d): led start %d > end %d\n", __func__, __LINE__, effect->start*3, effect->num*3);
+		return -EINVAL;
+	}
+
+	if((effect->num*3-1) > (total_num-1)) {
+		printf("ERROR: %s(%d): led end %d > led pins %d\n", __func__, __LINE__, effect->num*3, total_num);
+		return -EINVAL;
+	}
+
+	if((effect->scroll_num*3 -1) > (total_num-1)) {
+		printf("ERROR: %s(%d): led scroll_num %d > led pins %d\n", __func__, __LINE__, effect->scroll_num*3, total_num);
+		return -EINVAL;
+	}
+
+
+	// pk_debug("period=%d,back_color=%x,fore_color=%x,start=%d,num=%d,scroll_num=%d,actions_per_period=%d.led_effect_type=%d",
+	// 	leffect->period,leffect->back_color,leffect->fore_color,leffect->start,leffect->num,leffect->scroll_num,
+	// 	leffect->actions_per_period,leffect->led_effect_type);
+
+	cal_data->data_valid = 0;
+
+	led_effect_close(leffect);
+	if(leffect->led_effect_type == 0 || leffect->led_effect_type == 1) {
+		switch(leffect->led_effect_type)
+		{
+			case 0: led_effect_close(leffect);
+				break;
+			case 1: led_effect_open(leffect);
+				break;
+			default:break;
+		}
+	} else {
+		cal_data->steps_time = (leffect->period / 2)/ leffect->actions_per_period ;
+		printf("steps_time = %d",cal_data->steps_time);
+	}
+
+	return ret;
+}
+
+int led_effect_volume(struct led_effect* effect)
+{
+	int i;
+	for (i = 0; i < effect->num; i++) {
+		userspace_set_rgb_color(ctrl, i,
+				(foreground_leffect.fore_color&0xff0000) >>16,
+				(foreground_leffect.fore_color&0x00ff00) >>8,
+				(foreground_leffect.fore_color&0x0000ff));
+	}
+	for (i = effect->num; i < ctrl->unit_num; i++) {
+		userspace_set_rgb_color(ctrl, i, 0, 0, 0);
+	}
+	msleep(effect->period);
+	for (i = 0; i < effect->num; i++) {
+		userspace_set_rgb_color(ctrl, i, 0, 0, 0);
+	}
+	foreground_leffect_job = 0;
+}
+
+void *pbox_light_effect_drew(void)
+{
+	while (true) {
+		//printf("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
+		if (foreground_leffect_job) {
+			if(foreground_leffect.led_effect_type == 1 || foreground_leffect.led_effect_type == 2)
+				led_effect_volume(&foreground_leffect);
+			msleep(20);
+
+		}
+		else {
+			if (leffect->led_effect_type == 2 && (ctrl->soundreactive_mute))
+				led_effect_breath(leffect);
+			else if(leffect->led_effect_type == 3 && (ctrl->soundreactive_mute))
+				led_effect_fade(leffect);
+			else if(leffect->led_effect_type == 4 && (ctrl->soundreactive_mute))
+				led_effect_blink(leffect);
+			else if(leffect->led_effect_type == 5 && (ctrl->soundreactive_mute))
+				led_effect_exchange(leffect);
+			else if(leffect->led_effect_type == 6 && (ctrl->soundreactive_mute))
+				led_effect_marquee(leffect);
+			else if(leffect->led_effect_type == 7 && (ctrl->soundreactive_mute))
+				led_effect_light_add(leffect);
+			else if(leffect->led_effect_type == 8 && (ctrl->soundreactive_mute))
+				led_effect_scroll_one(leffect);
+			else if(leffect->led_effect_type == 9 && (!ctrl->soundreactive_mute))
+				led_effect_egre_ebb(0);
+			else if(leffect->led_effect_type == 10 && (!ctrl->soundreactive_mute))
+				led_effect_egre_ebb(1);
+
+			msleep(cal_data->steps_time);
 			continue;
 		}
-		if ((light_effect_ctrl.light_effect_drew == 1)) {
-			end = 6;
-			for (int j = 0; j < end; j++) {
-				get_rgb_form_color_wheel(5, &r, &g, &b);
-				userspace_set_led_color(j, r*(end-j)/end, g*(end-j)/end, b*(end-j)/end);
-				userspace_set_led_color(11 - j, r*(end-j)/end, g*(end-j)/end, b*(end-j)/end);
-				msleep(20);
-			}
+	}
+}
 
-		} else if (light_effect_ctrl.light_effect_drew == 2) {
-			get_rgb_form_color_wheel(5, &r, &g, &b);
-			end = rand()%2;
-			for (int j = 6; j > end; j--) {
-				userspace_set_led_color(j, 0, 0, 0);
-				userspace_set_led_color(11 - j, 0, 0, 0);
-				msleep(10);
-			}
-			userspace_set_led_color(end - 1, r/2, g/2, b/2);
-			userspace_set_led_color(12-end, r/2, g/2, b/2);
-		}
-
-		light_effect_ctrl.light_effect_drew = 0;
+void soundreactive_mute_set(bool mute){
+	if (mute) {
+		ctrl->soundreactive_mute = 1;
+		mode_switching = 1;
+	}
+	else {
+		ctrl->soundreactive_mute = 0;
 	}
 }
 
 void pbox_light_effect_soundreactive(energy_data_t energy_data)
 {
-	if (!light_effect_ctrl.ctrl_mode) {
-		set_led_status(RK_ECHO_LED_OFF);
+	if (ctrl->soundreactive_mute) {
+		//printf("%s:%d return\n", __func__, __LINE__);
+		return;
 	}
-	pbox_light_effect_soundreactive_1(energy_data);
-	light_effect_ctrl.ctrl_mode = 1;
+	//userspace_set_led_effect(RK_ECHO_LED_OFF);
+	pbox_light_effect_soundreactive_analysis(energy_data);
 }
 
 static void *pbox_light_effect_server(void *arg)
@@ -330,88 +824,94 @@ static void *pbox_light_effect_server(void *arg)
 				pbox_light_effect_soundreactive(msg->energy_data);
 				break;
 			case RK_ECHO_SYSTEM_BOOTING_EVT:
-				set_led_status(RK_ECHO_SYSTEM_BOOTING);
+				userspace_set_led_effect(ctrl, RK_ECHO_SYSTEM_BOOTING);
 				break;
 			case RK_ECHO_SYSTEM_BOOTC_EVT:
-				set_led_status(RK_ECHO_SYSTEM_BOOTC);
+				userspace_set_led_effect(ctrl, RK_ECHO_SYSTEM_BOOTC);
 				break;
 			case RK_ECHO_NET_CONNECT_RECOVERY_EVT:
-				set_led_status(RK_ECHO_NET_CONNECT_RECOVERY);
+				userspace_set_led_effect(ctrl, RK_ECHO_NET_CONNECT_RECOVERY);
 				break;
 			case RK_ECHO_NET_CONNECT_WAITTING_EVT:
-				set_led_status(RK_ECHO_NET_CONNECT_WAITTING);
+				userspace_set_led_effect(ctrl, RK_ECHO_NET_CONNECT_WAITTING);
 				break;
 			case RK_ECHO_NET_CONNECTING_EVT:
-				set_led_status(RK_ECHO_NET_CONNECTING);
+				userspace_set_led_effect(ctrl, RK_ECHO_NET_CONNECTING);
 				break;
 			case RK_ECHO_NET_CONNECT_FAIL_EVT:
-				set_led_status(RK_ECHO_NET_CONNECT_FAIL);
+				userspace_set_led_effect(ctrl, RK_ECHO_NET_CONNECT_FAIL);
 				break;
 			case RK_ECHO_NET_CONNECT_SUCCESS_EVT:
-				set_led_status(RK_ECHO_NET_CONNECT_SUCCESS);
+				userspace_set_led_effect(ctrl, RK_ECHO_NET_CONNECT_SUCCESS);
 				break;
 			case RK_ECHO_WAKEUP_WAITTING_EVT:
-				set_led_status(RK_ECHO_WAKEUP_WAITTING);
+				userspace_set_led_effect(ctrl, RK_ECHO_WAKEUP_WAITTING);
 				break;
 			case RK_ECHO_TTS_THINKING_EVT:
-				set_led_status(RK_ECHO_TTS_THINKING);
+				userspace_set_led_effect(ctrl, RK_ECHO_TTS_THINKING);
 				break;
 			case RK_ECHO_TTS_PLAYING_EVT:
-				set_led_status(RK_ECHO_TTS_PLAYING);
+				userspace_set_led_effect(ctrl, RK_ECHO_TTS_PLAYING);
 				break;
 			case RK_ECHO_BT_PAIR_WAITTING_EVT:
-				set_led_status(RK_ECHO_BT_PAIR_WAITTING);
+				userspace_set_led_effect(ctrl, RK_ECHO_BT_PAIR_WAITTING);
 				break;
 			case RK_ECHO_BT_PAIRING_EVT:
-				set_led_status(RK_ECHO_BT_PAIRING);
+				userspace_set_led_effect(ctrl, RK_ECHO_BT_PAIRING);
 				break;
 			case RK_ECHO_BT_PAIR_FAIL_EVT:
-				set_led_status(RK_ECHO_BT_PAIR_FAIL);
+				userspace_set_led_effect(ctrl, RK_ECHO_BT_PAIR_FAIL);
 				break;
 			case RK_ECHO_BT_PAIR_SUCCESS_EVT:
-				set_led_status(RK_ECHO_BT_PAIR_SUCCESS);
+				userspace_set_led_effect(ctrl, RK_ECHO_BT_PAIR_SUCCESS);
 				break;
 			case RK_ECHO_VOLUME_LED_EVT:
-				set_led_status(RK_ECHO_VOLUME_LED);
+				led_effect_volume_analysis(1,msg->volume);
 				break;
 			case RK_ECHO_MIC_MUTE_EVT:
-				set_led_status(RK_ECHO_MIC_MUTE);
+				led_effect_volume_analysis(2,msg->mic_volume);
 				break;
 			case RK_ECHO_MIC_UNMUTE_EVT:
-				set_led_status(RK_ECHO_MIC_UNMUTE);
+				userspace_set_led_effect(ctrl, RK_ECHO_MIC_UNMUTE);
 				break;
 			case RK_ECHO_ALARM_EVT:
-				set_led_status(RK_ECHO_ALARM);
+				userspace_set_led_effect(ctrl, RK_ECHO_ALARM);
 				break;
 			case RK_ECHO_UPGRADING_EVT:
-				set_led_status(RK_ECHO_UPGRADING);
+				userspace_set_led_effect(ctrl, RK_ECHO_UPGRADING);
 				break;
 			case RK_ECHO_UPGRADE_END_EVT:
-				set_led_status(RK_ECHO_UPGRADE_END);
+				userspace_set_led_effect(ctrl, RK_ECHO_UPGRADE_END);
 				break;
 			case RK_ECHO_LED_OFF_EVT:
-				set_led_status(RK_ECHO_LED_OFF);
+				userspace_set_led_effect(ctrl, RK_ECHO_LED_OFF);
 				break;
 			case RK_ECHO_CHARGER_EVT:
-				set_led_status(RK_ECHO_CHARGER);
+				userspace_set_led_effect(ctrl, RK_ECHO_CHARGER);
 				break;
 			case RK_ECHO_LOW_BATTERY_EVT:
-				set_led_status(RK_ECHO_LOW_BATTERY);
+				userspace_set_led_effect(ctrl, RK_ECHO_LOW_BATTERY);
 				break;
 			case RK_ECHO_PHONE_EVT:
-				set_led_status(RK_ECHO_PHONE);
+				userspace_set_led_effect(ctrl, RK_ECHO_PHONE);
 				break;
 			case RK_ECHO_TIME_EVT:
-				set_led_status(RK_ECHO_TIME);
+				userspace_set_led_effect(ctrl, RK_ECHO_TIME);
 				break;
 			case RK_ECHO_TEST_EVT:
-				set_led_status(RK_ECHO_TEST);
+				userspace_set_led_effect(ctrl, RK_ECHO_TEST);
 				break;
 			case RK_ECHO_PLAY_EVT:
-				set_led_status(RK_ECHO_PLAY);
+				userspace_set_led_effect(ctrl, RK_ECHO_PLAY);
 				break;
 			case RK_ECHO_PAUSE_EVT:
-				set_led_status(RK_ECHO_PAUSE);
+				userspace_set_led_effect(ctrl, RK_ECHO_PAUSE);
+				break;
+			case RK_ECHO_PLAY_NEXT_EVT:
+				userspace_set_led_effect(ctrl, RK_ECHO_PLAY_NEXT);
+				break;
+			case RK_ECHO_PLAY_PREV_EVT:
+				userspace_set_led_effect(ctrl, RK_ECHO_PLAY_PREV);
 				break;
 			default: {
 				 } break;
@@ -419,11 +919,132 @@ static void *pbox_light_effect_server(void *arg)
 	}
 }
 
+int effect_calcule_data_init(void)
+{
+	int total_num;
+	cal_data = malloc(sizeof(struct effect_calcule_data));
+	if (!cal_data) {
+		printf("%s:effect_calcule_data alloc failed\n", __func__);
+		goto exit5;
+	}
+	memset(cal_data, 0x00, sizeof(struct effect_calcule_data));
+
+	total_num = get_led_total_num(ctrl);
+
+	cal_data->force_bright = malloc(sizeof(int) * total_num);
+	if (!cal_data->force_bright) {
+		printf("%s:cal_data->force_bright alloc failed\n", __func__);
+		goto exit4;
+	}
+	memset(cal_data->force_bright, 0x00, sizeof(int) * total_num);
+
+	cal_data->back_bright = malloc(sizeof(int) * total_num);
+	if (!cal_data->back_bright) {
+		printf("%s:cal_data->back_bright alloc failed\n", __func__);
+		goto exit3;
+	}
+	memset(cal_data->back_bright, 0x00, sizeof(int) * total_num);
+
+	cal_data->bright = malloc(sizeof(int) * total_num);
+	if (!cal_data->bright) {
+		printf("%s:cal_data->bright alloc failed\n", __func__);
+		goto exit2;
+	}
+	memset(cal_data->bright, 0x00, sizeof(int) * total_num);
+	
+	cal_data->step_bright = malloc(sizeof(int) * total_num);
+	if (!cal_data->step_bright) {
+		printf("%s:cal_data->step_bright alloc failed\n", __func__);
+		goto exit1;
+	}
+	memset(cal_data->step_bright, 0x00, sizeof(int) * total_num);
+
+	return 0;
+exit1:
+	free(cal_data->bright);
+exit2:
+	free(cal_data->back_bright);
+exit3:
+	free(cal_data->force_bright);
+exit4:
+	free(cal_data);
+exit5:
+	return -1;
+
+}
+
+int effect_calcule_data_deinit(void)
+{
+	free(cal_data->step_bright);
+	free(cal_data->bright);
+	free(cal_data->back_bright);
+	free(cal_data->force_bright);
+	free(cal_data);
+	return 0;
+}
+
+int base_light_config_deinit(void)
+{
+	free(ctrl->position_mapp);
+	free(ctrl->unit_fd);
+	free(ctrl);
+}
+
 int pbox_light_effect_init(void)
 {
-	leds_multi_init();
-	led_userspace_ctrl_init(36);
-	light_effect_ctrl.ctrl_mode = 0;
+	int total_num;
+
+	if (ctrl) {
+		printf("%s:already inited,direct reutrn\n", __func__);
+		return 0;
+	}
+
+	ctrl = malloc(sizeof(struct light_effect_ctrl));
+	if (!ctrl) {
+		printf("%s:light_effect_ctrl alloc failed\n", __func__);
+		goto exit3;
+	}
+	memset(ctrl, 0x00, sizeof(struct light_effect_ctrl));
+
+	if(base_light_config_init(ctrl, "led_base_config"))
+		goto exit2;
+
+	ctrl->soundreactive_mute = 1;
+
+	leffect = malloc(sizeof(struct led_effect));
+	if (!leffect) {
+		printf("%s:led_effect alloc failed\n", __func__);
+		goto exit2;
+	}
+	memset(leffect, 0x00, sizeof(struct led_effect));
+
+	if (effect_calcule_data_init())
+		goto exit1;
+
+	led_userspace_ctrl_init(ctrl);
+
+	return 0;
+exit1:
+	free(leffect);
+exit2:
+	free(ctrl);
+exit3:
+	return -1;
+}
+
+int pbox_light_effect_deinit(struct light_effect_ctrl * ctrl)
+{
+	if (!ctrl) {
+		printf("%s:already deinited,direct reutrn\n", __func__);
+		return 0;
+	}
+
+	led_userspace_ctrl_deinit(ctrl);
+	effect_calcule_data_deinit();
+	free(leffect);
+	base_light_config_deinit();
+
+	ctrl = NULL;
 }
 
 pthread_t light_effect_task_id;
@@ -433,22 +1054,19 @@ int pbox_create_lightEffectTask(void)
 {
 	int ret;
 
-	pbox_light_effect_init();
+	ret = pbox_light_effect_init();
+	if (ret < 0)
+		printf("pbox light effect init failed\n");
 
 	ret = pthread_create(&light_effect_task_id, NULL, pbox_light_effect_server, NULL);
 	if (ret < 0)
-	{
 		printf("light effect server start failed\n");
-	}
 
 	ret = pthread_create(&light_effect_drew_id, NULL, pbox_light_effect_drew, NULL);
 	if (ret < 0)
-	{
 		printf("light effect drew start failed\n");
-	}
 
 	return ret;
-
 }
 
 int pbox_light_effect_send_cmd(pbox_light_effect_opcode_t command, void *data, int len)
@@ -457,8 +1075,23 @@ int pbox_light_effect_send_cmd(pbox_light_effect_opcode_t command, void *data, i
 
 	msg.type = RK_LIGHT_EFFECT_CMD;
 	msg.msgId = command;
-	if(data != NULL)
-		memcpy(&msg.energy_data, data, len);
-
+	if (msg.msgId == PBOX_LIGHT_EFFECT_SOUNDREACTIVE_EVT) {
+		if(data != NULL)
+			memcpy(&msg.energy_data, data, sizeof(msg.energy_data));
+	} else if (msg.msgId == RK_ECHO_VOLUME_LED_EVT) {
+		if(data != NULL)
+			memcpy(&msg.volume, data, sizeof(msg.volume));
+	} else if (msg.msgId == RK_ECHO_MIC_MUTE_EVT) {
+		if(data != NULL)
+			memcpy(&msg.mic_volume, data, sizeof(msg.mic_volume));
+	}
 	unix_socket_send_cmd(PBOX_CHILD_LED,&msg, sizeof(pbox_light_effect_msg_t));
 }
+
+
+
+
+
+
+
+

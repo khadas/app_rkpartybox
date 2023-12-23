@@ -10,6 +10,56 @@
         "led_effect_type":"0:关闭灯效, 1：常亮 2:呼吸灯效,  3:淡进淡出 4:闪烁灯效 5:互换 6:跑马灯效  7:走马灯效 8：一个灯单色循环"
     }
     ,	
+    "基本配置参数说明": {
+        "unit_type": "发光单元类型,rgb或者普通led灯",
+        "unit_num": "发光单元个数",
+        "rgb_order": "rgb的顺序，rgb,rbg,gbr,grb,brg,bgr",
+	"mapp1": "应用控制和led子系统节点的逻辑映射关系"
+    }
+    ,	
+    "基本配置": "",
+    "led_base_config": {
+        "light_unit_type": "rgb",
+        "light_unit_num": 12,
+        "rgb_order": "rgb",
+	"position_mapp1": 22,
+	"position_mapp2": 23,
+	"position_mapp3": 24,
+	"position_mapp4": 25,
+	"position_mapp5": 26,
+	"position_mapp6": 27,
+	"position_mapp7": 28,
+	"position_mapp8": 29,
+	"position_mapp9": 30,
+	"position_mapp10": 31,
+	"position_mapp11": 32,
+	"position_mapp12": 33,
+	"position_mapp13": 34,
+	"position_mapp14": 35,
+	"position_mapp15": 36,
+	"position_mapp16": 1,
+	"position_mapp17": 2,
+	"position_mapp18": 3,
+	"position_mapp19": 4,
+	"position_mapp20": 5,
+	"position_mapp21": 6,
+	"position_mapp22": 7,
+	"position_mapp23": 8,
+	"position_mapp24": 9,
+	"position_mapp25": 10,
+	"position_mapp26": 11,
+	"position_mapp27": 12,
+	"position_mapp28": 13,
+	"position_mapp29": 14,
+	"position_mapp30": 15,
+	"position_mapp31": 16,
+	"position_mapp32": 17,
+	"position_mapp33": 18,
+	"position_mapp34": 19,
+	"position_mapp35": 20,
+	"position_mapp36": 21
+    }
+    ,	
     "关闭灯效": "",
     "led_effect_test": {
         "led_effect_type": 5,
@@ -35,12 +85,12 @@
     "系统启动灯效": "",
     "led_effect_system_booting":{
         "led_effect_type": 2,
-        "back_color": "000000",
-        "fore_color": "0000FF",
+        "back_color": "00ffd1",
+        "fore_color": "eb00FF",
         "period": 3000,
         "start": 0,
         "num": 12,
-        "actions_per_period": 25
+        "actions_per_period": 20
     }
     ,
     "恢复出厂灯效": "",
@@ -199,13 +249,13 @@
     ,
     "禁麦": "",
     "led_effect_mic_mute": {
-        "led_effect_type": 1,
+        "led_effect_type": 3,
         "back_color": "000000",
         "fore_color": "00FF00",
-        "period": 1,
+        "period": 1000,
         "start": 0,
-        "num": 1,
-        "actions_per_period": 1
+        "num": 12,
+        "actions_per_period": 20
     }
     ,
     "取消禁麦": "",
@@ -287,23 +337,45 @@
 	,
 	"播放": "",
     "led_effect_play": {
-        "led_effect_type": 1,
+        "led_effect_type": 2,
         "back_color": "000000",
         "fore_color": "FF0000",
         "period": 1000,
         "start": 0,
         "num": 12,
-        "actions_per_period": 1
+        "actions_per_period": 20
     }	
 	,
 	"暂停": "",
     "led_effect_pause": {
-        "led_effect_type": 1,
+        "led_effect_type": 2,
+        "back_color": "000000",
+        "fore_color": "25ff00",
+        "period": 2000,
+        "start": 0,
+        "num": 12,
+        "actions_per_period": 25
+    }	
+	,
+	"上一首": "",
+    "led_effect_play_prev": {
+        "led_effect_type": 3,
+        "back_color": "000000",
+        "fore_color": "FF0000",
+        "period": 1000,
+        "start": 0,
+        "num": 12,
+        "actions_per_period": 20
+    }	
+	,
+	"下一首": "",
+    "led_effect_play_next": {
+        "led_effect_type": 3,
         "back_color": "000000",
         "fore_color": "00FF00",
         "period": 1000,
         "start": 0,
         "num": 12,
-        "actions_per_period": 1
+        "actions_per_period": 20
     }	
 }

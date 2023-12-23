@@ -46,9 +46,11 @@ typedef enum {
     RK_ECHO_LOW_BATTERY_EVT,                  //"led_effect_low_battery" //低电量
     RK_ECHO_PHONE_EVT,                        //"led_effect_phone"
     RK_ECHO_TIME_EVT,                         //"led_effect_time"
-    RK_ECHO_TEST_EVT,				      //
-    RK_ECHO_PLAY_EVT,    				//"led_effect_play"
-    RK_ECHO_PAUSE_EVT,    				//"led_effect_play"
+    RK_ECHO_TEST_EVT,
+    RK_ECHO_PLAY_EVT,                         //"led_effect_play" //播放
+    RK_ECHO_PAUSE_EVT,                        //"led_effect_pause" //暂停
+    RK_ECHO_PLAY_PREV_EVT,                    //"led_effect_play_prev" //上一首
+    RK_ECHO_PLAY_NEXT_EVT,                    //"led_effect_play_next" //下一首
 } pbox_light_effect_opcode_t;
 
 enum {
@@ -66,6 +68,8 @@ typedef struct {
     pbox_msg_t type;
     pbox_light_effect_opcode_t msgId;
     energy_data_t energy_data;
+    int volume;
+    int mic_volume;
 } pbox_light_effect_msg_t;
 
 int pbox_create_lightEffectTask(void);

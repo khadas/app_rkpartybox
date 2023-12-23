@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 #include <stdio.h>
-#include<stdlib.h>
+#include <stdlib.h>
 #include <string.h>
 #include <cJSON.h>
 #include <ctype.h>
@@ -13,8 +13,9 @@ extern "C" {
 
 
 char *get_json_data( const char *jsonfile);
-int get_led_effect_data(struct led_effect* effect, char *led_effect_name);
+int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effect, char *led_effect_name);
 int HextoDecimal (const char *Hexstr);
+int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name);
 
 #ifdef __cplusplus
 }

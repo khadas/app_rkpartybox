@@ -9,15 +9,24 @@
 #include "pbox_light_effect_app.h"
 
 void pbox_app_led_PlayPause(bool play) {
-	//printf("%s PlayPause: %d\n", __func__, play);
-	//if (play)
-	//	pbox_light_effect_send_cmd(RK_ECHO_PLAY_EVT, NULL, NULL);
-	//else
-	//	pbox_light_effect_send_cmd(RK_ECHO_PAUSE_EVT, NULL, NULL);
+	printf("%s PlayPause: %d\n", __func__, play);
+	soundreactive_mute_set(!play);
+	if (play) {
+		pbox_light_effect_send_cmd(RK_ECHO_PLAY_EVT, NULL, NULL);
+	} else {
+		pbox_light_effect_send_cmd(RK_ECHO_PAUSE_EVT, NULL, NULL);
+	}
 }
 
 void pbox_app_led_PrevNext(bool next) {
-	//printf("%s next: %d\n", __func__, next);
+	printf("%s next: %d\n", __func__, next);
+
+	soundreactive_mute_set(true);
+	if (next) {
+		pbox_light_effect_send_cmd(RK_ECHO_PLAY_NEXT_EVT, NULL, NULL);
+	} else {
+		pbox_light_effect_send_cmd(RK_ECHO_PLAY_PREV_EVT, NULL, NULL);
+	}
 }
 
 void pbox_app_led_TrackInfo(const char* title, const char* artist) {
@@ -26,27 +35,31 @@ void pbox_app_led_TrackInfo(const char* title, const char* artist) {
 
 void pbox_app_led_TrackPosition(uint32_t mCurrent, uint32_t mDuration) {
 
-	//printf("%s mCurrent: %d mDuration: %d\n", __func__, mCurrent, mDuration);
+	printf("%s mCurrent: %d mDuration: %d\n", __func__, mCurrent, mDuration);
 }
 
 void pbox_app_led_MainVolumeLevel(uint32_t mainVolume) {
-	//printf("%s mainVolumeLevel: %d\n", __func__, mainVolume);
+	printf("%s mainVolumeLevel: %d\n", __func__, mainVolume);
+
+	pbox_light_effect_send_cmd(RK_ECHO_VOLUME_LED_EVT, (void*)&mainVolume, sizeof(uint32_t));
 }
 
 void pbox_app_led_MicVolumeLevel(uint32_t micVolume) {
-	//printf("%s volume: %d\n", __func__, micVolume);
+	printf("%s volume: %d\n", __func__, micVolume);
+	pbox_light_effect_send_cmd(RK_ECHO_MIC_MUTE_EVT, (void*)&micVolume, sizeof(uint32_t));
+
 }
 
 void pbox_app_led_AccompMusicLevel(uint32_t accomp_music_level) {
-	//printf("%s accompMusicLevel: %d\n", __func__, accomp_music_level);
+	printf("%s accompMusicLevel: %d\n", __func__, accomp_music_level);
 }
 
 void pbox_app_led_HumanMusicLevel(uint32_t human_music_level) {
-	//printf("%s humanMusicLevel: %d\n", __func__, human_music_level);
+	printf("%s humanMusicLevel: %d\n", __func__, human_music_level);
 }
 
 void pbox_app_led_ReservLevel(uint32_t Reserv_music_level) {
-	//printf("%s ReservLevel: %d\n", __func__, Reserv_music_level);
+	printf("%s ReservLevel: %d\n", __func__, Reserv_music_level);
 }
 
 void pbox_app_led_MusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t rlevel) {

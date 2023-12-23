@@ -5,7 +5,8 @@ const char *jsonfile = "/oem/led_effect.json";
 const char *jsonfile1 = "/userdata/led_effect.json";
 // static struct led_config led_config;
 
-int HextoDecimal (const char *Hexstr){
+int HextoDecimal (const char *Hexstr)
+{
 	long sum=0;
 	int t;
 	int i = 0;
@@ -15,13 +16,14 @@ int HextoDecimal (const char *Hexstr){
 		else if(Hexstr[i] >= 'a')
 			t = Hexstr[i] - 'a' + 10;
 		else
-		    t = Hexstr[i] - 'A' + 10;
+			t = Hexstr[i] - 'A' + 10;
 		sum = sum * 16 + t;
 	}
 	return sum;
 }
 
-char *get_json_data(const char *jsonfile) {
+char *get_json_data(const char *jsonfile)
+{
 	FILE *f_json = NULL;
 
 	long json_size;
@@ -55,7 +57,8 @@ char *get_json_data(const char *jsonfile) {
 	return (json_data);
 }
 
-static void dump_led_effect(struct led_effect* effect) {
+static void dump_led_effect(struct led_effect* effect)
+{
 	printf("----------led effect json dump start------------\n");
 	printf("back_color 0x%06x\n", effect->back_color);
 	printf("fore_color 0x%06x\n", effect->fore_color);
@@ -69,22 +72,22 @@ static void dump_led_effect(struct led_effect* effect) {
 	printf("--------------------end----------------------\n\n");
 }
 
-int get_led_effect_data(struct led_effect* effect, char *led_effect_name)
+int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effect, char *led_effect_name)
 {
-    printf("get_led_effect_data: %s\n", led_effect_name);
-    char *p = get_json_data(jsonfile);
-    if (NULL == p){
-        printf("get_json_data failed, return\n");
-        return -1;
-    }
-    cJSON * pJson = cJSON_Parse(p);
-    if (NULL == pJson) {
-        printf("parse %s led_effect failed, return\n", led_effect_name);
-        free(p);
-        return -1;
-    }
-    cJSON * root = cJSON_GetObjectItem(pJson, led_effect_name);
-    if (root) {
+	printf("get_led_effect_data: %s\n", led_effect_name);
+	char *p = get_json_data(jsonfile);
+	if (NULL == p){
+		printf("get_json_data failed, return\n");
+		return -1;
+	}
+	cJSON * pJson = cJSON_Parse(p);
+	if (NULL == pJson) {
+		printf("parse %s led_effect failed, return\n", led_effect_name);
+		free(p);
+		return -1;
+	}
+	cJSON * root = cJSON_GetObjectItem(pJson, led_effect_name);
+	if (root) {
 		cJSON *pback_color = cJSON_GetObjectItem(root, "back_color");
 		if(pback_color) {
 			effect->back_color =  HextoDecimal(pback_color->valuestring);
@@ -93,21 +96,23 @@ int get_led_effect_data(struct led_effect* effect, char *led_effect_name)
 		if(pfore_color){
 			effect->fore_color =  HextoDecimal(pfore_color->valuestring);
 		}
-        cJSON *pperiod = cJSON_GetObjectItem(root, "period");
+		cJSON *pperiod = cJSON_GetObjectItem(root, "period");
 		if(pperiod){
 			effect->period = pperiod->valueint;
 		}
-        cJSON *pstart = cJSON_GetObjectItem(root, "start");
+		cJSON *pstart = cJSON_GetObjectItem(root, "start");
 		if(pstart){
 			effect->start = pstart->valueint;
 		}
 		cJSON *pnum = cJSON_GetObjectItem(root, "num");
 		if(pnum){
-			 effect->num = pnum->valueint;
+			effect->num = pnum->valueint;
+			if (effect->num > ctrl->unit_num)
+				effect->num = ctrl->unit_num;
 		}
 		cJSON *pscroll_num = cJSON_GetObjectItem(root, "scroll_num");
 		if(pscroll_num){
-			 effect->scroll_num = pscroll_num->valueint;
+			effect->scroll_num = pscroll_num->valueint;
 		}
 		cJSON *per_period = cJSON_GetObjectItem(root, "actions_per_period");
 		if(per_period){
@@ -117,15 +122,143 @@ int get_led_effect_data(struct led_effect* effect, char *led_effect_name)
 		if(ptype){
 			effect->led_effect_type = ptype->valueint;
 		}	
-    } else {
-        printf("cJSON_GetObjectItem led_effect %s failed, return\n",led_effect_name);
+	} else {
+		printf("cJSON_GetObjectItem led_effect %s failed, return\n",led_effect_name);
 		cJSON_Delete(pJson);
 		free(p);
 		return -1;
-    }
+	}
 	printf("parse %s led_effect success\n", led_effect_name);
 	dump_led_effect(effect);
-    cJSON_Delete(pJson);
-    free(p);
+	cJSON_Delete(pJson);
+	free(p);
+	return 0;
+}
+
+static void dump_config(struct light_effect_ctrl *ctrl)
+{
+	printf("----------base config dump start------------\n");
+	printf("light_unit_type %d\n", ctrl->unit_type);
+	printf("light_unit_num %d\n", ctrl->unit_num);
+	printf("rgb_order %d\n", ctrl->rgb_order);
+	for(int i = 0; i < get_led_total_num(ctrl); i++) {
+		printf("==position_mapp[%d]:%d==\n", i, ctrl->position_mapp[i]);
+	}
+	printf("--------------------end----------------------\n\n");
+}
+
+pbox_light_unit_type_t get_light_unit_type(char* str)
+{
+	if (strcmp(str,"rgb") == 0)
+		return RK_LIGHT_UNIT_RGB;
+	else if (strcmp(str,"led") == 0)
+		return RK_LIGHT_UNIT_LED;
+	else
+		return RK_LIGHT_UNIT_UNKNOW;
+}
+
+pbox_rgb_order_t get_light_rgb_order(char* str)
+{
+	if (strcmp(str,"rgb") == 0)
+		return RK_RGB_ORDER_RGB;
+	else if (strcmp(str,"rbg") == 0)
+		return RK_RGB_ORDER_RBG;
+	else if (strcmp(str,"gbr") == 0)
+		return RK_RGB_ORDER_GBR;
+	else if (strcmp(str,"grb") == 0)
+		return RK_RGB_ORDER_GRB;
+	else if (strcmp(str,"brg") == 0)
+		return RK_RGB_ORDER_BRG;
+	else if (strcmp(str,"bgr") == 0)
+		return RK_RGB_ORDER_BGR;
+	else
+		return RK_RGB_ORDER_UNKNOW;
+}
+
+int get_led_total_num(struct light_effect_ctrl *ctrl)
+{
+	if (ctrl->unit_type == RK_LIGHT_UNIT_LED)
+		return ctrl->unit_num;
+	else if (ctrl->unit_type == RK_LIGHT_UNIT_RGB)
+		return ctrl->unit_num * 3;
+}
+
+int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
+{
+	int total_num;
+	char str[16];
+
+	printf("get_config_data: %s\n", config_name);
+	char *p = get_json_data(jsonfile);
+	if (NULL == p){
+		printf("get_json_data failed, return\n");
+		return -1;
+	}
+	cJSON * pJson = cJSON_Parse(p);
+	if (NULL == pJson) {
+		printf("parse %s led_effect failed, return\n", config_name);
+		free(p);
+		return -1;
+	}
+	cJSON * root = cJSON_GetObjectItem(pJson, config_name);
+	if (root) {
+		cJSON *punit_type = cJSON_GetObjectItem(root, "light_unit_type");
+		if(punit_type)
+			ctrl->unit_type =  get_light_unit_type(punit_type->valuestring);
+		else
+			goto failed;
+
+		cJSON *punit_num = cJSON_GetObjectItem(root, "light_unit_num");
+		if(punit_num)
+			ctrl->unit_num =  punit_num->valueint;
+		else
+			goto failed;
+
+		cJSON *prgb_order = cJSON_GetObjectItem(root, "rgb_order");
+		if(prgb_order)
+			ctrl->rgb_order = get_light_rgb_order(prgb_order->valuestring);
+		else
+			goto failed;
+
+		total_num = get_led_total_num(ctrl);
+
+		ctrl->position_mapp = (int *)malloc(sizeof(int) * total_num);
+		if (ctrl->position_mapp == NULL) {
+			printf("position_mapp malloc fail\n");
+			goto failed;
+		}
+		memset(ctrl->position_mapp, 0, total_num * sizeof(int));
+
+		for (int i = 0; i < total_num; i++) {
+			memset(str, 0x00, sizeof(str));
+			snprintf(str, sizeof(str), "position_mapp%d", i + 1);
+			cJSON *pposition_mapp = cJSON_GetObjectItem(root, str);
+			if(pposition_mapp){
+				ctrl->position_mapp[i] = pposition_mapp->valueint;
+			} else {
+				printf("could not find logic mapp %d\n", i + 1);
+				free(ctrl->position_mapp);
+				goto failed;
+			}
+		}
+
+		ctrl->unit_fd = (int *)malloc(sizeof(int) * total_num);
+		if (ctrl->unit_fd == NULL) {
+			printf("unit fd malloc fail\n");
+			return -1;
+		}
+		memset(ctrl->unit_fd, 0, total_num *sizeof(int));
+
+	} else {
+		printf("cJSON_GetObjectItem led_effect %s failed, return\n",config_name);
+failed:
+		cJSON_Delete(pJson);
+		free(p);
+		return -1;
+	}
+	printf("parse %s led_effect success\n", config_name);
+	dump_config(ctrl);
+	cJSON_Delete(pJson);
+	free(p);
 	return 0;
 }
