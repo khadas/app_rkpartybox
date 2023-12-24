@@ -62,6 +62,7 @@ typedef struct {
         bool                echo3A_On;
         bool                enable;
         struct {
+            bool onlyDuration;
             uint32_t mCurrent;
             uint32_t mDuration;
         } positions;

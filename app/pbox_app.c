@@ -58,7 +58,7 @@ void pbox_app_music_start(display_t policy) {
         sprintf(track_uri, MUSIC_PATH"%s", track_name);
         printf("play track [%s]\n", track_uri);
         pbox_app_rockit_set_datasource(track_uri, NULL);
-        pbox_multi_displayTrackInfo(track_uri, NULL, policy);
+        pbox_multi_displayTrackInfo(track_name, NULL, policy);
     }
     pbox_app_rockit_start_player();
     pbox_multi_displayIsPlaying(true, policy);
@@ -75,6 +75,7 @@ void pbox_app_music_resume(display_t policy)
     }
 
     pbox_app_rockit_resume_player();
+    pbox_app_rockit_get_player_duration();
     pbox_multi_displayIsPlaying(true, policy);
     pboxUIdata->play_status = PLAYING;
 }
@@ -168,7 +169,7 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
         return;
 
     pbox_app_rockit_set_player_seek(dest);
-    pbox_multi_displayTrackPosition(dest, duration, policy);
+    pbox_multi_displayTrackPosition(false, dest, duration, policy);
 }
 
 void pbox_app_music_set_mic_volume(uint32_t volume, display_t policy) {

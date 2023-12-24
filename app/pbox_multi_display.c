@@ -44,9 +44,9 @@ void pbox_multi_displayTrackInfo(const char* title, const char* artist, display_
         pbox_app_led_TrackInfo(title, artist);
 }
 
-void pbox_multi_displayTrackPosition(uint32_t mCurrent, uint32_t mDuration, display_t policy) {
+void pbox_multi_displayTrackPosition(bool durationOnly, uint32_t mCurrent, uint32_t mDuration, display_t policy) {
     if(policy & LCD_DISPLAY_MASK)
-        pbox_app_lcd_displayTrackPosition(mCurrent, mDuration);
+        pbox_app_lcd_displayTrackPosition(durationOnly, mCurrent, mDuration);
     if(policy & LED_DISPLAY_MASK)
         pbox_app_led_TrackPosition(mCurrent, mDuration);
 }

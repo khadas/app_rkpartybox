@@ -744,7 +744,8 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_GETPLAYERDURATION: {
-                RK_S64 duration = pbox_rockit_music_get_duration();
+                int64_t duration = pbox_rockit_music_get_duration();
+                rockit_pbbox_notify_duration(duration/1000);
             } break;
 
             case PBOX_ROCKIT_SETPLAYERLOOPING: {

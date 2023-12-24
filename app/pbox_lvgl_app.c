@@ -54,18 +54,21 @@ void pbox_app_lcd_displayTrackInfo(const char* title, const char* artist) {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_TRACK_INFO,
     };
+    if(title)
     strncpy(msg.track.title, title, MAX_APP_NAME_LENGTH);
+    if(artist)
     strncpy(msg.track.artist, artist, MAX_APP_NAME_LENGTH);
     msg.track.title[MAX_APP_NAME_LENGTH]  = 0;
     msg.track.artist[MAX_APP_NAME_LENGTH] = 0;
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_displayTrackPosition(uint32_t mCurrent, uint32_t mDuration) {
+void pbox_app_lcd_displayTrackPosition(bool durationOnly, uint32_t mCurrent, uint32_t mDuration) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_TRACK_POSITION,
     };
+    msg.positions.onlyDuration = durationOnly;
     msg.positions.mCurrent = mCurrent;
     msg.positions.mDuration = mDuration;
 
@@ -195,9 +198,9 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         case PBOX_LCD_PLAY_PAUSE_EVT: {
             bool play = msg->play;
             if(play) {
-                pbox_app_music_resume(DISP_LED);
+                pbox_app_music_resume(DISP_All);
             } else {
-                pbox_app_music_pause(DISP_LED);
+                pbox_app_music_pause(DISP_All);
             }
         } break;
         case PBOX_LCD_PREV_NEXT_EVT: {

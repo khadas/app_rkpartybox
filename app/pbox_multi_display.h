@@ -19,7 +19,7 @@ extern "C" {
 void pbox_multi_displayIsPlaying(bool play, display_t policy);
 void pbox_multi_displayPrevNext(bool next, display_t policy);
 void pbox_multi_displayTrackInfo(const char* title, const char* artist, display_t policy);
-void pbox_multi_displayTrackPosition(unsigned int mCurrent, unsigned int mDuration, display_t policy);
+void pbox_multi_displayTrackPosition(bool durationOnly, unsigned int mCurrent, unsigned int mDuration, display_t policy);
 void pbox_multi_displayMainVolumeLevel(uint32_t mainVolume, display_t policy);
 void pbox_multi_displayMicVolumeLevel(uint32_t micVolume, display_t policy);
 void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy);

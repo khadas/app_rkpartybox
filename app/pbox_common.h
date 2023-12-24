@@ -28,7 +28,7 @@ extern "C" {
 #define MIN(A, B) (A < B ? A : B)
 #define MAX_APP_NAME_LENGTH 255
 #define TRACK_MAX_NUM 30
-#define ENABLE_LCD_DISPLAY 0
+#define ENABLE_LCD_DISPLAY 1
 
 typedef enum {
     PBOX_MAIN_BT,

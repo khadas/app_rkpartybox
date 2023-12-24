@@ -282,58 +282,80 @@ void _lv_demo_music_pause(void)
 void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg)
 {
     switch(widget) {
-	  case UI_WIDGET_PLAY_PAUSE: {
-		 bool play = msg->play;
-		 if (play) {
-		     lv_obj_add_state(play_obj, LV_STATE_CHECKED);
-                     lv_obj_invalidate(play_obj);
-		 } else {
-		     lv_obj_clear_state(play_obj, LV_STATE_CHECKED);
-                     lv_obj_invalidate(play_obj);
-		 }
-		 break;
-	  }
-	  case UI_WIDGET_MAIN_VOLUME: {
-		 uint32_t mainVolume = msg->mainVolume;
-		 char buf[16];
-                 lv_snprintf(buf, sizeof(buf), "主音量 %d", mainVolume);
-		 lv_label_set_text(volume_label, buf);
-         lv_slider_set_value(volume_slider, mainVolume, LV_ANIM_OFF);
-		 break;
-	  }
-	  case UI_WIDGET_TRACK_INFO: {
-		 break;
-	  }
-	  case UI_WIDGET_POSITION_INFO: {
-		 break;
-	  }
-	  case UI_WIDGET_VOCAL_SEPERATE: {
-		 pbox_vocal_t vocalSeperate = msg->vocalSeparate;
-		 bool seperateEnable = vocalSeperate.enable;
-                 if(seperateEnable) {
-                    lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
-                    lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
-                    if (guitar_slider != NULL)
-                        lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
-                 }
-                 else {
-                    lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
-                    lv_obj_add_state(vocal_slider, LV_STATE_DISABLED);
-                    if (guitar_slider != NULL)
-                        lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
-                 }
-		 break;
-	  }
-	  case UI_WIDGET_SPECTRUM_CHART: {
-		 energy_info_t energyData = msg->energy_data;
-                 for (int i = 0; i < energyData.size; i++) {
-		     lv_chart_set_next_value(chart_obj, serdata, energyData.energykeep[i].energy);
-                 }
-		 break;
-	  }
-	  default:
-		 break;
-   };
+        case UI_WIDGET_PLAY_PAUSE: {
+            bool play = msg->play;
+            if (play) {
+                //lv_timer_resume(sec_counter_timer);
+                lv_obj_add_state(play_obj, LV_STATE_CHECKED);
+                        lv_obj_invalidate(play_obj);
+            } else {
+                lv_obj_clear_state(play_obj, LV_STATE_CHECKED);
+                        lv_obj_invalidate(play_obj);
+            }
+        } break;
+        case UI_WIDGET_MAIN_VOLUME: {
+            uint32_t mainVolume = msg->mainVolume;
+            char buf[16];
+                    lv_snprintf(buf, sizeof(buf), "主音量 %d", mainVolume);
+            lv_label_set_text(volume_label, buf);
+            lv_slider_set_value(volume_slider, mainVolume, LV_ANIM_OFF);
+        } break;
+        case UI_WIDGET_TRACK_INFO: {
+            char *artist = (char*)(msg->track.artist);
+            char *title = (char*)(msg->track.title);
+            if(artist && (strlen(artist)>0))
+                lv_label_set_text(artist_label, artist);
+            if(title && (strlen(title)>0))
+                lv_label_set_text(title_label, title);
+        } break;
+        case UI_WIDGET_POSITION_INFO: {
+            static int  prev_total = 0;
+            uint32_t current = msg->positions.mCurrent;
+            uint32_t total = msg->positions.mDuration;
+            uint32_t onlytotal = msg->positions.onlyDuration;
+            printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
+            if(prev_total != total) {
+                prev_total = total;
+                total = total/1000;
+                lv_slider_set_range(slider_obj, 0, total);
+                lv_slider_set_left_value(slider_obj, 0, LV_ANIM_OFF);
+                lv_label_set_text_fmt(duration_obj, "%"LV_PRIu32":%02"LV_PRIu32, total/ 60, total % 60);
+            }
+
+            //if(!onlytotal) 
+            {
+            time_act = current = current/1000;
+            lv_label_set_text_fmt(time_obj, "%"LV_PRIu32":%02"LV_PRIu32, current / 60, current % 60);
+            lv_slider_set_value(slider_obj, current, LV_ANIM_ON);
+            }
+        } break;
+        case UI_WIDGET_VOCAL_SEPERATE: {
+            pbox_vocal_t vocalSeperate = msg->vocalSeparate;
+            bool seperateEnable = vocalSeperate.enable;
+            if(seperateEnable) {
+                lv_obj_add_state(origin_switch, LV_STATE_CHECKED);
+                lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
+                lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
+                if (guitar_slider != NULL)
+                    lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
+            }
+            else {
+                lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
+                lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
+                lv_obj_add_state(vocal_slider, LV_STATE_DISABLED);
+                if (guitar_slider != NULL)
+                    lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
+            }
+        } break;
+        case UI_WIDGET_SPECTRUM_CHART: {
+            energy_info_t energyData = msg->energy_data;
+                    for (int i = 0; i < energyData.size; i++) {
+                lv_chart_set_next_value(chart_obj, serdata, energyData.energykeep[i].energy);
+                    }
+        } break;
+        default:
+            break;
+    };
 }
 
 /**********************
@@ -923,7 +945,7 @@ static void duration_slider_event_cb(lv_event_t * e)
     if (time_act > lv_slider_get_max_value(slider)) {
         printf("%s time_act=%d max: %d\n",__func__, time_act, lv_slider_get_max_value(slider));
         return;
-}
+    }
 
     if(code == LV_EVENT_VALUE_CHANGED || code == LV_EVENT_RELEASED) {
         lv_label_set_text_fmt(time_obj, "%"LV_PRIu32":%02"LV_PRIu32, time_act/60, time_act % 60);

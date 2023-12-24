@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <mntent.h>
 #include <libudev.h>
 #include "pbox_common.h"
 #include "pbox_usb.h"
@@ -60,6 +61,27 @@ void usb_pbox_notify_audio_file_added(music_format_t format, char *fileName) {
     unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
 }
 
+bool is_device_mounted(const char *dev_path) {
+    FILE *mnt_file;
+    struct mntent *mnt;
+    bool mounted = false;
+
+    mnt_file = setmntent("/proc/mounts", "r");
+    if (mnt_file == NULL) {
+        return false;
+    }
+
+    while ((mnt = getmntent(mnt_file)) != NULL) {
+        if (strcmp(mnt->mnt_fsname, dev_path) == 0) {
+            mounted = true;
+            break;
+        }
+    }
+
+    endmntent(mnt_file);
+    return mounted;
+}
+
 bool is_usb_drive_connected() {
     struct udev *udev;
     struct udev_enumerate *enumerate;
@@ -87,7 +109,8 @@ bool is_usb_drive_connected() {
 
         if (parent != NULL) {
             const char *devtype = udev_device_get_devtype(dev);
-            if (strcmp(devtype, "disk") == 0 || strcmp(devtype, "partition") == 0) {
+            if ((strcmp(devtype, "disk") == 0 || strcmp(devtype, "partition") == 0) &&
+                is_device_mounted(udev_device_get_devnode(dev))) {
                 is_connected = true;
                 udev_device_unref(dev);
                 break;
@@ -99,6 +122,7 @@ bool is_usb_drive_connected() {
     udev_enumerate_unref(enumerate);
     udev_unref(udev);
 
+    printf("%s time:%u, is_connected:%d\n", __func__, time(NULL), is_connected);
     return is_connected;
 }
 
@@ -116,6 +140,7 @@ void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {
     }
     usb_pbox_notify_state_changed(USB_SCANNING, MUSIC_PATH);
     uint64_t time = time_get_os_boot_ms();
+
     scan_dir(MUSIC_PATH, 3, usb_pbox_notify_audio_file_added);
     usb_pbox_notify_state_changed(USB_SCANNED, MUSIC_PATH);
     time = time_get_os_boot_ms() - time;
@@ -180,7 +205,7 @@ static void *pbox_usb_server(void *arg)
     struct udev_monitor *mon = udev_monitor_new_from_netlink(udev, "udev");
     udev_monitor_filter_add_match_subsystem_devtype(mon, "usb", "usb_device");
     udev_monitor_enable_receiving(mon);
-    usb_fds[USB_DEV_DETECT] = udev_monitor_get_fd(mon);
+    usb_fds[1] = udev_monitor_get_fd(mon);
 
     int max_fd = (usb_fds[0] > usb_fds[1]) ? usb_fds[0] : usb_fds[1];
 
@@ -188,19 +213,33 @@ static void *pbox_usb_server(void *arg)
     FD_ZERO(&read_fds);
     FD_SET(usb_fds[0], &read_fds);
     FD_SET(usb_fds[1], &read_fds);
+    struct timeval tv = {
+        .tv_sec = 1,
+        .tv_usec = 0,
+    };
+    uint32_t pollRetry = 0;
+    bool isUsbInsert = 0, isConnectReported = 0;
 
     while(true) {
         fd_set read_set = read_fds;
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
 
-        int result = select(max_fd+1, &read_set, NULL, NULL, NULL);
+        int result = select(max_fd+1, &read_set, NULL, NULL, &tv);
         if (result < 0) {
             if (errno != EINTR) {
-                perror("select failed");
+                perror("select failed\n");
                 break;
             }
             continue; // Interrupted by signal, restart select
         } else if (result == 0) {
-            printf("select timeout or no data\n");
+            if(isUsbInsert && !isConnectReported && (pollRetry < 10)) {
+                if(is_usb_drive_connected()) {
+                    usb_pbox_notify_state_changed(USB_CONNECTED, MUSIC_PATH);
+                    isConnectReported = true;
+                }
+            }
+            //printf("select timeout or no data\n");
             continue;
         }
 
@@ -238,9 +277,15 @@ static void *pbox_usb_server(void *arg)
                     }
                     if (strcmp(action, "remove") == 0) {
                         printf("Device removed：%s\n", devnode);
+                        isConnectReported = false;
+                        isUsbInsert = false;
+                        pollRetry = 0;
                         usb_pbox_notify_state_changed(USB_DISCONNECTED, NULL);
                     } else if (strcmp(action, "add") == 0) {
-                        usb_pbox_notify_state_changed(USB_CONNECTED, MUSIC_PATH);
+                        isUsbInsert = true;
+                        isConnectReported = false;
+                        pollRetry = 0;
+                        //usb_pbox_notify_state_changed(USB_CONNECTED, MUSIC_PATH);
                         printf("Device added：%s\n", devnode);
                     }
                     udev_device_unref(dev);

@@ -9,7 +9,7 @@ extern "C" {
 void pbox_app_lcd_displayPlayPause(bool play);
 void pbox_app_lcd_displayPrevNext(bool next);
 void pbox_app_lcd_displayTrackInfo(const char* title, const char* artist);
-void pbox_app_lcd_displayTrackPosition(unsigned int mCurrent, unsigned int mDuration);
+void pbox_app_lcd_displayTrackPosition(bool durationOnly, unsigned int mCurrent, unsigned int mDuration);
 void pbox_app_lcd_displayMainVolumeLevel(uint32_t mainVolume);
 void pbox_app_lcd_displayMicVolumeLevel(uint32_t micVolume);
 void pbox_app_lcd_displayAccompMusicLevel(uint32_t accomp_music_level);

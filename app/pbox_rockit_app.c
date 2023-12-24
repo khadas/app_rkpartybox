@@ -284,14 +284,14 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
             printf("duration: %d", music_duration);
             music_position = msg->mPosition;
             if ((music_duration != 0) && (music_position !=0)) {
-                pbox_multi_displayTrackPosition(music_position, music_duration, DISP_All);
+                pbox_multi_displayTrackPosition(false, music_position, music_duration, DISP_All);
             }
         } break;
         case PBOX_ROCKIT_MUSIC_DURATION_EVT: {
             music_duration = msg->duration;
             printf("duration: %d", music_duration);
-            if ((music_duration != 0) && (music_position !=0)) {
-                pbox_multi_displayTrackPosition(music_position, music_duration, DISP_All);
+            if (music_duration != 0) {
+                pbox_multi_displayTrackPosition(true, music_position, music_duration, DISP_All);
             }
         } break;
         case PBOX_ROCKIT_MUSIC_VOLUME_EVT: {

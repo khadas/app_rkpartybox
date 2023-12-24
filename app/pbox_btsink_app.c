@@ -137,7 +137,7 @@ void update_music_track_info(char *title, char *artist) {
 void update_music_positions(uint32_t current, uint32_t total) {
     static uint32_t  prev_total = 0;
     printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
-    pbox_multi_displayTrackPosition(current, total, DISP_All);
+    pbox_multi_displayTrackPosition(false, current, total, DISP_All);
     if(prev_total != total) {
         prev_total = total;
     }
