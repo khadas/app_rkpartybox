@@ -12,6 +12,7 @@
 #include <sys/timerfd.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include "pbox_app.h"
 #include "rk_comm_karaoke.h"
 #include "rk_btsink.h"
 #include "pbox_common.h"
@@ -164,5 +165,7 @@ void maintask_timer_fd_process(int timer_fd) {
     if((isPoweron == false) && (0 == msTimePassed%100)) {
         isPoweron = true;
         pbox_app_usb_pollState();
+        pbox_app_music_set_volume(50, DISP_All);
+        pbox_app_music_set_echo_3a(true, DISP_All);
     }
 }

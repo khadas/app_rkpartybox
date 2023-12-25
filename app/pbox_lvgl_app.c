@@ -203,6 +203,13 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
                 pbox_app_music_pause(DISP_All);
             }
         } break;
+        case PBOX_LCD_PLAY_TRACKID_EVT: {
+            int32_t id = msg->trackid;
+            pbox_app_music_trackid(id, DISP_All);
+        } break;
+        case PBOX_LCD_PLAY_STOP_EVT: {
+            pbox_app_music_stop(DISP_All);
+        } break;
         case PBOX_LCD_PREV_NEXT_EVT: {
             bool next = msg->next;
             pbox_app_music_album_next(next, DISP_LED);

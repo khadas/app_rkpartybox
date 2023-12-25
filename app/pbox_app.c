@@ -46,6 +46,10 @@ void pbox_app_music_pause(display_t policy)
     pboxUIdata->play_status = _PAUSE;
 }
 
+void pbox_app_music_trackid(uint32_t id, display_t policy) {
+    pboxTrackdata->track_id = id;
+}
+
 void pbox_app_music_start(display_t policy) {
     char *track_name = NULL;
     char track_uri[256];

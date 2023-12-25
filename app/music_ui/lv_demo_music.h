@@ -45,6 +45,7 @@ typedef enum {
     UI_WIDGET_POSITION_INFO,
     UI_WIDGET_VOCAL_SEPERATE,
     UI_WIDGET_SPECTRUM_CHART,
+    UI_WIDGET_3A_SWITCH,
 }ui_widget_t;
 
 void lv_demo_music(void);

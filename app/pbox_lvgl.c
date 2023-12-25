@@ -38,6 +38,26 @@ int unix_socket_lcd_notify(void *info, int length) {
     #endif
 }
 
+// Notify function for update trackid event
+void lcd_pbox_notifyTrackid(uint32_t id) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_LCD_PLAY_TRACKID_EVT,
+    };
+    msg.trackid = id;
+    unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
+}
+
+// Notify function for the stop event
+void lcd_pbox_notifyPlayStop() {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_LCD_PLAY_STOP_EVT,
+    };
+
+    unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
+}
+
 // Notify function for the play/pause event
 void lcd_pbox_notifyPlayPause(bool play) {
     pbox_lcd_msg_t msg = {
@@ -260,6 +280,7 @@ void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdEcho3ASwitchCmd(const pbox_lcd_msg_t* msg) {
     bool echo3A_On = msg->echo3A_On;
     printf("Echo 3A Switch Command: %s\n", echo3A_On ? "On" : "Off");
+    _lv_demo_music_update_ui_info(UI_WIDGET_3A_SWITCH, msg);
 }
 
 // Function to handle the reverb mode command

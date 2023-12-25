@@ -28,6 +28,8 @@ typedef enum {
 
     //event
     PBOX_LCD_PLAY_PAUSE_EVT = 0x100,
+    PBOX_LCD_PLAY_STOP_EVT,
+    PBOX_LCD_PLAY_TRACKID_EVT,
     PBOX_LCD_PREV_NEXT_EVT,
     PBOX_LCD_LOOP_MODE_EVT,
     PBOX_LCD_SEEK_POSITION_EVT,
@@ -52,6 +54,7 @@ typedef struct {
             char title[MAX_APP_NAME_LENGTH + 1];
             char artist[MAX_APP_NAME_LENGTH + 1];
         } track;
+        uint32_t        trackid;
         uint32_t        mainVolume;
         uint32_t        micVolume;
         uint32_t        accomp_music_level;//surroundings/environment sound level
@@ -73,6 +76,8 @@ typedef struct {
 
 int pbox_create_lvglTask(void);
 void lcd_pbox_notifyPlayPause(bool play);
+void lcd_pbox_notifyPlayStop();
+void lcd_pbox_notifyTrackid(uint32_t trackid);
 void lcd_pbox_notifyPrevNext(bool next);
 void lcd_pbox_notifyLoopMode(bool loop);
 void lcd_pbox_notifySeekPosition(unsigned int mCurrent, unsigned int mDuration);

@@ -64,6 +64,7 @@ extern struct _pbox_track *const pboxTrackdata;
 extern usb_disk_info_t *const pboxUsbdata;
 
 void pbox_app_music_pause(display_t policy);
+void pbox_app_music_trackid(uint32_t id, display_t policy);
 void pbox_app_music_start(display_t policy);
 void pbox_app_music_resume(display_t policy);
 void pbox_app_music_stop(display_t policy);

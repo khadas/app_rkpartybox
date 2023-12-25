@@ -248,6 +248,7 @@ void _lv_demo_music_play(uint32_t id)
 }
 
 void _lv_demo_music_stop() {
+    lcd_pbox_notifyPlayStop();
 }
 
 void _lv_demo_music_resume(void)
@@ -352,6 +353,15 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                     for (int i = 0; i < energyData.size; i++) {
                 lv_chart_set_next_value(chart_obj, serdata, energyData.energykeep[i].energy);
                     }
+        } break;
+        case UI_WIDGET_3A_SWITCH: {
+            bool echo3A_On = msg->echo3A_On;
+            if(echo3A_On) {
+                lv_obj_add_state(echo_3a_switch, LV_STATE_CHECKED);
+            }
+            else {
+                lv_obj_clear_state(echo_3a_switch, LV_STATE_CHECKED);
+            }
         } break;
         default:
             break;
@@ -899,6 +909,7 @@ static void track_load(uint32_t id)
     _lv_demo_music_list_btn_check(track_id, false);
     track_id = id;
     _lv_demo_music_list_btn_check(id, true);
+    lcd_pbox_notifyTrackid(track_id);
 
     lv_label_set_text(title_label, _lv_demo_music_get_title(track_id));
     lv_label_set_text(artist_label, _lv_demo_music_get_artist(track_id));
