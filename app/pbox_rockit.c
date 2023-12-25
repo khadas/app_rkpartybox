@@ -412,6 +412,17 @@ static int64_t pbox_rockit_music_get_duration(void) {
     return duration;
 }
 
+static int64_t pbox_rockit_music_get_position(void) {
+    RK_S64 position = 0;
+    assert(player_ctx);
+    assert(RK_MPI_KARAOKE_GetPlayerDuration_func);
+
+    RK_MPI_KARAOKE_GetPlayerCurrentPosition_func(player_ctx, &position);
+    //printf("%s poststion: %lld\n", __func__, position);
+    
+    return position;
+}
+
 static void pbox_rockit_music_reverb_mode(pbox_revertb_t mode) {
    KARAOKE_PARAM_S param;
    param.enType = KARAOKE_PARAM_REVERB;
@@ -710,7 +721,7 @@ static void *pbox_rockit_server(void *arg)
             continue;
 
         pbox_rockit_msg_t *msg = (pbox_rockit_msg_t *)buff;
-        if(msg->msgId != 18)
+        if(msg->msgId != 18 && msg->msgId != 10)
             printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
         if(msg->type == PBOX_EVT)
@@ -755,7 +766,8 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_GETPLAYERCURRENTPOSITION: {
-                //pending
+                uint32_t position = (uint32_t)(pbox_rockit_music_get_position()/1000);
+                rockit_pbbox_notify_current_postion(position);
             } break;
 
             case PBOX_ROCKIT_GETPLAYERDURATION: {

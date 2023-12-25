@@ -162,6 +162,11 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_rockit_get_player_energy();
     }
 
+    if (0 == msTimePassed%1000) {
+    //every one second send command to refresh position
+    pbox_app_rockit_get_music_current_postion();
+    }
+
     if((isPoweron == false) && (0 == msTimePassed%100)) {
         isPoweron = true;
         pbox_app_usb_pollState();

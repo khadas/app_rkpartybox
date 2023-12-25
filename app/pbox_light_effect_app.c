@@ -35,7 +35,7 @@ void pbox_app_led_TrackInfo(const char* title, const char* artist) {
 
 void pbox_app_led_TrackPosition(uint32_t mCurrent, uint32_t mDuration) {
 
-	printf("%s mCurrent: %d mDuration: %d\n", __func__, mCurrent, mDuration);
+	//printf("%s mCurrent: %d mDuration: %d\n", __func__, mCurrent, mDuration);
 }
 
 void pbox_app_led_MainVolumeLevel(uint32_t mainVolume) {

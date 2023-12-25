@@ -118,7 +118,8 @@ void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
                 pboxTrackdata->track_num, pboxTrackdata->track_list[pboxTrackdata->track_num].title, len);
     }
 
-    pboxTrackdata->track_num++;
+    if (pboxTrackdata->track_num < 100)
+        pboxTrackdata->track_num++;
 }
 
 // Function to process an incoming pbox_usb_msg_t event

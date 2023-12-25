@@ -225,7 +225,7 @@ void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
     uint32_t mCurrent = msg->positions.mCurrent;
     uint32_t mDuration = msg->positions.mDuration;
-    printf("Track Position Command: Current - %u, Duration - %u\n", mCurrent, mDuration);
+    //printf("Track Position Command: Current - %u, Duration - %u\n", mCurrent, mDuration);
     _lv_demo_music_update_ui_info(UI_WIDGET_POSITION_INFO, msg);
 }
 

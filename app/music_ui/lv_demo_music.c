@@ -20,6 +20,7 @@
 #include "lv_demo_music_main.h"
 #include "lv_demo_music_list.h"
 #include "pbox_app.h"
+#include "pbox_common.h"
 
 #include <lvgl/lv_conf.h>
 #include "lvgl/lv_port_file.h"
@@ -46,7 +47,7 @@
 static lv_obj_t * ctrl;
 static lv_obj_t * list;
 
-#define TRACK_MAX_NUM 10
+//#define TRACK_MAX_NUM 10
 #define MUSIC_PATH "/data/"
 #define MAIN_FONT         "/data/SmileySans-Oblique.ttf"
 //int track_num = 0;

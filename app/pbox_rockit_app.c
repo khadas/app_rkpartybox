@@ -291,7 +291,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
 
         } break;
         case PBOX_ROCKIT_MUSIC_POSITION_EVT: {
-            printf("duration: %d", music_duration);
+            //printf("duration: %d", music_duration);
             music_position = msg->mPosition;
             if ((music_duration != 0) && (music_position !=0)) {
                 pbox_multi_displayTrackPosition(false, music_position, music_duration, DISP_All);

@@ -314,7 +314,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             uint32_t current = msg->positions.mCurrent;
             uint32_t total = msg->positions.mDuration;
             uint32_t onlytotal = msg->positions.onlyDuration;
-            printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
+            //printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
             if(prev_total != total) {
                 prev_total = total;
                 total = total/1000;
@@ -650,9 +650,9 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_t * reverb_label = lv_label_create(cont);
     lv_label_set_text(reverb_label, "混响");
     lv_obj_set_style_text_font(reverb_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(reverb_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 0, 1);
+    lv_obj_set_grid_cell(reverb_label, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 8, 1);
     lv_obj_t * reverb_dd = lv_dropdown_create(cont);
-    lv_obj_set_grid_cell(reverb_dd, LV_GRID_ALIGN_END, 5, 1, LV_GRID_ALIGN_START, 1, 1);
+    lv_obj_set_grid_cell(reverb_dd, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 9, 1);
     lv_dropdown_set_options(reverb_dd, "OFF\nSTUDIO\nKTV\nCONCERT");
     lv_dropdown_set_selected(reverb_dd, 3);//0,1,2,3 so 3 means CONCERT
     lv_obj_add_event_cb(reverb_dd, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
@@ -660,9 +660,9 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_t * echo_3a_label = lv_label_create(cont);
     lv_label_set_text(echo_3a_label, "3A算法");
     lv_obj_set_style_text_font(echo_3a_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(echo_3a_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 4, 1);
+    lv_obj_set_grid_cell(echo_3a_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 8, 1);
     echo_3a_switch = lv_switch_create(cont);
-    lv_obj_set_grid_cell(echo_3a_switch, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 5, 1);
+    lv_obj_set_grid_cell(echo_3a_switch, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 9, 1);
     lv_obj_add_event_cb(echo_3a_switch, echol_3a_seperate_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_state(echo_3a_switch, LV_STATE_CHECKED);
 
@@ -670,9 +670,9 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_t * origin_label = lv_label_create(cont);
     lv_label_set_text(origin_label, "声音分离");
     lv_obj_set_style_text_font(origin_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(origin_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 8, 1);
+    lv_obj_set_grid_cell(origin_label, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 8, 1);
     origin_switch = lv_switch_create(cont);
-    lv_obj_set_grid_cell(origin_switch, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_set_grid_cell(origin_switch, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 9, 1);
     lv_obj_add_event_cb(origin_switch, vocal_seperate_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
 
@@ -962,7 +962,8 @@ static void duration_slider_event_cb(lv_event_t * e)
         lv_label_set_text_fmt(time_obj, "%"LV_PRIu32":%02"LV_PRIu32, time_act/60, time_act % 60);
         lv_slider_set_value(slider, time_act, LV_ANIM_ON);
         if( code == LV_EVENT_RELEASED) {
-	   printf("seek to\n");
+            printf("seek to %d:%d\n", time_act / 60, time_act % 60);
+            lcd_pbox_notifySeekPosition(1000 * time_act, 1000 * lv_slider_get_max_value(slider));
        }
     }
 }
