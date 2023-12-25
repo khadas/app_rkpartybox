@@ -67,6 +67,11 @@ void pbox_multi_displayMicVolumeLevel(uint32_t micVolume, display_t policy) {
         pbox_app_led_MicVolumeLevel(micVolume);
 }
 
+void pbox_multi_displayMicMute(bool mute, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMicMute(mute);
+}
+
 void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy) {
     if(policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayAccompMusicLevel(accomp_music_level);

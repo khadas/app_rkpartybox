@@ -53,6 +53,8 @@ void pbox_app_rockit_get_recoder_volume(void);
 
 void pbox_app_rockit_set_recoder_revert(pbox_revertb_t reverbMode);
 
+void pbox_app_rockit_set_recoder_mute(bool mute);
+
 void pbox_app_rockit_set_recoder_3A(uint32_t echo3A_On);
 
 bool maintask_rockit_fd_process(int fd);

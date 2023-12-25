@@ -46,6 +46,7 @@ RK_S32 (*RK_MPI_KARAOKE_SetRecorderParam_func)(void *ctx, KARAOKE_PARAM_S *param
 RK_S32 (*RK_MPI_KARAOKE_GetRecorderParam_func)(void *ctx, KARAOKE_PARAM_S *param);
 RK_S32 (*RK_MPI_KARAOKE_SetRecorderVolume_func)(void *ctx, RK_U32 volume);
 RK_S32 (*RK_MPI_KARAOKE_GetRecorderVolume_func)(void *ctx, RK_U32 *volume);
+RK_S32 (*RK_MPI_KARAOKE_MuteRecorder_func)(void *ctx, RK_BOOL mute);
 RK_S32 (*RK_MPI_KARAOKE_GetPlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy);
 RK_S32 (*RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy);
 RK_S32 (*RK_MPI_KARAOKE_StartBTPlayer_func)(void *ctx, KARAOKE_AUDIO_ATTR_S *attr);
@@ -195,6 +196,13 @@ int rk_demo_music_create() {
             printf("failed to open func, err=%s", dlerror());
 	    return -1;
 	 }
+
+    RK_MPI_KARAOKE_MuteRecorder_func =  (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl,
+                                                "RK_MPI_KARAOKE_MuteRecorder");
+    if (NULL == RK_MPI_KARAOKE_MuteRecorder_func) {
+        printf("failed to open func, err=%s", dlerror());
+        return -1;
+    }
 
          RK_MPI_KARAOKE_GetPlayerEnergyLevel_func = (RK_S32 (*)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy))dlsym(mpi_hdl, 
 			                                 "RK_MPI_KARAOKE_GetPlayerEnergyLevel");
@@ -506,6 +514,13 @@ static void pbox_rockit_music_mic_volume_adjust(int micLevel) {
     RK_MPI_KARAOKE_SetRecorderVolume_func(player_ctx, micLevel);
 }
 
+static void pbox_rockit_music_mic_mute(bool mute) {
+    assert(player_ctx);
+    assert(RK_MPI_KARAOKE_MuteRecorder_func);
+    RK_MPI_KARAOKE_MuteRecorder_func(player_ctx, mute);
+    printf("RK_MPI_KARAOKE_MuteRecorder_func State : %s\n", mute?"on":"off");
+}
+
 static void pbox_rockit_music_seek_set(uint64_t usec) {
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_SetPlayerSeekTo_func);
@@ -789,6 +804,10 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_SETRECORDERVOLUME: {
                 pbox_rockit_music_mic_volume_adjust(msg->volume);
+            } break;
+
+            case PBOX_ROCKIT_SETRECORDERMUTE: {
+                pbox_rockit_music_mic_mute(msg->micmute);
             } break;
 
             case PBOX_ROCKIT_SET_RECORDER_3A: {

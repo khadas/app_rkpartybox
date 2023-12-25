@@ -16,6 +16,7 @@ typedef enum {
     PBOX_LCD_DISP_USB_STATE,
     PBOX_LCD_DISP_MAIN_VOL_LEVEL,
     PBOX_LCD_DISP_MIC_VOL_LEVEL,
+    PBOX_LCD_DISP_MIC_MUTE,
     PBOX_LCD_DISP_ACCOMP_MUSIC_LEVEL,
     PBOX_LCD_DISP_HUMAN_MUSIC_LEVEL,
     PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH,
@@ -64,6 +65,7 @@ typedef struct {
         pbox_vocal_t        vocalSeparate;
         bool                echo3A_On;
         bool                enable;
+        bool                micmute;
         struct {
             bool onlyDuration;
             uint32_t mCurrent;

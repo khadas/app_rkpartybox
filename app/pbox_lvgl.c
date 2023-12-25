@@ -253,6 +253,12 @@ void handleLcdMicVolLevelCmd(const pbox_lcd_msg_t* msg) {
     printf("Mic Volume Level Command: Level - %u\n", micVolume);
 }
 
+// Function to handle the mic mute command
+void handleLcdMicmuteCmd(const pbox_lcd_msg_t* msg) {
+    bool mute = msg->micmute;
+    printf("Mic mute Command State - %s\n", mute? "on":"off");
+}
+
 // Function to handle the accompaniment music level command
 void handleLcdAccompMusicLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t accomp_music_level = msg->accomp_music_level;
@@ -339,6 +345,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_USB_STATE, handleLcdUsbStateUpdateCmd },
     { PBOX_LCD_DISP_MAIN_VOL_LEVEL, handleLcdMainVolLevelCmd },
     { PBOX_LCD_DISP_MIC_VOL_LEVEL, handleLcdMicVolLevelCmd },
+    { PBOX_LCD_DISP_MIC_MUTE, handleLcdMicmuteCmd },
     { PBOX_LCD_DISP_ACCOMP_MUSIC_LEVEL, handleLcdAccompMusicLevelCmd },
     { PBOX_LCD_DISP_HUMAN_MUSIC_LEVEL, handleLcdHumanMusicLevelCmd },
     { PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH, handleLcdMusicSeparateSwitchCmd },

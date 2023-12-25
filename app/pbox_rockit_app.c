@@ -242,6 +242,16 @@ void pbox_app_rockit_get_recoder_volume(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+void pbox_app_rockit_set_recoder_mute(bool mute) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SETRECORDERMUTE,
+    };
+
+    msg.micmute = mute;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
 void pbox_app_rockit_set_recoder_revert(pbox_revertb_t reverbMode) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,

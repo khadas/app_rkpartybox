@@ -31,6 +31,7 @@ typedef enum {
     PBOX_ROCKIT_STOPRECORDER,
     PBOX_ROCKIT_SETRECORDERVOLUME,
     PBOX_ROCKIT_GETRECORDERVOLUME,
+    PBOX_ROCKIT_SETRECORDERMUTE,
     PBOX_ROCKIT_SET_RECORDER_REVERT,
     PBOX_ROCKIT_SET_RECORDER_3A,
 
@@ -58,6 +59,7 @@ typedef struct {
         pbox_revertb_t      reverbMode;
         pbox_vocal_t        vocalSeperate;
         bool             echo3A_On;
+        bool             micmute;
         pbox_audioFormat_t  audioFormat;
 
         struct _wake_up {

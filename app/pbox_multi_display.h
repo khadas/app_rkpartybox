@@ -22,6 +22,7 @@ void pbox_multi_displayTrackInfo(const char* title, const char* artist, display_
 void pbox_multi_displayTrackPosition(bool durationOnly, unsigned int mCurrent, unsigned int mDuration, display_t policy);
 void pbox_multi_displayMainVolumeLevel(uint32_t mainVolume, display_t policy);
 void pbox_multi_displayMicVolumeLevel(uint32_t micVolume, display_t policy);
+void pbox_multi_displayMicMute(bool mute, display_t policy);
 void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy);
 void pbox_multi_displayHumanMusicLevel(uint32_t human_music_level, display_t policy);
 void pbox_multi_displayReservLevel(uint32_t reserv_music_level, display_t policy);

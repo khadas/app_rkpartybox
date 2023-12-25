@@ -185,13 +185,9 @@ void pbox_app_music_set_mic_volume(uint32_t volume, display_t policy) {
 void pbox_app_music_set_mic_mute(bool mute, display_t policy){
     uint32_t volume;
     pboxUIdata->mMute = mute;
-    if (mute)
-        volume = 0;
-    else
-        volume = pboxUIdata->mMicVolumeLevel;
 
-    pbox_app_rockit_set_recoder_volume(volume);
-    pbox_multi_displayMicVolumeLevel(volume, policy);
+    pbox_app_rockit_set_recoder_mute(mute);
+    pbox_multi_displayMicMute(mute, policy);
 }
 
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
