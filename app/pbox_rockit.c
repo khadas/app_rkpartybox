@@ -48,7 +48,7 @@ RK_S32 (*RK_MPI_KARAOKE_SetRecorderVolume_func)(void *ctx, RK_U32 volume);
 RK_S32 (*RK_MPI_KARAOKE_GetRecorderVolume_func)(void *ctx, RK_U32 *volume);
 RK_S32 (*RK_MPI_KARAOKE_GetPlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy);
 RK_S32 (*RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy);
-RK_S32 (*RK_MPI_KARAOKE_StartBTPlayer_func)(void *ctx, KARAOKE_BT_ATTR_S *attr);
+RK_S32 (*RK_MPI_KARAOKE_StartBTPlayer_func)(void *ctx, KARAOKE_AUDIO_ATTR_S *attr);
 RK_S32 (*RK_MPI_KARAOKE_StopBTPlayer_func)(void *ctx);
 
 
@@ -209,7 +209,7 @@ int rk_demo_music_create() {
 	    return -1;
          }
 
-	 RK_MPI_KARAOKE_StartBTPlayer_func = (RK_S32 (*)(void *ctx, KARAOKE_BT_ATTR_S *attr))dlsym(mpi_hdl,
+	 RK_MPI_KARAOKE_StartBTPlayer_func = (RK_S32 (*)(void *ctx, KARAOKE_AUDIO_ATTR_S *attr))dlsym(mpi_hdl,
                                                          "RK_MPI_KARAOKE_StartBTPlayer");
          if (NULL == RK_MPI_KARAOKE_StartBTPlayer_func) {
             printf("failed to open func, err=%s, line:%d\n", dlerror(), __LINE__);
@@ -348,14 +348,14 @@ static void pbox_rockit_music_pause(void)
 
 static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
 {
-    KARAOKE_BT_ATTR_S attr;
+    KARAOKE_AUDIO_ATTR_S attr;
     switch (sampleFreq) {
         case 0: {
-            attr.u32Sample = 44100;
+            attr.u32SampleRate = 44100;
         } break;
 
         default: {
-            attr.u32Sample = sampleFreq;
+            attr.u32SampleRate = sampleFreq;
         } break;
     }
 
@@ -375,7 +375,7 @@ static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
     assert(RK_MPI_KARAOKE_StartBTPlayer_func);
     assert(RK_MPI_KARAOKE_StopBTPlayer_func);
 
-    printf("%s sampe:%d, channel: %d\n", __func__, attr.u32Sample, attr.u32Channels);
+    printf("%s sampe:%d, channel: %d\n", __func__, attr.u32SampleRate, attr.u32Channels);
     pbox_rockit_music_stop();
     RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
     RK_MPI_KARAOKE_StartBTPlayer_func(player_ctx, &attr);

@@ -28,7 +28,7 @@ extern "C" {
 RK_S32 RK_MPI_KARAOKE_Create(void **ctx, KARAOKE_ATTR_S *attr);
 RK_S32 RK_MPI_KARAOKE_Destroy(void *ctx);
 RK_S32 RK_MPI_KARAOKE_SetDataSource(void *ctx, const char *url, const char *headers);
-RK_S32 RK_MPI_KARAOKE_StartBTPlayer(void *ctx, KARAOKE_BT_ATTR_S *attr);
+RK_S32 RK_MPI_KARAOKE_StartBTPlayer(void *ctx, KARAOKE_AUDIO_ATTR_S *attr);
 RK_S32 RK_MPI_KARAOKE_StopBTPlayer(void *ctx);
 RK_S32 RK_MPI_KARAOKE_StartPlayer(void *ctx);
 RK_S32 RK_MPI_KARAOKE_PausePlayer(void *ctx);
@@ -47,10 +47,15 @@ RK_S32 RK_MPI_KARAOKE_ReleasePlayerEnergyLevel(void *ctx, KARAOKE_ENERGY_LEVEL_S
 
 RK_S32 RK_MPI_KARAOKE_StartRecorder(void *ctx);
 RK_S32 RK_MPI_KARAOKE_StopRecorder(void *ctx);
+RK_S32 RK_MPI_KARAOKE_MuteRecorder(void *ctx, RK_BOOL mute);
 RK_S32 RK_MPI_KARAOKE_SetRecorderVolume(void *ctx, RK_U32 volume);
 RK_S32 RK_MPI_KARAOKE_GetRecorderVolume(void *ctx, RK_U32 *volume);
 RK_S32 RK_MPI_KARAOKE_SetRecorderParam(void *ctx, KARAOKE_PARAM_S *param);
 RK_S32 RK_MPI_KARAOKE_GetRecorderParam(void *ctx, KARAOKE_PARAM_S *param);
+
+RK_S32 RK_MPI_KARAOKE_StartAudioPlayer(void *ctx, KARAOKE_AUDIO_ATTR_S *attr);
+RK_S32 RK_MPI_KARAOKE_StopAudioPlayer(void *ctx);
+RK_S32 RK_MPI_KARAOKE_SendAudioFrame(void *ctx, AUDIO_FRAME_S *frame, RK_S32 s32MilliSec);
 
 #ifdef __cplusplus
 #if __cplusplus

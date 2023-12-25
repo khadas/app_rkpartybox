@@ -18,6 +18,7 @@
 #define INCLUDE_RT_COMM_KARAOKE_H_
 
 #include "rk_type.h"
+#include "rk_comm_aio.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -100,11 +101,11 @@ typedef struct rkKARAOKE_PARAM_S {
     };
 } KARAOKE_PARAM_S;
 
-typedef struct rkKARAOKE_BT_PLAYER_ATTR_S {
-    RK_U32 u32Sample;
+typedef struct rkKARAOKE_AUDIO_ATTR_S {
+    RK_U32 u32SampleRate;
     RK_U32 u32Channels;
     RK_U32 u32BitWidth;
-} KARAOKE_BT_ATTR_S;
+} KARAOKE_AUDIO_ATTR_S;
 
 typedef RK_VOID (*RK_KARAOKE_Callback)(RK_VOID *pPrivateData, KARAOKE_EVT_E event, RK_S32 ext1, RK_VOID *ptr);
 typedef struct rkRTKaraokeAttr {

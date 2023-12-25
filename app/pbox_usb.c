@@ -191,7 +191,7 @@ static void *pbox_usb_server(void *arg)
     pthread_setname_np(pthread_self(), "pbox_usb");
 
     usb_fds[USB_UDP_SOCKET] = create_udp_socket(SOCKET_PATH_USB_SERVER);
-    if (usb_fds[0] < 0) {
+    if (usb_fds[USB_UDP_SOCKET] < 0) {
         perror("Failed to create UDP socket");
         return (void *)-1;
     }
@@ -205,7 +205,7 @@ static void *pbox_usb_server(void *arg)
     struct udev_monitor *mon = udev_monitor_new_from_netlink(udev, "udev");
     udev_monitor_filter_add_match_subsystem_devtype(mon, "usb", "usb_device");
     udev_monitor_enable_receiving(mon);
-    usb_fds[1] = udev_monitor_get_fd(mon);
+    usb_fds[USB_DEV_DETECT] = udev_monitor_get_fd(mon);
 
     int max_fd = (usb_fds[0] > usb_fds[1]) ? usb_fds[0] : usb_fds[1];
 
