@@ -233,9 +233,17 @@ void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdUsbStateUpdateCmd(const pbox_lcd_msg_t *msg) {
     printf("%s \n", __func__);
     switch (msg->usbState) {
-        case USB_SCANNED:
-        case USB_DISCONNECTED:{
-            printf("USB State %d!! Track list update command \n", msg->usbState);
+    case USB_CONNECTED: {
+        printf("USB Inserted! start to scan\n");
+        _lv_demo_music_update_ui_info(UI_WIDGET_USB_DISK_STATE, msg);
+    } break;
+        case USB_DISCONNECTED: {
+        printf("USB Disk Removed\n");
+        _lv_demo_music_update_ui_info(UI_WIDGET_USB_DISK_STATE, msg);
+        _lv_demo_music_update_list();
+    } break;
+        case USB_SCANNED: {
+            printf("USB Scanned!! Track list update command \n");
             _lv_demo_music_update_list();
         } break;
     }

@@ -55,6 +55,7 @@ static lv_chart_series_t * serdata;
 static lv_obj_t * title_label;
 static lv_obj_t * artist_label;
 static lv_obj_t * genre_label;
+static lv_obj_t * source_label;
 static lv_obj_t * time_obj;
 static lv_obj_t * duration_obj;
 static lv_obj_t * slider_obj;
@@ -375,6 +376,14 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_clear_state(echo_3a_switch, LV_STATE_CHECKED);
             }
         } break;
+	case UI_WIDGET_USB_DISK_STATE: {
+	    usb_state_t state = msg->usbState; 
+	    if (state == USB_CONNECTED) {
+	        lv_label_set_text(source_label, "USB Inserted");
+	    } else if (state == USB_DISCONNECTED) {
+		lv_label_set_text(source_label, "USB Removed");
+	    }
+	} break;
         default:
             break;
     };
@@ -477,6 +486,14 @@ static lv_obj_t * create_title_box(lv_obj_t * parent)
     lv_obj_set_style_text_font(genre_label, font_small, 0);
     lv_obj_set_style_text_color(genre_label, lv_color_hex(0x8a86b8), 0);
     lv_label_set_text(genre_label, _lv_demo_music_get_genre(track_id));
+
+    //track sources are from usb disk or bluetooth
+    source_label = lv_label_create(cont);
+    lv_label_set_text(source_label, "");
+    lv_obj_set_style_text_font(source_label, ttf_main_s.font, 0);
+    //lv_obj_set_style_text_line_space(source_label, 8, 0);
+    //lv_obj_align_to(source_label, title_label, LV_ALIGN_OUT_LEFT_MID, -20, 0);
+    lv_obj_set_align(source_label, LV_ALIGN_TOP_LEFT);
 
     return cont;
 }
@@ -665,7 +682,9 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_set_grid_cell(reverb_label, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 8, 1);
     lv_obj_t * reverb_dd = lv_dropdown_create(cont);
     lv_obj_set_grid_cell(reverb_dd, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 9, 1);
-    lv_dropdown_set_options(reverb_dd, "OFF\nSTUDIO\nKTV\nCONCERT");
+    lv_obj_set_style_text_font(reverb_dd, font_small, 0);
+    lv_dropdown_set_options_static(reverb_dd, "OFF\nSTUDIO\nKTV\nCONCERT");
+    lv_dropdown_set_dir(reverb_dd, LV_DIR_BOTTOM);
     lv_dropdown_set_selected(reverb_dd, 3);//0,1,2,3 so 3 means CONCERT
     lv_obj_add_event_cb(reverb_dd, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
 
