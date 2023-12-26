@@ -334,7 +334,7 @@ static void pbox_rockit_music_start(void)
 
     printf("%s\n", __func__);
     RK_MPI_KARAOKE_StartPlayer_func(player_ctx);
-    set_vocal_separate_thread_cpu();
+    //set_vocal_separate_thread_cpu();
 }
 
 static void pbox_rockit_music_stop(void) {
@@ -387,7 +387,7 @@ static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
     pbox_rockit_music_stop();
     RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
     RK_MPI_KARAOKE_StartBTPlayer_func(player_ctx, &attr);
-    set_vocal_separate_thread_cpu();
+    //set_vocal_separate_thread_cpu();
 }
 
 static void pbox_rockit_music_resume(uint32_t volume)
