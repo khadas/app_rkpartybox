@@ -202,6 +202,16 @@ void pbox_app_lcd_dispplayUsbState(usb_state_t state) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
+void pbox_app_lcd_dispplaybtState(usb_state_t state) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_BT_STATE,
+    };
+
+    msg.btState = state;
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
 int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
 {
     assert(msg);

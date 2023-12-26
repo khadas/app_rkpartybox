@@ -31,6 +31,7 @@ void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy);
 void pbox_multi_displayEcho3A(bool enable, display_t policy);
 void pbox_multi_displayRevertMode(pbox_revertb_t mode, display_t policy);
 void pbox_multi_displayUsbState(usb_state_t state, display_t policy);
+void pbox_multi_displaybtState(btsink_state_t state, display_t policy);
 
 #ifdef __cplusplus
 }

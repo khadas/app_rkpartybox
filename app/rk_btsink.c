@@ -32,6 +32,16 @@ int bt_sink_notify_btstate(btsink_state_t state)
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
 }
 
+int bt_sink_notify_btname(char *name)
+{
+	rk_bt_msg_t msg = {0};
+	msg.type = RK_BT_EVT;
+	msg.msgId = BT_SINK_NAME;
+	strcpy(msg.btinfo.remote_name, name);
+
+	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
+}
+
 int bt_sink_notify_a2dpstate(btsink_ad2p_state_t state)
 {
 	rk_bt_msg_t msg = {0};
@@ -201,6 +211,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
+		bt_sink_notify_btname(rdev->remote_alias);
 		bt_sink_notify_btstate((state == RK_BT_STATE_CONNECTED) ? BT_CONNECTED:BT_DISCONNECT);
 		break;
 	case RK_BT_STATE_PAIRED:

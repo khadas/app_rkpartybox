@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "pbox_common.h"
+#include "rk_btsink.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,6 +15,7 @@ typedef enum {
     PBOX_LCD_DISP_TRACK_INFO,
     PBOX_LCD_DISP_TRACK_POSITION,
     PBOX_LCD_DISP_USB_STATE,
+    PBOX_LCD_DISP_BT_STATE,
     PBOX_LCD_DISP_MAIN_VOL_LEVEL,
     PBOX_LCD_DISP_MIC_VOL_LEVEL,
     PBOX_LCD_DISP_MIC_MUTE,
@@ -73,6 +75,7 @@ typedef struct {
         } positions;
         energy_info_t energy_data;
         usb_state_t usbState;
+        btsink_state_t btState;
     };
 } pbox_lcd_msg_t;
 

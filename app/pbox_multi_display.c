@@ -136,5 +136,15 @@ void pbox_multi_displayUsbState(usb_state_t state, display_t policy) {
     if(policy & LED_DISPLAY_MASK)
         pbox_app_led_usbState(state);
 }
+
+void pbox_multi_displaybtState(btsink_state_t state, display_t policy) {
+
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_dispplaybtState(state);
+
+    //if(policy & LED_DISPLAY_MASK)
+    //    pbox_app_led_btState(state);
+}
+
 #undef LED_DISPLAY_MASK
 #undef LCD_DISPLAY_MASK

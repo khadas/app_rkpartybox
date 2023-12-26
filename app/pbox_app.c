@@ -70,6 +70,7 @@ void pbox_app_music_start(display_t policy) {
 
 void pbox_app_music_resume(display_t policy)
 {
+    printf("pbox_app_music_resume state %d\n", pboxUIdata->play_status);
     if(isBtA2dpConnected()) {
         pbox_btsink_playPause(true);
     }

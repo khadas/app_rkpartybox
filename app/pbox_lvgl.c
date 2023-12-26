@@ -249,6 +249,21 @@ void handleLcdUsbStateUpdateCmd(const pbox_lcd_msg_t *msg) {
     }
 }
 
+void handleLcdBtStateUpdateCmd(const pbox_lcd_msg_t *msg) {
+    printf("%s \n", __func__);
+    switch (msg->btState) {
+        case BT_DISCONNECT: {
+            printf("BT DISCONNECT\n");
+            _lv_demo_music_update_ui_info(UI_WIDGET_BT_STATE, msg);
+        } break;
+        case BT_CONNECTED: {
+            printf("BT CONNECTED\n");
+            _lv_demo_music_update_ui_info(UI_WIDGET_BT_STATE, msg);
+            _lv_demo_music_update_list();
+        } break;
+    }
+}
+
 // Function to handle the main volume level command
 void handleLcdMainVolLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t mainVolume = msg->mainVolume;
@@ -266,6 +281,7 @@ void handleLcdMicVolLevelCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdMicmuteCmd(const pbox_lcd_msg_t* msg) {
     bool mute = msg->micmute;
     printf("Mic mute Command State - %s\n", mute? "on":"off");
+    _lv_demo_music_update_ui_info(UI_WIDGET_MIC_MUTE, msg);
 }
 
 // Function to handle the accompaniment music level command
@@ -352,6 +368,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_TRACK_INFO, handleLcdTrackInfoCmd },
     { PBOX_LCD_DISP_TRACK_POSITION, handleLcdTrackPositionCmd },
     { PBOX_LCD_DISP_USB_STATE, handleLcdUsbStateUpdateCmd },
+    { PBOX_LCD_DISP_BT_STATE, handleLcdBtStateUpdateCmd },
     { PBOX_LCD_DISP_MAIN_VOL_LEVEL, handleLcdMainVolLevelCmd },
     { PBOX_LCD_DISP_MIC_VOL_LEVEL, handleLcdMicVolLevelCmd },
     { PBOX_LCD_DISP_MIC_MUTE, handleLcdMicmuteCmd },

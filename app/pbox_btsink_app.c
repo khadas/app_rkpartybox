@@ -105,6 +105,14 @@ void setBtSinkState(btsink_state_t state) {
     pboxBtSinkdata->btState = state;
 }
 
+char *getBtRemoteName(void) {
+    return pboxBtSinkdata->remote_name;
+}
+
+void setBtRemoteName(char *name) {
+    strcpy(pboxBtSinkdata->remote_name, name);
+}
+
 bool isBtA2dpConnected(void)
 {
 	if(pboxBtSinkdata->btState==BT_CONNECTED && (pboxBtSinkdata->a2dpState >= A2DP_CONNECTED))
@@ -156,6 +164,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             if(pboxBtSinkdata->btState == BT_INIT_ON || pboxBtSinkdata->btState == BT_DISCONNECT) {
                 if(pboxBtSinkdata->btState == BT_DISCONNECT) {
                     pbox_app_rockit_stop_BTplayer();
+                    pbox_app_music_stop(DISP_All);
                     pbox_btsink_pair_enable(true);
                 }
                 if(pboxBtSinkdata->btState == BT_INIT_ON) {
@@ -171,8 +180,13 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             else if(pboxBtSinkdata->btState == BT_NONE) {
                 printf("%s recv msg: btsink state: OFF\n", __func__);
             }
+            pbox_multi_displaybtState(pboxBtSinkdata->btState, DISP_All);
         } break;
 
+        case BT_SINK_NAME: {
+            printf("%s remote name: %s\n", __func__, msg->btinfo.remote_name);
+            setBtRemoteName(msg->btinfo.remote_name);
+        } break;
         case BT_SINK_A2DP_STATE: {
             btsink_ad2p_state_t a2dpState = msg->btinfo.a2dpState;
             printf("%s recv msg: a2dpsink state: %d -> [%d]\n", __func__, pboxBtSinkdata->a2dpState, a2dpState);

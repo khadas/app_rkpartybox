@@ -189,6 +189,10 @@ int _lv_demo_music_get_track_num() {
     return pboxTrackdata->track_num;
 }
 
+int _lv_demo_music_get_track_id() {
+    return pboxTrackdata->track_id;
+}
+
 void _lv_demo_music_update_list() {
     _lv_demo_music_update_track_list(list);
     _lv_demo_music_update_track_info(pboxTrackdata->track_id);

@@ -28,6 +28,7 @@ typedef struct {
     struct _pbox_btsink {
         char localAddr[6];
         char remoteAddr[6];
+        char remote_name[MAX_NAME_LENGTH + 1];
         btsink_state_t btState;
         btsink_ad2p_state_t a2dpState;
         int pcmSampeFreq;

@@ -753,7 +753,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_STOPBTPLAYER: {
-                pbox_rockit_music_stop();
+                pbox_rockit_music_stop_bt();
             } break;
 
             case PBOX_ROCKIT_STARTPLAYER: {

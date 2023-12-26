@@ -14,6 +14,7 @@
 #include "pbox_app.h"
 #include "../pbox_common.h"
 #include "pbox_btsink_app.h"
+#include "rk_btsink.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,6 +75,7 @@ extern lv_ft_info_t ttf_main_l;
 int32_t mHumanLevel=15, mMusicLevel=100, mGuitarLevel = 100;
 int32_t mVolumeLevel=50, mMicVolumeLevel=50;
 //bool mEchoReductionEnable = true;
+usb_state_t usbstate;
 bool mVocalSeperateEnable = false;
 lv_obj_t * vocal_label = NULL;
 lv_obj_t * accomp_label = NULL;
@@ -81,6 +83,7 @@ lv_obj_t * guitar_label = NULL;
 lv_obj_t * volume_label = NULL;
 lv_obj_t * volume_slider = NULL;
 lv_obj_t * mic_volume_label = NULL;
+lv_obj_t * mic_volume_slider = NULL;
 lv_obj_t * accomp_slider = NULL;
 lv_obj_t * guitar_slider = NULL;
 lv_obj_t * vocal_slider = NULL;
@@ -89,6 +92,7 @@ lv_obj_t *echo_3a_switch = NULL;
 lv_style_t accomp_style_disabled;
 lv_style_t vocal_style_disabled;
 lv_style_t guitar_style_disabled;
+lv_style_t mic_style_disabled;
 
 /**********************
  *      MACROS
@@ -236,18 +240,19 @@ void _lv_demo_music_album_next(bool next)
 
 void _lv_demo_music_update_track_info(uint32_t id) {
     uint32_t track_num = _lv_demo_music_get_track_num();
+    printf("%s id %d", __func__, id);
     play_status_t play_status = pboxUIdata->play_status;
     if (track_num > 0) {
-        if (play_status == IDLE || play_status == _STOP) {
+        //if (play_status == IDLE || play_status == _STOP) {
             lv_label_set_text(title_label, _lv_demo_music_get_title(id));
             lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
             lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
-        }
+        //}
     } else {
         if (getBtSinkState() != BT_CONNECTED) {
             if (play_status == PLAYING)
                 _lv_demo_music_stop();
-            lv_label_set_text(title_label, _lv_demo_music_get_title(id));
+            lv_label_set_text(title_label, "unknow");
             lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
             lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
         }
@@ -376,14 +381,48 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_clear_state(echo_3a_switch, LV_STATE_CHECKED);
             }
         } break;
-	case UI_WIDGET_USB_DISK_STATE: {
-	    usb_state_t state = msg->usbState; 
-	    if (state == USB_CONNECTED) {
-	        lv_label_set_text(source_label, "USB Inserted");
-	    } else if (state == USB_DISCONNECTED) {
-		lv_label_set_text(source_label, "USB Removed");
-	    }
-	} break;
+        case UI_WIDGET_USB_DISK_STATE: {
+            usbstate = msg->usbState;
+            printf("%s usbstate %s", __func__, usbstate == USB_CONNECTED? "on":"off");
+            if (getBtSinkState() != BT_CONNECTED) {
+                if (usbstate == USB_CONNECTED) {
+                    lv_label_set_text(source_label, "USB Inserted");
+                    lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
+                } else if (usbstate == USB_DISCONNECTED) {
+                    lv_label_set_text(source_label, "USB Removed");
+                    lv_obj_set_style_text_color(source_label, lv_color_hex(0xCCCCCC), 0);
+                }
+            }
+        } break;
+        case UI_WIDGET_BT_STATE: {
+            btsink_state_t state = msg->btState;
+            if (state == BT_CONNECTED) {
+                char name[MAX_NAME_LENGTH];
+                lv_snprintf(name, sizeof(name), "%s   connected", getBtRemoteName());
+                printf("%s remote name %s", __func__, name);
+                lv_label_set_text(source_label, name);
+                lv_obj_set_style_text_color(source_label, lv_color_hex(0x0082FC), 0);
+            } else if (state == BT_DISCONNECT) {
+                if (usbstate == USB_CONNECTED) {
+                    uint32_t track_id = _lv_demo_music_get_track_id();
+                    lv_label_set_text(source_label, "USB Inserted");
+                    lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
+                   _lv_demo_music_update_track_info(track_id);
+                } else if (usbstate == USB_DISCONNECTED) {
+                    lv_label_set_text(source_label, "USB Removed");
+                    lv_obj_set_style_text_color(source_label, lv_color_hex(0xCCCCCC), 0);
+                }
+            }
+        } break;
+        case UI_WIDGET_MIC_MUTE: {
+            bool mute = msg->micmute;
+            printf("%s mute:%s\n", __func__, mute?"on":"off");
+            if(mute) {
+                lv_obj_add_state(mic_volume_slider, LV_STATE_DISABLED);
+            } else {
+                lv_obj_clear_state(mic_volume_slider, LV_STATE_DISABLED);
+            }
+        } break;
         default:
             break;
     };
@@ -726,7 +765,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_label_set_text(mic_volume_label, "麦音量 100");
     lv_obj_set_style_text_font(mic_volume_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(mic_volume_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 2, 1);
-    lv_obj_t * mic_volume_slider = lv_slider_create(cont);
+    mic_volume_slider = lv_slider_create(cont);
     lv_obj_set_width(mic_volume_slider, LV_PCT(50));
     lv_obj_set_grid_cell(mic_volume_slider, LV_GRID_ALIGN_END, 3, 1, LV_GRID_ALIGN_CENTER, 2, 1);
     lv_obj_add_event_cb(mic_volume_slider, mic_volume_change_event_cb, LV_EVENT_RELEASED, NULL);
@@ -734,6 +773,12 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_slider_set_range(mic_volume_slider, 0, 100);
     //mMicVolumeLevel = 100;
     lv_slider_set_value(mic_volume_slider, 100, LV_ANIM_OFF);
+    lv_style_init(&mic_style_disabled);
+    lv_style_set_bg_color(&mic_style_disabled, lv_color_hex(0xCCCCCC));
+    lv_obj_add_style(mic_volume_slider, &mic_style_disabled, LV_PART_INDICATOR | LV_STATE_DISABLED);
+    lv_obj_add_style(mic_volume_slider, &mic_style_disabled, LV_PART_MAIN | LV_STATE_DISABLED);
+    lv_obj_add_style(mic_volume_slider, &mic_style_disabled, LV_PART_KNOB | LV_STATE_DISABLED);
+    lv_obj_clear_state(mic_volume_slider, LV_STATE_DISABLED);
 
     //mGuitarLevel = 100;
     if (mode == 1) {

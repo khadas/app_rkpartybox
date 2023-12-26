@@ -34,6 +34,7 @@ typedef enum _rk_cmd_msg_t{
 
 	//message id
 	BT_SINK_STATE =0x100,
+	BT_SINK_NAME,
 	BT_SINK_A2DP_STATE,
 	BT_SINK_MUSIC_FORMAT,
 	BT_SINK_MUSIC_TRACK,
@@ -81,6 +82,7 @@ typedef struct {
 		} btcmd;
 		struct {
 			char addr[24];
+			char remote_name[MAX_NAME_LENGTH + 1];
 			union {
 				btsink_state_t state;
 				btsink_ad2p_state_t a2dpState;
