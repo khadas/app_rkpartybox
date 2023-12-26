@@ -548,6 +548,18 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 	msleep(10);
 
     if(!onlyAplay) {
+		bool btsnoop = false;
+        if (!access("/userdata/cfg/rkwifibt_stack.conf", F_OK)) {
+                exec_command("cat /userdata/cfg/rkwifibt_stack.conf | grep BtSnoopLogOutput", ret_buff, 1024);
+                if(ret_buff[0]&&strstr(ret_buff, "BtSnoopLogOutput:true")) {
+                    btsnoop = true;
+                }
+        }
+		if(btsnoop) {
+			kill_task("hcidump");
+			exec_command_system("hcidump -i hci0 -w /data/btsnoop.log &");
+		}
+
 		run_task("bluealsa", "bluealsa --profile=a2dp-sink --a2dp-volume --initial-volume=70 --a2dp-force-audio-cd &");
     }
 

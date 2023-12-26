@@ -217,7 +217,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 case BT_SINK_ADPTER_DISCOVERABLE:
                     pboxBtSinkdata->discoverable = msg->btinfo.adpter.discoverable;
                     if (!pboxBtSinkdata->discoverable && (pboxBtSinkdata->btState != BT_CONNECTED)) {
-                        pbox_btsink_pair_enable(false);
+                        pbox_btsink_pair_enable(true);
                     }
                     break;
 
