@@ -312,6 +312,10 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
         } break;
         case PBOX_ROCKIT_PLAY_COMPLETED_EVT: {
             music_position = 0;
+            pbox_app_music_album_next(true, DISP_All);
+            if(pboxUIdata->play_status != PLAYING) {
+                pbox_app_music_resume(DISP_All);
+            }
         } break;
         case PBOX_ROCKIT_PLAY_ERROR_EVT: {
             music_position = 0;

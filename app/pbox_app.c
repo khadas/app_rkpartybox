@@ -96,6 +96,7 @@ void pbox_app_music_stop(display_t policy)
 }
 
 void pbox_app_music_set_volume(uint32_t volume, display_t policy) {
+    pboxUIdata->mVolumeLevel = volume;
     pbox_app_rockit_set_player_volume(volume);
     pbox_multi_displayMainVolumeLevel(volume, policy);
 }
