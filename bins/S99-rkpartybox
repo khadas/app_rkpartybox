@@ -4,6 +4,7 @@ chmod 777 /data/partybox_play.sh
 chmod 777 /data/rk_karaoke_test.sh
 
 /data/partybox_play.sh &
+sync
 
 start() {
 	ulimit -c unlimited
