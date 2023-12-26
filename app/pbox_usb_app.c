@@ -69,7 +69,6 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
     }
 
     pboxUsbdata->usbState = usbDiskState;
-    pbox_multi_displayUsbState(USB_SCANNED, DISP_All);
     switch(usbDiskState) {
         case USB_DISCONNECTED: {
             for (int i = 0; i < pboxTrackdata->track_num; i++) {
@@ -103,6 +102,7 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
             pboxTrackdata->track_id = 0;
         } break;
     }
+    pbox_multi_displayUsbState(usbDiskState, DISP_All);
 }
 
 void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
@@ -118,7 +118,7 @@ void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
                 pboxTrackdata->track_num, pboxTrackdata->track_list[pboxTrackdata->track_num].title, len);
     }
 
-    if (pboxTrackdata->track_num < 100)
+    if (pboxTrackdata->track_num < TRACK_MAX_NUM)
         pboxTrackdata->track_num++;
 }
 

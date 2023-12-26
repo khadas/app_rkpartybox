@@ -479,7 +479,7 @@ static void pbox_rockit_music_voice_seperate(pbox_vocal_t vocal) {
     int32_t rLevel = vocal.u32ReservLevel;
 
     if(hLevel > 100) hLevel = 15;
-    else if(hLevel < 3) hLevel = 3;
+    else if(hLevel < 0) hLevel = 0;
 
     if(mLevel > 100 ) mLevel = 100;
     else if(mLevel < 0) mLevel = 0;

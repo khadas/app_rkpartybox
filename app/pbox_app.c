@@ -245,6 +245,8 @@ void pbox_app_music_volume_up(display_t policy) {
         *volume += 15;
     else if (*volume <= 75)
         *volume += 25;
+    else
+        *volume = 100;
 
     printf("%s volume up:%d\n", __func__, *volume);
     pbox_app_music_set_volume(*volume, policy);
@@ -262,6 +264,8 @@ void pbox_app_music_volume_down(display_t policy) {
         *volume -= 15; 
     else if (*volume >= 5)
         *volume -= 5;
+    else
+        *volume = 0;
 
     printf("%s volume down:%d\n", __func__, *volume);
     pbox_app_music_set_volume(*volume, policy);

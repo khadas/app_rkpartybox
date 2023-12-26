@@ -13,6 +13,7 @@
 #include "pbox_lvgl.h"
 #include "pbox_app.h"
 #include "../pbox_common.h"
+#include "pbox_btsink_app.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -233,11 +234,22 @@ void _lv_demo_music_album_next(bool next)
 }
 
 void _lv_demo_music_update_track_info(uint32_t id) {
+    uint32_t track_num = _lv_demo_music_get_track_num();
     play_status_t play_status = pboxUIdata->play_status;
-    if (play_status == IDLE) {
-         lv_label_set_text(title_label, _lv_demo_music_get_title(id));
-         lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
-         lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
+    if (track_num > 0) {
+        if (play_status == IDLE || play_status == _STOP) {
+            lv_label_set_text(title_label, _lv_demo_music_get_title(id));
+            lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
+            lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
+        }
+    } else {
+        if (getBtSinkState() != BT_CONNECTED) {
+            if (play_status == PLAYING)
+                _lv_demo_music_stop();
+            lv_label_set_text(title_label, _lv_demo_music_get_title(id));
+            lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
+            lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
+        }
     }
 }
 
