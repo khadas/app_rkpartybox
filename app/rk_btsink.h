@@ -104,6 +104,7 @@ typedef struct {
 			};
 		} btinfo;
 	};
+	int media_volume;
 } rk_bt_msg_t;
 
 bool isBtA2dpConnected(void);

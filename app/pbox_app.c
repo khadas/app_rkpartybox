@@ -149,16 +149,33 @@ void pbox_app_music_album_next(bool next, display_t policy)
     }
 }
 
+int nomal_mode_volume = 0;
+
 void pbox_app_music_original_singer_open(bool orignal, display_t policy)
 {
     bool seperate = !orignal;
     uint32_t hlevel = pboxUIdata->mHumanLevel;
     uint32_t mlevel = pboxUIdata->mMusicLevel;
     uint32_t rlevel = pboxUIdata->mReservLevel;
+    uint32_t volume = pbox_rockit_music_master_volume_get();
 
     pboxUIdata->mVocalSeperateEnable = !orignal;
     pbox_app_rockit_set_player_seperate(seperate , hlevel, mlevel, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate , hlevel, mlevel, rlevel, policy);
+
+    if (getBtSinkState() == BT_CONNECTED) {
+	    if (!orignal) {
+		    nomal_mode_volume = volume;
+		    if(volume < 80) {
+			    printf("%s rk_bt_sink_set_volume :%d \n", __func__, 80);
+			    rk_bt_sink_set_volume(80*128/100);
+		    }
+		    pbox_app_music_set_volume(20, DISP_All);
+	    } else {
+		    printf("%s set nomal_mode_volume :%d \n", __func__, nomal_mode_volume);
+		    pbox_app_music_set_volume(nomal_mode_volume, DISP_All);
+	    }
+    }
 }
 
 //album mode: shuffle, sequence, repeat, repeat one.....

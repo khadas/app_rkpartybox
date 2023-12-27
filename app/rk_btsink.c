@@ -152,6 +152,16 @@ static unsigned int a2dp_codec_lookup_channels(uint16_t capability_value) {
 	return 0;
 }
 
+static void bt_sink_notify_volume(uint32_t volume)
+{
+	rk_bt_msg_t msg = {0};
+	msg.type = RK_BT_EVT;
+	msg.msgId = RK_BT_ABS_VOL;
+	msg.media_volume = volume;
+
+	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
+}
+
 static RkBtContent bt_content;
 static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 {
@@ -266,6 +276,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
+		bt_sink_notify_volume(rdev->media.volume);
 		break;
 	case RK_BT_STATE_TRANSPORT_IDLE:
 		printf("+ STATE AVDTP TRASNPORT IDLE [%s|%d]:%s:%s\n",

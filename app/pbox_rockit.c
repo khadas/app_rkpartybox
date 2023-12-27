@@ -502,7 +502,7 @@ static void pbox_rockit_music_voice_seperate(pbox_vocal_t vocal) {
     printf("%s RK_MPI_KARAOKE_SetPlayerParam_func res:%d\n" ,__func__, ret);
 }
 
-static uint32_t pbox_rockit_music_master_volume_get() {
+uint32_t pbox_rockit_music_master_volume_get() {
     RK_U32 volume = 0; 
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_GetPlayerVolume_func);
