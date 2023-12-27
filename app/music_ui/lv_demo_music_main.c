@@ -709,7 +709,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //volume control
     volume_label = lv_label_create(cont);
-    lv_label_set_text(volume_label, "主音量 50");
+    lv_label_set_text(volume_label, "主音量 100");
     lv_obj_set_style_text_font(volume_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(volume_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
     volume_slider = lv_slider_create(cont);
@@ -719,7 +719,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_slider_set_mode(volume_slider, LV_SLIDER_MODE_NORMAL);
     lv_slider_set_range(volume_slider, 0, 100);
     //mVolumeLevel = 50;
-    lv_slider_set_value(volume_slider, 50, LV_ANIM_OFF);
+    lv_slider_set_value(volume_slider, 100, LV_ANIM_OFF);
 
     //mic volume control
     mic_volume_label = lv_label_create(cont);
