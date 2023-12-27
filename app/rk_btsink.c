@@ -12,6 +12,7 @@
 #include "rk_btsink.h"
 #include "rk_utils.h"
 #include "pbox_socket.h"
+#include "pbox_socketpair.h"
 
 #define PRINT_FLAG_ERR "[RK_BT_ERROR]"
 #define PRINT_FLAG_SUCESS "[RK_BT_SUCESS]"
@@ -623,11 +624,19 @@ static void *btsink_server(void *arg)
 
 	char buff[sizeof(rk_bt_msg_t)] = {0};
 
+    #if ENABLE_UDP_CONNECTION_LESS
     int sockfd = create_udp_socket(SOCKET_PATH_BTSINK_SERVER);
+    #else
+    int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
+    #endif
 
 	while(true) {
 		memset(buff, 0, sizeof(buff));
-		int ret = recvfrom(sockfd, buff, sizeof(buff), 0, NULL, NULL);
+#if ENABLE_UDP_CONNECTION_LESS
+        int ret = recvfrom(sockfd, buff, sizeof(buff), 0, NULL, NULL);
+#else
+        int ret = recv(sockfd, buff, sizeof(buff), 0);
+#endif
 		if (ret <= 0)
 			continue;
 

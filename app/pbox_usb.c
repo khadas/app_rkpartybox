@@ -19,6 +19,7 @@
 #include "pbox_usb.h"
 #include "pbox_usb_scan.h"
 #include "pbox_socket.h"
+#include "pbox_socketpair.h"
 
 static void handleUsbStartScanCmd(const pbox_usb_msg_t* msg);
 static void handleUsbPollStateCmd(const pbox_usb_msg_t* msg);
@@ -190,7 +191,12 @@ static void *pbox_usb_server(void *arg)
 
     pthread_setname_np(pthread_self(), "pbox_usb");
 
+    #if ENABLE_UDP_CONNECTION_LESS
     usb_fds[USB_UDP_SOCKET] = create_udp_socket(SOCKET_PATH_USB_SERVER);
+    #else
+    usb_fds[USB_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+    #endif
+
     if (usb_fds[USB_UDP_SOCKET] < 0) {
         perror("Failed to create UDP socket");
         return (void *)-1;
@@ -249,7 +255,11 @@ static void *pbox_usb_server(void *arg)
                 continue;
             switch (i) {
                 case USB_UDP_SOCKET: {
+#if ENABLE_UDP_CONNECTION_LESS
                     int ret = recvfrom(usb_fds[USB_UDP_SOCKET], buff, sizeof(buff), 0, NULL, NULL);
+#else
+                    int ret = recv(usb_fds[USB_UDP_SOCKET], buff, sizeof(buff), 0);
+#endif
                     if (ret <= 0) {
                         if (ret == 0) {
                             printf("Socket closed\n");

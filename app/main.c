@@ -18,6 +18,7 @@
 #include "pbox_common.h"
 #include "pbox_rockit.h"
 #include "pbox_socket.h"
+#include "pbox_socketpair.h"
 #include "pbox_lvgl.h"
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
@@ -30,6 +31,8 @@ void maintask_timer_fd_process(int timer_fd);
 
 static int quit = 0;
 #define PBOX_TIMER_INTERVAL 10
+
+pbox_pipe_t pbox_pipe_fds[PBOX_SOCKPAIR_NUM];
 
 int maintask_read_event(int source, int fd) {
     int result = 0;
@@ -72,16 +75,41 @@ static void sigterm_handler(int sig)
 
 void main(int argc, char **argv) {
     int max_fd, i;
-    int pbox_fds[PBOX_MAIN_NUM] = {-1, -1, -1, -1, -1};
-	pthread_setname_np(pthread_self(), "party_main");
-	signal(SIGINT, sigterm_handler);
-#if ENABLE_LCD_DISPLAY
-    pbox_fds[PBOX_MAIN_LVGL] = create_udp_socket(SOCKET_PATH_LVGL_CLINET);
+    int pbox_fds[PBOX_MAIN_NUM] = {0};
+    pthread_setname_np(pthread_self(), "party_main");
+    signal(SIGINT, sigterm_handler);
+
+    for (i = 0; i< PBOX_SOCKPAIR_NUM; i++) {
+#if ENABLE_UDP_CONNECTION_LESS
+            pbox_fds[i] = -1;
+#else
+        if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0 , pbox_pipe_fds[i].fd) == -1) {
+            printf("Couldn't create pbox_fds[%d]: %s", i, strerror(errno));
+            goto pbox_main_exit;
+        }
+        printf("main: pbox_pipe_fds[%d]={%d, %d}\n", i, pbox_pipe_fds[i].fd[0], pbox_pipe_fds[i].fd[1]);
 #endif
+    }
+
+#if ENABLE_LCD_DISPLAY
+#if ENABLE_UDP_CONNECTION_LESS
+    pbox_fds[PBOX_MAIN_LVGL] = create_udp_socket(SOCKET_PATH_LVGL_CLINET);
+#else
+    pbox_fds[PBOX_MAIN_LVGL] = get_client_socketpair_fd(PBOX_SOCKPAIR_LVGL);
+#endif
+#endif
+
+#if ENABLE_UDP_CONNECTION_LESS
     pbox_fds[PBOX_MAIN_BT] = create_udp_socket(SOCKET_PATH_BTSINK_CLIENT);
     pbox_fds[PBOX_MAIN_ROCKIT] = create_udp_socket(SOCKET_PATH_ROCKIT_CLINET);
     pbox_fds[PBOX_MAIN_KEYSCAN] = create_udp_socket(SOCKET_PATH_KEY_SCAN_CLINET);
     pbox_fds[PBOX_MAIN_USBDISK] = create_udp_socket(SOCKET_PATH_USB_CLIENT);
+#else
+    pbox_fds[PBOX_MAIN_BT] = get_client_socketpair_fd(PBOX_SOCKPAIR_BT);
+    pbox_fds[PBOX_MAIN_ROCKIT] = get_client_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
+    pbox_fds[PBOX_MAIN_KEYSCAN] = get_client_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
+    pbox_fds[PBOX_MAIN_USBDISK] = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+#endif
     pbox_fds[PBOX_MAIN_FD_TIMER] = create_fd_timer();
     //battery_fd;
 #if ENABLE_LCD_DISPLAY
@@ -101,9 +129,9 @@ void main(int argc, char **argv) {
     FD_ZERO(&read_fds);
     for (i= 0, max_fd = pbox_fds[0]; i < ARRAYSIZE(pbox_fds); i++) {
         FD_SET(pbox_fds[i], &read_fds);
-        printf("pbox_fds[%i]=%d, maxfd=%d\n", i, pbox_fds[i], max_fd);
         if (max_fd < pbox_fds[i])
             max_fd = pbox_fds[i];
+        printf("pbox_fds[%i]=%d, maxfd=%d\n", i, pbox_fds[i], max_fd);
     }
 
     start_fd_timer(pbox_fds[PBOX_MAIN_FD_TIMER], 2, PBOX_TIMER_INTERVAL, true); //every 10ms a timer.
@@ -129,9 +157,31 @@ void main(int argc, char **argv) {
         }
     }
 
+pbox_main_exit:
     for(i =0; i< ARRAYSIZE(pbox_fds); i++) {
+#if ENABLE_UDP_CONNECTION_LESS
         close(pbox_fds[i]);
+#else
+        if(i == PBOX_MAIN_FD_TIMER) {
+            close(pbox_fds[i]);
+            continue;
+        }
+
+        if(pbox_pipe_fds[i].fd[0] !=0) {
+            shutdown(pbox_pipe_fds[i].fd[0], SHUT_WR);
+            shutdown(pbox_pipe_fds[i].fd[0], SHUT_RD);
+            close(pbox_pipe_fds[i].fd[0]);
+            pbox_pipe_fds[i].fd[0] = 0;
+        }
+
+        if(pbox_pipe_fds[i].fd[1] !=0) {
+            shutdown(pbox_pipe_fds[i].fd[1], SHUT_WR);
+            shutdown(pbox_pipe_fds[i].fd[1], SHUT_RD);
+            close(pbox_pipe_fds[i].fd[1]);
+            pbox_pipe_fds[i].fd[1] = 0;
+        }
     }
+#endif
 }
 
 static uint64_t msTimePassed = 0;

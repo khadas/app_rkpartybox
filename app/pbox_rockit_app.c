@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include "pbox_common.h"
 #include "pbox_socket.h"
+#include "pbox_socketpair.h"
 #include "pbox_rockit.h"
 #include "pbox_multi_display.h"
 #include "pbox_app.h"
@@ -425,8 +426,11 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
 void maintask_rockit_fd_process(int fd) 
 {
     char buff[sizeof(pbox_rockit_msg_t)] = {0};
-
+#if ENABLE_UDP_CONNECTION_LESS
     int ret = recvfrom(fd, buff, sizeof(buff), 0, NULL, NULL);
+#else
+    int ret = recv(fd, buff, sizeof(buff), 0);
+#endif
     if (ret <= 0)
         return;
 

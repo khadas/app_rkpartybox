@@ -29,6 +29,18 @@ extern "C" {
 #define MAX_APP_NAME_LENGTH 255
 #define TRACK_MAX_NUM 100
 #define ENABLE_LCD_DISPLAY 1
+#define ENABLE_UDP_CONNECTION_LESS 0
+typedef enum {
+    PBOX_SOCKPAIR_BT,
+    PBOX_SOCKPAIR_KEYSCAN,
+    PBOX_SOCKPAIR_ROCKIT,
+    PBOX_SOCKPAIR_USBDISK,
+#if ENABLE_LCD_DISPLAY
+    PBOX_SOCKPAIR_LVGL,
+#endif
+    PBOX_SOCKPAIR_LED, //keep it before PBOX_MAIN_NUM
+    PBOX_SOCKPAIR_NUM
+} pb_sock_pair_t;
 
 typedef enum {
     PBOX_MAIN_BT,
@@ -122,6 +134,12 @@ typedef struct {
     music_format_t format;//reserved
     char fileName[MAX_APP_NAME_LENGTH+1];
 } usb_music_file_t;
+
+typedef struct _pbox_pipe {
+    int fd[2];
+} pbox_pipe_t;
+
+extern pbox_pipe_t pbox_pipe_fds[PBOX_MAIN_NUM];
 
 void start_fd_timer(int timer_fd, int start, int interval, bool loop);
 int create_fd_timer (void);

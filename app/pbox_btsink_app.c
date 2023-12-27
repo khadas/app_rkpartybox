@@ -13,6 +13,7 @@
 #include "rk_btsink.h"
 #include "pbox_btsink_app.h"
 #include "pbox_socket.h"
+#include "pbox_socketpair.h"
 #include "pbox_rockit_app.h"
 #include "pbox_multi_display.h"
 #include "pbox_app.h"
@@ -234,7 +235,11 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
 
 void maintask_bt_fd_process(int fd) {
     char buff[sizeof(pbox_bt_msg_t)] = {0};
+#if ENABLE_UDP_CONNECTION_LESS
     int ret = recvfrom(fd, buff, sizeof(buff), 0, NULL, NULL);
+#else
+    int ret = recv(fd, buff, sizeof(buff), 0);
+#endif
     if ((ret == 0) || (ret < 0 && (errno != EINTR))) {
         printf("%s ret:%d , error:%d\n", __func__, ret, errno);
         return;
