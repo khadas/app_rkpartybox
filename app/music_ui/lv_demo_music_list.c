@@ -22,6 +22,7 @@ extern lv_ft_info_t ttf_main_l;
 /*********************
  *      DEFINES
  *********************/
+#define TOAST_TEXT    "                      Please disconnect the"
 
 /**********************
  *      TYPEDEFS
@@ -49,6 +50,8 @@ static lv_style_t style_btn_dis;
 static lv_style_t style_title;
 static lv_style_t style_artist;
 static lv_style_t style_time;
+static lv_obj_t * toast;
+static lv_timer_t  * toast_timer;
 LV_IMG_DECLARE(img_lv_demo_music_btn_list_play);
 LV_IMG_DECLARE(img_lv_demo_music_btn_list_pause);
 
@@ -164,6 +167,40 @@ lv_obj_t * _lv_demo_music_list_create(lv_obj_t * parent)
     return list;
 }
 
+// Callback Function for Toast Closed
+static void toast_close_cb(lv_timer_t * timer) {
+    if (toast != NULL) {
+        lv_obj_del(toast);
+        toast = NULL;
+    }
+    if (toast != NULL) {
+        lv_timer_del(toast_timer);
+        toast_timer = NULL;
+    }
+}
+
+void create_list_toast(lv_obj_t * parent, const char * text, uint32_t duration_ms) {
+    if (toast == NULL) {
+        toast = lv_label_create(parent);
+        lv_label_set_text(toast, text);
+#if LV_DEMO_MUSIC_LARGE
+        lv_obj_set_size(toast, lv_pct(100), lv_pct(100));
+#else
+        lv_obj_set_size(toast, lv_pct(100), lv_pct(100));
+#endif
+        //lv_obj_set_style_bg_color(toast, lv_color_white(), 0);
+        //lv_obj_set_style_bg_opa(toast, LV_OPA_70, 0);
+        lv_obj_set_style_text_color(toast, lv_color_hex(0x0082FC), 0);
+        lv_obj_set_style_pad_all(toast, 10, 0);
+        lv_obj_set_style_radius(toast, 5, 0);
+        lv_obj_set_style_text_font(toast, ttf_main_m.font, 0);
+        lv_obj_align(toast, LV_ALIGN_CENTER, LV_ALIGN_CENTER, 0);
+
+        if(toast_timer == NULL)
+            toast_timer = lv_timer_create(toast_close_cb, duration_ms, toast);
+    }
+}
+
 void _lv_demo_music_update_track_list(lv_obj_t * list) {
     uint32_t track_id;
     uint32_t new_track_num = _lv_demo_music_get_track_num();
@@ -180,16 +217,16 @@ void _lv_demo_music_update_track_list(lv_obj_t * list) {
 
 void _lv_demo_music_list_btn_check(uint32_t track_id, bool state)
 {
-    lv_obj_t * btn = lv_obj_get_child(list, track_id);
-    //lv_obj_t * icon = lv_obj_get_child(btn, 0);
-    if(state) {
-        lv_obj_add_state(btn, LV_STATE_CHECKED);
-       // lv_img_set_src(icon, &img_lv_demo_music_btn_list_pause);
-       // lv_obj_scroll_to_view(btn, LV_ANIM_ON);
-    }
-    else {
-        lv_obj_clear_state(btn, LV_STATE_CHECKED);
-        //lv_img_set_src(icon, &img_lv_demo_music_btn_list_play);
+    uint32_t id;
+    uint32_t track_num = _lv_demo_music_get_track_num();
+
+    printf("%s, track_id:%d\n", __func__, track_id);
+    for(id = 0; id < track_num; id++) {
+        lv_obj_t * btn = lv_obj_get_child(list, id);
+        if (id == track_id)
+            lv_obj_add_state(btn, LV_STATE_CHECKED);
+        else
+            lv_obj_clear_state(btn, LV_STATE_CHECKED);
     }
 }
 
@@ -211,6 +248,7 @@ static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id)
     if(btn == NULL) {
         btn = lv_obj_create(parent);
     }
+    lv_obj_remove_style_all(btn);
 #if LV_DEMO_MUSIC_LARGE
     lv_obj_set_size(btn, lv_pct(100), 110);
 #else
@@ -280,8 +318,12 @@ static void btn_click_event_cb(lv_event_t * e)
 
     uint32_t idx = lv_obj_get_child_id(btn);
 
-    if (getBtSinkState() == BT_CONNECTED)
+    if (getBtSinkState() == BT_CONNECTED) {
+        char text[MAX_NAME_LENGTH];
+        lv_snprintf(text, sizeof(text), "%s %s device first.", TOAST_TEXT, getBtRemoteName());
+        create_list_toast(btn, text, 1000);
         return;
+    }
 
     _lv_demo_music_stop();
     _lv_demo_music_play(idx);

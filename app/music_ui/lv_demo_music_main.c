@@ -212,13 +212,14 @@ lv_obj_t * _lv_demo_music_main_create(lv_obj_t * parent)
 
 void _lv_demo_music_album_next(bool next)
 {
-    uint32_t id = track_id;
+    uint32_t id = _lv_demo_music_get_track_id();
     uint32_t track_num = _lv_demo_music_get_track_num();
     play_status_t play_status = pboxUIdata->play_status;
 
     printf("%s, next:%d\n", __func__, next);
     lcd_pbox_notifyPrevNext(next);
-#if 0
+
+    //_lv_demo_music_list_btn_check(id, false);
     if(next) {
             id++;
             if(id >= track_num) id = 0;
@@ -231,7 +232,9 @@ void _lv_demo_music_album_next(bool next)
                 id--;
             }
     }
+    _lv_demo_music_list_btn_check(id, true);
 
+#if 0
     if(play_status == PLAYING) {
         _lv_demo_music_play(id);
     } else {
@@ -250,6 +253,7 @@ void _lv_demo_music_update_track_info(uint32_t id) {
             lv_label_set_text(title_label, _lv_demo_music_get_title(id));
             lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
             lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
+            _lv_demo_music_list_btn_check(id, true);
         //}
     } else {
         if (getBtSinkState() != BT_CONNECTED) {
@@ -323,12 +327,14 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             lv_slider_set_value(volume_slider, mainVolume, LV_ANIM_OFF);
         } break;
         case UI_WIDGET_TRACK_INFO: {
+            uint32_t track_id = _lv_demo_music_get_track_id();
             char *artist = (char*)(msg->track.artist);
             char *title = (char*)(msg->track.title);
             if(artist && (strlen(artist)>0))
                 lv_label_set_text(artist_label, artist);
             if(title && (strlen(title)>0))
                 lv_label_set_text(title_label, title);
+            _lv_demo_music_list_btn_check(track_id, true);
         } break;
         case UI_WIDGET_POSITION_INFO: {
             static int  prev_total = 0;
@@ -1019,7 +1025,7 @@ static void track_load(uint32_t id)
     bool next = false;
     if((track_id + 1) % track_num == id) next = true;
 
-    _lv_demo_music_list_btn_check(track_id, false);
+    //_lv_demo_music_list_btn_check(track_id, false);
     track_id = id;
     _lv_demo_music_list_btn_check(id, true);
     lcd_pbox_notifyTrackid(track_id);
