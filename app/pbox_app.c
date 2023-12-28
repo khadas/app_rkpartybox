@@ -58,6 +58,11 @@ void pbox_app_music_start(display_t policy) {
         for (int i=0 ; i< pboxTrackdata->track_num; i++) {
             printf("pboxTrackdata->track_list[%d]:%s\n", i, pboxTrackdata->track_list[i].title);
         }
+
+        if(pboxTrackdata->track_num == 0) {
+            return;
+        }
+
         track_name = pbox_app_usb_get_title(pboxTrackdata->track_id);
         sprintf(track_uri, MUSIC_PATH"%s", track_name);
         printf("play track [%s]\n", track_uri);
@@ -73,6 +78,10 @@ void pbox_app_music_resume(display_t policy)
     printf("pbox_app_music_resume state %d\n", pboxUIdata->play_status);
     if(isBtA2dpConnected()) {
         pbox_btsink_playPause(true);
+    } else {
+        if(pboxTrackdata->track_num == 0) {
+            return;
+        }
     }
 
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP) {
@@ -116,6 +125,10 @@ void pbox_app_music_album_next(bool next, display_t policy)
         }
     }
     else {
+        if(pboxTrackdata->track_num == 0) {
+            return;
+        }
+
         if(next) {
             (*pId)++;
             if(*pId >= pboxTrackdata->track_num) *pId = 0;
