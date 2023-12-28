@@ -220,7 +220,7 @@ void maintask_timer_fd_process(int timer_fd) {
     if((isPoweron == false) && (0 == msTimePassed%100)) {
         isPoweron = true;
         pbox_app_usb_pollState();
-        pbox_app_music_set_volume(100, DISP_All);
+        pbox_app_music_set_volume(50, DISP_All);
         pbox_app_music_set_echo_3a(true, DISP_All);
         pbox_app_music_set_mic_mute(false, DISP_All);
     }
