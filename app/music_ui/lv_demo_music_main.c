@@ -747,7 +747,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     static const lv_coord_t misc_grid_row[] = {LV_GRID_CONTENT, LV_GRID_FR(4), LV_GRID_CONTENT, LV_GRID_FR(4),LV_GRID_CONTENT,
                                                                 LV_GRID_FR(4), LV_GRID_CONTENT, LV_GRID_FR(4), LV_GRID_CONTENT,
-                                                                LV_GRID_FR(4), LV_GRID_TEMPLATE_LAST};
+                                                                LV_GRID_CONTENT, LV_GRID_FR(0), LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(cont, misc_grid_col, misc_grid_row);
     lv_obj_set_style_grid_row_align(cont, LV_GRID_ALIGN_SPACE_BETWEEN, 0);
 
