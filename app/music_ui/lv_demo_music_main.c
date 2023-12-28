@@ -67,6 +67,8 @@ static const lv_font_t * font_large;
 static uint32_t track_id = 0;
 static lv_obj_t * play_obj;
 static lv_obj_t * voice_obj;
+static lv_obj_t * toast;
+static lv_timer_t  * toast_timer;
 
 //karaoke control
 extern lv_ft_info_t ttf_main_s;
@@ -97,6 +99,7 @@ lv_style_t mic_style_disabled;
 /**********************
  *      MACROS
  **********************/
+#define TOAST_TEXT "To better showcase the vocal separation effects, please increase the volume on your phone."
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -357,6 +360,8 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
                 if (guitar_slider != NULL)
                     lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
+		if (getBtSinkState() == BT_CONNECTED)
+			create_toast(main_cont, TOAST_TEXT, 7000);
             }
             else {
                 lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
@@ -426,6 +431,36 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
         default:
             break;
     };
+}
+
+// Callback Function for Toast Closed
+static void toast_close_cb(lv_timer_t * timer) {
+	if (toast != NULL) {
+		lv_obj_del(toast);
+		toast = NULL;
+	}
+	if (toast != NULL) {
+		lv_timer_del(toast_timer);
+		toast_timer = NULL;
+	}
+}
+
+void create_toast(lv_obj_t * parent, const char * text, uint32_t duration_ms) {
+	if (toast == NULL) {
+		toast = lv_label_create(parent);
+		lv_label_set_text(toast, text);
+		lv_obj_set_size(toast, lv_pct(50), lv_pct(50));
+		lv_obj_set_style_bg_color(toast, lv_color_white(), 0);
+		lv_obj_set_style_bg_opa(toast, LV_OPA_70, 0);
+		lv_obj_set_style_text_color(toast, lv_color_hex(0x0082FC), 0);
+		lv_obj_set_style_pad_all(toast, 10, 0);
+		lv_obj_set_style_radius(toast, 5, 0);
+		lv_obj_set_style_text_font(toast, ttf_main_m.font, 0);
+		lv_obj_align(toast, LV_ALIGN_CENTER, 0, 0);
+
+		if(toast_timer == NULL)
+			toast_timer = lv_timer_create(toast_close_cb, duration_ms, toast);
+	}
 }
 
 /**********************
@@ -596,6 +631,8 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
         lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
         if (guitar_slider != NULL)
             lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
+	if (getBtSinkState() == BT_CONNECTED)
+		create_toast(main_cont, TOAST_TEXT, 7000);
     }
     else {
         lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
