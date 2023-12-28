@@ -179,10 +179,8 @@ void pbox_app_music_original_singer_open(bool orignal, display_t policy)
     if (getBtSinkState() == BT_CONNECTED) {
 	    if (!orignal) {
 		    nomal_mode_volume = volume;
-		    if(volume < 80) {
-			    printf("%s rk_bt_sink_set_volume :%d \n", __func__, 80);
-			    rk_bt_sink_set_volume(80*128/100);
-		    }
+		    printf("%s rk_bt_sink_set_volume :%d \n", __func__, 80);
+		    pbox_btsink_volume_set(80*128/100);
 		    pbox_app_music_set_volume(20, DISP_All);
 	    } else {
 		    printf("%s set nomal_mode_volume :%d \n", __func__, nomal_mode_volume);

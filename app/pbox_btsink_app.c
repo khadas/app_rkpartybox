@@ -54,6 +54,16 @@ void pbox_btsink_music_next(bool next) {
     unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
 }
 
+void pbox_btsink_volume_set(int volume) {
+    pbox_bt_msg_t msg = {
+        .type = RK_BT_CMD,
+        .msgId = RK_BT_ABS_VOL,
+    };
+    msg.media_volume = volume;
+
+    unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
+}
+
 void pbox_btsink_volume_up(bool up) {
     pbox_bt_msg_t msg = {
         .type = RK_BT_CMD,

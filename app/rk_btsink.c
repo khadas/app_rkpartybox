@@ -703,6 +703,9 @@ static void *btsink_server(void *arg)
     			case RK_BT_START_BLUEALSA_APLAY:{
     				bt_restart_a2dp_sink(1);
                 } break;
+			case RK_BT_ABS_VOL:{
+				rk_bt_sink_set_volume(msg->media_volume);
+                } break;
 			}
 		}
 	}
