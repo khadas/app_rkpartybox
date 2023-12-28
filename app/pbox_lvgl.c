@@ -318,6 +318,7 @@ void handleLcdEcho3ASwitchCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdReverbModeCmd(const pbox_lcd_msg_t* msg) {
     pbox_revertb_t reverbMode = msg->reverbMode;
     printf("Reverb Mode Command: Mode - %d\n", reverbMode);
+    _lv_demo_music_update_ui_info(UI_WIDGET_REVERTB_MODE, msg);
 }
 
 // Function to handle the loop mode command

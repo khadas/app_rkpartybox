@@ -68,6 +68,7 @@ static uint32_t track_id = 0;
 static lv_obj_t * play_obj;
 static lv_obj_t * voice_obj;
 static lv_obj_t * toast;
+static lv_obj_t * reverb_dd_obj;
 static lv_timer_t  * toast_timer;
 
 //karaoke control
@@ -99,8 +100,8 @@ lv_style_t mic_style_disabled;
 /**********************
  *      MACROS
  **********************/
-#define TOAST_TEXT "To better showcase the vocal separation effects, please increase the volume on your phone."
 
+#define TOAST_TEXT "Volume UP U device to show \nBETTER music Split Perfermance."
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
@@ -322,7 +323,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
         case UI_WIDGET_MAIN_VOLUME: {
             uint32_t mainVolume = msg->mainVolume;
             char buf[16];
-                    lv_snprintf(buf, sizeof(buf), "主音量 %d", mainVolume);
+                    lv_snprintf(buf, sizeof(buf), "Volume  %d", mainVolume);
             lv_label_set_text(volume_label, buf);
             lv_slider_set_value(volume_slider, mainVolume, LV_ANIM_OFF);
         } break;
@@ -367,7 +368,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 if (guitar_slider != NULL)
                     lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
 		if (getBtSinkState() == BT_CONNECTED)
-			create_toast(main_cont, TOAST_TEXT, 7000);
+			create_toast(main_cont, TOAST_TEXT, 5000);
             }
             else {
                 lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
@@ -409,7 +410,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             btsink_state_t state = msg->btState;
             if (state == BT_CONNECTED) {
                 char name[MAX_NAME_LENGTH];
-                lv_snprintf(name, sizeof(name), "%s   connected", getBtRemoteName());
+                lv_snprintf(name, sizeof(name), "%s", getBtRemoteName());
                 printf("%s remote name %s", __func__, name);
                 lv_label_set_text(source_label, name);
                 lv_obj_set_style_text_color(source_label, lv_color_hex(0x0082FC), 0);
@@ -433,6 +434,11 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             } else {
                 lv_obj_clear_state(mic_volume_slider, LV_STATE_DISABLED);
             }
+        } break;
+        case UI_WIDGET_REVERTB_MODE: {
+            pbox_revertb_t mode = msg->reverbMode;
+            printf("%s revertb_mode:%d\n", __func__, mode);
+            lv_dropdown_set_selected(reverb_dd_obj, PBOX_REVERT_KTV);
         } break;
         default:
             break;
@@ -458,7 +464,7 @@ void create_toast(lv_obj_t * parent, const char * text, uint32_t duration_ms) {
 		lv_obj_set_size(toast, lv_pct(50), lv_pct(50));
 		lv_obj_set_style_bg_color(toast, lv_color_white(), 0);
 		lv_obj_set_style_bg_opa(toast, LV_OPA_70, 0);
-		lv_obj_set_style_text_color(toast, lv_color_hex(0x0082FC), 0);
+		lv_obj_set_style_text_color(toast, lv_color_hex(0xF9680D), 0);
 		lv_obj_set_style_pad_all(toast, 10, 0);
 		lv_obj_set_style_radius(toast, 5, 0);
 		lv_obj_set_style_text_font(toast, ttf_main_m.font, 0);
@@ -558,7 +564,7 @@ static lv_obj_t * create_title_box(lv_obj_t * parent)
 
     artist_label = lv_label_create(cont);
     lv_obj_set_style_text_font(artist_label, ttf_main_s.font, 0);
-    lv_obj_set_style_text_color(artist_label, lv_color_hex(0x4472C4/*0x00B06d*/), 0);
+    lv_obj_set_style_text_color(artist_label, lv_color_hex(0x5F5F5F/*0x00B06d*/), 0);
     lv_label_set_text(artist_label, _lv_demo_music_get_artist(track_id));
     lv_obj_set_grid_cell(artist_label, LV_GRID_ALIGN_END, 5, 1, LV_GRID_ALIGN_END, 0, 1);
 
@@ -612,7 +618,7 @@ static void guitar_slider_event_cb(lv_event_t *e) {
     lv_obj_t * slider = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
     char buf[16];
-    lv_snprintf(buf, sizeof(buf), "吉他 %d", (int)lv_slider_get_value(slider));
+    lv_snprintf(buf, sizeof(buf), "Guitar %d", (int)lv_slider_get_value(slider));
 
     if (code == LV_EVENT_RELEASED) {
         printf("last slider value%s\n", buf);
@@ -638,7 +644,7 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
         if (guitar_slider != NULL)
             lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
 	if (getBtSinkState() == BT_CONNECTED)
-		create_toast(main_cont, TOAST_TEXT, 7000);
+		create_toast(main_cont, TOAST_TEXT, 5000);
     }
     else {
         lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
@@ -654,7 +660,7 @@ static void accomp_slider_event_cb(lv_event_t *e) {
     lv_obj_t * slider = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
     char buf[16];
-    lv_snprintf(buf, sizeof(buf), "伴声 %d", (int)lv_slider_get_value(slider));
+    lv_snprintf(buf, sizeof(buf), "Accom  %d", (int)lv_slider_get_value(slider));
 
     if (code == LV_EVENT_RELEASED) {
         printf("last slider value%s\n", buf);
@@ -669,7 +675,7 @@ static void vocal_slider_event_cb(lv_event_t * e)
     lv_obj_t * slider = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
     char buf[16];
-    lv_snprintf(buf, sizeof(buf), "原唱 %d", (int)lv_slider_get_value(slider));
+    lv_snprintf(buf, sizeof(buf), "Origin   %d", (int)lv_slider_get_value(slider));
 
     if (code == LV_EVENT_RELEASED) {
         printf("slider2 value %s\n", buf);
@@ -684,7 +690,7 @@ static void master_volume_change_event_cb(lv_event_t *e) {
     lv_obj_t * slider = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
     char buf[16];
-    lv_snprintf(buf, sizeof(buf), "主音量 %d", (int)lv_slider_get_value(slider));
+    lv_snprintf(buf, sizeof(buf), "Volume  %d", (int)lv_slider_get_value(slider));
 
     if (code == LV_EVENT_RELEASED) {
         printf("master volume value %s\n", buf);
@@ -698,7 +704,7 @@ static void mic_volume_change_event_cb(lv_event_t * e) {
     lv_obj_t * slider = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
     char buf[16];
-    lv_snprintf(buf, sizeof(buf), "麦音量 %d", (int)lv_slider_get_value(slider));
+    lv_snprintf(buf, sizeof(buf), "Mic     %d", (int)lv_slider_get_value(slider));
 
     if (code == LV_EVENT_RELEASED) {
         printf("mic volume value %s\n", buf);
@@ -759,19 +765,21 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //reverb control
     lv_obj_t * reverb_label = lv_label_create(cont);
-    lv_label_set_text(reverb_label, "混响");
+    lv_label_set_text(reverb_label, "ECHO");
+    lv_obj_set_style_text_color(reverb_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(reverb_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(reverb_label, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 8, 1);
-    lv_obj_t * reverb_dd = lv_dropdown_create(cont);
-    lv_obj_set_grid_cell(reverb_dd, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 9, 1);
-    lv_obj_set_style_text_font(reverb_dd, font_small, 0);
-    lv_dropdown_set_options_static(reverb_dd, "OFF\nSTUDIO\nKTV\nCONCERT");
-    lv_dropdown_set_dir(reverb_dd, LV_DIR_BOTTOM);
-    lv_dropdown_set_selected(reverb_dd, 3);//0,1,2,3 so 3 means CONCERT
-    lv_obj_add_event_cb(reverb_dd, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
+    reverb_dd_obj = lv_dropdown_create(cont);
+    lv_obj_set_grid_cell(reverb_dd_obj, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_set_style_text_font(reverb_dd_obj, font_small, 0);
+    lv_dropdown_set_options_static(reverb_dd_obj, "OFF\nSTUDIO\nKTV\nCONCERT");
+    lv_dropdown_set_dir(reverb_dd_obj, LV_DIR_BOTTOM);
+    lv_dropdown_set_selected(reverb_dd_obj, 3);//0,1,2,3 so 3 means CONCERT
+    lv_obj_add_event_cb(reverb_dd_obj, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
 
     lv_obj_t * echo_3a_label = lv_label_create(cont);
-    lv_label_set_text(echo_3a_label, "3A算法");
+    lv_label_set_text(echo_3a_label, "3A");
+    lv_obj_set_style_text_color(echo_3a_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(echo_3a_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(echo_3a_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 8, 1);
     echo_3a_switch = lv_switch_create(cont);
@@ -781,7 +789,8 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //原唱与伴奏切换
     lv_obj_t * origin_label = lv_label_create(cont);
-    lv_label_set_text(origin_label, "声音分离");
+    lv_label_set_text(origin_label, "SPLIT");
+    lv_obj_set_style_text_color(origin_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(origin_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(origin_label, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 8, 1);
     origin_switch = lv_switch_create(cont);
@@ -791,7 +800,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //volume control
     volume_label = lv_label_create(cont);
-    lv_label_set_text(volume_label, "主音量 50");
+    lv_label_set_text(volume_label, "Volume  50");
     lv_obj_set_style_text_font(volume_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(volume_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
     volume_slider = lv_slider_create(cont);
@@ -805,7 +814,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //mic volume control
     mic_volume_label = lv_label_create(cont);
-    lv_label_set_text(mic_volume_label, "麦音量 100");
+    lv_label_set_text(mic_volume_label, "Mic     100");
     lv_obj_set_style_text_font(mic_volume_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(mic_volume_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 2, 1);
     mic_volume_slider = lv_slider_create(cont);
@@ -827,7 +836,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     if (mode == 1) {
         //accompaniment and vocal control
         guitar_label = lv_label_create(cont);
-        lv_label_set_text(guitar_label, "吉他 100");
+        lv_label_set_text(guitar_label, "Guitar  100");
         //lv_obj_add_style(voice_label, &style_text_muted, 0);
         lv_obj_set_style_text_font(guitar_label, ttf_main_s.font, 0);
         lv_obj_set_grid_cell(guitar_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 4, 1);
@@ -849,7 +858,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //accompaniment and vocal control
     accomp_label = lv_label_create(cont);
-    lv_label_set_text(accomp_label, "伴声 100");
+    lv_label_set_text(accomp_label, "Accom  100");
     //lv_obj_add_style(voice_label, &style_text_muted, 0);
     lv_obj_set_style_text_font(accomp_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(accomp_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 6 - (mode?0:1) * 2, 1);
@@ -869,7 +878,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
 
     vocal_label = lv_label_create(cont);
-    lv_label_set_text(vocal_label, "原唱 15");
+    lv_label_set_text(vocal_label, "Origin   15");
     lv_obj_set_style_text_font(vocal_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(vocal_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 8 - (mode?0:1) * 2, 1);
     vocal_slider = lv_slider_create(cont);

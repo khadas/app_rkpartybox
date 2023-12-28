@@ -49,6 +49,7 @@ typedef enum {
     UI_WIDGET_USB_DISK_STATE,
     UI_WIDGET_MIC_MUTE,
     UI_WIDGET_BT_STATE,
+    UI_WIDGET_REVERTB_MODE,
 }ui_widget_t;
 
 void lv_demo_music(void);
