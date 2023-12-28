@@ -196,6 +196,8 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                     update_bt_karaoke_playing_status(true);
                 } else {
                     update_bt_karaoke_playing_status(false);
+                    if (getBtSinkState() == BT_DISCONNECT)
+                        pbox_app_music_stop(DISP_All);
                 }
             }
         } break;
