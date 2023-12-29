@@ -206,7 +206,7 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_lcd_dispplayReflash();
     }
 
-    if(0 == msTimePassed%40) {
+    if(0 == msTimePassed%50) {
         //send commamd to get engery.
         pbox_app_rockit_get_player_energy();
     }
