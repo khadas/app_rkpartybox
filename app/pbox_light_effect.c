@@ -24,11 +24,12 @@
 #include "pthread.h"
 #include "pbox_ledctrl.h"
 
+struct led_effect *leffect;
+struct led_effect *foreground_leffect;
 struct effect_calcule_data *cal_data;
-extern struct led_effect *leffect;
 struct light_effect_ctrl * ctrl = NULL;
+
 int foreground_leffect_job;
-struct led_effect  foreground_leffect;
 
 #define msleep(x) usleep(x * 1000)
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -241,7 +242,6 @@ void get_rgb_form_color_wheel(int step, int *r, int *g, int *b)
 
 int mode_switching = 0;
 
-
 int led_effect_switching(int step)
 {
 	int i,colorIndex;
@@ -291,38 +291,57 @@ int led_effect_egre_ebb(int action)
 		}
 		userspace_set_rgb_color(ctrl, end - 1, r/2, g/2, b/2);
 		userspace_set_rgb_color(ctrl, ctrl->unit_num - end, r/2, g/2, b/2);
+	} else if (action == 2) {
+		end = ctrl->unit_num/2;
+		userspace_set_rgb_color(ctrl, 0, r, g, b);
+		for (int j = 1; j < end; j++) {
+			userspace_set_rgb_color(ctrl, j, r*(end-j)/end, g*(end-j)/end, b*(end-j)/end);
+			userspace_set_rgb_color(ctrl, ctrl->unit_num - j, r*(end-j)/end, g*(end-j)/end, b*(end-j)/end);
+			msleep(20);
+		}
+		userspace_set_rgb_color(ctrl, end, r/end, g/end, b/end);
+	} else if (action == 3) {
+		userspace_set_rgb_color(ctrl, ctrl->unit_num/2, 0, 0, 0);
+		end = rand()%2 + 1;
+		for (int j = 0; j < (ctrl->unit_num/2 - end); j++) {
+			userspace_set_rgb_color(ctrl, ctrl->unit_num/2 - j, 0, 0, 0);
+			userspace_set_rgb_color(ctrl, ctrl->unit_num/2 + j, 0, 0, 0);
+			msleep(10);
+		}
+		userspace_set_rgb_color(ctrl, ctrl->unit_num - end, r/2, g/2, b/2);
+		userspace_set_rgb_color(ctrl, end, r/2, g/2, b/2);
+		userspace_set_rgb_color(ctrl, 0, r, g, b);
 	}
 	ctrl->light_effect_drew = 0;
 }
 
-
 int led_effect_volume_analysis(int type, int volume)
 {
 	if (type == 1) {
-		foreground_leffect.led_effect_type =  1;
-		foreground_leffect.start = 1;
-		foreground_leffect.fore_color = 0x00ff00;
+		foreground_leffect->led_effect_type =  1;
+		foreground_leffect->start = 1;
+		foreground_leffect->fore_color = 0x00ff00;
 		if (volume) {
-			foreground_leffect.num = (volume + ctrl->unit_num - 1) * ctrl->unit_num / 100;
+			foreground_leffect->num = (volume + ctrl->unit_num - 1) * ctrl->unit_num / 100;
 		} else {
-			foreground_leffect.num = 0;
+			foreground_leffect->num = 0;
 		}
-		foreground_leffect.period = 500;
+		foreground_leffect->period = 500;
 		//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
 	} else if (type == 2){
-		foreground_leffect.led_effect_type =  2;
-		foreground_leffect.start = 1;
+		foreground_leffect->led_effect_type =  2;
+		foreground_leffect->start = 1;
 		if (volume) {
-			foreground_leffect.num = (volume + ctrl->unit_num - 1) * ctrl->unit_num / 100;
-			foreground_leffect.fore_color = 0x00ff00;
+			foreground_leffect->num = (volume + ctrl->unit_num - 1) * ctrl->unit_num / 100;
+			foreground_leffect->fore_color = 0x00ff00;
 			//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
 		}else {
-			foreground_leffect.fore_color = 0xff0000;
-			foreground_leffect.num = ctrl->unit_num;
+			foreground_leffect->fore_color = 0xff0000;
+			foreground_leffect->num = ctrl->unit_num;
 			//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
 		}
 
-		foreground_leffect.period = 1000;
+		foreground_leffect->period = 1000;
 		//printf("===%s:volume:%d num:%d====\n", __func__, volume, foreground_leffect.num);
 	}
 		foreground_leffect_job = 1;
@@ -337,18 +356,18 @@ void led_effect_init_bright(struct led_effect* effect,int init_led)
 
 	for (i = effect->start*3; i < effect->num*3; i++) {
 		if(i%3 == 0)
-			cal_data->force_bright[i] = (effect->fore_color & 0xFF0000) >> 16;
-		if(i%3 == 1)
 			cal_data->force_bright[i] = (effect->fore_color & 0x00FF00) >> 8;
+		if(i%3 == 1)
+			cal_data->force_bright[i] = (effect->fore_color & 0xFF0000) >> 16;
 		if(i%3 == 2)
 			cal_data->force_bright[i] = (effect->fore_color & 0x0000FF);
 
 		cal_data->bright[i] = cal_data->force_bright[i];
 
 		if(i%3 == 0)
-			cal_data->back_bright[i] = (effect->back_color & 0xFF0000) >> 16;
-		if(i%3 == 1)
 			cal_data->back_bright[i] = (effect->back_color & 0x00FF00) >> 8;
+		if(i%3 == 1)
+			cal_data->back_bright[i] = (effect->back_color & 0xFF0000) >> 16;
 		if(i%3 == 2)
 			cal_data->back_bright[i] = (effect->back_color & 0x0000FF);
 
@@ -703,9 +722,9 @@ int led_effect_volume(struct led_effect* effect)
 	int i;
 	for (i = 0; i < effect->num; i++) {
 		userspace_set_rgb_color(ctrl, i,
-				(foreground_leffect.fore_color&0xff0000) >>16,
-				(foreground_leffect.fore_color&0x00ff00) >>8,
-				(foreground_leffect.fore_color&0x0000ff));
+				(foreground_leffect->fore_color&0xff0000) >>16,
+				(foreground_leffect->fore_color&0x00ff00) >>8,
+				(foreground_leffect->fore_color&0x0000ff));
 	}
 	for (i = effect->num; i < ctrl->unit_num; i++) {
 		userspace_set_rgb_color(ctrl, i, 0, 0, 0);
@@ -722,8 +741,8 @@ void *pbox_light_effect_drew(void)
 	while (true) {
 		//printf("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
 		if (foreground_leffect_job) {
-			if(foreground_leffect.led_effect_type == 1 || foreground_leffect.led_effect_type == 2)
-				led_effect_volume(&foreground_leffect);
+			if(foreground_leffect->led_effect_type == 1 || foreground_leffect->led_effect_type == 2)
+				led_effect_volume(foreground_leffect);
 			msleep(20);
 
 		}
@@ -743,9 +762,9 @@ void *pbox_light_effect_drew(void)
 			else if(leffect->led_effect_type == 8 && (ctrl->soundreactive_mute))
 				led_effect_scroll_one(leffect);
 			else if(leffect->led_effect_type == 9 && (!ctrl->soundreactive_mute))
-				led_effect_egre_ebb(0);
+				led_effect_egre_ebb(2);
 			else if(leffect->led_effect_type == 10 && (!ctrl->soundreactive_mute))
-				led_effect_egre_ebb(1);
+				led_effect_egre_ebb(3);
 
 			msleep(cal_data->steps_time);
 			continue;
@@ -771,6 +790,14 @@ void pbox_light_effect_soundreactive(energy_data_t energy_data)
 	}
 	//userspace_set_led_effect(RK_ECHO_LED_OFF);
 	pbox_light_effect_soundreactive_analysis(energy_data);
+}
+
+int userspace_set_led_effect(struct light_effect_ctrl * ctrl, char *led_effect_name)
+{
+	if(get_led_effect_data(ctrl, leffect, led_effect_name) < 0)
+		return -1;
+
+	led_effect_handle(leffect);
 }
 
 static void *pbox_light_effect_server(void *arg)
@@ -1010,21 +1037,28 @@ int pbox_light_effect_init(void)
 	ctrl = malloc(sizeof(struct light_effect_ctrl));
 	if (!ctrl) {
 		printf("%s:light_effect_ctrl alloc failed\n", __func__);
-		goto exit3;
+		goto exit4;
 	}
 	memset(ctrl, 0x00, sizeof(struct light_effect_ctrl));
 
 	if(base_light_config_init(ctrl, "led_base_config"))
-		goto exit2;
+		goto exit3;
 
 	ctrl->soundreactive_mute = 1;
 
 	leffect = malloc(sizeof(struct led_effect));
 	if (!leffect) {
 		printf("%s:led_effect alloc failed\n", __func__);
-		goto exit2;
+		goto exit3;
 	}
 	memset(leffect, 0x00, sizeof(struct led_effect));
+
+	foreground_leffect = malloc(sizeof(struct led_effect));
+	if (!foreground_leffect) {
+		printf("%s:led_effect alloc failed\n", __func__);
+		goto exit2;
+	}
+	memset(foreground_leffect, 0x00, sizeof(struct led_effect));
 
 	if (effect_calcule_data_init())
 		goto exit1;
@@ -1033,10 +1067,12 @@ int pbox_light_effect_init(void)
 
 	return 0;
 exit1:
-	free(leffect);
+	free(foreground_leffect);
 exit2:
-	free(ctrl);
+	free(leffect);
 exit3:
+	free(ctrl);
+exit4:
 	return -1;
 }
 
@@ -1049,6 +1085,7 @@ int pbox_light_effect_deinit(struct light_effect_ctrl * ctrl)
 
 	led_userspace_ctrl_deinit(ctrl);
 	effect_calcule_data_deinit();
+	free(foreground_leffect);
 	free(leffect);
 	base_light_config_deinit();
 
@@ -1102,11 +1139,3 @@ int pbox_light_effect_send_cmd(pbox_light_effect_opcode_t command, void *data, i
 	}
 	unix_socket_send_cmd(PBOX_CHILD_LED,&msg, sizeof(pbox_light_effect_msg_t));
 }
-
-
-
-
-
-
-
-

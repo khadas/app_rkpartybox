@@ -199,7 +199,7 @@
         "fore_color": "FFFF66",
         "period": 2000,
         "start": 0,
-        "num": 1,
+        "num": 12,
         "actions_per_period": 2
     }
     ,
@@ -210,30 +210,30 @@
         "fore_color": "CC3399",
         "period": 2000,
         "start": 0,
-        "num": 1,
-        "actions_per_period": 2
+        "num": 12,
+        "actions_per_period": 5
     }
     ,
     "蓝牙配对失败": "",
     "led_effect_bt_pair_fail": {
-        "led_effect_type": 5,
-        "back_color": "000000",
-        "fore_color": "CD3333",
-        "period": 2000,
+        "led_effect_type": 2,
+        "back_color": "a73a2b",
+        "fore_color": "ff1f00",
+        "period": 2500,
         "start": 0,
-        "num": 1,
-        "actions_per_period": 2
+        "num": 12,
+        "actions_per_period":20 
     }
     ,
     "蓝牙配对成功": "",
     "led_effect_bt_pair_success": {
-        "led_effect_type": 1,
+        "led_effect_type": 2,
         "back_color": "000000",
-        "fore_color": "FFFFFF",
-        "period": 1,
+        "fore_color": "25ff00",
+        "period": 2000,
         "start": 0,
-        "num": 1,
-        "actions_per_period": 1
+        "num": 12,
+        "actions_per_period": 25
     }
     ,
     "音量": "",
@@ -350,7 +350,7 @@
     "led_effect_pause": {
         "led_effect_type": 2,
         "back_color": "000000",
-        "fore_color": "25ff00",
+        "fore_color": "ffe600",
         "period": 2000,
         "start": 0,
         "num": 12,

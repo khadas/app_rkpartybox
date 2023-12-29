@@ -17,16 +17,6 @@
 #include "pbox_ledctrl.h"
 #include "pbox_led_cjson.h"
 
-struct led_effect *leffect;
-
-int userspace_set_led_effect(struct light_effect_ctrl * ctrl, char *led_effect_name)
-{
-	if(get_led_effect_data(ctrl, leffect, led_effect_name) < 0)
-		return -1;
-
-	led_effect_handle(leffect);
-}
-
 int led_userspace_ctrl_init(struct light_effect_ctrl * ctrl)
 {
 	int i;

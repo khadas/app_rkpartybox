@@ -7,6 +7,7 @@
 #include "pbox_common.h"
 #include "pbox_light_effect.h"
 #include "pbox_light_effect_app.h"
+#include "pbox_app.h"
 
 void pbox_app_led_PlayPause(bool play) {
 	printf("%s PlayPause: %d\n", __func__, play);
@@ -80,5 +81,39 @@ void pbox_app_led_revertMode(pbox_revertb_t mode) {
 }
 
 void pbox_app_led_usbState(usb_state_t mode) {
+	//printf("%s btsink_state_t: %d\n", __func__, mode);
+	//switch (mode)
+	//{
+	//	case USB_SCANNED:
+	//		break;
+	//	case USB_SCANNING:
+	//		break;
+	//	case USB_CONNECTED:
+	//		break;
+	//	case USB_DISCONNECTED:
+	//		break;
+	//}
+}
 
+void pbox_app_led_btState(btsink_state_t mode) {
+
+	printf("%s btsink_state_t: %d\n", __func__, mode);
+	switch (mode)
+	{
+		case BT_DISCONNECT:
+			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_FAIL_EVT, NULL, NULL);
+			break;
+		case BT_CONNECTING:
+			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIRING_EVT, NULL, NULL);
+			break;
+		case BT_CONNECTED:
+			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_SUCCESS_EVT, NULL, NULL);
+			break;
+	}
+}
+
+void pbox_app_led_startup_effect(void) {
+
+	pbox_light_effect_send_cmd(RK_ECHO_LED_OFF_EVT, NULL, NULL);
+	pbox_light_effect_send_cmd(RK_ECHO_SYSTEM_BOOTING_EVT, NULL, NULL);
 }
