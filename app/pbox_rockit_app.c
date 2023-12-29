@@ -382,7 +382,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_START_PLAYER: {
-                    pbox_app_music_start(DISP_All);
+                    pbox_app_music_resume(DISP_All);
                 } break;
 
                 case KARAOKE_WAKE_UP_CMD_STOP_PLARER: {

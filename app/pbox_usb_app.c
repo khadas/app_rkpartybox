@@ -96,7 +96,7 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
         } break;
 
         case USB_SCANNING: {
-            printf("%s USB_SCANNING", __func__);
+            printf("%s USB_SCANNING\n", __func__);
             for (int i = 0; i < pboxTrackdata->track_num; i++) {
                 pbox_free(pboxTrackdata->track_list[i].title);
                 pbox_free(pboxTrackdata->track_list[i].artist);

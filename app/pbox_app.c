@@ -31,12 +31,14 @@ struct _pbox_btsink *const pboxBtSinkdata  = &(pbox_data.btsink);
 struct _pbox_ui *const pboxUIdata  = &(pbox_data.ui);
 struct _pbox_track *const pboxTrackdata  = &(pbox_data.track);
 usb_disk_info_t *const pboxUsbdata  = &(pbox_data.usbDisk);
+static bool play_command_sended = false;
 
 void pbox_app_music_pause(display_t policy)
 {
     if(pboxUIdata->play_status != PLAYING)
         return;
 
+    play_command_sended = false;
     if(isBtA2dpConnected()) {
         pbox_btsink_playPause(false);
     }
@@ -54,6 +56,7 @@ void pbox_app_music_trackid(uint32_t id, display_t policy) {
 void pbox_app_music_start(display_t policy) {
     char *track_name = NULL;
     char track_uri[256];
+
     if (!isBtA2dpConnected()) {
         printf("pboxTrackdata->track_id:%d, track_num:%d\n", pboxTrackdata->track_id, pboxTrackdata->track_num);
         for (int i=0 ; i< pboxTrackdata->track_num; i++) {
@@ -84,9 +87,15 @@ void pbox_app_music_resume(display_t policy)
             return;
         }
     }
-
+    if(play_command_sended) {
+        return;
+    }
+    play_command_sended = true;
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP) {
         pbox_app_music_start(policy);
+    }
+    else if(pboxUIdata->play_status == PLAYING) {
+        return;
     }
 
     pbox_app_rockit_resume_player();
@@ -97,6 +106,12 @@ void pbox_app_music_resume(display_t policy)
 
 void pbox_app_music_stop(display_t policy)
 {
+    if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP) {
+        return;
+    }
+
+    play_command_sended = false;
+
     if(isBtA2dpConnected()) {
         pbox_btsink_a2dp_stop();
     }
@@ -177,7 +192,7 @@ void pbox_app_music_original_singer_open(bool orignal, display_t policy)
     pbox_app_rockit_set_player_seperate(seperate , hlevel, mlevel, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate , hlevel, mlevel, rlevel, policy);
 
-    if (getBtSinkState() == BT_CONNECTED) {
+    /*if (getBtSinkState() == BT_CONNECTED) {
 	    if (!orignal) {
 		    nomal_mode_volume = volume;
 		    printf("%s rk_bt_sink_set_volume :%d \n", __func__, 80);
@@ -187,7 +202,7 @@ void pbox_app_music_original_singer_open(bool orignal, display_t policy)
 		    printf("%s set nomal_mode_volume :%d \n", __func__, nomal_mode_volume);
 		    pbox_app_music_set_volume(nomal_mode_volume, DISP_All);
 	    }
-    }
+    }*/
 }
 
 //album mode: shuffle, sequence, repeat, repeat one.....

@@ -80,6 +80,9 @@ void main(int argc, char **argv) {
     signal(SIGINT, sigterm_handler);
 
     for (i = 0; i< PBOX_SOCKPAIR_NUM; i++) {
+        struct timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 100*1000;
 #if ENABLE_UDP_CONNECTION_LESS
             pbox_fds[i] = -1;
 #else
@@ -88,6 +91,14 @@ void main(int argc, char **argv) {
             goto pbox_main_exit;
         }
         printf("main: pbox_pipe_fds[%d]={%d, %d}\n", i, pbox_pipe_fds[i].fd[0], pbox_pipe_fds[i].fd[1]);
+        /*if (setsockopt(pbox_pipe_fds[i].fd[0], SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+            perror("setsockopt 0 failed");
+            return -1;
+        }
+        if (setsockopt(pbox_pipe_fds[i].fd[1], SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+            perror("setsockopt 1 failed");
+            return;
+        }*/
 #endif
     }
 
@@ -206,12 +217,12 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_lcd_dispplayReflash();
     }
 
-    if(0 == msTimePassed%50) {
+    if((0 == msTimePassed%50) && (pboxUIdata->play_status == PLAYING)) {
         //send commamd to get engery.
         pbox_app_rockit_get_player_energy();
     }
 
-    if (0 == msTimePassed%1000) {
+    if ((0 == msTimePassed%1000) && (pboxUIdata->play_status == PLAYING)) {
     //every one second send command to refresh position
     pbox_app_rockit_get_music_current_postion();
     }

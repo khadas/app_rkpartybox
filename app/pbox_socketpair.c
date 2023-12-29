@@ -54,7 +54,7 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
         }
     }
 
-    int ret = write(sockfd, info, length);//sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
+    int ret = send(sockfd, info, length, 0);//sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     if (ret < 0)
     {
         int id = -1;
@@ -113,7 +113,7 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
         }
     }
 
-    int ret = write(sockfd, info, length);//sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
+    int ret = send(sockfd, info, length, 0);//sendto(sockfd, info, length, MSG_DONTWAIT, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     if (ret < 0)
     {
         int id = -1;

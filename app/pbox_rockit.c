@@ -397,6 +397,8 @@ static void pbox_rockit_music_resume(uint32_t volume)
     assert(RK_MPI_KARAOKE_ResumePlayer_func);
     assert(RK_MPI_KARAOKE_SetPlayerVolume_func);
 
+    printf("%s volume: %lld\n", __func__, volume);
+
     RK_MPI_KARAOKE_ResumePlayer_func(player_ctx);
     //RK_MPI_KARAOKE_SetPlayerVolume_func(player_ctx, volume);
 
@@ -729,8 +731,8 @@ static void *pbox_rockit_server(void *arg)
             continue;
 
         pbox_rockit_msg_t *msg = (pbox_rockit_msg_t *)buff;
-        if(msg->msgId != 18 && msg->msgId != 10)
-            printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+        if(msg->msgId != PBOX_ROCKIT_GETPLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GETPLAYERCURRENTPOSITION)
+        printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
         if(msg->type == PBOX_EVT)
             continue;
@@ -841,6 +843,9 @@ static void *pbox_rockit_server(void *arg)
             default: {
             } break;
         }
+
+        if(msg->msgId != PBOX_ROCKIT_GETPLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GETPLAYERCURRENTPOSITION)
+            printf("%s end: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
     }
 
     pbox_rockit_music_destroy();

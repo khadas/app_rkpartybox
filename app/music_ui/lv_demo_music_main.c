@@ -15,6 +15,7 @@
 #include "../pbox_common.h"
 #include "pbox_btsink_app.h"
 #include "rk_btsink.h"
+#include "timestamp.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -247,7 +248,7 @@ void _lv_demo_music_album_next(bool next)
 
 void _lv_demo_music_update_track_info(uint32_t id) {
     uint32_t track_num = _lv_demo_music_get_track_num();
-    printf("%s id %d", __func__, id);
+    printf("%s id %d\n", __func__, id);
     play_status_t play_status = pboxUIdata->play_status;
     if (track_num > 0) {
         //if (play_status == IDLE || play_status == _STOP) {
@@ -1042,25 +1043,62 @@ static void track_load(uint32_t id)
     lv_label_set_text(genre_label, _lv_demo_music_get_genre(track_id));
 }
 
+static uint32_t time_ms = 0;
 static void play_event_click_cb(lv_event_t * e)
 {
-    lv_obj_t * obj = lv_event_get_target(e);
+    static bool last_state = false;
+    static uint32_t time_ms = 0;
+
+        lv_obj_t * obj = lv_event_get_target(e);
+    if((clock_ms() - time_ms) < 300) {
+        if(last_state && (!lv_obj_has_state(obj, LV_STATE_CHECKED))) {
+            printf("last state playing skip\n");
+            lv_obj_add_state(obj, LV_STATE_CHECKED);
+            lv_obj_invalidate(obj);
+        }
+        else if (!last_state && (lv_obj_has_state(obj, LV_STATE_CHECKED))) {
+            printf("last state playing skip\n");
+            lv_obj_clear_state(obj, LV_STATE_CHECKED);
+            lv_obj_invalidate(obj);
+        }
+        return;
+    }
+
+    time_ms = clock_ms();
+
     if(lv_obj_has_state(obj, LV_STATE_CHECKED)) {
         _lv_demo_music_resume();
+        last_state = true;
     }
     else {
         _lv_demo_music_pause();
+        last_state = false;
     }
 }
 
 static void prev_click_event_cb(lv_event_t * e)
 {
+    static uint32_t prev_last_time = 0;
     LV_UNUSED(e);
+
+    if((clock_ms() - prev_last_time) < 300) {
+        return;
+    }
+
+    prev_last_time = clock_ms();
+
     _lv_demo_music_album_next(false);
 }
 
 static void next_click_event_cb(lv_event_t * e)
 {
+    static uint32_t next_last_time = 0;
+    if((clock_ms() - next_last_time) < 300) {
+        return;
+    }
+
+    next_last_time = clock_ms();
+
     lv_event_code_t code = lv_event_get_code(e);
     if(code == LV_EVENT_CLICKED) {
         _lv_demo_music_album_next(true);
