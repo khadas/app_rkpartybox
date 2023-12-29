@@ -15,6 +15,7 @@
 #include "pbox_app.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
+#include "pbox_btsink_app.h"
 
 typedef void (*usb_event_handle)(const pbox_usb_msg_t*);
 static void handleUsbChangeEvent(const pbox_usb_msg_t* msg);
@@ -79,6 +80,8 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
             }
             pboxTrackdata->track_num = 0;
             pboxTrackdata->track_id = 0;
+            if (getBtSinkState() != BT_CONNECTED)
+                pbox_app_music_stop(DISP_All);
         } break;
 
         case USB_CONNECTED: {

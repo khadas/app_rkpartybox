@@ -47,6 +47,7 @@ void pbox_app_music_pause(display_t policy)
 }
 
 void pbox_app_music_trackid(uint32_t id, display_t policy) {
+    printf("%s, id:%d\n", __func__, id);
     pboxTrackdata->track_id = id;
 }
 

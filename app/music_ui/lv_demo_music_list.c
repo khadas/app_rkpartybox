@@ -325,6 +325,7 @@ static void btn_click_event_cb(lv_event_t * e)
         return;
     }
 
+     printf("%s, track_id:%d\n", __func__, idx);
     _lv_demo_music_stop();
     _lv_demo_music_play(idx);
 }

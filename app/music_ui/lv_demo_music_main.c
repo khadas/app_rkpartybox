@@ -258,8 +258,6 @@ void _lv_demo_music_update_track_info(uint32_t id) {
         //}
     } else {
         if (getBtSinkState() != BT_CONNECTED) {
-            if (play_status == PLAYING)
-                _lv_demo_music_stop();
             lv_label_set_text(title_label, "unknow");
             lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
             lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
@@ -269,7 +267,7 @@ void _lv_demo_music_update_track_info(uint32_t id) {
 
 void _lv_demo_music_play(uint32_t id)
 {
-    track_load(id);
+    lcd_pbox_notifyTrackid(id);
     _lv_demo_music_resume();
 }
 
