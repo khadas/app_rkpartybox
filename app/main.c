@@ -78,6 +78,7 @@ void main(int argc, char **argv) {
     int pbox_fds[PBOX_MAIN_NUM] = {0};
     pthread_setname_np(pthread_self(), "party_main");
     signal(SIGINT, sigterm_handler);
+    pbox_version_print();
 
     for (i = 0; i< PBOX_SOCKPAIR_NUM; i++) {
         struct timeval timeout;

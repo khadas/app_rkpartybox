@@ -318,3 +318,22 @@ void pbox_app_music_volume_down(display_t policy) {
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
 }
+
+void pbox_version_print(void) {
+    int day, year, mon;
+    char month[4];
+    const char *dateString = __DATE__;
+
+    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    sscanf(dateString, "%s %d %d", month, &day, &year);
+
+    for (mon = 0; mon < 12; mon++) {
+        if (strcasecmp(month, months[mon]) == 0) {
+            break;
+        }
+    }
+
+    printf("%s: %04d-%02d-%02d %s\n", __func__, year, mon + 1, day, __TIME__);
+}

@@ -773,8 +773,9 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_set_style_text_font(reverb_dd_obj, font_small, 0);
     lv_dropdown_set_options_static(reverb_dd_obj, "OFF\nSTUDIO\nKTV\nCONCERT");
     lv_dropdown_set_dir(reverb_dd_obj, LV_DIR_BOTTOM);
-    lv_dropdown_set_selected(reverb_dd_obj, 3);//0,1,2,3 so 3 means CONCERT
+    lv_dropdown_set_selected(reverb_dd_obj, PBOX_REVERT_KTV);//0,1,2,3 so 3 means CONCERT
     lv_obj_add_event_cb(reverb_dd_obj, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_set_width(reverb_dd_obj, 20*8+5);
 
     lv_obj_t * echo_3a_label = lv_label_create(cont);
     lv_label_set_text(echo_3a_label, "3A");

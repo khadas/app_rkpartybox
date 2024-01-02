@@ -85,7 +85,7 @@ void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_echo_3a(bool enable, display_t policy);
 void pbox_app_music_set_recoder_revert(pbox_revertb_t reverbMode, display_t policy);
-
+void pbox_version_print(void);
 #ifdef __cplusplus
 }
 #endif
