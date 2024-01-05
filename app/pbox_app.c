@@ -57,7 +57,7 @@ void pbox_app_music_start(display_t policy) {
     char *track_name = NULL;
     char track_uri[256];
 
-    if (!isBtA2dpConnected()) {
+    if (!isBtConnected()) {
         printf("pboxTrackdata->track_id:%d, track_num:%d\n", pboxTrackdata->track_id, pboxTrackdata->track_num);
         for (int i=0 ; i< pboxTrackdata->track_num; i++) {
             printf("pboxTrackdata->track_list[%d]:%s\n", i, pboxTrackdata->track_list[i].title);

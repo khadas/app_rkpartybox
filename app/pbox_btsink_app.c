@@ -123,6 +123,14 @@ void setBtRemoteName(char *name) {
     strcpy(pboxBtSinkdata->remote_name, name);
 }
 
+bool isBtConnected(void)
+{
+	if(getBtSinkState()== BT_CONNECTED)
+		return true;
+
+	return false;
+}
+
 bool isBtA2dpConnected(void)
 {
 	if(pboxBtSinkdata->btState==BT_CONNECTED && (pboxBtSinkdata->a2dpState >= A2DP_CONNECTED))
@@ -159,6 +167,8 @@ void update_music_positions(uint32_t current, uint32_t total) {
     pbox_multi_displayTrackPosition(false, current, total, DISP_All);
     if(prev_total != total) {
         prev_total = total;
+        pbox_app_rockit_stop_BTplayer();
+        pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
     }
 }
 
