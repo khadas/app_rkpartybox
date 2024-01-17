@@ -13,9 +13,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "pbox_common.h"
+#include "rk_btsink.h"
 #include "pbox_lvgl_app.h"
 #include "pbox_light_effect_app.h"
 #include "pbox_app.h"
+
 
 #define LED_DISPLAY_MASK DISP_LED
 #define LCD_DISPLAY_MASK DISP_LCD
@@ -128,6 +130,11 @@ void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy) {
         pbox_app_led_energyInfo(energy);
 }
 
+void pbox_multi_displayUsbListupdate(uint32_t trackId, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_dispplayUsbListupdate(trackId);
+}
+
 void pbox_multi_displayUsbState(usb_state_t state, display_t policy) {
 
     if(policy & LCD_DISPLAY_MASK)
@@ -143,7 +150,40 @@ void pbox_multi_displaybtState(btsink_state_t state, display_t policy) {
         pbox_app_lcd_dispplaybtState(state);
 
     if(policy & LED_DISPLAY_MASK)
-	    pbox_app_led_btState(state);
+        pbox_app_led_btState(state);
+}
+
+void pbox_multi_displayUacState(uac_role_t role, bool start, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_dispplayUacState(start);
+
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_uacState(start);
+}
+
+void pbox_multi_displayUacFreq(uac_role_t role, uint32_t freq, display_t policy) {
+
+}
+
+void pbox_multi_displayUacVolume(uac_role_t role, uint32_t volume, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK) {
+        if(role == UAC_ROLE_SPEAKER) {
+            pbox_app_lcd_displayMainVolumeLevel(volume);
+        } else {
+            pbox_app_lcd_displayMicVolumeLevel(volume);
+        }
+    }
+
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_uacVolume(volume);
+}
+
+void pbox_multi_displayUacMute(uac_role_t role, bool mute, display_t policy) {
+
+}
+
+void pbox_multi_displayUacPpm(uac_role_t role, int32_t ppm, display_t policy) {
+
 }
 
 #undef LED_DISPLAY_MASK

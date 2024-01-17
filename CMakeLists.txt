@@ -5,6 +5,8 @@ project(rkpartybox)
 add_definitions(-g -D__EXPORTED_HEADERS__)
 
 include_directories(
+	${PROJECT_SOURCE_DIR}/app/
+	${PROJECT_SOURCE_DIR}/app/uac/
 	${PROJECT_SOURCE_DIR}/sys/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
@@ -17,6 +19,7 @@ include_directories(${DBUS_INCLUDE_DIRS})
 aux_source_directory(${PROJECT_SOURCE_DIR}/sys SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/cJSON SRCS)
 aux_source_directory(./app SRCS)
+aux_source_directory(./app/uac SRCS)
 aux_source_directory(./sys SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
@@ -25,7 +28,6 @@ message("CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
 message("CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
 if (LV_USE_DEMO_MUSIC)
 add_definitions(-DLV_USE_DEMO_MUSIC=1)
-include_directories(${PROJECT_SOURCE_DIR}/app/)
 include_directories(${PROJECT_SOURCE_DIR}/app/music_ui/)
 include_directories(${CMAKE_SYSROOT}/usr/include/libdrm/)
 include_directories(${CMAKE_SYSROOT}/usr/include/lvgl/)
@@ -71,3 +73,4 @@ install(FILES ${ROCKIT_FILE_LIBS} DESTINATION "lib")
 install(FILES bins/asound.conf DESTINATION /etc)
 install(FILES bins/led_effect.json DESTINATION /etc)
 install(PROGRAMS bins/S99-rkpartybox DESTINATION /etc/init.d)
+install(PROGRAMS bins/.usb_config DESTINATION /etc/init.d)

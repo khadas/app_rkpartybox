@@ -193,9 +193,9 @@ int _lv_demo_music_get_track_id() {
     return pboxTrackdata->track_id;
 }
 
-void _lv_demo_music_update_list() {
+void _lv_demo_music_update_list(uint32_t trackId) {
     _lv_demo_music_update_track_list(list);
-    _lv_demo_music_update_track_info(pboxTrackdata->track_id);
+    _lv_demo_music_update_track_info(trackId);
 }
 
 const char *_lv_demo_music_get_title(uint32_t track_id)

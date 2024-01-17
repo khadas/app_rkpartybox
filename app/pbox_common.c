@@ -55,3 +55,18 @@ uint64_t time_get_os_boot_us(void) {
   return ((uint64_t)ts_now.tv_sec * 1000000L) +
          ((uint64_t)ts_now.tv_nsec / 1000);
 }
+
+int findMax(int array[], int size) {
+    if (size <= 0) {
+        printf("%s size=%d error", __func__, size);
+        return 0;
+    }
+
+    int max = array[0];
+    for (int i = 1; i < size; i++) {
+        if (array[i] > max) {
+            max = array[i];
+        }
+    }
+    return max;
+}

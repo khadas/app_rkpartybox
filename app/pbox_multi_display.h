@@ -30,9 +30,17 @@ void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_
 void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy);
 void pbox_multi_displayEcho3A(bool enable, display_t policy);
 void pbox_multi_displayRevertMode(pbox_revertb_t mode, display_t policy);
+
 void pbox_multi_displayUsbState(usb_state_t state, display_t policy);
+void pbox_multi_displayUsbListupdate(uint32_t trackId, display_t policy);
+
 void pbox_multi_displaybtState(btsink_state_t state, display_t policy);
 
+void pbox_multi_displayUacState(uac_role_t role, bool start, display_t policy);
+void pbox_multi_displayUacFreq(uac_role_t role, uint32_t freq, display_t policy);
+void pbox_multi_displayUacVolume(uac_role_t role, uint32_t volume, display_t policy);
+void pbox_multi_displayUacMute(uac_role_t role, bool mute, display_t policy);
+void pbox_multi_displayUacPpm(uac_role_t role, int32_t ppm, display_t policy);
 #ifdef __cplusplus
 }
 #endif

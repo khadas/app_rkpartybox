@@ -282,6 +282,7 @@ retry:
 	if ((pid == 0) && (retry_cnt--))
 		goto retry;
 
+	printf("%s [%s]=%d\n", __func__, Name, pid);
 	return pid;
 }
 

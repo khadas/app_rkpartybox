@@ -17,6 +17,7 @@
 #include "pbox_rockit_app.h"
 #include "pbox_multi_display.h"
 #include "pbox_app.h"
+#include "rk_utils.h"
 
 int unix_socket_btsink_send(void *info, int length)
 {
@@ -104,6 +105,15 @@ void pbox_btsink_start_only_aplay(bool only) {
     unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
 }
 
+void pbox_btsink_start_only_bluealsa(void) {
+    pbox_bt_msg_t msg = {
+        .type = RK_BT_CMD,
+        .msgId = RK_BT_START_BLUEALSA_ONLY,
+    };
+
+    unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
+}
+
 int getBtDiscoverable (void) {
     return pboxBtSinkdata->discoverable;
 }
@@ -151,28 +161,28 @@ void update_bt_karaoke_playing_status(bool playing)
     printf("%s :%d\n", __func__, playing);
     pboxUIdata->play_status = playing ? PLAYING:_PAUSE;
 
-    pbox_multi_displayIsPlaying(playing, DISP_All);
+    pbox_app_show_playingStatus(playing, DISP_All);
 }
 
 void update_music_track_info(char *title, char *artist) {
     printf("%s track:[%s]-[%s]\n", __func__, title, artist);
 
-    pbox_multi_displayTrackInfo(title, artist, DISP_All);
+    pbox_app_show_tack_info(title, artist, DISP_All);
 }
 
 
 void update_music_positions(uint32_t current, uint32_t total) {
     static uint32_t  prev_total = 0;
     printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
-    pbox_multi_displayTrackPosition(false, current, total, DISP_All);
+    pbox_app_show_track_position(false, current, total, DISP_All);
+
     if(prev_total != total) {
         prev_total = total;
-        pbox_app_rockit_stop_BTplayer();
-        pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
+        pbox_app_restart_bt_player(true, "hw:7,1,0", DISP_All);
     }
 }
 
-void pbox_app_music_bt_volume_set(int mVolumeLevel ,display_t policy)
+void update_bt_music_volume(int mVolumeLevel ,display_t policy)
 {
 	int mVolumeLevelMapp = 0;
 
@@ -202,24 +212,25 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             printf("%s pboxBtSinkdata->btState:[%d]\n", __func__, pboxBtSinkdata->btState);
             if(pboxBtSinkdata->btState == BT_INIT_ON || pboxBtSinkdata->btState == BT_DISCONNECT) {
                 if(pboxBtSinkdata->btState == BT_DISCONNECT) {
-                    pbox_app_rockit_stop_BTplayer();
+                    pbox_app_music_stop_bt_player(DISP_All);
                     pbox_app_music_stop(DISP_All);
-                    pbox_btsink_pair_enable(true);
+                    pbox_app_switch_next_input_source(SRC_BT, DISP_All);
+                    pbox_app_bt_pair_enable(true, DISP_All);
                 }
                 if(pboxBtSinkdata->btState == BT_INIT_ON) {
-                    pbox_btsink_start_only_aplay(false);
-                    pbox_btsink_pair_enable(true);;
+                    pbox_app_restart_btsink(false, DISP_All);
+                    pbox_app_bt_pair_enable(true, DISP_All);
                 }
             }
             else if(pboxBtSinkdata->btState == BT_CONNECTED) {
-                pbox_btsink_pair_enable(false);
-                pbox_app_rockit_pause_player();
-                pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
+                pbox_app_update_input_source(SRC_BT, DISP_All);
+                pbox_app_bt_pair_enable(false, DISP_All);
+                pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
             }
             else if(pboxBtSinkdata->btState == BT_NONE) {
                 printf("%s recv msg: btsink state: OFF\n", __func__);
             }
-            pbox_multi_displaybtState(pboxBtSinkdata->btState, DISP_All);
+            pbox_app_show_bt_state(pboxBtSinkdata->btState, DISP_All);
         } break;
 
         case BT_SINK_NAME: {
@@ -249,7 +260,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 pboxBtSinkdata->pcmSampeFreq = freq;
                 pboxBtSinkdata->pcmChannel = channel;
                 if(pboxBtSinkdata->a2dpState == A2DP_STREAMING) {
-                    pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
+                    pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
                 }
             }
             printf("%s update: pbox_data.btsink: freq:%d channel: %d\n", __func__, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
@@ -273,7 +284,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 case BT_SINK_ADPTER_DISCOVERABLE:
                     pboxBtSinkdata->discoverable = msg->btinfo.adpter.discoverable;
                     if (!pboxBtSinkdata->discoverable && (pboxBtSinkdata->btState != BT_CONNECTED)) {
-                        pbox_btsink_pair_enable(true);
+                        pbox_app_bt_pair_enable(true, DISP_All);
                     }
                     break;
 
@@ -285,7 +296,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         case RK_BT_ABS_VOL: {
 		//when seperate function is enable, don't set bt volume to mainVolume.
 		if (!pboxUIdata->mVocalSeperateEnable)
-			pbox_app_music_bt_volume_set(msg->media_volume, DISP_All);
+			update_bt_music_volume(msg->media_volume, DISP_All);
         } break;
 
         default:
@@ -325,7 +336,7 @@ void *btsink_watcher(void *arg) {
     pbox_bt_opcode_t btCmd_prev = 0;
     while (1) {
         if((getBtSinkState() == BT_NONE) && (btCmd_prev == RK_BT_OFF)) {
-            pbox_btsink_onoff(true);
+            pbox_app_bt_sink_onoff(true, DISP_All);
             btCmd_prev= RK_BT_ON;
             goto next_round;
         } else if (getBtSinkState() == BT_NONE) {
@@ -335,23 +346,24 @@ void *btsink_watcher(void *arg) {
             goto next_round;
         }
 
-        if(get_ps_pid_new("bluetoothd") < 0) {
+        if(!get_ps_pid_new("bluetoothd")) {
             btCmd_prev = RK_BT_OFF;
             btsinkWatcher_track = false;
-            pbox_btsink_onoff(true);
+            pbox_app_bt_sink_onoff(true, DISP_All);
             setBtSinkState(BT_TURNING_TRUNNING_OFF);
             goto next_round;
         }
 
-        if(get_ps_pid_new("bluealsa") < 0) {
-            pbox_btsink_start_only_aplay(false);
+        if(!get_ps_pid_new("bluealsa")) {
+            pbox_app_restart_btsink(false, DISP_All);
             goto next_round;
         }
 
-        if (get_ps_pid_new("bluealsa-aplay") < 0) {
-            pbox_btsink_start_only_aplay(true);
+        if (!(get_ps_pid_new("bluealsa-aplay"))) {
+            pbox_app_restart_btsink(true, DISP_All);
             goto next_round;
         }
+
 next_round:
         sleep(2);
     }

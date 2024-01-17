@@ -34,6 +34,11 @@ typedef enum {
     PBOX_ROCKIT_SETRECORDERMUTE,
     PBOX_ROCKIT_SET_RECORDER_REVERT,
     PBOX_ROCKIT_SET_RECORDER_3A,
+    PBOX_ROCKIT_SET_UAC_STATE,
+    PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
+    PBOX_ROCKIT_SET_UAC_VOLUME,
+    PBOX_ROCKIT_SET_UAC_MUTE,//30
+    PBOX_ROCKIT_SET_UAC_PPM,
 
     //event
     PBOX_ROCKIT_ENERGY_EVT = 0x100,
@@ -70,6 +75,7 @@ typedef struct {
         } wake_up;
         uint32_t duration;
         energy_info_t energy_data;
+        uac_t uac;
     };
 } pbox_rockit_msg_t;
 

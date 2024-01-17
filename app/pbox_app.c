@@ -4,6 +4,7 @@
 #include "pbox_multi_display.h"
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
+#include "pbox_usb_app.h"
 
 pbox_data_t pbox_data = {
     .btsink = {
@@ -24,23 +25,147 @@ pbox_data_t pbox_data = {
     .track= {
         .track_num = 0,
         .track_id = 0,
-    }
+    },
+    .uac_state = false,
+    .inputDevice = SRC_USB,
 };
 
+pbox_data_t *const pboxData  = &(pbox_data);
 struct _pbox_btsink *const pboxBtSinkdata  = &(pbox_data.btsink);
 struct _pbox_ui *const pboxUIdata  = &(pbox_data.ui);
 struct _pbox_track *const pboxTrackdata  = &(pbox_data.track);
 usb_disk_info_t *const pboxUsbdata  = &(pbox_data.usbDisk);
 static bool play_command_sended = false;
 
+void pbox_app_show_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy) {
+    //nothing to notify rockit
+    pbox_multi_displayTrackPosition(durationOnly, current, duration, policy);
+}
+
+void pbox_app_show_tack_info(char *title, char *artist, display_t policy) {
+    //nothing to notify rockit
+    pbox_multi_displayTrackInfo(title, artist, policy);
+}
+
+void pbox_app_show_bt_state(btsink_state_t state, display_t policy) {
+    //nothing to notify rockit
+    pbox_multi_displaybtState(state, policy);
+    if (state == BT_DISCONNECT) {
+        pbox_multi_displayUsbListupdate(pboxTrackdata->track_id, policy);
+    }
+}
+
+void pbox_app_show_playingStatus(bool play, display_t policy) {
+    //nothing to notify rockit
+    pbox_multi_displayIsPlaying(play, policy);
+}
+
+void pbox_app_restart_bt_player(bool restart, char* cardName, display_t policy) {
+    if(restart)
+        pbox_app_rockit_stop_BTplayer();
+    pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, cardName);
+    //nothing to do with ui
+}
+
+void pbox_app_music_stop_bt_player(display_t policy) {
+    pbox_app_rockit_stop_BTplayer();
+    //nothing to do with ui
+}
+
+void pbox_app_bt_pair_enable(bool enable, display_t policy) {
+    pbox_btsink_pair_enable(enable);
+    //no ui display now
+}
+
+void pbox_app_bt_sink_onoff(bool on, display_t policy) {
+    pbox_btsink_onoff(on);
+    //no ui display now
+}
+
+void pbox_app_start_bluealsa_only(display_t policy) {
+        //start bluealsa only
+        pbox_btsink_start_only_bluealsa();
+}
+
+void pbox_app_restart_btsink(bool only, display_t policy) {
+        pbox_btsink_start_only_aplay(only);
+        //no ui display now
+}
+
+void pbox_app_start_uac_poll(display_t policy) {
+    //nothing
+    //no ui display now
+}
+
+void pbox_app_switch_next_input_source(input_source_t source, display_t policy) {
+    switch (source) {
+        case SRC_BT: {
+            if(isUsbDiskConnected()) {
+                pbox_app_switch_to_input_source(SRC_USB, policy);
+                break;
+            }
+        }
+        case SRC_USB: {
+            //pbox_app_uac_restart();
+            if(!isBtConnected()) {
+                pbox_app_switch_to_input_source(SRC_UAC, policy);
+                break;
+            }
+        }
+    }
+}
+
+//this means we switch source actively...
+void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
+    if(pboxData->inputDevice == source)
+        return;
+    pbox_app_music_stop(policy);
+    pboxData->inputDevice = source;
+    switch(source) {
+        case SRC_BT: {
+
+        } break;
+        case SRC_USB: {
+
+        } break;
+        case SRC_UAC: {
+            pbox_app_uac_restart();
+        } break;
+    }
+    //no ui display now
+}
+
+//this means we switch source passively...
+void pbox_app_update_input_source(input_source_t source, display_t policy) {
+    if(pboxData->inputDevice == source)
+        return;
+
+    pboxData->inputDevice = source;
+    //pbox_app_music_stop(DISP_All);
+    switch(source) {
+        case SRC_BT: {
+            //pbox_app_music_stop_bt_player(policy);
+        } break;
+    }
+    //no ui display now
+}
+
 void pbox_app_music_pause(display_t policy)
 {
     if(pboxUIdata->play_status != PLAYING)
         return;
+    switch (pboxData->inputDevice) {
+        case SRC_BT: {
+            if (isBtA2dpConnected()) {
+                pbox_btsink_playPause(false);
+            }
+        } break;
 
-    play_command_sended = false;
-    if(isBtA2dpConnected()) {
-        pbox_btsink_playPause(false);
+        case SRC_USB: {
+        } break;
+
+        case SRC_UAC: {
+        } break;
     }
 
     pbox_app_rockit_pause_player();
@@ -54,54 +179,63 @@ void pbox_app_music_trackid(uint32_t id, display_t policy) {
 }
 
 void pbox_app_music_start(display_t policy) {
-    char *track_name = NULL;
-    char track_uri[256];
+    switch (pboxData->inputDevice) {
+        case SRC_BT: {
+            if (isBtA2dpConnected()) {
+                pbox_btsink_playPause(true);
+            }
+        } break;
 
-    if (!isBtConnected()) {
-        printf("pboxTrackdata->track_id:%d, track_num:%d\n", pboxTrackdata->track_id, pboxTrackdata->track_num);
-        for (int i=0 ; i< pboxTrackdata->track_num; i++) {
-            printf("pboxTrackdata->track_list[%d]:%s\n", i, pboxTrackdata->track_list[i].title);
-        }
+        case SRC_USB: {
+            char track_uri[256];
+            printf("pboxTrackdata->track_id:%d, track_num:%d\n", pboxTrackdata->track_id, pboxTrackdata->track_num);
+            for (int i=0 ; i< pboxTrackdata->track_num; i++) {
+                printf("pboxTrackdata->track_list[%d]:%s\n", i, pboxTrackdata->track_list[i].title);
+            }
+            if(pboxTrackdata->track_num == 0) {
+                return;
+            }
+            char *track_name = pbox_app_usb_get_title(pboxTrackdata->track_id);
+            sprintf(track_uri, MUSIC_PATH"%s", track_name);
+            printf("play track [%s]\n", track_uri);
+            pbox_app_rockit_set_datasource(track_uri, NULL);
+            pbox_multi_displayTrackInfo(track_name, NULL, policy);
+            pbox_app_rockit_start_player();
+        } break;
 
-        if(pboxTrackdata->track_num == 0) {
-            return;
-        }
-
-        track_name = pbox_app_usb_get_title(pboxTrackdata->track_id);
-        sprintf(track_uri, MUSIC_PATH"%s", track_name);
-        printf("play track [%s]\n", track_uri);
-        pbox_app_rockit_set_datasource(track_uri, NULL);
-        pbox_multi_displayTrackInfo(track_name, NULL, policy);
+        case SRC_UAC: {
+            pbox_multi_displayTrackInfo("", NULL, policy);
+            //pbox_app_rockit_stop_BTplayer();
+        } break;
+        default:
+            break;
     }
-    pbox_app_rockit_start_player();
-    pbox_multi_displayIsPlaying(true, policy);
 }
 
-void pbox_app_music_resume(display_t policy)
-{
-    printf("pbox_app_music_resume state %d\n", pboxUIdata->play_status);
-    if(isBtA2dpConnected()) {
-        pbox_btsink_playPause(true);
-    } else {
-        if(pboxTrackdata->track_num == 0) {
-            return;
-        }
-    }
-    if(play_command_sended) {
-        return;
-    }
-    play_command_sended = true;
-    if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP) {
-        pbox_app_music_start(policy);
-    }
-    else if(pboxUIdata->play_status == PLAYING) {
-        return;
-    }
+void pbox_app_music_resume(display_t policy) {
+    //pbox_app_music_stop(policy);
+    //pbox_app_music_stop_bt_player(policy);
+    switch (pboxData->inputDevice) {
+        case SRC_BT: {
+            if (isBtA2dpConnected()) {
+                pbox_btsink_playPause(true);
+            }
+        } break;
 
-    pbox_app_rockit_resume_player();
-    pbox_app_rockit_get_player_duration();
-    pbox_multi_displayIsPlaying(true, policy);
+        case SRC_USB: {
+            if (pboxTrackdata->track_num == 0) {
+                return;
+            }
+            pbox_app_music_start(policy);
+            pbox_app_rockit_get_player_duration();
+        } break;
+
+        case SRC_UAC: {
+            pbox_app_music_start(policy);
+        } break;
+    }
     pboxUIdata->play_status = PLAYING;
+    pbox_multi_displayIsPlaying(true, policy);
 }
 
 void pbox_app_music_stop(display_t policy)
@@ -109,14 +243,23 @@ void pbox_app_music_stop(display_t policy)
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP) {
         return;
     }
+    switch (pboxData->inputDevice) {
+        case SRC_BT: {
+            if (isBtA2dpConnected())
+                pbox_btsink_a2dp_stop();
+        } break;
 
-    play_command_sended = false;
+        case SRC_USB: {
+            pbox_app_rockit_stop_player();
+        } break;
 
-    if(isBtA2dpConnected()) {
-        pbox_btsink_a2dp_stop();
+        case SRC_UAC: {
+            pbox_app_rockit_stop_BTplayer();
+        } break;
+        default:
+        break;
     }
 
-    pbox_app_rockit_stop_player();
     pbox_multi_displayIsPlaying(false, policy);
     pboxUIdata->play_status = _STOP;
 }
@@ -129,52 +272,60 @@ void pbox_app_music_set_volume(uint32_t volume, display_t policy) {
 
 void pbox_app_music_album_next(bool next, display_t policy)
 {
-    uint32_t *const pId = &(pboxTrackdata->track_id);
+    printf("%s, next:%d, inputDevice:%d\n", __func__, next, pboxData->inputDevice);
+    switch (pboxData->inputDevice) {
+        case SRC_BT: {
+            if (isBtA2dpConnected()) {
+                if(next) {
+                    pbox_btsink_music_next(true);
+                }
+                else {
+                    pbox_btsink_music_next(false);;
+                }
+                if(pboxUIdata->play_status == PLAYING) {
+                    pbox_app_music_pause(policy);
+                    pbox_app_music_resume(policy);
+                }
+            }
+        } break;
 
-    printf("%s, next:%d\n", __func__, next);
-    if (isBtA2dpConnected()) {
-        if(next) {
-            pbox_btsink_music_next(true);
-        }
-        else {
-            pbox_btsink_music_next(false);;
-        }
-    }
-    else {
-        if(pboxTrackdata->track_num == 0) {
-            return;
-        }
+        case SRC_USB: {
+            uint32_t *const pId = &(pboxTrackdata->track_id);
+            if(pboxTrackdata->track_num == 0) {
+                return;
+            }
 
-        if(next) {
-            (*pId)++;
-            if(*pId >= pboxTrackdata->track_num) *pId = 0;
-        }
-        else {
-            if(*pId == 0) {
-                *pId = pboxTrackdata->track_num - 1;
+            if(next) {
+                (*pId)++;
+                if(*pId >= pboxTrackdata->track_num) *pId = 0;
             }
             else {
-                (*pId)--;
+                if(*pId == 0) {
+                    *pId = pboxTrackdata->track_num - 1;
+                }
+                else {
+                    (*pId)--;
+                }
             }
-        }
 
-        if(*pId < pboxTrackdata->track_num) {
-            pbox_multi_displayTrackInfo(pboxTrackdata->track_list[*pId].title, NULL,  DISP_All);
-        }
-    }
+            if(*pId < pboxTrackdata->track_num) {
+                pbox_multi_displayTrackInfo(pboxTrackdata->track_list[*pId].title, NULL,  DISP_All);
+            }
 
-    if(pboxUIdata->play_status == PLAYING) {
-        if(isBtA2dpConnected()) {
-            pbox_app_music_pause(policy);
-        } else {
-            pbox_app_music_stop(policy);
-        }
-        pbox_app_music_resume(policy);
-    }
-    else {
-	    if(!isBtA2dpConnected()) {
-            pbox_app_music_stop(policy);
-        }
+            if(pboxUIdata->play_status == PLAYING) {
+                pbox_app_music_stop(policy);
+                pbox_app_music_resume(policy);
+            }
+
+        } break;
+
+        case SRC_UAC: {
+            char text[32] = {0};
+            snprintf(text, 31, "UAC NO SUPPORT:%s !!!", next? "NEXT":"PREV");
+            pbox_multi_displayTrackInfo(text, NULL,  DISP_All);
+        } break;
+        default:
+        break;
     }
 }
 
@@ -186,23 +337,10 @@ void pbox_app_music_original_singer_open(bool orignal, display_t policy)
     uint32_t hlevel = pboxUIdata->mHumanLevel;
     uint32_t mlevel = pboxUIdata->mMusicLevel;
     uint32_t rlevel = pboxUIdata->mReservLevel;
-    uint32_t volume = pbox_rockit_music_master_volume_get();
 
     pboxUIdata->mVocalSeperateEnable = !orignal;
     pbox_app_rockit_set_player_seperate(seperate , hlevel, mlevel, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate , hlevel, mlevel, rlevel, policy);
-
-    /*if (getBtSinkState() == BT_CONNECTED) {
-	    if (!orignal) {
-		    nomal_mode_volume = volume;
-		    printf("%s rk_bt_sink_set_volume :%d \n", __func__, 80);
-		    pbox_btsink_volume_set(80*128/100);
-		    pbox_app_music_set_volume(20, DISP_All);
-	    } else {
-		    printf("%s set nomal_mode_volume :%d \n", __func__, nomal_mode_volume);
-		    pbox_app_music_set_volume(nomal_mode_volume, DISP_All);
-	    }
-    }*/
 }
 
 //album mode: shuffle, sequence, repeat, repeat one.....
@@ -336,4 +474,85 @@ void pbox_version_print(void) {
     }
 
     printf("%s: %04d-%02d-%02d %s\n", __func__, year, mon + 1, day, __TIME__);
+}
+
+void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
+    printf("%s usbdisk=%d, bt state:%d\n", __func__, pboxUsbdata->usbState, getBtSinkState());
+    if(isUsbDiskConnected() || isBtConnected())
+        return;
+    if((role == UAC_ROLE_SPEAKER)) {
+        if(&pboxData->uac_state == start)
+            return;
+        printf("%s start=%d\n", __func__, start);
+        pboxData->uac_state = start;
+        if(start) {
+            pbox_app_switch_to_input_source(SRC_UAC, policy);
+            pbox_app_restart_uac_player(true, policy);
+            pboxUIdata->play_status = PLAYING;
+            pbox_app_show_playingStatus(true, policy);
+        } else {
+            pbox_app_music_stop(policy);
+        }
+        pbox_multi_displayUacState(role, start, policy);
+    }
+    ////pbox_app_rockit_set_uac_state(role, start);
+}
+
+void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy) {
+    if(isUsbDiskConnected() || isBtConnected())
+        return;
+
+    //pbox_multi_displayUacFreq(role, freq, policy);
+    pbox_app_rockit_start_BTplayer(freq, 2, "hw:2,0");
+}
+
+void pbox_app_uac_volume_change(uac_role_t role, uint32_t volume, display_t policy) {
+    if(isUsbDiskConnected() || isBtConnected())
+        return;
+    if((role == UAC_ROLE_SPEAKER)){
+        pbox_app_rockit_set_uac_volume(role, volume);
+        pbox_multi_displayUacVolume(role, volume, policy);
+    }
+}
+
+void pbox_app_uac_mute_change(uac_role_t role, bool mute, display_t policy) {
+    if(isUsbDiskConnected() || isBtConnected())
+        return;
+
+    pbox_app_rockit_set_mute(role, mute);
+    pbox_multi_displayUacMute(role, mute, policy);
+}
+
+void pbox_app_uac_ppm_change(uac_role_t role, int32_t ppm, display_t policy) {
+    //if(isUsbDiskConnected() || isBtConnected())
+    //    return;
+
+    pbox_app_rockit_set_ppm(role, ppm);
+    pbox_multi_displayUacPpm(role, ppm, policy);
+}
+
+void pbox_app_restart_uac_player(bool restart, display_t policy) {
+    printf("%s usbdisk=%d, bt state:%d\n", __func__, pboxUsbdata->usbState, getBtSinkState());
+    if(isUsbDiskConnected() || isBtConnected())
+        return;
+    printf("%s restart=%d\n", __func__, restart);
+    if(restart)
+        pbox_app_rockit_stop_BTplayer();
+    pbox_app_rockit_start_BTplayer(48000, 2, "hw:2,0");
+    //nothing to do with ui
+}
+
+void pbox_app_usb_start_scan(display_t policy) {
+    pbox_app_usb_startScan();
+    //nothing to display now
+}
+
+void pbox_app_usb_state_change(usb_state_t state, display_t policy) {
+    //nothing to notify rockit
+    pbox_multi_displayUsbState(state, policy);
+}
+
+void pbox_app_usb_list_update(uint32_t trackId, display_t policy) {
+    //nothing to notify rockit
+    pbox_multi_displayUsbListupdate(trackId, policy);
 }

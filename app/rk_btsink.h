@@ -31,7 +31,7 @@ typedef enum _rk_cmd_msg_t{
     RK_BT_OFF,
     RK_BT_START_BLUEALSA,
     RK_BT_START_BLUEALSA_APLAY,
-
+	RK_BT_START_BLUEALSA_ONLY,
 	//message id
 	BT_SINK_STATE =0x100,
 	BT_SINK_NAME,

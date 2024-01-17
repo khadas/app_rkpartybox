@@ -3,6 +3,8 @@
 #define _PBOX_LED_APP_H_
 #include <stdint.h>
 #include <stdbool.h>
+#include "pbox_common.h"
+#include "rk_btsink.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,6 +23,13 @@ void pbox_app_led_MusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mle
 void pbox_app_led_energyInfo(energy_info_t energy);
 void pbox_app_led_echo3A(bool enable);
 void pbox_app_led_revertMode(pbox_revertb_t mode);
+
+void pbox_app_led_usbState(usb_state_t mode);
+
+void pbox_app_led_btState(btsink_state_t mode);
+
+void pbox_app_led_uacState(bool start);
+void pbox_app_led_uacVolume(uint32_t volume);
 #ifdef __cplusplus
 }
 #endif

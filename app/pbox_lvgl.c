@@ -44,7 +44,7 @@ void lcd_pbox_notifyTrackid(uint32_t id) {
         .type = PBOX_EVT,
         .msgId = PBOX_LCD_PLAY_TRACKID_EVT,
     };
-    msg.trackid = id;
+    msg.trackId = id;
     unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
 }
 
@@ -233,20 +233,20 @@ void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdUsbStateUpdateCmd(const pbox_lcd_msg_t *msg) {
     printf("%s \n", __func__);
     switch (msg->usbState) {
-    case USB_CONNECTED: {
-        printf("USB Inserted! start to scan\n");
-        _lv_demo_music_update_ui_info(UI_WIDGET_USB_DISK_STATE, msg);
-    } break;
+        case USB_CONNECTED: {
+            printf("USB Inserted! start to scan\n");
+            _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
+        } break;
         case USB_DISCONNECTED: {
-        printf("USB Disk Removed\n");
-        _lv_demo_music_update_ui_info(UI_WIDGET_USB_DISK_STATE, msg);
-        _lv_demo_music_update_list();
-    } break;
-        case USB_SCANNED: {
-            printf("USB Scanned!! Track list update command \n");
-            _lv_demo_music_update_list();
+            printf("USB Disk Removed\n");
+            _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
         } break;
     }
+}
+
+void handleLcdUsbListUpdateCmd(const pbox_lcd_msg_t *msg) {
+    printf("%s trackId:%d\n", __func__, msg->trackId);
+    _lv_demo_music_update_list(msg->trackId);
 }
 
 void handleLcdBtStateUpdateCmd(const pbox_lcd_msg_t *msg) {
@@ -254,16 +254,20 @@ void handleLcdBtStateUpdateCmd(const pbox_lcd_msg_t *msg) {
     switch (msg->btState) {
         case BT_DISCONNECT: {
             printf("BT DISCONNECT\n");
-            _lv_demo_music_update_ui_info(UI_WIDGET_BT_STATE, msg);
+            _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
         } break;
         case BT_CONNECTED: {
             printf("BT CONNECTED\n");
-            _lv_demo_music_update_ui_info(UI_WIDGET_BT_STATE, msg);
-            _lv_demo_music_update_list();
+            _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
+            //_lv_demo_music_update_list();
         } break;
     }
 }
 
+void handleLcdUacStateUpdateCmd(const pbox_lcd_msg_t *msg) {
+    printf("%s uac started:%d\n", __func__, msg->uac_start);
+    _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
+}
 // Function to handle the main volume level command
 void handleLcdMainVolLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t mainVolume = msg->mainVolume;
@@ -368,8 +372,10 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_PREV_NEXT, handleLcdPrevNextCmd },
     { PBOX_LCD_DISP_TRACK_INFO, handleLcdTrackInfoCmd },
     { PBOX_LCD_DISP_TRACK_POSITION, handleLcdTrackPositionCmd },
+    { PBOX_LCD_DISP_USB_LIST_UPDATE, handleLcdUsbListUpdateCmd },
     { PBOX_LCD_DISP_USB_STATE, handleLcdUsbStateUpdateCmd },
     { PBOX_LCD_DISP_BT_STATE, handleLcdBtStateUpdateCmd },
+    { PBOX_LCD_DISP_UAC_STATE, handleLcdUacStateUpdateCmd},
     { PBOX_LCD_DISP_MAIN_VOL_LEVEL, handleLcdMainVolLevelCmd },
     { PBOX_LCD_DISP_MIC_VOL_LEVEL, handleLcdMicVolLevelCmd },
     { PBOX_LCD_DISP_MIC_MUTE, handleLcdMicmuteCmd },
@@ -381,7 +387,8 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_LOOP_MODE, handleLcdLoopModeCmd },
     { PBOX_LCD_DISP_ENERGY_INFO, handleLcdEnergyInfoCmd },
     { PBOX_LCD_DISP_RESERV_LEVEL, handleLcdReservLevelCmd },
-    { PBOX_LCD_DISP_REFLASH, handleLcdGuiReflushCmd}
+    { PBOX_LCD_DISP_REFLASH, handleLcdGuiReflushCmd},
+
     // Add other as needed...
 };
 

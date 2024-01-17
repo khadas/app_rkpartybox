@@ -117,3 +117,10 @@ void pbox_app_led_startup_effect(void) {
 	pbox_light_effect_send_cmd(RK_ECHO_LED_OFF_EVT, NULL, NULL);
 	pbox_light_effect_send_cmd(RK_ECHO_SYSTEM_BOOTING_EVT, NULL, NULL);
 }
+
+void pbox_app_led_uacState(bool start) {
+
+}
+void pbox_app_led_uacVolume(uint32_t volume) {
+
+}

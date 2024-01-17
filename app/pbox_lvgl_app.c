@@ -202,13 +202,34 @@ void pbox_app_lcd_dispplayUsbState(usb_state_t state) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_dispplaybtState(usb_state_t state) {
+void pbox_app_lcd_dispplayUsbListupdate(uint32_t trackId) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_USB_LIST_UPDATE,
+    };
+
+    msg.trackId = trackId;
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
+void pbox_app_lcd_dispplaybtState(btsink_state_t state) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_BT_STATE,
     };
 
     msg.btState = state;
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
+
+void pbox_app_lcd_dispplayUacState(bool start) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_UAC_STATE,
+    };
+
+    msg.uac_start = start;
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
@@ -225,7 +246,7 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
             }
         } break;
         case PBOX_LCD_PLAY_TRACKID_EVT: {
-            int32_t id = msg->trackid;
+            int32_t id = msg->trackId;
             pbox_app_music_trackid(id, DISP_All);
         } break;
         case PBOX_LCD_PLAY_STOP_EVT: {

@@ -24,6 +24,7 @@
 #include "pbox_rockit_app.h"
 #include "pbox_lvgl_app.h"
 #include "pbox_keyscan_app.h"
+#include "pbox_usb.h"
 #include "pbox_usb_app.h"
 #include "pbox_light_effect_app.h"
 

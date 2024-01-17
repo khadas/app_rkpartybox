@@ -46,16 +46,15 @@ typedef enum {
     UI_WIDGET_VOCAL_SEPERATE,
     UI_WIDGET_SPECTRUM_CHART,
     UI_WIDGET_3A_SWITCH,
-    UI_WIDGET_USB_DISK_STATE,
+    UI_WIDGET_DEVICE_STATE,
     UI_WIDGET_MIC_MUTE,
-    UI_WIDGET_BT_STATE,
     UI_WIDGET_REVERTB_MODE,
 }ui_widget_t;
 
 void lv_demo_music(void);
 int _lv_demo_music_get_track_num();
 int _lv_demo_music_get_track_id();
-void _lv_demo_music_update_list();
+void _lv_demo_music_update_list(uint32_t trackId);
 void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg);
 const char * _lv_demo_music_get_title(uint32_t track_id);
 const char * _lv_demo_music_get_artist(uint32_t track_id);

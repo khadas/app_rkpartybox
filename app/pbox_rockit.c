@@ -52,7 +52,7 @@ RK_S32 (*RK_MPI_KARAOKE_GetPlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEV
 RK_S32 (*RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy);
 RK_S32 (*RK_MPI_KARAOKE_StartBTPlayer_func)(void *ctx, KARAOKE_AUDIO_ATTR_S *attr);
 RK_S32 (*RK_MPI_KARAOKE_StopBTPlayer_func)(void *ctx);
-
+RK_S32 (*RK_MPI_AMIX_SetControl_func)(RK_S32 AmixDevId, const char *ctrlName, const char *value);
 
 
 int rk_demo_music_create() {
@@ -233,6 +233,9 @@ int rk_demo_music_create() {
          }
     }
 
+    RK_MPI_AMIX_SetControl_func = (RK_S32 (*)(RK_S32 AmixDevId, const char *ctrlName, const char *value))dlsym(mpi_hdl,
+                                                         "RK_MPI_AMIX_SetControl");
+
     if (RK_MPI_KARAOKE_Create_func(&player_ctx, &attr) != 0) {
         printf("RK_MPI_KARAOKE_Create_func failed, err!!!\n");
 	return -1;
@@ -318,14 +321,17 @@ static void pbox_rockit_music_setDataSource(const char *track_uri, const char *h
     RK_MPI_KARAOKE_SetDataSource_func(player_ctx, track_uri, headers);  
 }
 
-
+bool stopped_bt_player = false;
 static void pbox_rockit_music_stop_bt(void)
 {
     printf("%s:%p, %p\n", __func__, player_ctx, RK_MPI_KARAOKE_StopBTPlayer_func);
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_StopBTPlayer_func);
 
-    RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
+    if(!stopped_bt_player) {
+        stopped_bt_player = true;
+        RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
+    }
 }
 
 static void pbox_rockit_music_start(void)
@@ -355,7 +361,7 @@ static void pbox_rockit_music_pause(void)
     RK_MPI_KARAOKE_PausePlayer_func(player_ctx);
 }
 
-static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
+static void pbox_rockit_music_start_bt(int sampleFreq, int channel, char *cardName)
 {
     KARAOKE_AUDIO_ATTR_S attr;
     switch (sampleFreq) {
@@ -379,15 +385,16 @@ static void pbox_rockit_music_start_bt(int sampleFreq, int channel)
     }
 
     attr.u32BitWidth = 16;
-
+    snprintf(attr.u8CardName, sizeof(attr.u8CardName), "%s", cardName);
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_StartBTPlayer_func);
     assert(RK_MPI_KARAOKE_StopBTPlayer_func);
 
-    printf("%s sampe:%d, channel: %d\n", __func__, attr.u32SampleRate, attr.u32Channels);
+    printf("%s sampe:%d, channel: %d, card:%s !!!!!!!!!!!!!!!\n", __func__, attr.u32SampleRate, attr.u32Channels, cardName);
     pbox_rockit_music_stop();
-    RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
+    pbox_rockit_music_stop_bt();
     RK_MPI_KARAOKE_StartBTPlayer_func(player_ctx, &attr);
+    stopped_bt_player = false;
     //set_vocal_separate_thread_cpu();
 }
 
@@ -426,9 +433,10 @@ static int64_t pbox_rockit_music_get_position(void) {
     return position;
 }
 
-static void pbox_rockit_music_reverb_mode(pbox_revertb_t mode) {
+static void pbox_rockit_music_reverb_mode(const pbox_rockit_msg_t* msg) {
    KARAOKE_PARAM_S param;
    param.enType = KARAOKE_PARAM_REVERB;
+   pbox_revertb_t mode = msg->reverbMode;
 
    switch (mode) {
         case PBOX_REVERT_USER: {
@@ -443,6 +451,10 @@ static void pbox_rockit_music_reverb_mode(pbox_revertb_t mode) {
         case PBOX_REVERT_CONCERT: {
             param.stReverbParam.enMode = KARAOKE_REVERB_MODE_CONCERT;
         } break;
+        case PBOX_REVERT_ECHO: {
+            param.stReverbParam.enMode = KARAOKE_REVERB_MODE_ECHO;
+        } break;
+
         default: break;
    }
 
@@ -456,8 +468,10 @@ static void pbox_rockit_music_reverb_mode(pbox_revertb_t mode) {
    RK_MPI_KARAOKE_SetRecorderParam_func(player_ctx, &param);
 }
 
-static void pbox_rockit_music_echo_reduction(bool on) {
+static void pbox_rockit_music_echo_reduction(const pbox_rockit_msg_t* msg) {
     KARAOKE_PARAM_S param;
+
+    bool on = msg->echo3A_On;
     param.enType = KARAOKE_PARAM_3A;
     param.st3AParam.bBypass = !on;
 
@@ -680,6 +694,50 @@ static void pbox_rockit_music_destroy(void) {
    printf("destroy karaoke player\n");
 }
 
+static void pbox_rockit_uac_set_state(pbox_rockit_msg_t *msg) {
+    uac_role_t role = msg->uac.uac_role;
+    bool start = msg->uac.state;
+}
+
+static void pbox_rockit_uac_set_freq(pbox_rockit_msg_t *msg) {
+    uac_role_t role = msg->uac.uac_role;
+    uint32_t freq = msg->uac.sampleFreq;
+    pbox_rockit_music_start_bt(freq, 2, "hw:2,0");
+}
+
+static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {
+    uac_role_t role = msg->uac.uac_role;
+    uint32_t volume = msg->uac.volume;
+    if(role == UAC_ROLE_SPEAKER) {
+        pbox_rockit_music_master_volume_adjust(volume);
+    }
+    else if(role == UAC_ROLE_RECORDER) {
+        pbox_rockit_music_mic_volume_adjust(volume);
+    }
+}
+
+static void pbox_rockit_uac_set_mute(pbox_rockit_msg_t *msg) {
+    uac_role_t role = msg->uac.uac_role;
+    bool mute = msg->uac.mute;
+    if(role == UAC_ROLE_SPEAKER) {
+
+    }
+    else if(role == UAC_ROLE_RECORDER) {
+        pbox_rockit_music_mic_mute(mute);
+    }
+}
+
+#define MIC_SPK_SOUNDCARD_INDEX 0
+static void pbox_rockit_uac_set_ppm(pbox_rockit_msg_t *msg) {
+    char str[64] = {0};
+    uac_role_t role = msg->uac.uac_role;
+    int32_t ppm = msg->uac.ppm;
+    snprintf(str, sizeof(str), "%d", ppm);
+    printf("%s ppm:%d\n", __func__, ppm);
+
+    RK_MPI_AMIX_SetControl_func(MIC_SPK_SOUNDCARD_INDEX, "PCM Clk Compensation In PPM", str);
+}
+
 #define MIN_ROCKIT_TIMER_INTER 50
 static void *pbox_rockit_server(void *arg)
 {
@@ -751,7 +809,7 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_STARTBTPLAYER: {
                 pbox_audioFormat_t audioFormat = msg->audioFormat;
-                pbox_rockit_music_start_bt(audioFormat.sampingFreq, audioFormat.channel);
+                pbox_rockit_music_start_bt(audioFormat.sampingFreq, audioFormat.channel, audioFormat.cardName);
             } break;
 
             case PBOX_ROCKIT_STOPBTPLAYER: {
@@ -833,11 +891,27 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SET_RECORDER_3A: {
-                pbox_rockit_music_echo_reduction(msg->echo3A_On);
+                pbox_rockit_music_echo_reduction(msg);
             } break;
 
             case PBOX_ROCKIT_SET_RECORDER_REVERT: {
-                pbox_rockit_music_reverb_mode(msg->reverbMode);
+                pbox_rockit_music_reverb_mode(msg);
+            } break;
+
+            case PBOX_ROCKIT_SET_UAC_STATE: {
+                pbox_rockit_uac_set_state(msg);
+            } break;
+            case PBOX_ROCKIT_SET_UAC_SAMPLE_RATE: {
+                pbox_rockit_uac_set_freq(msg);
+            } break;
+            case PBOX_ROCKIT_SET_UAC_VOLUME: {
+                pbox_rockit_uac_set_volume(msg);
+            } break;
+            case PBOX_ROCKIT_SET_UAC_MUTE: {
+                pbox_rockit_uac_set_mute(msg);
+            } break;
+            case PBOX_ROCKIT_SET_UAC_PPM: {
+                pbox_rockit_uac_set_ppm(msg);
             } break;
 
             default: {

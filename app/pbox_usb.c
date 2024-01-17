@@ -15,14 +15,19 @@
 #include <sys/time.h>
 #include <mntent.h>
 #include <libudev.h>
+
+#include "uac_uevent.h"
 #include "pbox_common.h"
 #include "pbox_usb.h"
 #include "pbox_usb_scan.h"
+#include "pbox_usb_uac.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
 
 static void handleUsbStartScanCmd(const pbox_usb_msg_t* msg);
 static void handleUsbPollStateCmd(const pbox_usb_msg_t* msg);
+
+static void handleUacStartScanCmd(const pbox_usb_msg_t* msg);
 
 typedef void (*usb_cmd_handle_t)(const pbox_usb_msg_t*);
 
@@ -35,6 +40,57 @@ usb_state_t usb_server_state = USB_DISCONNECTED;
 
 int unix_socket_usb_notify(void *info, int length) {
     return unix_socket_notify_msg(PBOX_MAIN_USBDISK, info, length);
+}
+
+void uac_pbox_notify_role_change(uint32_t role, bool start) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_USB_UAC_ROLE_CHANGE_EVT,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.state = start;
+    printf("%s uac_role=%d, state=%d\n", __func__, role, start);
+    unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
+}
+
+void uac_pbox_notify_host_sample_rate(uint32_t role, uint32_t rate) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_USB_UAC_SAMPLE_RATE_EVT,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.sampleFreq = rate;
+    unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
+}
+
+void uac_pbox_notify_host_volume(uint32_t role, uint32_t volume) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_USB_UAC_VOLUME_EVT,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.volume = volume;
+    unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
+}
+
+void uac_pbox_notify_host_mute(uint32_t role, bool on) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_USB_UAC_MUTE_EVT,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.mute = on;
+    unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
+}
+
+void uac_pbox_notify_host_ppm(uint32_t role, int32_t ppm) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_USB_UAC_PPM_EVT,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.ppm = ppm;
+    unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
 }
 
 void usb_pbox_notify_state_changed(usb_state_t state, char *diskName) {
@@ -130,7 +186,12 @@ bool is_usb_drive_connected() {
 const UsbCmdHandler_t usb_event_handlers[] = {
     { PBOX_USB_POLL_STATE, handleUsbPollStateCmd},
     { PBOX_USB_START_SCAN, handleUsbStartScanCmd},
+    { PBOX_UAC_RESTART,    handleUacStartScanCmd},
 };
+
+void handleUacStartScanCmd(const pbox_usb_msg_t* msg) {
+    exec_command_system("/etc/init.d/S50usbdevice restart");
+}
 
 void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {
     printf("%s\n", __func__);
@@ -179,17 +240,20 @@ void process_pbox_usb_cmd(const pbox_usb_msg_t* msg) {
 
 #define USB_UDP_SOCKET 0
 #define USB_DEV_DETECT 1
-#define USB_FD_NUM     2
+#define USB_DEV_UAC    2 
+#define USB_FD_NUM     3
 
 pthread_t usb_server_task_id;
+
 static void *pbox_usb_server(void *arg)
 {
-    int usb_fds[USB_FD_NUM] = {-1, -1};
+    int usb_fds[USB_FD_NUM];
     char buff[sizeof(pbox_usb_msg_t)] = {0};
     pbox_usb_msg_t *msg;
     struct udev *udev;
 
     pthread_setname_np(pthread_self(), "pbox_usb");
+    PBOX_ARRAY_SET(usb_fds, -1, sizeof(usb_fds)/sizeof(usb_fds[0]));
 
     #if ENABLE_UDP_CONNECTION_LESS
     usb_fds[USB_UDP_SOCKET] = create_udp_socket(SOCKET_PATH_USB_SERVER);
@@ -213,12 +277,16 @@ static void *pbox_usb_server(void *arg)
     udev_monitor_enable_receiving(mon);
     usb_fds[USB_DEV_DETECT] = udev_monitor_get_fd(mon);
 
-    int max_fd = (usb_fds[0] > usb_fds[1]) ? usb_fds[0] : usb_fds[1];
+    usb_fds[USB_DEV_UAC] = uac_monitor_get_fd();
+    uac_init();
+
+    int max_fd = findMax(usb_fds, sizeof(usb_fds)/sizeof(usb_fds[0]));
 
     fd_set read_fds;
     FD_ZERO(&read_fds);
-    FD_SET(usb_fds[0], &read_fds);
-    FD_SET(usb_fds[1], &read_fds);
+    FD_SET(usb_fds[USB_UDP_SOCKET], &read_fds);
+    FD_SET(usb_fds[USB_DEV_DETECT], &read_fds);
+    FD_SET(usb_fds[USB_DEV_UAC], &read_fds);
     struct timeval tv = {
         .tv_sec = 1,
         .tv_usec = 0,
@@ -258,7 +326,7 @@ static void *pbox_usb_server(void *arg)
 #if ENABLE_UDP_CONNECTION_LESS
                     int ret = recvfrom(usb_fds[USB_UDP_SOCKET], buff, sizeof(buff), 0, NULL, NULL);
 #else
-                    int ret = recv(usb_fds[USB_UDP_SOCKET], buff, sizeof(buff), 0);
+                    int ret = recv(usb_fds[i], buff, sizeof(buff), 0);
 #endif
                     if (ret <= 0) {
                         if (ret == 0) {
@@ -299,6 +367,36 @@ static void *pbox_usb_server(void *arg)
                         printf("Device added：%s\n", devnode);
                     }
                     udev_device_unref(dev);
+                } break;
+
+                case USB_DEV_UAC: {
+                    char buffer[512] = {0};
+                    struct _uevent event;
+                    event.size = 0;
+                    PBOX_ARRAY_SET(event.strs, 0, sizeof(event.strs)/sizeof(event.strs[0]));
+                    int len = recv(usb_fds[i], buffer, sizeof(buffer), 0);
+                    if (len <= 0) {
+                        if (len == 0) {
+                            printf("Socket closed\n");
+                            break;
+                        } else {
+                            perror("recvfrom failed");
+                            continue;
+                        }
+                    }
+
+                    if(len < 32 || len > sizeof(buffer)) {
+                        printf("invalid message!!!!!!!!!!!!!!!!!\n");
+                    }
+
+                    for (int m = 0, n =0; m < len; m++) {
+                        if (*(buffer + m) == '\0' && (m + 1) != len) {
+                            event.strs[n++] = buffer + m + 1;
+                            event.size = n;
+                        }
+                    }
+
+                    parse_event(&event);
                 } break;
             }
         }

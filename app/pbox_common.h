@@ -73,6 +73,7 @@ typedef enum {
 typedef struct {
     int sampingFreq;
     int channel;
+    char cardName[30];
 } pbox_audioFormat_t;
 
 typedef struct {
@@ -88,6 +89,7 @@ typedef enum {
     PBOX_REVERT_STUDIO,
     PBOX_REVERT_KTV,
     PBOX_REVERT_CONCERT,
+    PBOX_REVERT_ECHO,
     PBOX_REVERT_BUTT,
 } pbox_revertb_t;
 
@@ -135,9 +137,44 @@ typedef struct {
     char fileName[MAX_APP_NAME_LENGTH+1];
 } usb_music_file_t;
 
+typedef enum {
+    UAC_ROLE_SPEAKER,
+    UAC_ROLE_RECORDER,
+    UAC_ROLE_NUM
+} uac_role_t;
+
+typedef enum {
+    SRC_USB,
+    SRC_BT,
+    SRC_UAC,
+    SRC_AUTO,
+    SRC_NUM
+} input_source_t;
+
+
+typedef struct _uac {
+    uac_role_t uac_role;
+    union {
+        bool state;
+        uint32_t sampleFreq;
+        uint32_t volume;
+        bool mute;
+        int32_t ppm;
+    };
+} uac_t;
+
 typedef struct _pbox_pipe {
     int fd[2];
 } pbox_pipe_t;
+
+#define PBOX_ARRAY_SET(array, value, size)	\
+do											\
+{											\
+    for (int i=0; i< size; i++)				\
+    {										\
+        array[i] = value;					\
+    }										\
+} while (0);
 
 extern pbox_pipe_t pbox_pipe_fds[PBOX_MAIN_NUM];
 
@@ -146,6 +183,7 @@ int create_fd_timer (void);
 void pause_fd_timer(int timer_fd);
 uint64_t time_get_os_boot_us(void);
 uint64_t time_get_os_boot_ms(void);
+int findMax(int array[], int size);
 
 #ifdef __cplusplus
 } /* extern "C" */

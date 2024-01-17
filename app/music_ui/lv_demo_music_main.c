@@ -79,7 +79,10 @@ extern lv_ft_info_t ttf_main_l;
 int32_t mHumanLevel=15, mMusicLevel=100, mGuitarLevel = 100;
 int32_t mVolumeLevel=50, mMicVolumeLevel=50;
 //bool mEchoReductionEnable = true;
-usb_state_t usbstate;
+usb_state_t lv_usbstate;
+btsink_state_t lv_btstate;
+bool lv_uacstate;
+
 bool mVocalSeperateEnable = false;
 lv_obj_t * vocal_label = NULL;
 lv_obj_t * accomp_label = NULL;
@@ -392,36 +395,44 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_clear_state(echo_3a_switch, LV_STATE_CHECKED);
             }
         } break;
-        case UI_WIDGET_USB_DISK_STATE: {
-            usbstate = msg->usbState;
-            printf("%s usbstate %s", __func__, usbstate == USB_CONNECTED? "on":"off");
-            if (getBtSinkState() != BT_CONNECTED) {
-                if (usbstate == USB_CONNECTED) {
-                    lv_label_set_text(source_label, "USB Inserted");
-                    lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
-                } else if (usbstate == USB_DISCONNECTED) {
-                    lv_label_set_text(source_label, "USB Removed");
-                    lv_obj_set_style_text_color(source_label, lv_color_hex(0xCCCCCC), 0);
-                }
+
+        case UI_WIDGET_DEVICE_STATE: {
+            if(msg->msgId == PBOX_LCD_DISP_BT_STATE) {
+                lv_btstate = msg->btState;
             }
-        } break;
-        case UI_WIDGET_BT_STATE: {
-            btsink_state_t state = msg->btState;
-            if (state == BT_CONNECTED) {
-                char name[MAX_NAME_LENGTH];
-                lv_snprintf(name, sizeof(name), "%s", getBtRemoteName());
-                printf("%s remote name %s", __func__, name);
-                lv_label_set_text(source_label, name);
-                lv_obj_set_style_text_color(source_label, lv_color_hex(0x0082FC), 0);
-            } else if (state == BT_DISCONNECT) {
-                if (usbstate == USB_CONNECTED) {
-                    uint32_t track_id = _lv_demo_music_get_track_id();
-                    lv_label_set_text(source_label, "USB Inserted");
-                    lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
-                   _lv_demo_music_update_track_info(track_id);
-                } else if (usbstate == USB_DISCONNECTED) {
-                    lv_label_set_text(source_label, "USB Removed");
-                    lv_obj_set_style_text_color(source_label, lv_color_hex(0xCCCCCC), 0);
+            if(msg->msgId == PBOX_LCD_DISP_USB_STATE) {
+                lv_usbstate = msg->usbState;
+            }
+            if(msg->msgId == PBOX_LCD_DISP_UAC_STATE) {
+                lv_uacstate = msg->uac_start;
+            }
+
+            switch (msg->msgId) {
+                case PBOX_LCD_DISP_BT_STATE: {
+                    if (lv_btstate == BT_CONNECTED) {
+                        char name[MAX_NAME_LENGTH];
+                        lv_snprintf(name, sizeof(name), "%s", getBtRemoteName());
+                        printf("%s remote name %s", __func__, name);
+                        lv_label_set_text(source_label, name);
+                        lv_obj_set_style_text_color(source_label, lv_color_hex(0x0082FC), 0);
+                        break;
+                    } //no break. go through
+                }
+                case PBOX_LCD_DISP_USB_STATE: {
+                    if (lv_usbstate == USB_CONNECTED) {
+                        lv_label_set_text(source_label, "USB Inserted");
+                        lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
+                        break;
+                    } //no break. go through
+                }
+                case PBOX_LCD_DISP_UAC_STATE: {
+                    if (lv_uacstate == true) {
+                        lv_label_set_text(source_label, "UAC Audio");
+                        lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
+                        break;
+                    }
+
+                    lv_label_set_text(source_label, ""); //show nothing
                 }
             }
         } break;
@@ -595,6 +606,8 @@ static void reverb_event_handler(lv_event_t *e) {
         mode = PBOX_REVERT_KTV;
     else if (!strcmp(buf, "CONCERT"))
         mode = PBOX_REVERT_CONCERT;
+    else if (!strcmp(buf, "ECHO"))
+        mode = PBOX_REVERT_ECHO;
     else 
          mode = PBOX_REVERT_USER;
 
@@ -764,14 +777,14 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //reverb control
     lv_obj_t * reverb_label = lv_label_create(cont);
-    lv_label_set_text(reverb_label, "ECHO");
+    lv_label_set_text(reverb_label, "REVERB");
     lv_obj_set_style_text_color(reverb_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(reverb_label, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(reverb_label, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 8, 1);
     reverb_dd_obj = lv_dropdown_create(cont);
     lv_obj_set_grid_cell(reverb_dd_obj, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 9, 1);
     lv_obj_set_style_text_font(reverb_dd_obj, font_small, 0);
-    lv_dropdown_set_options_static(reverb_dd_obj, "OFF\nSTUDIO\nKTV\nCONCERT");
+    lv_dropdown_set_options_static(reverb_dd_obj, "OFF\nSTUDIO\nKTV\nCONCERT\nECHO");
     lv_dropdown_set_dir(reverb_dd_obj, LV_DIR_BOTTOM);
     lv_dropdown_set_selected(reverb_dd_obj, PBOX_REVERT_KTV);//0,1,2,3 so 3 means CONCERT
     lv_obj_add_event_cb(reverb_dd_obj, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);

@@ -48,7 +48,7 @@ void pbox_app_rockit_set_datasource(char *path, char *headers) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel) {
+void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel, const char *cardName) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_STARTBTPLAYER,
@@ -78,7 +78,8 @@ void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel) {
     }
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
-    printf("zdm %s sampleFreq:%d, channel:%d \n", __func__, sampleFreq, channel);
+    strncpy(msg.audioFormat.cardName, cardName, 30);
+    printf("zdm %s sampleFreq:%d, channel:%d, cardname:%s \n", __func__, sampleFreq, channel, cardName);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -270,6 +271,56 @@ void pbox_app_rockit_set_recoder_3A(bool echo3A_On) {
     };
 
     msg.echo3A_On = echo3A_On;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_uac_state(uac_role_t role, bool start) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_UAC_STATE,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.state = start;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.sampleFreq = freq;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_uac_volume(uac_role_t role, uint32_t volume) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.volume = volume;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_mute(uac_role_t role, bool mute) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.mute = mute;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_ppm(uac_role_t role, int32_t ppm) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_UAC_PPM,
+    };
+    msg.uac.uac_role = role;
+    msg.uac.ppm = ppm;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 

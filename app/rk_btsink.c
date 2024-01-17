@@ -456,119 +456,27 @@ void bt_test_version(char *data)
 
 static bool bt_test_audio_server_cb(void)
 {
-	printf("%s bt_content.profile: 0x%x:0x%x:0x%x\n", __func__, bt_content.profile,
-			(bt_content.profile & PROFILE_A2DP_SINK_HF),
-			(bt_content.profile & PROFILE_A2DP_SOURCE_AG));
-	if (bt_content.bluealsa == true) {
-		//use bluealsa
-		char rsp[64];
-		exec_command("pactl list modules | grep bluetooth", rsp, 64);
-		if (rsp[0]) {
-			exec_command_system("pactl unload-module module-bluetooth-policy");
-			exec_command_system("pactl unload-module module-bluetooth-discover");
-		}
-
-		exec_command_system("killall bluealsa bluealsa-aplay");
-
-		if ((bt_content.profile & PROFILE_A2DP_SINK_HF) == PROFILE_A2DP_SINK_HF) {
-			exec_command_system("bluealsa -S --profile=a2dp-sink --profile=hfp-hf &");
-			//Sound Card: default
-			exec_command_system("bluealsa-aplay -S --profile-a2dp 00:00:00:00:00:00 &");
-		} else if ((bt_content.profile & PROFILE_A2DP_SOURCE_AG) == PROFILE_A2DP_SOURCE_AG) {
-			exec_command_system("bluealsa -S --profile=a2dp-source --profile=hfp-ag --a2dp-volume &");
-		}
-	}
-
 	return true;
 }
 
 static bool bt_test_vendor_cb(bool enable)
 {
-	int times = 100;
-
-	if (enable) {
-		//vendor
-		//broadcom
-		if (get_ps_pid("brcm_patchram_plus1"))
-			kill_task("brcm_patchram_plus1");
-
-		//realtek
-		if (get_ps_pid("rtk_hciattach"))
-			kill_task("rtk_hciattach");
-
-		//The hci0 start to init ...
-		if (!access("/usr/bin/wifibt-init.sh", F_OK))
-			exec_command_system("/usr/bin/wifibt-init.sh start_bt");
-		else if (!access("/usr/bin/bt_init.sh", F_OK))
-			exec_command_system("/usr/bin/bt_init.sh");
-
-		//wait hci0 appear
-		while (times-- > 0 && access("/sys/class/bluetooth/hci0", F_OK)) {
-			usleep(100 * 1000);
-		}
-
-		if (access("/sys/class/bluetooth/hci0", F_OK) != 0) {
-			printf("The hci0 init failure!\n");
-			return false;
-		}
-
-		/* ensure bluetoothd running */
-		/*
-		 * DEBUG: vim /etc/init.d/S40bluetooth, modify BLUETOOTHD_ARGS="-n -d"
-		 */
-		if (access("/etc/init.d/S40bluetooth", F_OK) == 0)
-			exec_command_system("/etc/init.d/S40bluetooth restart");
-		else if (access("/etc/init.d/S40bluetoothd", F_OK) == 0)
-			exec_command_system("/etc/init.d/S40bluetoothd restart");
-
-		//or
-		//exec_command_system("/usr/libexec/bluetoothd -n -P battery");
-		//or debug
-		//exec_command_system("/usr/libexec/bluetoothd -n -P battery -d");
-		//exec_command_system("hcidump xxx or btmon xxx");
-
-		//check bluetoothd
-		times = 100;
-		while (times-- > 0 && !(get_ps_pid("bluetoothd"))) {
-			usleep(100 * 1000);
-		}
-
-		if (!get_ps_pid("bluetoothd")) {
-			printf("The bluetoothd boot failure!\n");
-			return false;
-		}
-	} else {
-		//CLEAN
-		exec_command_system("hciconfig hci0 down");
-		exec_command_system("/etc/init.d/S40bluetooth stop");
-
-		//vendor deinit
-		if (get_ps_pid("brcm_patchram_plus1"))
-			kill_task("killall brcm_patchram_plus1");
-		if (get_ps_pid("rtk_hciattach"))
-			kill_task("killall rtk_hciattach");
-
-		//audio server deinit
-		if (get_ps_pid("bluealsa"))
-			kill_task("bluealsa");
-		if (get_ps_pid("bluealsa-alay"))
-			kill_task("bluealsa-alay");
-	}
-
 	return true;
+}
+
+static void bt_restart_bluealsa_only(void) {
+	printf("%s\n", __func__);
+	kill_task("pulseaudio");
+	if(!get_ps_pid("bluealsa"))
+		run_task("bluealsa", "bluealsa --profile=a2dp-sink --a2dp-volume --initial-volume=70 --a2dp-force-audio-cd &");
 }
 
 static int bt_restart_a2dp_sink(bool onlyAplay)
 {
 	char ret_buff[1024];
 
+	printf("%s onlyAplay:%d\n", __func__, onlyAplay);
 	kill_task("pulseaudio");
-    //msleep(100);
-    if(!onlyAplay)
-	    kill_task("bluealsa");
-
-	kill_task("bluealsa-aplay");
-	msleep(10);
 
     if(!onlyAplay) {
 		bool btsnoop = false;
@@ -583,10 +491,12 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 			exec_command_system("hcidump -i hci0 -w /data/btsnoop.log &");
 		}
 
-		run_task("bluealsa", "bluealsa --profile=a2dp-sink --a2dp-volume --initial-volume=70 --a2dp-force-audio-cd &");
+		if(!get_ps_pid("bluealsa"))
+			run_task("bluealsa", "bluealsa --profile=a2dp-sink --a2dp-volume --initial-volume=70 --a2dp-force-audio-cd &");
     }
 
-	run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+	if(!get_ps_pid("bluealsa-aplay"))
+		run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
 	exec_command_system("hciconfig hci0 class 0x240404");
 
 	return 0;
@@ -698,11 +608,14 @@ static void *btsink_server(void *arg)
     				rk_bt_deinit();
                 } break;
     			case RK_BT_START_BLUEALSA:{
-    				bt_restart_a2dp_sink(0);
+    				bt_restart_a2dp_sink(false);
                 } break;
     			case RK_BT_START_BLUEALSA_APLAY:{
-    				bt_restart_a2dp_sink(1);
+    				bt_restart_a2dp_sink(true);
                 } break;
+				case RK_BT_START_BLUEALSA_ONLY: {
+					bt_restart_bluealsa_only();
+				} break;
 			case RK_BT_ABS_VOL:{
 				rk_bt_sink_set_volume(msg->media_volume);
                 } break;

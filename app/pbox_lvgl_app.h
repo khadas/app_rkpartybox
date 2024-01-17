@@ -21,7 +21,14 @@ void pbox_app_lcd_dispplayEnergy(energy_info_t energy);
 void pbox_app_lcd_displayEcho3A(bool on);
 void pbox_app_lcd_displayRevertbMode(pbox_revertb_t mode);
 void pbox_app_lcd_dispplayReflash(void);
+
+void pbox_app_lcd_dispplaybtState(btsink_state_t state);
+
 void pbox_app_lcd_dispplayUsbState(usb_state_t state);
+void pbox_app_lcd_dispplayUsbListupdate(uint32_t trackId);
+
+void pbox_app_lcd_dispplayUacState(bool start);
+
 void maintask_lvgl_fd_process(int fd);
 
 #ifdef __cplusplus
