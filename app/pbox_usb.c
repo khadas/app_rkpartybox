@@ -190,7 +190,9 @@ const UsbCmdHandler_t usb_event_handlers[] = {
 };
 
 void handleUacStartScanCmd(const pbox_usb_msg_t* msg) {
+    #if ENABLE_UAC
     exec_command_system("/etc/init.d/S50usbdevice.sh restart");
+    #endif
 }
 
 void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {

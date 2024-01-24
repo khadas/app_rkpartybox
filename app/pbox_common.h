@@ -2,6 +2,9 @@
 #define _PTBOX_COMMON_H_
 #include <stdbool.h>
 #include <stdint.h>
+#include "slog.h"
+#include "pbox_model.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,27 +29,32 @@ extern "C" {
 #define MUSIC_PATH "/mnt/udisk/"
 #define MAX(A, B) (A > B ? A : B)
 #define MIN(A, B) (A < B ? A : B)
-#define MAX_APP_NAME_LENGTH 255
+
+#define MAX_SHORT_NAME_LENGTH 63
 #define TRACK_MAX_NUM 100
-#define ENABLE_LCD_DISPLAY 1
-#define ENABLE_USE_SOCBT 1
 
 typedef enum {
     PBOX_SOCKPAIR_BT,
     PBOX_SOCKPAIR_KEYSCAN,
+#if ENABLE_RK_ROCKIT
     PBOX_SOCKPAIR_ROCKIT,
+#endif
     PBOX_SOCKPAIR_USBDISK,
 #if ENABLE_LCD_DISPLAY
     PBOX_SOCKPAIR_LVGL,
 #endif
+#if ENABLE_RK_LED_EFFECT
     PBOX_SOCKPAIR_LED, //keep it before PBOX_MAIN_NUM
+#endif
     PBOX_SOCKPAIR_NUM
 } pb_sock_pair_t;
 
 typedef enum {
     PBOX_MAIN_BT,
     PBOX_MAIN_KEYSCAN,
+#if ENABLE_RK_ROCKIT
     PBOX_MAIN_ROCKIT,
+#endif
     PBOX_MAIN_USBDISK,
 #if ENABLE_LCD_DISPLAY
     PBOX_MAIN_LVGL,
@@ -57,8 +65,13 @@ typedef enum {
 
 typedef enum {
     PBOX_CHILD_BT,
+#if ENABLE_RK_ROCKIT
     PBOX_CHILD_ROCKIT,
+#endif
+#if ENABLE_RK_LED_EFFECT
     PBOX_CHILD_LED,
+#endif
+
     PBOX_CHILD_USBDISK,
 #if ENABLE_LCD_DISPLAY
     PBOX_CHILD_LVGL,
@@ -152,6 +165,28 @@ typedef enum {
     SRC_NUM
 } input_source_t;
 
+typedef enum {
+    OP_WRITE,
+    OP_READ,
+    OP_NUM
+} ext_cmd_t;
+
+typedef enum {
+    MIC_OFF = 1,
+    MIC_IN = 2,
+    MIC_GT = 3,
+}mic_state_t;
+
+typedef enum {
+    INDOOR = 0,
+    OUTDOOR = 1,
+}inout_door_t;
+
+typedef enum {
+    MODE_STEREO = 0,
+    MODE_MONO = 1,
+    MODE_WIDEN = 2,
+}stereo_mode_t;
 
 typedef struct _uac {
     uac_role_t uac_role;
@@ -177,7 +212,7 @@ do											\
     }										\
 } while (0);
 
-extern pbox_pipe_t pbox_pipe_fds[PBOX_MAIN_NUM];
+extern pbox_pipe_t pbox_pipe_fds[PBOX_SOCKPAIR_NUM];
 
 void start_fd_timer(int timer_fd, int start, int interval, bool loop);
 int create_fd_timer (void);

@@ -68,11 +68,13 @@ const usb_event_handle_t usbEventTable[] = {
     { PBOX_USB_DISK_CHANGE_EVT,     handleUsbChangeEvent        },
     { PBOX_USB_AUDIO_FILE_ADD_EVT,  handleUsbAudioFileAddEvent  },
 
+    #if ENABLE_UAC
     { PBOX_USB_UAC_ROLE_CHANGE_EVT, handleUacRoleStateEvent     },
     { PBOX_USB_UAC_SAMPLE_RATE_EVT, handleUacSampleRateEvent    },
     { PBOX_USB_UAC_VOLUME_EVT,      handleUacVolumeEvent        },
     { PBOX_USB_UAC_MUTE_EVT,        handleUacMuteEvent          },
     { PBOX_USB_UAC_PPM_EVT,         handleUsbPpmEvent           },
+    #endif
     // Add other as needed...
 };
 

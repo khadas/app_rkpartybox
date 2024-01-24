@@ -251,16 +251,19 @@ int rk_demo_music_create() {
 
 static void rockit_pbbox_notify_awaken(uint32_t wakeCmd)
 {
+    #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
     msg.msgId = PBOX_ROCKIT_AWAKEN_EVT;
     msg.wake_up.wakeCmd = wakeCmd;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    #endif
 }
 
 static void rockit_pbbox_notify_playback_status(uint32_t ext1)
 {
+    #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
 
@@ -268,48 +271,57 @@ static void rockit_pbbox_notify_playback_status(uint32_t ext1)
         msg.msgId = PBOX_ROCKIT_PLAY_COMPLETED_EVT;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    #endif
 }
 
 //before call this func, duration shoud covert to ms(msecond), not us.
 static void rockit_pbbox_notify_duration(uint32_t duration)
 {
+    #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
     msg.msgId = PBOX_ROCKIT_MUSIC_DURATION_EVT;
     msg.duration = duration;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    #endif
 }
 
 //before call this func, duration shoud covert to ms(msecond), not us.
 static void rockit_pbbox_notify_current_postion(uint32_t current)
 {
+    #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
     msg.msgId = PBOX_ROCKIT_MUSIC_POSITION_EVT;
     msg.mPosition = current;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    #endif
 }
 
 static void rockit_pbbox_notify_volume(uint32_t volume)
 {
+    #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
     msg.msgId = PBOX_ROCKIT_MUSIC_VOLUME_EVT;
     msg.volume = volume;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    #endif
 }
 
 static void rockit_pbbox_notify_energy(energy_info_t energy)
 {
+    #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
     msg.msgId = PBOX_ROCKIT_ENERGY_EVT;
     msg.energy_data = energy;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    #endif
 }
 
 static void pbox_rockit_music_setDataSource(const char *track_uri, const char *headers)
@@ -739,6 +751,7 @@ static void pbox_rockit_uac_set_ppm(pbox_rockit_msg_t *msg) {
 }
 
 #define MIN_ROCKIT_TIMER_INTER 50
+#if ENABLE_RK_ROCKIT
 static void *pbox_rockit_server(void *arg)
 {
     int rockit_fds[1] = {0};
@@ -931,6 +944,7 @@ int pbox_create_rockitTask(void)
 
     return ret;
 }
+#endif
 
 void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, RK_S32 ext1, RK_VOID *ptr) {
     int ret = 0;

@@ -7,7 +7,9 @@ add_definitions(-g -D__EXPORTED_HEADERS__)
 include_directories(
 	${PROJECT_SOURCE_DIR}/app/
 	${PROJECT_SOURCE_DIR}/app/uac/
+	${PROJECT_SOURCE_DIR}/driver/userial/
 	${PROJECT_SOURCE_DIR}/sys/
+	${PROJECT_SOURCE_DIR}/utils/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
 	${CMAKE_SYSROOT}/usr/include/rockchip/
@@ -20,7 +22,9 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/sys SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/cJSON SRCS)
 aux_source_directory(./app SRCS)
 aux_source_directory(./app/uac SRCS)
+aux_source_directory(./driver/userial SRCS)
 aux_source_directory(./sys SRCS)
+aux_source_directory(./utils SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
@@ -72,4 +76,3 @@ install(FILES ${ROCKIT_FILE_LIBS} DESTINATION "lib")
 install(FILES bins/asound.conf DESTINATION /etc)
 install(FILES bins/led_effect.json DESTINATION /etc)
 install(PROGRAMS bins/S40-rkpartybox DESTINATION /etc/init.d)
-install(PROGRAMS bins/.usb_config DESTINATION /etc/init.d)

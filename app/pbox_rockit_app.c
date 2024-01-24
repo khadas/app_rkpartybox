@@ -15,7 +15,11 @@
 
 int unix_socket_rockit_send(void *info, int length)
 {
-	return unix_socket_send_cmd(PBOX_CHILD_ROCKIT, info, length);
+    int ret;
+    #if ENABLE_RK_ROCKIT
+    ret = unix_socket_send_cmd(PBOX_CHILD_ROCKIT, info, length);
+    #endif
+    return ret;
 }
 
 void pbox_app_rockit_create(void) {

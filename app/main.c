@@ -45,13 +45,20 @@ int maintask_read_event(int source, int fd) {
             maintask_lvgl_fd_process(fd);
         } break;
         #endif
+
         case PBOX_MAIN_BT: {
+        #if ENABLE_USE_SOCBT
+            maintask_btsoc_fd_process(fd);
+        #else
             maintask_bt_fd_process(fd);
+        #endif
         } break;
 
+        #if ENABLE_RK_ROCKIT
         case PBOX_MAIN_ROCKIT: {
             maintask_rockit_fd_process(fd);
         } break;
+        #endif
 
         case PBOX_MAIN_KEYSCAN: {
             maintask_keyscan_fd_process(fd);
@@ -91,22 +98,15 @@ void main(int argc, char **argv) {
             goto pbox_main_exit;
         }
         printf("main: pbox_pipe_fds[%d]={%d, %d}\n", i, pbox_pipe_fds[i].fd[0], pbox_pipe_fds[i].fd[1]);
-        /*if (setsockopt(pbox_pipe_fds[i].fd[0], SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
-            perror("setsockopt 0 failed");
-            return -1;
-        }
-        if (setsockopt(pbox_pipe_fds[i].fd[1], SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
-            perror("setsockopt 1 failed");
-            return;
-        }*/
-
     }
 
 #if ENABLE_LCD_DISPLAY
     pbox_fds[PBOX_MAIN_LVGL] = get_client_socketpair_fd(PBOX_SOCKPAIR_LVGL);
 #endif
     pbox_fds[PBOX_MAIN_BT] = get_client_socketpair_fd(PBOX_SOCKPAIR_BT);
+    #if ENABLE_RK_ROCKIT
     pbox_fds[PBOX_MAIN_ROCKIT] = get_client_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
+    #endif
     pbox_fds[PBOX_MAIN_KEYSCAN] = get_client_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
     pbox_fds[PBOX_MAIN_USBDISK] = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
     pbox_fds[PBOX_MAIN_FD_TIMER] = create_fd_timer();
@@ -114,11 +114,19 @@ void main(int argc, char **argv) {
 #if ENABLE_LCD_DISPLAY
     pbox_create_lvglTask();
 #endif
+#if ENABLE_RK_ROCKIT
     pbox_create_rockitTask();
+#endif
+#if ENABLE_RK_LED_EFFECT
     pbox_create_lightEffectTask();
+#endif
     pbox_create_KeyScanTask();
     pbox_create_KeyProcessTask();
+    #if ENABLE_USE_SOCBT
+    pbox_create_btsoc_task();
+    #else
     pbox_create_bttask();
+    #endif
     pbox_create_usb_task();
 
     pbox_app_led_startup_effect();
@@ -207,8 +215,8 @@ void maintask_timer_fd_process(int timer_fd) {
     }
 
     if ((0 == msTimePassed%1000) && (pboxUIdata->play_status == PLAYING)) {
-    //every one second send command to refresh position
-    pbox_app_rockit_get_music_current_postion();
+        //every one second send command to refresh position
+        pbox_app_rockit_get_music_current_postion();
     }
 
     if((isPoweron == false) && (0 == msTimePassed%100)) {
@@ -218,5 +226,6 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_music_set_recoder_revert(PBOX_REVERT_KTV, DISP_All);
         pbox_app_music_set_echo_3a(true, DISP_All);
         pbox_app_music_set_mic_mute(false, DISP_All);
+        pbox_app_btsoc_reply_poweron(true);
     }
 }

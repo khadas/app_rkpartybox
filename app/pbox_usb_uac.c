@@ -71,7 +71,12 @@ void parse_event(const struct _uevent *event) {
 
 void uac_init(void) {
     uac_control_create(&uac);
+#if ENABLE_UAC
+    exec_command_system("touch /tmp/.usb_config");
+    exec_command_system("echo \"usb_adb_en\" > /tmp/.usb_config");
+    exec_command_system("echo \"usb_uac1_en\" >> /tmp/.usb_config");
     exec_command_system("/etc/init.d/S50usbdevice.sh restart");
+#endif
 }
 
 int uac_monitor_get_fd(void) {

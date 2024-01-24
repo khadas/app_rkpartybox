@@ -415,12 +415,15 @@ void process_pbox_lcd_cmd(const pbox_lcd_msg_t* msg) {
 
 static void *pbox_touchLCD_server(void *arg)
 {
+    int sock_fd;
     char buff[sizeof(pbox_lcd_msg_t)] = {0};
     pbox_lcd_msg_t *msg;
     pthread_setname_np(pthread_self(), "pbox_lcd");
 
     pbox_lvgl_init();
-    int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LVGL);
+    #if ENABLE_LCD_DISPLAY
+    sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LVGL);
+    #endif
 
     if (sock_fd < 0) {
         perror("Failed to create UDP socket");

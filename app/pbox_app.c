@@ -5,6 +5,7 @@
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
 #include "pbox_usb_app.h"
+#include "pbox_soc_bt_app.h"
 
 pbox_data_t pbox_data = {
     .btsink = {
@@ -111,9 +112,10 @@ void pbox_app_switch_next_input_source(input_source_t source, display_t policy) 
             }
         }
         case SRC_USB: {
-            //pbox_app_uac_restart();
             if(!isBtConnected()) {
+                #if ENABLE_UAC
                 pbox_app_switch_to_input_source(SRC_UAC, policy);
+                #endif
                 break;
             }
         }
@@ -560,4 +562,74 @@ void pbox_app_usb_state_change(usb_state_t state, display_t policy) {
 void pbox_app_usb_list_update(uint32_t trackId, display_t policy) {
     //nothing to notify rockit
     pbox_multi_displayUsbListupdate(trackId, policy);
+}
+
+void pbox_app_btsoc_get_dsp_version(display_t policy) {
+    pbox_app_btsoc_reply_dsp_version("v1.00");
+    //nothing to notify rockit
+    //nothing to do with ui
+}
+
+void pbox_app_btsoc_get_volume(display_t policy) {
+    pbox_app_btsoc_reply_main_volume(pboxUIdata->mVolumeLevel);
+    //nothing to notify rockit
+    //nothing to do with ui
+}
+
+void pbox_app_btsoc_set_placement(uint32_t placement, display_t policy) {
+    pboxUIdata->placement = placement;
+    //nothing to notify rockit
+    //nothing to do with ui
+}
+
+void pbox_app_btsoc_get_placement(display_t policy) {
+    pbox_app_btsoc_reply_placement(pboxUIdata->placement);
+    //nothing to notify rockit
+    //nothing to do with ui
+}
+
+void pbox_app_btsoc_get_mic1_state(display_t policy) {
+}
+
+void pbox_app_btsoc_get_mic2_state(display_t policy) {
+}
+
+void pbox_app_btsoc_set_inout_door(inout_door_t inout, display_t policy) {
+
+}
+
+void pbox_app_btsoc_get_inout_door(display_t policy) {
+    pbox_app_btsoc_reply_inout_door(0);
+}
+
+void pbox_app_btsoc_get_poweron(display_t policy) {
+    pbox_app_btsoc_reply_poweron(0);
+}
+
+void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy) {
+
+}
+
+void pbox_app_btsoc_get_stereo_mode(display_t policy) {
+    pbox_app_btsoc_reply_stereo_mode(MODE_STEREO);
+}
+
+void pbox_app_btsoc_get_human_split(display_t policy) {
+    pbox_app_btsoc_reply_human_split(pboxUIdata->mHumanLevel);
+}
+
+void pbox_app_btsoc_set_human_split(uint32_t level, display_t policy) {
+    pbox_app_music_set_human_music_level(level, policy);
+}
+
+void pbox_app_btsoc_get_input_source(display_t policy) {
+    pbox_app_btsoc_reply_input_source_with_playing_status(pboxData->inputDevice, pboxUIdata->play_status);
+}
+
+void pbox_app_music_set_input_source(input_source_t source, play_status_t status, display_t policy) {
+
+}
+
+void pbox_app_music_get_accom_level(display_t policy) {
+    pbox_app_btsoc_reply_accom_level(pboxUIdata->mMusicLevel);
 }

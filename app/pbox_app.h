@@ -46,6 +46,7 @@ typedef struct {
     bool uac_state;
     input_source_t inputDevice;
     struct _pbox_ui {
+        uint32_t placement;
         uint32_t mVolumeLevel;
         uint32_t mMicVolumeLevel;
         uint32_t mMusicLevel;
@@ -112,6 +113,29 @@ void pbox_app_start_uac_poll(display_t policy);
 void pbox_app_usb_list_update(uint32_t trackId, display_t policy);
 void pbox_app_usb_state_change(usb_state_t state, display_t policy);
 void pbox_app_usb_start_scan(display_t policy);
+
+void pbox_app_btsoc_get_dsp_version(display_t policy);
+void pbox_app_btsoc_get_volume(display_t policy);
+void pbox_app_btsoc_set_placement(uint32_t placement, display_t policy);
+void pbox_app_btsoc_get_placement(display_t policy);
+void pbox_app_btsoc_get_mic1_state(display_t policy);
+void pbox_app_btsoc_get_mic2_state(display_t policy);
+void pbox_app_btsoc_set_inout_door(inout_door_t inout, display_t policy);
+void pbox_app_btsoc_get_inout_door(display_t policy);
+void pbox_app_btsoc_get_poweron(display_t policy);
+void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy);
+void pbox_app_btsoc_get_stereo_mode(display_t policy);
+void pbox_app_btsoc_get_human_split(display_t policy);
+void pbox_app_btsoc_set_human_split(uint32_t level, display_t policy);
+void pbox_app_btsoc_get_input_source(display_t policy);
+void pbox_app_music_set_input_source(input_source_t source, play_status_t status, display_t policy);
+void pbox_app_music_get_accom_level(display_t policy);
+
+#define pbox_app_btsoc_set_input_source(a, b, c) pbox_app_music_set_input_source(a, b, c)
+#define pbox_app_btsoc_get_accom_level(a) pbox_app_music_get_accom_level(a)
+#define pbox_app_btsoc_set_accom_level(a, b) pbox_app_music_set_accomp_music_level(a, b)
+
+
 #ifdef __cplusplus
 }
 #endif

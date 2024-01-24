@@ -800,6 +800,7 @@ int userspace_set_led_effect(struct light_effect_ctrl * ctrl, char *led_effect_n
 	led_effect_handle(leffect);
 }
 
+#if ENABLE_RK_LED_EFFECT
 static void *pbox_light_effect_server(void *arg)
 {
 	int light_effect_fds[1] = {0};
@@ -946,6 +947,7 @@ static void *pbox_light_effect_server(void *arg)
 		}
 	}
 }
+#endif
 
 int effect_calcule_data_init(void)
 {
@@ -1087,6 +1089,7 @@ int pbox_light_effect_deinit(struct light_effect_ctrl * ctrl)
 pthread_t light_effect_task_id;
 pthread_t light_effect_drew_id;
 
+#if ENABLE_RK_LED_EFFECT
 int pbox_create_lightEffectTask(void)
 {
 	int ret;
@@ -1107,6 +1110,7 @@ int pbox_create_lightEffectTask(void)
 
 	return ret;
 }
+#endif
 
 int pbox_light_effect_send_cmd(pbox_light_effect_opcode_t command, void *data, int len)
 {
@@ -1124,5 +1128,8 @@ int pbox_light_effect_send_cmd(pbox_light_effect_opcode_t command, void *data, i
 		if(data != NULL)
 			memcpy(&msg.mic_volume, data, sizeof(msg.mic_volume));
 	}
+
+	#if ENABLE_RK_LED_EFFECT
 	unix_socket_send_cmd(PBOX_CHILD_LED,&msg, sizeof(pbox_light_effect_msg_t));
+	#endif
 }

@@ -1,0 +1,62 @@
+#ifndef _PTBOX_BT_SOC_H_
+#define _PTBOX_BT_SOC_H_
+
+#include "pbox_common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    //command
+    PBOX_SOCBT_DSP_VERSION_CMD,
+    PBOX_SOCBT_DSP_MAIN_VOLUME_CMD,
+    PBOX_SOCBT_DSP_PLACEMENT_CMD,
+    PBOX_SOCBT_DSP_MIC1_STATE_CMD,
+    PBOX_SOCBT_DSP_MIC2_STATE_CMD,
+    PBOX_SOCBT_DSP_IN_OUT_DOOR_CMD,
+    PBOX_SOCBT_DSP_POWER_ON_CMD,
+    PBOX_SOCBT_DSP_STEREO_MODE_CMD,
+    PBOX_SOCBT_DSP_HUMAN_SPLIT_CMD,
+    PBOX_SOCBT_DSP_SWITCH_SOURCE_CMD,
+    PBOX_SOCBT_DSP_MUSIC_GROUND_CMD,
+
+    //event
+    PBOX_SOCBT_DSP_VERSION_EVT = 0x100,
+    PBOX_SOCBT_DSP_MAIN_VOLUME_EVT,
+    PBOX_SOCBT_DSP_PLACEMENT_EVT,
+    PBOX_SOCBT_DSP_MIC1_STATE_EVT,
+    PBOX_SOCBT_DSP_MIC2_STATE_EVT,
+    PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,
+    PBOX_SOCBT_DSP_POWER_ON_EVT,
+    PBOX_SOCBT_DSP_STEREO_MODE_EVT,
+    PBOX_SOCBT_DSP_HUMAN_SPLIT_EVT,
+    PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT,
+    PBOX_SOCBT_DSP_MUSIC_GROUND_EVT,
+} pbox_socbt_opcode_t;
+
+typedef struct {
+    pbox_msg_t type;
+    pbox_socbt_opcode_t msgId;
+    ext_cmd_t op;
+    union {
+        char fw_ver[MAX_SHORT_NAME_LENGTH+1];
+        uint32_t volume;
+        uint32_t placement;
+        uint32_t poweron;
+        mic_state_t mic_state;
+        inout_door_t inout_door;
+        stereo_mode_t stereo_mode;
+        uint32_t human_level;
+        uint32_t accom_level;
+        struct socbt_input_source {
+            play_status_t status;
+            input_source_t input;
+        } input_source;
+    };
+} pbox_socbt_msg_t;
+
+#ifdef __cplusplus
+}
+#endif
+#endif

@@ -37,9 +37,11 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
         case PBOX_MAIN_BT: {
             sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
         } break;
+        #if ENABLE_RK_ROCKIT
         case PBOX_MAIN_ROCKIT: {
             sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
         } break;
+        #endif
         case PBOX_MAIN_KEYSCAN: {
             sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
         } break;
@@ -66,9 +68,11 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
             case PBOX_MAIN_BT:
                 id = ((pbox_bt_msg_t*)info)->msgId;
                 break;
+            #if ENABLE_RK_ROCKIT
             case PBOX_MAIN_ROCKIT:
                 id = ((pbox_rockit_msg_t*)info)->msgId;
                 break;
+            #endif
             case PBOX_MAIN_USBDISK:
                 id = ((pbox_usb_msg_t*)info)->msgId;
                 break;
@@ -96,12 +100,16 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
         case PBOX_CHILD_BT: {
             sockfd = get_client_socketpair_fd(PBOX_SOCKPAIR_BT);
         } break;
+#if ENABLE_RK_ROCKIT
         case PBOX_CHILD_ROCKIT: {
             sockfd = get_client_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
         } break;
+#endif
+#if ENABLE_RK_LED_EFFECT
         case PBOX_CHILD_LED: {
             sockfd = get_client_socketpair_fd(PBOX_SOCKPAIR_LED);
         } break;
+#endif
         case PBOX_CHILD_USBDISK: {
             sockfd = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
         } break;
@@ -125,19 +133,21 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
             case PBOX_CHILD_BT:
                 id = ((pbox_bt_msg_t*)info)->msgId;
                 break;
+#if ENABLE_RK_ROCKIT
             case PBOX_CHILD_ROCKIT:
                 id = ((pbox_rockit_msg_t*)info)->msgId;
                 break;
+#endif
+#if ENABLE_RK_LED_EFFECT
             case PBOX_CHILD_LED:
                 id = ((pbox_light_effect_msg_t*)info)->msgId;
                 break;
+#endif
             case PBOX_CHILD_USBDISK:
                 id = ((pbox_usb_msg_t*)info)->msgId;
                 break;
         }
-        printf("%s: module:%d, id:%d, Socket send failed! ret = %d\n", __func__, module, id, ret);
-        return -1;
+        printf("%s: module:%d, id:%d, Socket send %s!\n", __func__, module, id, (ret<0)? "fail":"success");
     }
-
     return ret;
 }
