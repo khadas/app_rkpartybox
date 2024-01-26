@@ -297,7 +297,7 @@ void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq) {
 void pbox_app_rockit_set_uac_volume(uac_role_t role, uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
+        .msgId = PBOX_ROCKIT_SET_UAC_VOLUME,
     };
     msg.uac.uac_role = role;
     msg.uac.volume = volume;
@@ -307,7 +307,7 @@ void pbox_app_rockit_set_uac_volume(uac_role_t role, uint32_t volume) {
 void pbox_app_rockit_set_mute(uac_role_t role, bool mute) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
+        .msgId = PBOX_ROCKIT_SET_UAC_MUTE,
     };
     msg.uac.uac_role = role;
     msg.uac.mute = mute;

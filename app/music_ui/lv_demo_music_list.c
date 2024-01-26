@@ -50,8 +50,8 @@ static lv_style_t style_btn_dis;
 static lv_style_t style_title;
 static lv_style_t style_artist;
 static lv_style_t style_time;
-static lv_obj_t * toast;
-static lv_timer_t  * toast_timer;
+static lv_obj_t * list_toast;
+static lv_timer_t  * list_toast_timer;
 LV_IMG_DECLARE(img_lv_demo_music_btn_list_play);
 LV_IMG_DECLARE(img_lv_demo_music_btn_list_pause);
 
@@ -169,35 +169,35 @@ lv_obj_t * _lv_demo_music_list_create(lv_obj_t * parent)
 
 // Callback Function for Toast Closed
 static void toast_close_cb(lv_timer_t * timer) {
-    if (toast != NULL) {
-        lv_obj_del(toast);
-        toast = NULL;
+    if (list_toast != NULL) {
+        lv_obj_del(list_toast);
+        list_toast = NULL;
     }
-    if (toast != NULL) {
-        lv_timer_del(toast_timer);
-        toast_timer = NULL;
+    if (list_toast_timer != NULL) {
+        lv_timer_del(list_toast_timer);
+        list_toast_timer = NULL;
     }
 }
 
 void create_list_toast(lv_obj_t * parent, const char * text, uint32_t duration_ms) {
-    if (toast == NULL) {
-        toast = lv_label_create(parent);
-        lv_label_set_text(toast, text);
+    if (list_toast == NULL) {
+        list_toast = lv_label_create(parent);
+        lv_label_set_text(list_toast, text);
 #if LV_DEMO_MUSIC_LARGE
-        lv_obj_set_size(toast, lv_pct(100), lv_pct(100));
+        lv_obj_set_size(list_toast, lv_pct(100), lv_pct(100));
 #else
-        lv_obj_set_size(toast, lv_pct(100), lv_pct(100));
+        lv_obj_set_size(list_toast, lv_pct(100), lv_pct(100));
 #endif
-        //lv_obj_set_style_bg_color(toast, lv_color_white(), 0);
-        //lv_obj_set_style_bg_opa(toast, LV_OPA_70, 0);
-        lv_obj_set_style_text_color(toast, lv_color_hex(0x0082FC), 0);
-        lv_obj_set_style_pad_all(toast, 10, 0);
-        lv_obj_set_style_radius(toast, 5, 0);
-        lv_obj_set_style_text_font(toast, ttf_main_m.font, 0);
-        lv_obj_align(toast, LV_ALIGN_CENTER, LV_ALIGN_CENTER, 0);
+        //lv_obj_set_style_bg_color(list_toast, lv_color_white(), 0);
+        //lv_obj_set_style_bg_opa(list_toast, LV_OPA_70, 0);
+        lv_obj_set_style_text_color(list_toast, lv_color_hex(0x0082FC), 0);
+        lv_obj_set_style_pad_all(list_toast, 10, 0);
+        lv_obj_set_style_radius(list_toast, 5, 0);
+        lv_obj_set_style_text_font(list_toast, ttf_main_m.font, 0);
+        lv_obj_align(list_toast, LV_ALIGN_CENTER, LV_ALIGN_CENTER, 0);
 
-        if(toast_timer == NULL)
-            toast_timer = lv_timer_create(toast_close_cb, duration_ms, toast);
+        if(list_toast_timer == NULL)
+            list_toast_timer = lv_timer_create(toast_close_cb, duration_ms, list_toast);
     }
 }
 
