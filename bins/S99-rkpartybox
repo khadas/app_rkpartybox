@@ -1,17 +1,17 @@
 #! /bin/sh
 
-chmod 777 /data/partybox_play.sh
-chmod 777 /data/rk_karaoke_test.sh
+chmod 777 /oem/partybox_play.sh
 
-/data/partybox_play.sh &
+/oem/partybox_play.sh &
+
 sync
 
 start() {
 	ulimit -c unlimited
 	echo "/tmp/core-%p-%e.$(date "+%Y%m%d_%H%M%S")" > /proc/sys/kernel/core_pattern
 	sleep 1
-	chmod 777 /data/S99-rkpartybox
-	/data/S99-rkpartybox &
+	chmod 777 /oem/partybox_app.sh
+	/oem/partybox_app.sh &
 }
 
 case "$1" in
