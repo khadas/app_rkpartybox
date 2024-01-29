@@ -585,19 +585,11 @@ static void *btsink_server(void *arg)
 
 	char buff[sizeof(rk_bt_msg_t)] = {0};
 
-    #if ENABLE_UDP_CONNECTION_LESS
-    int sockfd = create_udp_socket(SOCKET_PATH_BTSINK_SERVER);
-    #else
-    int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
-    #endif
+	int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
 
 	while(true) {
 		memset(buff, 0, sizeof(buff));
-#if ENABLE_UDP_CONNECTION_LESS
-        int ret = recvfrom(sockfd, buff, sizeof(buff), 0, NULL, NULL);
-#else
-        int ret = recv(sockfd, buff, sizeof(buff), 0);
-#endif
+		int ret = recv(sockfd, buff, sizeof(buff), 0);
 		if (ret <= 0)
 			continue;
 

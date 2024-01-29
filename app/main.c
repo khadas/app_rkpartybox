@@ -85,9 +85,7 @@ void main(int argc, char **argv) {
         struct timeval timeout;
         timeout.tv_sec = 0;
         timeout.tv_usec = 100*1000;
-#if ENABLE_UDP_CONNECTION_LESS
-            pbox_fds[i] = -1;
-#else
+
         if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0 , pbox_pipe_fds[i].fd) == -1) {
             printf("Couldn't create pbox_fds[%d]: %s", i, strerror(errno));
             goto pbox_main_exit;
@@ -101,28 +99,16 @@ void main(int argc, char **argv) {
             perror("setsockopt 1 failed");
             return;
         }*/
-#endif
+
     }
 
 #if ENABLE_LCD_DISPLAY
-#if ENABLE_UDP_CONNECTION_LESS
-    pbox_fds[PBOX_MAIN_LVGL] = create_udp_socket(SOCKET_PATH_LVGL_CLINET);
-#else
     pbox_fds[PBOX_MAIN_LVGL] = get_client_socketpair_fd(PBOX_SOCKPAIR_LVGL);
 #endif
-#endif
-
-#if ENABLE_UDP_CONNECTION_LESS
-    pbox_fds[PBOX_MAIN_BT] = create_udp_socket(SOCKET_PATH_BTSINK_CLIENT);
-    pbox_fds[PBOX_MAIN_ROCKIT] = create_udp_socket(SOCKET_PATH_ROCKIT_CLINET);
-    pbox_fds[PBOX_MAIN_KEYSCAN] = create_udp_socket(SOCKET_PATH_KEY_SCAN_CLINET);
-    pbox_fds[PBOX_MAIN_USBDISK] = create_udp_socket(SOCKET_PATH_USB_CLIENT);
-#else
     pbox_fds[PBOX_MAIN_BT] = get_client_socketpair_fd(PBOX_SOCKPAIR_BT);
     pbox_fds[PBOX_MAIN_ROCKIT] = get_client_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
     pbox_fds[PBOX_MAIN_KEYSCAN] = get_client_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
     pbox_fds[PBOX_MAIN_USBDISK] = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
-#endif
     pbox_fds[PBOX_MAIN_FD_TIMER] = create_fd_timer();
     //battery_fd;
 #if ENABLE_LCD_DISPLAY
@@ -171,9 +157,6 @@ void main(int argc, char **argv) {
 
 pbox_main_exit:
     for(i =0; i< ARRAYSIZE(pbox_fds); i++) {
-#if ENABLE_UDP_CONNECTION_LESS
-        close(pbox_fds[i]);
-#else
         if(i == PBOX_MAIN_FD_TIMER) {
             close(pbox_fds[i]);
             continue;
@@ -193,7 +176,6 @@ pbox_main_exit:
             pbox_pipe_fds[i].fd[1] = 0;
         }
     }
-#endif
 }
 
 static uint64_t msTimePassed = 0;

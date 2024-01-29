@@ -420,12 +420,7 @@ static void *pbox_touchLCD_server(void *arg)
     pthread_setname_np(pthread_self(), "pbox_lcd");
 
     pbox_lvgl_init();
-
-	#if ENABLE_UDP_CONNECTION_LESS
-	int sock_fd = create_udp_socket(SOCKET_PATH_LVGL_SERVER);
-	#else
-	int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LVGL);
-	#endif
+    int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LVGL);
 
     if (sock_fd < 0) {
         perror("Failed to create UDP socket");
@@ -450,11 +445,7 @@ static void *pbox_touchLCD_server(void *arg)
             printf("select timeout or no data\n");
             continue;
         }
-#if ENABLE_UDP_CONNECTION_LESS
-	    int ret = recvfrom(sock_fd, buff, sizeof(buff), 0, NULL, NULL);
-#else
-	    int ret = recv(sock_fd, buff, sizeof(buff), 0);
-#endif
+        int ret = recv(sock_fd, buff, sizeof(buff), 0);
         if (ret <= 0) {
             if (ret == 0) {
                 printf("Socket closed\n");

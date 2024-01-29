@@ -46,11 +46,7 @@ const size_t support_keys_size = sizeof(support_keys) / sizeof(struct dot_key);
 
 void maintask_keyscan_fd_process(int fd) {
     char buff[sizeof(pbox_keyevent_msg_t)] = {0};
-#if ENABLE_UDP_CONNECTION_LESS
-    int ret = recvfrom(fd, buff, sizeof(buff), 0, NULL, NULL);
-#else
     int ret = recv(fd, buff, sizeof(buff), 0);
-#endif
     int i = 0;
     if ((ret == 0) || (ret < 0 && (errno != EINTR))) {
         printf("%s ret:%d , error:%d\n", __func__, ret, errno);

@@ -749,11 +749,7 @@ static void *pbox_rockit_server(void *arg)
 
     rk_demo_music_create();
 
-    #if ENABLE_UDP_CONNECTION_LESS
-    int sock_fd = create_udp_socket(SOCKET_PATH_ROCKIT_SERVER);
-    #else
     int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
-    #endif
 
     if(sock_fd < 0)
         return (void *)-1;
@@ -780,11 +776,9 @@ static void *pbox_rockit_server(void *arg)
         if(result < 0) {
             break;
         }
-#if ENABLE_UDP_CONNECTION_LESS
-        int ret = recvfrom(sock_fd, buff, sizeof(buff), 0, NULL, NULL);
-#else
+
         int ret = recv(sock_fd, buff, sizeof(buff), 0);
-#endif
+
         if (ret <= 0)
             continue;
 

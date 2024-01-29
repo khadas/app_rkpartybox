@@ -491,11 +491,6 @@ int pbox_create_KeyScanTask(void)
     pthread_t evt_reader;
     int err;
 
-    #if (!ENABLE_UDP_CONNECTION_LESS)
-    //shutdown(pbox_pipe_fds[PBOX_SOCKPAIR_KEYSCAN].fd[0], SHUT_WR);
-    //shutdown(pbox_pipe_fds[PBOX_SOCKPAIR_KEYSCAN].fd[1], SHUT_RD);
-    #endif
-
     pthread_mutex_init(&ev_mutex, NULL);
     err = pthread_create(&evt_reader, NULL, &event_read_thread_ex, NULL);
     if (err != 0)

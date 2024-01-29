@@ -25,7 +25,6 @@ int get_server_socketpair_fd(uint32_t source)
     return pbox_pipe_fds[source].fd[1];
 }
 
-#if !ENABLE_UDP_CONNECTION_LESS
 int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
 {
     int sockfd;
@@ -142,4 +141,3 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
 
     return ret;
 }
-#endif

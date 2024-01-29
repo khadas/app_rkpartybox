@@ -209,11 +209,8 @@ void maintask_usb_data_recv(const pbox_usb_msg_t* msg) {
 
 void maintask_usb_fd_process(int fd) {
     char buff[sizeof(pbox_usb_msg_t)] = {0};
-#if ENABLE_UDP_CONNECTION_LESS
-    int ret = recvfrom(fd, buff, sizeof(buff), 0, NULL, NULL);
-#else
     int ret = recv(fd, buff, sizeof(buff), 0);
-#endif
+
     if (ret <= 0) {
         if (ret == 0) {
             printf("%s: Connection closed\n", __func__);

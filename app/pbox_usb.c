@@ -255,11 +255,7 @@ static void *pbox_usb_server(void *arg)
     pthread_setname_np(pthread_self(), "pbox_usb");
     PBOX_ARRAY_SET(usb_fds, -1, sizeof(usb_fds)/sizeof(usb_fds[0]));
 
-    #if ENABLE_UDP_CONNECTION_LESS
-    usb_fds[USB_UDP_SOCKET] = create_udp_socket(SOCKET_PATH_USB_SERVER);
-    #else
     usb_fds[USB_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
-    #endif
 
     if (usb_fds[USB_UDP_SOCKET] < 0) {
         perror("Failed to create UDP socket");
@@ -323,11 +319,7 @@ static void *pbox_usb_server(void *arg)
                 continue;
             switch (i) {
                 case USB_UDP_SOCKET: {
-#if ENABLE_UDP_CONNECTION_LESS
-                    int ret = recvfrom(usb_fds[USB_UDP_SOCKET], buff, sizeof(buff), 0, NULL, NULL);
-#else
                     int ret = recv(usb_fds[i], buff, sizeof(buff), 0);
-#endif
                     if (ret <= 0) {
                         if (ret == 0) {
                             printf("Socket closed\n");

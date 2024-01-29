@@ -6,12 +6,6 @@
 extern "C" {
 #endif
 
-#if ENABLE_UDP_CONNECTION_LESS
-int create_udp_socket(char *socket_path);
-int unix_socket_notify_msg(pb_module_main_t module, void *info, int length); //from children task to main task.
-int unix_socket_send_cmd(pb_module_child_t module, void *info, int length); //from children task to main task.
-#endif
-
 #ifdef __cplusplus
 }
 #endif

@@ -810,11 +810,7 @@ static void *pbox_light_effect_server(void *arg)
 
 	pthread_setname_np(pthread_self(), "party_light_effect");
 
-	#if ENABLE_UDP_CONNECTION_LESS
-	int sock_fd = create_udp_socket(SOCKET_PATH_LED_EFFECT_SERVER);
-	#else
 	int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LED);
-	#endif
 
 	if(sock_fd < 0)
 		return (void *)-1;
@@ -841,11 +837,7 @@ static void *pbox_light_effect_server(void *arg)
 			printf("select timeout or no data\n");
 			continue;
 		}
-#if ENABLE_UDP_CONNECTION_LESS
-		int ret = recvfrom(sock_fd, buff, sizeof(buff), 0, NULL, NULL);
-#else
 		int ret = recv(sock_fd, buff, sizeof(buff), 0);
-#endif
 		if (ret <= 0)
 			continue;
 
@@ -1098,11 +1090,6 @@ pthread_t light_effect_drew_id;
 int pbox_create_lightEffectTask(void)
 {
 	int ret;
-
-	#if !ENABLE_UDP_CONNECTION_LESS
-    //shutdown(pbox_pipe_fds[PBOX_SOCKPAIR_LED].fd[0], SHUT_RD);
-    //shutdown(pbox_pipe_fds[PBOX_SOCKPAIR_LED].fd[1], SHUT_WR);
-	#endif
 
 	ret = pbox_light_effect_init();
 	if (ret < 0) {
