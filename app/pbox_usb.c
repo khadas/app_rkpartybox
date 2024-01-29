@@ -190,7 +190,7 @@ const UsbCmdHandler_t usb_event_handlers[] = {
 };
 
 void handleUacStartScanCmd(const pbox_usb_msg_t* msg) {
-    exec_command_system("/etc/init.d/S50usbdevice restart");
+    exec_command_system("/etc/init.d/S50usbdevice.sh restart");
 }
 
 void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {

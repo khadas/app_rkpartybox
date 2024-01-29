@@ -71,7 +71,7 @@ void parse_event(const struct _uevent *event) {
 
 void uac_init(void) {
     uac_control_create(&uac);
-    exec_command_system("/etc/init.d/S50usbdevice restart");
+    exec_command_system("/etc/init.d/S50usbdevice.sh restart");
 }
 
 int uac_monitor_get_fd(void) {
