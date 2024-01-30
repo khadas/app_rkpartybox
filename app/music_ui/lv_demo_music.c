@@ -49,7 +49,7 @@ static lv_obj_t * list;
 
 //#define TRACK_MAX_NUM 10
 #define MUSIC_PATH "/data/"
-#define MAIN_FONT         "/data/SmileySans-Oblique.ttf"
+#define MAIN_FONT         "/oem/SmileySans-Oblique.ttf"
 //int track_num = 0;
 //char title_list[TRACK_MAX_NUM][256] = {};
 char *artist_list[TRACK_MAX_NUM][256] = {};
