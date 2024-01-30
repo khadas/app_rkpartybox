@@ -9,7 +9,6 @@ sync
 start() {
 	ulimit -c unlimited
 	echo "/tmp/core-%p-%e.$(date "+%Y%m%d_%H%M%S")" > /proc/sys/kernel/core_pattern
-	sleep 1
 	chmod 777 /oem/partybox_app.sh
 	/oem/partybox_app.sh &
 }
