@@ -58,14 +58,12 @@ set(ROCKIT_FILE_LIBS
        ./lib64/libaec_bf_process.so
        ./lib64/libavutil.so.56
        ./lib64/librkaudio_effect_eqdrc.so
-       ./lib64/libavcodec.so.58      
-       ./lib64/libdrm.so.2           
-       ./lib64/librkaudio_effect_reverb.so  
+       ./lib64/libavcodec.so.58
+       ./lib64/librkaudio_effect_reverb.so
        ./lib64/libswresample.so.3
-       ./lib64/libavformat.so.58     
-       ./lib64/librkaudio_common.so  
+       ./lib64/libavformat.so.58
+       ./lib64/librkaudio_common.so
        ./lib64/librkaudio_effect_vocal.so
-       ./lib64/librkwifibt.so
 )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
