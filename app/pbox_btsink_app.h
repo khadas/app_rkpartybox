@@ -24,6 +24,7 @@ void pbox_btsink_playPause(bool play);
 void pbox_btsink_music_next(bool next);
 void pbox_btsink_volume_up(bool up);
 void pbox_btsink_pair_enable(bool on);
+void pbox_btsink_set_vendor_state(bool enable);
 void pbox_btsink_onoff(bool on);
 void pbox_btsink_start_only_aplay(bool only);
 void pbox_btsink_a2dp_stop(void);

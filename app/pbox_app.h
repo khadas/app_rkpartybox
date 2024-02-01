@@ -73,6 +73,7 @@ void pbox_app_show_playingStatus(bool play, display_t policy);
 void pbox_app_restart_bt_player(bool restart, char *cardName, display_t policy);
 void pbox_app_music_stop_bt_player(display_t policy);
 void pbox_app_bt_pair_enable(bool enable, display_t policy);
+void pbox_app_set_vendor_state(bool enable, display_t policy);
 void pbox_app_restart_btsink(bool only, display_t policy);
 void pbox_app_switch_to_input_source(input_source_t source, display_t policy);
 void pbox_app_update_input_source(input_source_t source, display_t policy);

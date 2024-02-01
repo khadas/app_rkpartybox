@@ -32,6 +32,7 @@ typedef enum _rk_cmd_msg_t{
     RK_BT_START_BLUEALSA,
     RK_BT_START_BLUEALSA_APLAY,
 	RK_BT_START_BLUEALSA_ONLY,
+	RK_BT_START_BLUETOOTH,
 	//message id
 	BT_SINK_STATE =0x100,
 	BT_SINK_NAME,
@@ -40,6 +41,7 @@ typedef enum _rk_cmd_msg_t{
 	BT_SINK_MUSIC_TRACK,
 	BT_SINK_MUSIC_POSITIONS,
     BT_SINK_ADPTER_INFO,
+	BT_SINK_VENDOR_EVT,
 } rk_bt_opcode_t;
 
 typedef enum {
@@ -59,7 +61,6 @@ typedef enum {
 	A2DP_CONNECTING,
 	A2DP_CONNECTED,
 	A2DP_STREAMING,
-
 } btsink_ad2p_state_t;
 
 typedef enum {
@@ -101,6 +102,7 @@ typedef struct {
 						unsigned int discoverable;
 					};
 				} adpter;
+				bool enable;
 			};
 		} btinfo;
 	};

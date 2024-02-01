@@ -85,6 +85,16 @@ void pbox_btsink_pair_enable(bool on) {
     unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
 }
 
+void pbox_btsink_set_vendor_state(bool enable) {
+    pbox_bt_msg_t msg = {
+        .type = RK_BT_CMD,
+        .msgId = RK_BT_START_BLUETOOTH,
+    };
+    msg.btinfo.enable = enable;
+
+    unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
+}
+
 void pbox_btsink_onoff(bool on) {
     pbox_bt_msg_t msg = {
         .type = RK_BT_CMD,
@@ -299,6 +309,10 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
 			update_bt_music_volume(msg->media_volume, DISP_All);
         } break;
 
+        case BT_SINK_VENDOR_EVT: {
+            pbox_app_set_vendor_state(msg->btinfo.enable, DISP_All);
+        }
+
         default:
         printf("%s recv msg: msId: %02x not handled\n", __func__, msg->msgId);
         break;
@@ -341,6 +355,10 @@ void *btsink_watcher(void *arg) {
             goto next_round;
         } else if (getBtSinkState() == BT_NONE) {
             goto next_round;
+        } else if ((!pboxBtSinkdata->discoverable) && \
+                    ((getBtSinkState() == BT_INIT_ON) || (getBtSinkState() == BT_DISCONNECT)))
+        {
+            pbox_btsink_pair_enable(true);
         } else if (btsinkWatcher_track == false) {
             btsinkWatcher_track = true;
             goto next_round;

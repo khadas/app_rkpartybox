@@ -77,6 +77,11 @@ void pbox_app_bt_pair_enable(bool enable, display_t policy) {
     //no ui display now
 }
 
+void pbox_app_set_vendor_state(bool enable, display_t policy) {
+    pbox_btsink_set_vendor_state(enable);
+    //no ui display now
+}
+
 void pbox_app_bt_sink_onoff(bool on, display_t policy) {
     pbox_btsink_onoff(on);
     //no ui display now

@@ -22,6 +22,16 @@ int unix_socket_bt_notify_msg(void *info, int length)
 	unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
 }
 
+int bt_sink_notify_vendor_state(bool enable)
+{
+	rk_bt_msg_t msg = {0};
+	msg.type = RK_BT_EVT;
+	msg.msgId = BT_SINK_VENDOR_EVT;
+	msg.btinfo.enable = enable;
+
+	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
+}
+
 int bt_sink_notify_btstate(btsink_state_t state)
 {
 	rk_bt_msg_t msg = {0};
@@ -165,6 +175,7 @@ static void bt_sink_notify_volume(uint32_t volume)
 static RkBtContent bt_content;
 static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 {
+	printf("%s state:%d\n", __func__, state);
 	switch (state) {
 	//BASE STATE
 	case RK_BT_STATE_TURNING_ON:
@@ -456,11 +467,42 @@ void bt_test_version(char *data)
 
 static bool bt_test_audio_server_cb(void)
 {
+	printf("%s\n", __func__);
 	return true;
+}
+
+static char bt_name[32] = {0};
+static void btsink_config_name(void) {
+	unsigned int addr[6] = {0};
+
+	exec_command("hciconfig hci0 | awk '/BD Address:/ {print $3}'", bt_name, sizeof(bt_name));
+	if(bt_name[0]) {
+		if (sscanf(bt_name, "%2X:%2X:%2X:%2X:%2X:%2X",
+				&addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]) != 6) {
+			fprintf(stderr, "Failed to parse Bluetooth address.\n");
+			return (void*)-1;
+		}
+	}
+
+	printf("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
+	memset(&bt_content, 0, sizeof(RkBtContent));
+
+	//BREDR CLASS BT NAME
+	if(bt_name[0]) {
+		sprintf(bt_name, "rk-partybox-%02X", addr[5]);
+		bt_content.bt_name = bt_name;
+	}
+	else {
+		bt_content.bt_name = "partybox";
+	}
+	printf("%s name:%s\n", __func__, bt_content.bt_name);
 }
 
 static bool bt_test_vendor_cb(bool enable)
 {
+	printf("%s enable:%d\n", __func__, enable);
+	bt_sink_notify_vendor_state(enable);
+
 	return true;
 }
 
@@ -498,39 +540,26 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 	if(!get_ps_pid("bluealsa-aplay"))
 		run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
 	exec_command_system("hciconfig hci0 class 0x240404");
+	btsink_config_name();
 
+	sprintf(ret_buff, "hciconfig hci0 name %s", bt_content.bt_name);
+	exec_command_system(ret_buff);
 	return 0;
+}
+
+static void bt_vendor_set_enable(bool enable) {
+	int times = 100;
+	printf("%s enable:%d\n", __func__, enable);
 }
 
 static void *btsink_server(void *arg)
 {
-	char bt_name[64];
-	unsigned int addr[6] = {0};
-
 	pthread_setname_np(pthread_self(), "pbox_btserver");
 
-	exec_command("hciconfig hci0 | awk '/BD Address:/ {print $3}'", bt_name, sizeof(bt_name));
-	if(bt_name[0]) {
-		if (sscanf(bt_name, "%2X:%2X:%2X:%2X:%2X:%2X",
-				&addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]) != 6) {
-			fprintf(stderr, "Failed to parse Bluetooth address.\n");
-			return (void*)-1;
-		}
-	}
-
     printf("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
-
-	printf("%s \n", __func__);
 	memset(&bt_content, 0, sizeof(RkBtContent));
 
-	//BREDR CLASS BT NAME
-	if(bt_name[0]) {
-		sprintf(bt_name, "rk-partybox-%02X", addr[5]);
-		bt_content.bt_name = bt_name;
-	}
-	else
-		bt_content.bt_name = "rk-partybox";
-
+	btsink_config_name();
 	//BLE NAME
 	bt_content.ble_content.ble_name = "RBLE";
 
@@ -594,8 +623,13 @@ static void *btsink_server(void *arg)
     				rk_bt_sink_media_control("previous");
     				break;
     			case RK_BT_PAIRABLE:{
+					char ret_buff[64];
 					//exec_command_system("hciconfig hci0 class 0x240404");
     				rk_bt_set_discoverable(true);
+					btsink_config_name();
+
+					sprintf(ret_buff, "hciconfig hci0 name %s", bt_content.bt_name);
+					exec_command_system(ret_buff);
                 } break;
                 case RK_BT_CONNECTABLE: {
     				rk_bt_set_pairable(true);
@@ -616,6 +650,10 @@ static void *btsink_server(void *arg)
 				case RK_BT_START_BLUEALSA_ONLY: {
 					bt_restart_bluealsa_only();
 				} break;
+				case RK_BT_START_BLUETOOTH: {
+					bool enable = msg->btinfo.enable;
+					bt_vendor_set_enable(enable);
+				}
 			case RK_BT_ABS_VOL:{
 				rk_bt_sink_set_volume(msg->media_volume);
                 } break;
