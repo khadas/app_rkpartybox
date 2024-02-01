@@ -136,12 +136,14 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
             }
             pboxTrackdata->track_num = 0;
             pboxTrackdata->track_id = 0;
-            if (getBtSinkState() != BT_CONNECTED)
-                pbox_app_music_stop(DISP_All);
-
-            pbox_app_usb_state_change(usbDiskState, DISP_All);
             pbox_app_usb_list_update(pboxTrackdata->track_id, DISP_All);
-            pbox_app_switch_next_input_source(SRC_USB, DISP_All);
+            if(is_input_source_selected(SRC_USB, ANY)) {
+                pbox_app_music_stop(DISP_All);
+                pbox_app_show_usb_state(usbDiskState, DISP_All);
+                if(pboxUIdata->autoSource == true) {
+                    pbox_app_autoswitch_next_input_source(SRC_USB, DISP_All);
+                }
+            }
         } break;
 
         case USB_CONNECTED: {
@@ -149,13 +151,14 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
             strncpy(&pboxUsbdata->usbDiskName[0], msg->usbDiskInfo.usbDiskName, MAX_APP_NAME_LENGTH);
             pboxUsbdata->usbDiskName[MAX_APP_NAME_LENGTH] = 0;
             printf("%s usbState: %d, usb name[%s]\n", __func__, usbDiskState, pboxUsbdata->usbDiskName);
-            pbox_app_usb_state_change(usbDiskState, DISP_All);
+            if(is_dest_source_switchable(SRC_USB, AUTO))
+                pbox_app_switch_to_input_source(SRC_USB, DISP_All);
+            if(is_input_source_selected(SRC_USB, ANY))
+                pbox_app_show_usb_state(usbDiskState, DISP_All);
         } break;
 
         case USB_SCANNED: {
             pbox_app_usb_list_update(pboxTrackdata->track_id, DISP_All);
-            if(!isBtConnected()&&isUsbDiskConnected())
-                pbox_app_switch_to_input_source(SRC_USB, DISP_All);
         } break;
 
         case USB_SCANNING: {

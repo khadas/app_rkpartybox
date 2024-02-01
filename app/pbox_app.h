@@ -43,7 +43,12 @@ typedef struct {
         music_track_t track_list[TRACK_MAX_NUM];
     } track;
     usb_disk_info_t usbDisk;
-    bool uac_state;
+
+    struct _pbox_uac {
+        bool state;
+        uint32_t freq;
+    } uac;
+
     input_source_t inputDevice;
     struct _pbox_ui {
         uint32_t placement;
@@ -59,6 +64,7 @@ typedef struct {
         pbox_revertb_t reverbMode;
         play_status_t play_status;
         play_status_t play_status_prev;
+        bool autoSource;
     } ui;
 } pbox_data_t;
 
@@ -67,6 +73,9 @@ extern struct _pbox_btsink *const pboxBtSinkdata;
 extern struct _pbox_ui *const pboxUIdata;
 extern struct _pbox_track *const pboxTrackdata;
 extern usb_disk_info_t *const pboxUsbdata;
+extern struct _pbox_uac *const pboxUacdata;
+extern const input_source_t input_priority[];
+
 void pbox_app_show_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy);
 void pbox_app_show_tack_info(char *title, char *artist, display_t policy);
 void pbox_app_show_bt_state(btsink_state_t state, display_t policy);
@@ -77,8 +86,7 @@ void pbox_app_bt_pair_enable(bool enable, display_t policy);
 void pbox_app_set_vendor_state(bool enable, display_t policy);
 void pbox_app_restart_btsink(bool only, display_t policy);
 void pbox_app_switch_to_input_source(input_source_t source, display_t policy);
-void pbox_app_update_input_source(input_source_t source, display_t policy);
-void pbox_app_switch_next_input_source(input_source_t source, display_t policy);
+void pbox_app_autoswitch_next_input_source(input_source_t source, display_t policy);
 void pbox_app_music_pause(display_t policy);
 void pbox_app_music_trackid(uint32_t id, display_t policy);
 void pbox_app_music_start(display_t policy);
@@ -111,7 +119,7 @@ void pbox_app_restart_uac_player(bool restart, display_t policy);
 void pbox_app_start_uac_poll(display_t policy);
 
 void pbox_app_usb_list_update(uint32_t trackId, display_t policy);
-void pbox_app_usb_state_change(usb_state_t state, display_t policy);
+void pbox_app_show_usb_state(usb_state_t state, display_t policy);
 void pbox_app_usb_start_scan(display_t policy);
 
 void pbox_app_btsoc_get_dsp_version(display_t policy);
@@ -130,6 +138,10 @@ void pbox_app_btsoc_set_human_split(uint32_t level, display_t policy);
 void pbox_app_btsoc_get_input_source(display_t policy);
 void pbox_app_music_set_input_source(input_source_t source, play_status_t status, display_t policy);
 void pbox_app_music_get_accom_level(display_t policy);
+
+bool is_dest_source_switchable(input_source_t source, switch_source_t mode);
+bool is_input_source_selected(input_source_t source, switch_source_t mode);
+bool isInputSourceConnected(input_source_t source);
 
 #define pbox_app_btsoc_set_input_source(a, b, c) pbox_app_music_set_input_source(a, b, c)
 #define pbox_app_btsoc_get_accom_level(a) pbox_app_music_get_accom_level(a)

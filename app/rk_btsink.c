@@ -32,12 +32,15 @@ int bt_sink_notify_vendor_state(bool enable)
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
 }
 
-int bt_sink_notify_btstate(btsink_state_t state)
+int bt_sink_notify_btstate(btsink_state_t state, char *name)
 {
 	rk_bt_msg_t msg = {0};
 	msg.type = RK_BT_EVT;
 	msg.msgId = BT_SINK_STATE;
 	msg.btinfo.state = state;
+	if(name)
+		strncpy(msg.btinfo.remote_name, name, MAX_NAME_LENGTH);
+	msg.btinfo.remote_name[MAX_NAME_LENGTH] = 0;
 
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
 }
@@ -47,7 +50,9 @@ int bt_sink_notify_btname(char *name)
 	rk_bt_msg_t msg = {0};
 	msg.type = RK_BT_EVT;
 	msg.msgId = BT_SINK_NAME;
-	strcpy(msg.btinfo.remote_name, name);
+	if(name)
+		strncpy(msg.btinfo.remote_name, name, MAX_NAME_LENGTH);
+	msg.btinfo.remote_name[MAX_NAME_LENGTH] = 0;
 
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
 }
@@ -185,12 +190,12 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		printf("++ RK_BT_STATE_INIT_ON\n");
 		bt_content.init = true;
 		//rk_bt_set_power(true);
-		bt_sink_notify_btstate(BT_INIT_ON);
+		bt_sink_notify_btstate(BT_INIT_ON, NULL);
 		break;
 	case RK_BT_STATE_INIT_OFF:
 		printf("++ RK_BT_STATE_INIT_OFF\n");
 		bt_content.init = false;
-		bt_sink_notify_btstate(BT_NONE);
+		bt_sink_notify_btstate(BT_NONE, NULL);
 		break;
 
 	//SCAN STATE
@@ -232,8 +237,8 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
-		bt_sink_notify_btname(rdev->remote_alias);
-		bt_sink_notify_btstate((state == RK_BT_STATE_CONNECTED) ? BT_CONNECTED:BT_DISCONNECT);
+		//bt_sink_notify_btname(rdev->remote_alias);
+		bt_sink_notify_btstate((state == RK_BT_STATE_CONNECTED) ? BT_CONNECTED:BT_DISCONNECT, rdev->remote_alias);
 		break;
 	case RK_BT_STATE_PAIRED:
 	case RK_BT_STATE_PAIR_NONE:
@@ -335,6 +340,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 					freq,
 					channel);
 		if(state == RK_BT_STATE_SINK_ADD) {
+			bt_sink_notify_btstate(BT_CONNECTED, rdev->remote_alias);
 			bt_sink_notify_pcm_format(freq, channel);
 			bt_sink_notify_a2dpstate(A2DP_CONNECTED);
 		} else {

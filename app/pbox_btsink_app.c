@@ -140,7 +140,11 @@ char *getBtRemoteName(void) {
 }
 
 void setBtRemoteName(char *name) {
-    strcpy(pboxBtSinkdata->remote_name, name);
+    if (!name)
+        return;
+
+    if(0 != strcmp(name, pboxBtSinkdata->remote_name))
+        strcpy(pboxBtSinkdata->remote_name, name);
 }
 
 bool isBtConnected(void)
@@ -170,13 +174,11 @@ void update_bt_karaoke_playing_status(bool playing)
 {
     printf("%s :%d\n", __func__, playing);
     pboxUIdata->play_status = playing ? PLAYING:_PAUSE;
-
     pbox_app_show_playingStatus(playing, DISP_All);
 }
 
 void update_music_track_info(char *title, char *artist) {
     printf("%s track:[%s]-[%s]\n", __func__, title, artist);
-
     pbox_app_show_tack_info(title, artist, DISP_All);
 }
 
@@ -194,18 +196,18 @@ void update_music_positions(uint32_t current, uint32_t total) {
 
 void update_bt_music_volume(int mVolumeLevel ,display_t policy)
 {
-	int mVolumeLevelMapp = 0;
+	int volumeLevelMapp = 0;
 
 	if (mVolumeLevel > 127)
 		mVolumeLevel = 127;
 	if (mVolumeLevel < 0)
 		mVolumeLevel = 0;
 
-	mVolumeLevelMapp = mVolumeLevel * 100 / 127;
+	volumeLevelMapp = mVolumeLevel * 100 / 127;
 
-	printf("%s bt volume :%d (0-127)mapping to %d (0-100)\n", __func__, mVolumeLevel, mVolumeLevelMapp);
+	printf("%s bt volume :%d (0-127)mapping to %d (0-100)\n", __func__, mVolumeLevel, volumeLevelMapp);
 
-	pbox_app_music_set_volume(mVolumeLevelMapp, policy);
+	pbox_app_music_set_volume(volumeLevelMapp, policy);
 
 	if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
 		pbox_app_music_resume(policy);
@@ -220,27 +222,34 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             }
             setBtSinkState(msg->btinfo.state);
             printf("%s pboxBtSinkdata->btState:[%d]\n", __func__, pboxBtSinkdata->btState);
-            if(pboxBtSinkdata->btState == BT_INIT_ON || pboxBtSinkdata->btState == BT_DISCONNECT) {
-                if(pboxBtSinkdata->btState == BT_DISCONNECT) {
-                    pbox_app_music_stop_bt_player(DISP_All);
-                    pbox_app_music_stop(DISP_All);
-                    pbox_app_switch_next_input_source(SRC_BT, DISP_All);
-                    pbox_app_bt_pair_enable(true, DISP_All);
-                }
-                if(pboxBtSinkdata->btState == BT_INIT_ON) {
+            switch (pboxBtSinkdata->btState) {
+                case BT_INIT_ON: {
                     pbox_app_restart_btsink(false, DISP_All);
                     pbox_app_bt_pair_enable(true, DISP_All);
-                }
+                } break;
+                case BT_DISCONNECT: {
+                    pbox_app_bt_pair_enable(true, DISP_All);
+                    if(is_input_source_selected(SRC_BT, AUTO)) {
+                        pbox_app_autoswitch_next_input_source(SRC_BT, DISP_All);
+                    }
+                } break;
+                case BT_CONNECTED: {
+                    setBtRemoteName(msg->btinfo.remote_name);
+                    pbox_app_bt_pair_enable(false, DISP_All);
+
+                    if(is_dest_source_switchable(SRC_BT, AUTO))
+                        pbox_app_switch_to_input_source(SRC_BT, DISP_All);
+                    if(is_input_source_selected(SRC_BT, ANY)) {
+                        pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
+                    }
+                } break;
+                case BT_NONE: {
+                    printf("%s recv msg: btsink state: OFF\n", __func__);
+                } break;
             }
-            else if(pboxBtSinkdata->btState == BT_CONNECTED) {
-                pbox_app_update_input_source(SRC_BT, DISP_All);
-                pbox_app_bt_pair_enable(false, DISP_All);
-                pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
-            }
-            else if(pboxBtSinkdata->btState == BT_NONE) {
-                printf("%s recv msg: btsink state: OFF\n", __func__);
-            }
-            pbox_app_show_bt_state(pboxBtSinkdata->btState, DISP_All);
+
+            if(is_input_source_selected(SRC_BT, ANY))
+                pbox_app_show_bt_state(pboxBtSinkdata->btState, DISP_All);
         } break;
 
         case BT_SINK_NAME: {
@@ -252,12 +261,15 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             printf("%s recv msg: a2dpsink state: %d -> [%d]\n", __func__, pboxBtSinkdata->a2dpState, a2dpState);
             if(pboxBtSinkdata->a2dpState != a2dpState) {
                 pboxBtSinkdata->a2dpState = a2dpState;
+                if(!is_input_source_selected(SRC_BT, ANY))
+                    break;
+
                 if(pboxBtSinkdata->a2dpState == A2DP_STREAMING) {
                     update_bt_karaoke_playing_status(true);
                 } else {
                     update_bt_karaoke_playing_status(false);
-                    if (getBtSinkState() == BT_DISCONNECT)
-                        pbox_app_music_stop(DISP_All);
+                    //if (getBtSinkState() == BT_DISCONNECT)
+                    //    pbox_app_music_stop(DISP_All);
                 }
             }
         } break;
@@ -270,7 +282,8 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 pboxBtSinkdata->pcmSampeFreq = freq;
                 pboxBtSinkdata->pcmChannel = channel;
                 if(pboxBtSinkdata->a2dpState == A2DP_STREAMING) {
-                    pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
+                    if(is_input_source_selected(SRC_BT, ANY))
+                        pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
                 }
             }
             printf("%s update: pbox_data.btsink: freq:%d channel: %d\n", __func__, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
@@ -280,13 +293,16 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             char *title = msg->btinfo.track.title;
             char *artist = msg->btinfo.track.artist;
             printf("%s recv msg rack: %s %s\n", __func__, title, artist);
-            update_music_track_info(title, artist);
+            if(is_input_source_selected(SRC_BT, ANY))
+                update_music_track_info(title, artist);
         } break;
 
         case BT_SINK_MUSIC_POSITIONS: {
             uint32_t current = msg->btinfo.positions.current;
             uint32_t total = msg->btinfo.positions.total;
-            update_music_positions(current, total);
+
+            if(is_input_source_selected(SRC_BT, ANY))
+                update_music_positions(current, total);
         } break;
 
         case BT_SINK_ADPTER_INFO: {
@@ -305,7 +321,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
 
         case RK_BT_ABS_VOL: {
 		//when seperate function is enable, don't set bt volume to mainVolume.
-		if (!pboxUIdata->mVocalSeperateEnable)
+		if ((!pboxUIdata->mVocalSeperateEnable) && is_input_source_selected(SRC_BT, ANY))
 			update_bt_music_volume(msg->media_volume, DISP_All);
         } break;
 

@@ -17,7 +17,7 @@ struct dot_key support_keys [] =
     {KEY_PLAY, 0, 0, 1, 0, pbox_app_key_set_playpause},
     {KEY_VOLUMEUP, 0, 0, 1, 0, pbox_app_key_set_volume_up},/*VOL_UP*/
     {KEY_VOLUMEDOWN, 0, 0, 1, 0, pbox_app_key_set_volume_down},/*VOL_DOWN*/
-    {KEY_MODE, 0, 0, 1, 0 , pbox_app_key_set_echo_3a},
+    {KEY_MODE, 0, 0, 1, 0 , pbox_app_key_switch_input_source},
     {KEY_PLAYPAUSE, 0, 0, 1,  0, pbox_app_key_set_playpause},
     {KEY_MICMUTE, 0, 0, 1, 0,  pbox_app_key_set_mic},/*MIC_MUTE*/
 
@@ -117,6 +117,25 @@ int pbox_app_key_set_echo_3a() {
     else
         pbox_app_music_set_echo_3a(true, DISP_All);
     return 0;
+}
+
+int pbox_app_key_switch_input_source(void) {
+    input_source_t dest = pboxData->inputDevice;
+    pboxUIdata->autoSource = false;
+
+    for (int i = 0; i< SRC_NUM; i++) {
+        if(input_priority[i] == pboxData->inputDevice) {
+            dest = input_priority[(i+1)%SRC_NUM];
+            break;
+        }
+    }
+
+    printf("%s change [%d->%d]=====!\n", __func__, pboxData->inputDevice, dest);
+    if(dest != pboxData->inputDevice) {
+        pbox_app_switch_to_input_source(dest, DISP_All);
+        return 0;
+    }
+    return -1;
 }
 
 int enter_long_playpause_mode()

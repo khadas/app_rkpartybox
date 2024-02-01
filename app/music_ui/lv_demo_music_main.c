@@ -412,28 +412,35 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                     if (lv_btstate == BT_CONNECTED) {
                         char name[MAX_NAME_LENGTH];
                         lv_snprintf(name, sizeof(name), "%s", getBtRemoteName());
-                        printf("%s remote name %s", __func__, name);
+                        printf("%s remote name %s\n", __func__, name);
                         lv_label_set_text(source_label, name);
                         lv_obj_set_style_text_color(source_label, lv_color_hex(0x0082FC), 0);
-                        break;
                     } //no break. go through
-                }
+                    else {
+                        lv_label_set_text(source_label, "Wishing air connect");
+                        lv_obj_set_style_text_color(source_label, lv_color_hex(0x0082FC), 0);
+                    }
+                } break;
                 case PBOX_LCD_DISP_USB_STATE: {
-                    if (lv_usbstate == USB_CONNECTED) {
+                    if ((lv_usbstate == USB_CONNECTED) || (lv_usbstate == USB_SCANNED)) {
                         lv_label_set_text(source_label, "USB Inserted");
                         lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
-                        break;
                     } //no break. go through
-                }
+                    else {
+                        lv_label_set_text(source_label, "Wishing USB connect");
+                        lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
+                    }
+                } break;
                 case PBOX_LCD_DISP_UAC_STATE: {
                     if (lv_uacstate == true) {
                         lv_label_set_text(source_label, "UAC Audio");
                         lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
-                        break;
                     }
-
-                    lv_label_set_text(source_label, ""); //show nothing
-                }
+                    else {
+                        lv_label_set_text(source_label, "Wishing UAC");
+                        lv_obj_set_style_text_color(source_label, lv_color_hex(0x00B050), 0);
+                    }
+                } break;
             }
         } break;
         case UI_WIDGET_MIC_MUTE: {

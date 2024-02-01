@@ -49,6 +49,7 @@ int pbox_app_key_set_volume_up();
 int pbox_app_key_set_volume_down();
 int pbox_app_key_set_mic();
 int pbox_app_key_set_echo_3a();
+int pbox_app_key_switch_input_source(void);
 
 int enter_long_playpause_mode();
 int long_volume_step_down();

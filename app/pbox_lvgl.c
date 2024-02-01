@@ -215,8 +215,10 @@ void handleLcdPrevNextCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
     char title[MAX_APP_NAME_LENGTH + 1] = {0};
     char artist[MAX_APP_NAME_LENGTH + 1] = {0};
-    strncpy(title, msg->track.title, MAX_APP_NAME_LENGTH);
-    strncpy(artist, msg->track.artist, MAX_APP_NAME_LENGTH);
+    if(msg->track.title)
+        strncpy(title, msg->track.title, MAX_APP_NAME_LENGTH);
+    if(msg->track.artist)
+        strncpy(artist, msg->track.artist, MAX_APP_NAME_LENGTH);
     printf("Track Info Command: Title - %s, Artist - %s\n", title, artist);
     _lv_demo_music_update_ui_info(UI_WIDGET_TRACK_INFO, msg);
 }
@@ -233,8 +235,9 @@ void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdUsbStateUpdateCmd(const pbox_lcd_msg_t *msg) {
     printf("%s \n", __func__);
     switch (msg->usbState) {
+        case USB_SCANNED:
         case USB_CONNECTED: {
-            printf("USB Inserted! start to scan\n");
+            printf("USB connected\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
         } break;
         case USB_DISCONNECTED: {
@@ -252,6 +255,10 @@ void handleLcdUsbListUpdateCmd(const pbox_lcd_msg_t *msg) {
 void handleLcdBtStateUpdateCmd(const pbox_lcd_msg_t *msg) {
     printf("%s \n", __func__);
     switch (msg->btState) {
+        case BT_NONE:
+        case BT_TURNING_TRUNNING_OFF:
+        case BT_INIT_ON:
+        case BT_CONNECTING:
         case BT_DISCONNECT: {
             printf("BT DISCONNECT\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);

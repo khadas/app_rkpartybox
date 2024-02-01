@@ -160,10 +160,17 @@ typedef enum {
 typedef enum {
     SRC_USB,
     SRC_BT,
+#if ENABLE_UAC
     SRC_UAC,
-    SRC_AUTO,
+#endif
     SRC_NUM
 } input_source_t;
+
+typedef enum {
+    MANUAL,
+    AUTO,
+    ANY
+} switch_source_t;
 
 typedef enum {
     OP_WRITE,
