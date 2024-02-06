@@ -122,13 +122,12 @@ void main(int argc, char **argv) {
 #endif
     pbox_create_KeyScanTask();
     pbox_create_KeyProcessTask();
+    pbox_create_usb_task();
     #if ENABLE_USE_SOCBT
     pbox_create_btsoc_task();
     #else
     pbox_create_bttask();
     #endif
-    pbox_create_usb_task();
-
     pbox_app_led_startup_effect();
 
     fd_set read_fds;
