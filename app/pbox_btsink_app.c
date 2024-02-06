@@ -85,6 +85,15 @@ void pbox_btsink_pair_enable(bool on) {
     unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
 }
 
+void pbox_btsink_local_update(void) {
+    pbox_bt_msg_t msg = {
+        .type = RK_BT_CMD,
+        .msgId = RK_BT_LOCAL_UPDATE,
+    };
+
+    unix_socket_btsink_send(&msg, sizeof(pbox_bt_msg_t));
+}
+
 void pbox_btsink_set_vendor_state(bool enable) {
     pbox_bt_msg_t msg = {
         .type = RK_BT_CMD,
@@ -226,6 +235,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 case BT_INIT_ON: {
                     pbox_app_restart_btsink(false, DISP_All);
                     pbox_app_bt_pair_enable(true, DISP_All);
+                    pbox_app_bt_local_update(DISP_All);
                 } break;
                 case BT_DISCONNECT: {
                     pbox_app_bt_pair_enable(true, DISP_All);

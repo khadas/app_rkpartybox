@@ -187,10 +187,13 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		printf("++ RK_BT_STATE_TURNING_ON\n");
 		break;
 	case RK_BT_STATE_INIT_ON:
-		printf("++ RK_BT_STATE_INIT_ON\n");
+		printf("++ RK_BT_STATE_INIT_ON=%d\n", rk_bt_is_powered_on());
 		bt_content.init = true;
 		//rk_bt_set_power(true);
-		bt_sink_notify_btstate(BT_INIT_ON, NULL);
+		if(rk_bt_is_powered_on()) {
+			bt_content.power = true;
+			bt_sink_notify_btstate(BT_INIT_ON, NULL);
+		}
 		break;
 	case RK_BT_STATE_INIT_OFF:
 		printf("++ RK_BT_STATE_INIT_OFF\n");
@@ -431,9 +434,11 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		printf("RK_BT_STATE_ADAPTER_SCANNING successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_POWER_ON:
-		bt_content.power = true;
-		printf("RK_BT_STATE_ADAPTER_POWER_ON successful\n");
-		break;
+		printf("RK_BT_STATE_ADAPTER_POWER_ON successful power=%d\n", bt_content.power);
+		if(!bt_content.power) {
+			bt_content.power = true;
+			bt_sink_notify_btstate(BT_INIT_ON, NULL);
+		} break;
 	case RK_BT_STATE_ADAPTER_POWER_OFF:
 		bt_content.power = false;
 		printf("RK_BT_STATE_ADAPTER_POWER_OFF successful\n");
@@ -545,11 +550,6 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 
 	if(!get_ps_pid("bluealsa-aplay"))
 		run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
-	exec_command_system("hciconfig hci0 class 0x240404");
-	btsink_config_name();
-
-	sprintf(ret_buff, "hciconfig hci0 name %s", bt_content.bt_name);
-	exec_command_system(ret_buff);
 	return 0;
 }
 
@@ -560,18 +560,17 @@ static void bt_vendor_set_enable(bool enable) {
 
 static void *btsink_server(void *arg)
 {
-	pthread_setname_np(pthread_self(), "pbox_btserver");
+	char buff[sizeof(rk_bt_msg_t)] = {0};
+	int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
 
+	pthread_setname_np(pthread_self(), "pbox_btserver");
     printf("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
 	memset(&bt_content, 0, sizeof(RkBtContent));
-
 	btsink_config_name();
 	//BLE NAME
 	bt_content.ble_content.ble_name = "RBLE";
-
 	//IO CAPABILITY
 	bt_content.io_capability = IO_CAPABILITY_DISPLAYYESNO;
-
 	/*
 	 * Only one can be enabled
 	 * a2dp sink and hfp-hf
@@ -588,10 +587,6 @@ static void *btsink_server(void *arg)
 	//default state
 	bt_content.init = false;
 	rk_bt_init(&bt_content);
-
-	char buff[sizeof(rk_bt_msg_t)] = {0};
-
-	int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
 
 	while(true) {
 		memset(buff, 0, sizeof(buff));
@@ -620,14 +615,15 @@ static void *btsink_server(void *arg)
     			case RK_BT_PREV:
     				rk_bt_sink_media_control("previous");
     				break;
-    			case RK_BT_PAIRABLE:{
+				case RK_BT_PAIRABLE: {
+					rk_bt_set_discoverable(true);
+				} break;
+				case RK_BT_LOCAL_UPDATE: {
 					char ret_buff[64];
-					//exec_command_system("hciconfig hci0 class 0x240404");
-    				rk_bt_set_discoverable(true);
 					btsink_config_name();
-
 					sprintf(ret_buff, "hciconfig hci0 name %s", bt_content.bt_name);
 					exec_command_system(ret_buff);
+					exec_command_system("hciconfig hci0 class 0x240404");
                 } break;
                 case RK_BT_CONNECTABLE: {
     				rk_bt_set_pairable(true);
@@ -652,8 +648,8 @@ static void *btsink_server(void *arg)
 					bool enable = msg->btinfo.enable;
 					bt_vendor_set_enable(enable);
 				}
-			case RK_BT_ABS_VOL:{
-				rk_bt_sink_set_volume(msg->media_volume);
+				case RK_BT_ABS_VOL:{
+					rk_bt_sink_set_volume(msg->media_volume);
                 } break;
 			}
 		}
@@ -675,7 +671,7 @@ int pbox_create_bttask(void)
         printf("btsink server start failed\n");
     }
 
-    ret = pthread_create(&tid_watch, NULL, btsink_watcher, NULL);
+    //ret = pthread_create(&tid_watch, NULL, btsink_watcher, NULL);
     if (ret < 0)
     {
         printf("btsink watcher start failed\n");

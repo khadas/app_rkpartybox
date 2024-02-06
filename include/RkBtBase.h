@@ -567,13 +567,42 @@ void rk_bt_set_discoverable(bool enable);
 
 /**
  * @ingroup  rk_bt_basic
+ * @brief  rk_bt_set_loacal_name
+ *
+ * @par Description
+        rk_bt_set_loacal_name
+ *
+ * @attention
+ * @param  name
+ *
+ * @retval 0 Excute successfully, see attention.
+ * @retval -1 Error code
+ * @see  NULL
+ */
+void rk_bt_set_loacal_name(char *name);
+/**
+ * @ingroup  rk_bt_basic
+ * @brief  rk_bt_is_powered_on
+ *
+ * @par Description
+        rk_bt_is_powered_on
+ *
+ * @attention
+ * @param  enable
+ *
+ * @retval true Powered.
+ * @retval false Not powered.
+ */
+bool rk_bt_is_powered_on(void);
+/**
+ * @ingroup  rk_bt_basic
  * @brief  rk_bt_set_power
  *
  * @par Description
         rk_bt_set_power
  *
  * @attention
- * @param  enable 
+ * @param  enable
  *
  * @retval 0 Excute successfully, see attention.
  * @retval -1 Error code
