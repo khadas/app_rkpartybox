@@ -213,10 +213,10 @@ void handleLcdPrevNextCmd(const pbox_lcd_msg_t* msg) {
 
 // Function to handle the track info command
 void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
-    char title[MAX_APP_NAME_LENGTH + 1] = {0};
+    char title[MAX_MUSIC_NAME_LENGTH + 1] = {0};
     char artist[MAX_APP_NAME_LENGTH + 1] = {0};
     if(msg->track.title)
-        strncpy(title, msg->track.title, MAX_APP_NAME_LENGTH);
+        strncpy(title, msg->track.title, MAX_MUSIC_NAME_LENGTH);
     if(msg->track.artist)
         strncpy(artist, msg->track.artist, MAX_APP_NAME_LENGTH);
     printf("Track Info Command: Title - %s, Artist - %s\n", title, artist);

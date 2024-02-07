@@ -46,7 +46,7 @@ void pbox_app_rockit_set_datasource(char *path, char *headers) {
     };
 
     if(path)
-        strncpy(msg.dataSource.track_uri, path, MAX_APP_NAME_LENGTH);
+        strncpy(msg.dataSource.track_uri, path, MAX_MUSIC_NAME_LENGTH);
     if(headers)
         strncpy(msg.dataSource.headers, headers, MAX_APP_NAME_LENGTH);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));

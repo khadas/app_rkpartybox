@@ -148,7 +148,7 @@ typedef struct {
 
 typedef struct {
     music_format_t format;//reserved
-    char fileName[MAX_APP_NAME_LENGTH+1];
+    char fileName[MAX_MUSIC_NAME_LENGTH+1];
 } usb_music_file_t;
 
 typedef enum {

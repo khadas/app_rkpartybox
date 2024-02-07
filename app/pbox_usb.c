@@ -111,9 +111,15 @@ void usb_pbox_notify_audio_file_added(music_format_t format, char *fileName) {
         .type = PBOX_EVT,
         .msgId = PBOX_USB_AUDIO_FILE_ADD_EVT,
     };
+
+    if(strlen(fileName) > MAX_MUSIC_NAME_LENGTH) {
+        printf("%s filename too long:%d, skipping!!!!!!!!!!!!!!!!!!!!:%s\n", __func__, strlen(fileName), fileName);
+        return;
+    }
+
     msg.usbMusicFile.format = format;
-    strncpy(msg.usbMusicFile.fileName, fileName, MAX_APP_NAME_LENGTH);
-    msg.usbMusicFile.fileName[MAX_APP_NAME_LENGTH] = 0;
+    strncpy(msg.usbMusicFile.fileName, fileName, MAX_MUSIC_NAME_LENGTH);
+    msg.usbMusicFile.fileName[MAX_MUSIC_NAME_LENGTH] = 0;
     printf("%s format:%d, name:%s\n", __func__, format, fileName);
     unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
 }

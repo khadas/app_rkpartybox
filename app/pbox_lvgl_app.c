@@ -56,10 +56,10 @@ void pbox_app_lcd_displayTrackInfo(const char* title, const char* artist) {
         .msgId = PBOX_LCD_DISP_TRACK_INFO,
     };
     if(title)
-    strncpy(msg.track.title, title, MAX_APP_NAME_LENGTH);
+    strncpy(msg.track.title, title, MAX_MUSIC_NAME_LENGTH);
     if(artist)
     strncpy(msg.track.artist, artist, MAX_APP_NAME_LENGTH);
-    msg.track.title[MAX_APP_NAME_LENGTH]  = 0;
+    msg.track.title[MAX_MUSIC_NAME_LENGTH]  = 0;
     msg.track.artist[MAX_APP_NAME_LENGTH] = 0;
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }

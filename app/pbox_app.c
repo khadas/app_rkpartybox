@@ -315,7 +315,7 @@ void pbox_app_music_start(display_t policy) {
         } break;
 
         case SRC_USB: {
-            char track_uri[256];
+            char track_uri[MAX_MUSIC_NAME_LENGTH+1];
             printf("pboxTrackdata->track_id:%d, track_num:%d\n", pboxTrackdata->track_id, pboxTrackdata->track_num);
             for (int i=0 ; i< pboxTrackdata->track_num; i++) {
                 printf("pboxTrackdata->track_list[%d]:%s\n", i, pboxTrackdata->track_list[i].title);

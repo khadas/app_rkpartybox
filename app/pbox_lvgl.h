@@ -57,7 +57,7 @@ typedef struct {
         bool next;
         bool loop;
         struct {
-            char title[MAX_APP_NAME_LENGTH + 1];
+            char title[MAX_MUSIC_NAME_LENGTH + 1];
             char artist[MAX_APP_NAME_LENGTH + 1];
         } track;
         uint32_t        trackId;

@@ -55,7 +55,7 @@ typedef struct {
     pbox_rockit_opcode_t msgId;
     union {
         struct {
-            char track_uri[MAX_APP_NAME_LENGTH +1];
+            char track_uri[MAX_MUSIC_NAME_LENGTH +1];
             char headers[MAX_APP_NAME_LENGTH +1];
         } dataSource;
         bool loop;
