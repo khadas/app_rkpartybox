@@ -12,6 +12,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/utils/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
+       ${PROJECT_SOURCE_DIR}/hal/
 	${CMAKE_SYSROOT}/usr/include/rockchip/
 	)
 

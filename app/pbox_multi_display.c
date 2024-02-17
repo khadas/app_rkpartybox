@@ -18,9 +18,10 @@
 #include "pbox_light_effect_app.h"
 #include "pbox_app.h"
 
+#define LEFT_SHIFT_COUNT(num) (__builtin_ctz(num))
 
-#define LED_DISPLAY_MASK DISP_LED
-#define LCD_DISPLAY_MASK DISP_LCD
+#define LED_DISPLAY_MASK (ENABLE_LCD_DISPLAY<<LEFT_SHIFT_COUNT(DISP_LED))
+#define LCD_DISPLAY_MASK (ENABLE_RK_LED_EFFECT<<LEFT_SHIFT_COUNT(DISP_LCD))
 
 void pbox_multi_displayIsPlaying(bool play, display_t policy) {
     if(policy & LCD_DISPLAY_MASK)

@@ -163,6 +163,9 @@ typedef enum {
 #if ENABLE_UAC
     SRC_UAC,
 #endif
+#if ENABLE_AUX
+    SRC_AUX,
+#endif
     SRC_NUM
 } input_source_t;
 

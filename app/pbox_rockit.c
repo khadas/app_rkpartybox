@@ -714,7 +714,6 @@ static void pbox_rockit_uac_set_state(pbox_rockit_msg_t *msg) {
 static void pbox_rockit_uac_set_freq(pbox_rockit_msg_t *msg) {
     uac_role_t role = msg->uac.uac_role;
     uint32_t freq = msg->uac.sampleFreq;
-    pbox_rockit_music_start_bt(freq, 2, "hw:2,0");
 }
 
 static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {

@@ -80,7 +80,7 @@ void pbox_app_show_track_position(bool durationOnly, uint32_t current, uint32_t 
 void pbox_app_show_tack_info(char *title, char *artist, display_t policy);
 void pbox_app_show_bt_state(btsink_state_t state, display_t policy);
 void pbox_app_show_playingStatus(bool play, display_t policy);
-void pbox_app_restart_bt_player(bool restart, char *cardName, display_t policy);
+void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy);
 void pbox_app_music_stop_bt_player(display_t policy);
 void pbox_app_bt_pair_enable(bool enable, display_t policy);
 void pbox_app_bt_local_update(display_t policy);
@@ -116,7 +116,6 @@ void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy);
 void pbox_app_uac_volume_change(uac_role_t role, uint32_t volume, display_t policy);
 void pbox_app_uac_mute_change(uac_role_t role, bool mute, display_t policy);
 void pbox_app_uac_ppm_change(uac_role_t role, int32_t ppm, display_t policy);
-void pbox_app_restart_uac_player(bool restart, display_t policy);
 void pbox_app_start_uac_poll(display_t policy);
 
 void pbox_app_usb_list_update(uint32_t trackId, display_t policy);

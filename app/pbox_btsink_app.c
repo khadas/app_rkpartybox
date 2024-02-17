@@ -199,7 +199,7 @@ void update_music_positions(uint32_t current, uint32_t total) {
 
     if(prev_total != total) {
         prev_total = total;
-        pbox_app_restart_bt_player(true, "hw:7,1,0", DISP_All);
+        pbox_app_restart_passive_player(SRC_BT, true, DISP_All);
     }
 }
 
@@ -250,7 +250,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                     if(is_dest_source_switchable(SRC_BT, AUTO))
                         pbox_app_switch_to_input_source(SRC_BT, DISP_All);
                     if(is_input_source_selected(SRC_BT, ANY)) {
-                        pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
+                        pbox_app_restart_passive_player(SRC_BT, true, DISP_All);
                     }
                 } break;
                 case BT_NONE: {
@@ -292,8 +292,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 pboxBtSinkdata->pcmSampeFreq = freq;
                 pboxBtSinkdata->pcmChannel = channel;
                 if(pboxBtSinkdata->a2dpState == A2DP_STREAMING) {
-                    if(is_input_source_selected(SRC_BT, ANY))
-                        pbox_app_restart_bt_player(false, "hw:7,1,0", DISP_All);
+                    pbox_app_restart_passive_player(SRC_BT, false, DISP_All);
                 }
             }
             printf("%s update: pbox_data.btsink: freq:%d channel: %d\n", __func__, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);

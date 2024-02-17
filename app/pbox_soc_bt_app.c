@@ -144,7 +144,6 @@ void handleMainVolumeEvent(const pbox_socbt_msg_t *msg) {
     }
 
     pbox_app_music_set_volume(msg->volume, DISP_All);
-
 }
 
 void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
@@ -158,7 +157,7 @@ void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMic1StateEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Mic State: %d\n", __func__, msg->mic_state);
+    printf("%s Mic State: %d\n", __func__, msg->mic_state[0]);
     if(msg->op == OP_READ) {
         //add implement
         return;
@@ -166,7 +165,7 @@ void handleMic1StateEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMic2StateEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Mic State: %d\n", __func__, msg->mic_state);
+    printf("%s Mic State: %d\n", __func__, msg->mic_state[1]);
     if(msg->op == OP_READ) {
         //add implement
         return;
@@ -188,6 +187,37 @@ void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
         pbox_app_btsoc_get_poweron(DISP_All);
         return;
     }
+
+    uint32_t stereo_mode= msg->stat[0] & 0xf;
+    uint32_t inout_door = msg->stat[0] >> 4;
+    uint32_t volume     = msg->stat[1]*100/32;
+    uint32_t accom_level= msg->stat[2]*100/32;
+    mic_state_t mic1    = msg->stat[3];
+    mic_state_t mic2    = msg->stat[4];
+    uint32_t placement  = msg->stat[5];
+    uint32_t human_level= msg->stat[6]? 0:100;
+    play_status_t status = ((msg->stat[7]>>7)&0x01) ? _STOP:PLAYING;
+    input_source_t source;
+    switch(msg->stat[7]&0x1F) {
+        case 0: {
+            source = SRC_BT;
+        } break;
+#if ENABLE_AUX
+        case 1: {
+            source = SRC_AUX;
+        } break;
+#endif
+        case 2: {
+            source = SRC_USB;
+        } break;
+    }
+    pbox_app_btsoc_set_stereo_mode(stereo_mode, DISP_All);
+    pbox_app_btsoc_set_inout_door(inout_door, DISP_All);
+    pbox_app_music_set_volume(volume, DISP_All);
+    pbox_app_btsoc_set_accom_level(accom_level, DISP_All);
+    pbox_app_btsoc_set_placement(placement, DISP_All);
+    pbox_app_btsoc_set_human_split(human_level, DISP_All);
+    pbox_app_btsoc_set_input_source(source, status, DISP_All);
 }
 
 void handleStereoModeEvent(const pbox_socbt_msg_t *msg) {

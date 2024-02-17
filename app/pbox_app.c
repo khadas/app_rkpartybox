@@ -6,10 +6,11 @@
 #include "pbox_rockit_app.h"
 #include "pbox_usb_app.h"
 #include "pbox_soc_bt_app.h"
+#include "board.h"
 
 pbox_data_t pbox_data = {
     .btsink = {
-        .pcmSampeFreq = 44100,
+        .pcmSampeFreq = DEFAULT_SAMPLE_FREQ,
         .pcmChannel = 2,
     },
     .ui = {
@@ -30,7 +31,7 @@ pbox_data_t pbox_data = {
     },
     .uac = {
         .state = false,
-        .freq = 0,
+        .freq = 48000,
     },
     .inputDevice = SRC_USB,
 };
@@ -72,11 +73,55 @@ void pbox_app_show_playingStatus(bool play, display_t policy) {
     pbox_multi_displayIsPlaying(play, policy);
 }
 
-void pbox_app_restart_bt_player(bool restart, char* cardName, display_t policy) {
-    if(restart)
+void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy) {
+    if(!is_input_source_selected(source, ANY)) {
+        return;
+    }
+
+    if(restart) {
         pbox_app_rockit_stop_BTplayer();
-    pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, cardName);
-    //nothing to do with ui
+    }
+
+    switch(source) {
+        case SRC_BT: {
+            pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_BT);
+        } break;
+#if ENABLE_UAC
+        case SRC_UAC: {
+            pbox_app_rockit_start_BTplayer(pboxUacdata->freq, 2, AUDIO_CARD_UAC);
+        }
+#endif
+#if ENABLE_EXT_MCU_USB
+        case SRC_USB: {
+            pbox_app_rockit_start_BTplayer(48000, 2, AUDIO_CARD_USB);
+        }
+#endif
+#if ENABLE_AUX
+        case SRC_AUX: {
+            pbox_app_rockit_start_BTplayer(48000, 2, AUDIO_CARD_AUX);
+        }
+#endif
+    }
+}
+
+//like BT, uac, or Usb connected with extern MCU, these are passive input source.
+//for the audio stream are streamed to rockchips ics.
+//another way, USB connected to rockchips was not passive source. for we play USB locally and actively.
+void pbox_app_drive_passive_player(input_source_t source, play_status_t status, display_t policy) {
+    printf("%s, play status [%d->%d]\n", __func__, pboxUIdata->play_status, status);
+    if(pboxUIdata->play_status != status) {
+        switch(status) {
+            case PLAYING: {
+                pbox_app_restart_passive_player(source, true, policy);
+            } break;
+
+            case _STOP: {
+                pbox_app_music_stop(policy);
+            } break;
+        }
+        pboxUIdata->play_status = status;
+    }
+    //no ui show
 }
 
 void pbox_app_music_stop_bt_player(display_t policy) {
@@ -185,6 +230,11 @@ void pbox_app_autoswitch_next_input_source(input_source_t currentSource, display
     }
 }
 
+#ifdef ENABLE_EXT_BT_MCU
+bool isInputSourceConnected(input_source_t source) {
+    return true;
+}
+#else
 bool isInputSourceConnected(input_source_t source) {
     switch(source) {
         case SRC_BT: {
@@ -206,6 +256,7 @@ bool isInputSourceConnected(input_source_t source) {
 
     return false;
 }
+#endif
 
 bool check_dest_source(input_source_t* destSource) {
     int index = -1;
@@ -241,23 +292,30 @@ bool check_dest_source(input_source_t* destSource) {
 
 //this means we switch source actively...
 void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
+    printf("%s, source: [%d->%d]\n", __func__, pboxData->inputDevice, source);
     if(pboxData->inputDevice == source)
         return;
     pbox_app_music_stop(policy);
-    switch(pboxData->inputDevice) {
-        case SRC_USB: {
-        } break;
-    }
     pboxData->inputDevice = source;
     switch(source) {
         case SRC_BT: {
             pbox_app_show_bt_state(pboxBtSinkdata->btState, policy);
             if(isInputSourceConnected(SRC_BT)) {
-                pbox_app_restart_bt_player(false, "hw:7,1,0", policy);
+                pbox_app_restart_passive_player(SRC_BT, false, policy);
             } else {
-                pbox_app_show_tack_info(" ", " ",  policy);
+                pbox_app_show_tack_info(" ", " ", policy);
             }
         } break;
+#if ENABLE_AUX
+        case SRC_AUX: {
+            pbox_app_restart_passive_player(SRC_AUX, false, policy);
+        } break;
+#endif
+#if ENABLE_EXT_MCU_USB
+        case SRC_USB: {
+            pbox_app_restart_passive_player(SRC_USB, false, policy);
+        } break;
+#else
         case SRC_USB: {
             pbox_app_show_usb_state(pboxUsbdata->usbState, policy);
             if(isInputSourceConnected(SRC_USB)) {
@@ -266,6 +324,7 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
                 pbox_app_show_tack_info(" ", " ",  policy);
             }
         } break;
+#endif
 #if ENABLE_UAC
         case SRC_UAC: {
             pbox_multi_displayUacState(UAC_ROLE_SPEAKER, false, policy);
@@ -379,9 +438,17 @@ void pbox_app_music_stop(display_t policy)
                 pbox_btsink_a2dp_stop();
             pbox_app_rockit_stop_BTplayer();
         } break;
-
+#if ENABLE_AUX
+        case SRC_AUX: {
+            pbox_app_rockit_stop_BTplayer();
+        } break;
+#endif
         case SRC_USB: {
+#if ENABLE_EXT_MCU_USB
+            pbox_app_rockit_stop_BTplayer();
+#else
             pbox_app_rockit_stop_player();
+#endif
         } break;
 #if ENABLE_UAC
         case SRC_UAC: {
@@ -397,6 +464,7 @@ void pbox_app_music_stop(display_t policy)
 }
 
 void pbox_app_music_set_volume(uint32_t volume, display_t policy) {
+    printf("%s main volume: %d\n", __func__, volume);
     pboxUIdata->mVolumeLevel = volume;
     pbox_app_rockit_set_player_volume(volume);
     pbox_multi_displayMainVolumeLevel(volume, policy);
@@ -513,6 +581,7 @@ void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
     uint32_t rlevel = pboxUIdata->mReservLevel;
     bool seperate = pboxUIdata->mVocalSeperateEnable;
 
+    printf("%s hlevel: %d, mlevel: %d, seperate:%d\n", __func__, hlevel, volume, seperate);
     pboxUIdata->mMusicLevel = volume;
     pbox_app_rockit_set_player_seperate(seperate, hlevel, volume, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, volume, rlevel, policy);
@@ -524,6 +593,7 @@ void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy) {
     uint32_t rlevel = pboxUIdata->mReservLevel;
     bool seperate = pboxUIdata->mVocalSeperateEnable;
 
+    printf("%s hlevel: %d, mlevel: %d, seperate:%d\n", __func__, volume, mlevel, seperate);
     pboxUIdata->mHumanLevel = volume;
     pbox_app_rockit_set_player_seperate(seperate, volume, mlevel, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate, volume, mlevel, rlevel, policy);
@@ -535,6 +605,7 @@ void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
     //uint32_t rlevel = pboxUIdata->mReservLevel;
     bool seperate = pboxUIdata->mVocalSeperateEnable;
 
+    printf("%s hlevel: %d, mlevel: %d, rlevel:%d, seperate:%d\n", __func__, hlevel, mlevel, volume, seperate);
     pboxUIdata->mReservLevel = volume;
     pbox_app_rockit_set_player_seperate(seperate, hlevel, mlevel, volume);
     pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, mlevel, volume, policy);
@@ -626,13 +697,7 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
             return;
         }
 
-        if(start) {
-            pbox_app_restart_uac_player(true, policy);
-            pboxUIdata->play_status = PLAYING;
-            pbox_app_show_playingStatus(true, policy);
-        } else {
-            pbox_app_music_stop(policy);
-        }
+        pbox_app_drive_passive_player(SRC_UAC, start? PLAYING:_STOP, policy);
         pbox_multi_displayUacState(role, start, policy);
     }
 #endif
@@ -647,7 +712,7 @@ void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy) 
     printf("%s freq:%d\n", __func__, freq);
     if(pboxUacdata->freq != freq) {
         pboxUacdata->freq = freq;
-        pbox_app_rockit_start_BTplayer(freq, 2, "hw:2,0");
+        pbox_app_rockit_start_BTplayer(freq, 2, AUDIO_CARD_UAC);
     }
 #endif
 }
@@ -687,25 +752,6 @@ void pbox_app_uac_ppm_change(uac_role_t role, int32_t ppm, display_t policy) {
 #endif
 }
 
-void pbox_app_restart_uac_player(bool restart, display_t policy) {
-#if ENABLE_UAC
-    printf("%s usbdisk=%d, bt state:%d\n", __func__, pboxUsbdata->usbState, getBtSinkState());
-    if(!is_input_source_selected(SRC_UAC, ANY)) {
-        return;
-    }
-
-    printf("%s restart=%d\n", __func__, restart);
-    if(restart)
-        pbox_app_rockit_stop_BTplayer();
-
-    if(pboxUacdata->freq != 48000) {
-        pboxUacdata->freq = 48000;
-    }
-    pbox_app_rockit_start_BTplayer(48000, 2, "hw:2,0");
-    //nothing to do with ui
-#endif
-}
-
 void pbox_app_usb_start_scan(display_t policy) {
     pbox_app_usb_startScan();
     //nothing to display now
@@ -737,6 +783,7 @@ void pbox_app_btsoc_set_placement(uint32_t placement, display_t policy) {
     pboxUIdata->placement = placement;
     //nothing to notify rockit
     //nothing to do with ui
+    printf("%s placement: %d\n", __func__, placement);
 }
 
 void pbox_app_btsoc_get_placement(display_t policy) {
@@ -752,7 +799,7 @@ void pbox_app_btsoc_get_mic2_state(display_t policy) {
 }
 
 void pbox_app_btsoc_set_inout_door(inout_door_t inout, display_t policy) {
-
+    printf("%s inout door: %d\n", __func__, inout);
 }
 
 void pbox_app_btsoc_get_inout_door(display_t policy) {
@@ -764,7 +811,7 @@ void pbox_app_btsoc_get_poweron(display_t policy) {
 }
 
 void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy) {
-
+    printf("%s stereo Mode: %d\n", __func__, mode);
 }
 
 void pbox_app_btsoc_get_stereo_mode(display_t policy) {
@@ -776,6 +823,7 @@ void pbox_app_btsoc_get_human_split(display_t policy) {
 }
 
 void pbox_app_btsoc_set_human_split(uint32_t level, display_t policy) {
+    printf("%s hlevel: %d\n", __func__, level);
     pbox_app_music_set_human_music_level(level, policy);
 }
 
@@ -783,8 +831,9 @@ void pbox_app_btsoc_get_input_source(display_t policy) {
     pbox_app_btsoc_reply_input_source_with_playing_status(pboxData->inputDevice, pboxUIdata->play_status);
 }
 
-void pbox_app_music_set_input_source(input_source_t source, play_status_t status, display_t policy) {
-
+void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status, display_t policy) {
+    pbox_app_switch_to_input_source(source, policy);
+    pbox_app_drive_passive_player(source, status, policy);
 }
 
 void pbox_app_music_get_accom_level(display_t policy) {
