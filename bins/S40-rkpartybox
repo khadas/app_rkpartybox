@@ -1,14 +1,19 @@
 #! /bin/sh
 
+if [ ! -e /oem/partybox_play.sh ]; then
+	echo "Maybe first init, make link /oem/partybox_app.sh fisrt!"
+	ln -s /usr/bin/partybox_play.sh /oem/partybox_play.sh
+fi
 chmod 777 /oem/partybox_play.sh
-
 /oem/partybox_play.sh &
-
 sync
 
 start() {
 	ulimit -c unlimited
 	echo "/tmp/core-%p-%e.$(date "+%Y%m%d_%H%M%S")" > /proc/sys/kernel/core_pattern
+	if [ ! -e /oem/partybox_app.sh ]; then
+		ln -s /usr/bin/partybox_app.sh /oem/partybox_app.sh
+	fi
 	chmod 777 /oem/partybox_app.sh
 	/oem/partybox_app.sh &
 }
