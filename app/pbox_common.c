@@ -70,3 +70,19 @@ int findMax(int array[], int size) {
     }
     return max;
 }
+
+#define ACODEC_FILE_PATH "/sys/devices/platform/ff560000.acodec/rk3308-acodec-dev/dac_output"
+static void set_background_setting(void *arg) {
+    exec_command_system("echo 1 > \"$ACODEC_FILE_PATH\"");
+    exec_command_system("sleep 1");
+    exec_command_system("echo 11 > \"$ACODEC_FILE_PATH\"");
+}
+
+void pbox_init_background(void) {
+    pthread_t vocal_cpuset;
+    int ret = pthread_create(&vocal_cpuset, NULL, set_background_setting, NULL);
+    if (ret < 0)
+    {
+        printf("pbox_init_background fail\n");
+    }
+}

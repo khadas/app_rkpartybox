@@ -3,8 +3,11 @@ ACODEC_FILE_PATH="/sys/devices/platform/ff560000.acodec/rk3308-acodec-dev/dac_ou
 
 sleep 2
 if [ ! -x "$ACODEC_FILE_PATH" ]; then
-	echo "Error: $DIRECTORY does not exist. Exiting script!"
-	exit 1
+	echo "Error: $ACODEC_FILE_PATH does not exist. Exiting script!"
+	if [[ $(cat /proc/device-tree/acodec@ff560000/status 2>/dev/null) != "okay" ]]; then
+		echo "Error: dts acodec is not 'okay'. Exiting script."
+		exit 1
+	fi
 fi
 
 amixer -c 0 cset numid=34 12

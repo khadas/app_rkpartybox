@@ -28,7 +28,7 @@ aux_source_directory(./sys SRCS)
 aux_source_directory(./utils SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
 message("CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
 message("CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
 if (LV_USE_DEMO_MUSIC)

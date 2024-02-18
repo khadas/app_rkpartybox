@@ -230,7 +230,7 @@ void pause_fd_timer(int timer_fd);
 uint64_t time_get_os_boot_us(void);
 uint64_t time_get_os_boot_ms(void);
 int findMax(int array[], int size);
-
+void pbox_init_background(void);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
