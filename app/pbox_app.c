@@ -109,19 +109,20 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
 //another way, USB connected to rockchips was not passive source. for we play USB locally and actively.
 void pbox_app_drive_passive_player(input_source_t source, play_status_t status, display_t policy) {
     printf("%s, play status [%d->%d]\n", __func__, pboxUIdata->play_status, status);
-    if(pboxUIdata->play_status != status) {
-        switch(status) {
-            case PLAYING: {
-                pbox_app_restart_passive_player(source, true, policy);
-            } break;
-
-            case _STOP: {
-                pbox_app_music_stop(policy);
-            } break;
-        }
-        pboxUIdata->play_status = status;
+    if(pboxUIdata->play_status == status) {
+        return;
     }
-    //no ui show
+    switch(status) {
+        case PLAYING: {
+            pbox_app_restart_passive_player(source, true, policy);
+        } break;
+
+        case _STOP: {
+            pbox_app_music_stop(policy);
+        } break;
+    }
+    pboxUIdata->play_status = status;
+    pbox_app_show_playingStatus((status==PLAYING) ? true: false, policy);
 }
 
 void pbox_app_music_stop_bt_player(display_t policy) {
