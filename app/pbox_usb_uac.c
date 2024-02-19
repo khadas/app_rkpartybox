@@ -69,9 +69,36 @@ void parse_event(const struct _uevent *event) {
     }
 }
 
+static bool isUacEnabled(const char *filename) {
+    const size_t MAX_LENGTH = 100;
+
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        return false;
+    }
+
+    char buffer[MAX_LENGTH + 1];
+    size_t bytesRead = fread(buffer, 1, MAX_LENGTH, file);
+    buffer[bytesRead] = '\0';
+    fclose(file);
+
+    if (bytesRead == 0) {
+        return false;
+    }
+
+    if (strncasecmp(buffer, "enable", strlen("enable")) == 0) {
+        return true;
+    }
+
+    return false;
+}
+
 void uac_init(void) {
+    const char *filename = "/oem/uac_config";
     uac_control_create(&uac);
 #if ENABLE_UAC
+    if (!isUacEnabled(filename))
+        return;
     exec_command_system("touch /tmp/.usb_config");
     exec_command_system("echo \"usb_adb_en\" > /tmp/.usb_config");
     exec_command_system("echo \"usb_uac1_en\" >> /tmp/.usb_config");
