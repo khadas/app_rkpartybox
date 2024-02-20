@@ -31,6 +31,10 @@ void pbox_app_lcd_dispplayUacState(bool start);
 
 void maintask_lvgl_fd_process(int fd);
 
+#define pbox_app_lcd_displayMusicStereoMode(...)  ((void) 0)
+#define pbox_app_lcd_displayMusicPlaceMode(...)  ((void) 0)
+#define pbox_app_lcd_displayMusicOutdoorMode(...)  ((void) 0)
+
 #ifdef __cplusplus
 }
 #endif

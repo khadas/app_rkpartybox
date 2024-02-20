@@ -41,6 +41,12 @@ void pbox_app_rockit_get_player_volume(void);
 
 void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel);
 
+void pbox_app_rockit_set_stereo_mode(stereo_mode_t mode);
+
+void pbox_app_rockit_set_outdoor_mode(inout_door_t mode);
+
+void pbox_app_rockit_set_placement(placement_t mode);
+
 void pbox_app_rockit_get_player_energy(void);
 
 void pbox_app_rockit_start_recorder(void);

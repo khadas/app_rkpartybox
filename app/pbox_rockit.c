@@ -553,6 +553,24 @@ static uint32_t pbox_rockit_music_master_volume_adjust(int Level) {
     return pbox_rockit_music_master_volume_get();
 }
 
+static void pbox_rockit_music_set_stereo_mode(stereo_mode_t stereo) {
+    printf("%s:%d\n", __func__, stereo);
+    assert(player_ctx);
+
+}
+
+static void pbox_rockit_music_set_inout_door(inout_door_t outdoor) {
+    printf("%s:%d\n", __func__, outdoor);
+    assert(player_ctx);
+
+}
+
+static void pbox_rockit_music_set_placement(placement_t place) {
+    printf("%s:%d\n", __func__, place);
+    assert(player_ctx);
+
+}
+
 static void pbox_rockit_music_mic_volume_adjust(int micLevel) {
     assert(player_ctx);
     assert(RK_MPI_KARAOKE_SetRecorderVolume_func);
@@ -895,6 +913,18 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_SETRECORDERVOLUME: {
                 pbox_rockit_music_mic_volume_adjust(msg->volume);
+            } break;
+
+            case PBOX_ROCKIT_SET_STEREO_MODE: {
+                pbox_rockit_music_set_stereo_mode(msg->stereo);
+            } break;
+
+            case PBOX_ROCKIT_SET_OUTDOOR_MODE: {
+                pbox_rockit_music_set_inout_door(msg->outdoor);
+            } break;
+
+            case PBOX_ROCKIT_SET_PLACEMENT_MODE: {
+                pbox_rockit_music_set_placement(msg->place);
             } break;
 
             case PBOX_ROCKIT_SETRECORDERMUTE: {

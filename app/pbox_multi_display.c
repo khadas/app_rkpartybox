@@ -104,7 +104,31 @@ void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_
         pbox_app_lcd_displayMusicSeparateSwitch(enable, hlevel, mlevel, rlevel);
 
     if(policy & LED_DISPLAY_MASK)
-    pbox_app_led_MusicSeparateSwitch(enable, hlevel, mlevel, rlevel);
+        pbox_app_led_MusicSeparateSwitch(enable, hlevel, mlevel, rlevel);
+}
+
+void pbox_multi_displayMusicStereoMode(stereo_mode_t stereo, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMusicStereoMode(stereo);
+
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_MusicStereoMode(stereo);
+}
+
+void pbox_multi_displayMusicPlaceMode(placement_t place, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMusicPlaceMode(place);
+
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_MusicPlaceMode(place);
+}
+
+void pbox_multi_displayMusicOutdoorMode(inout_door_t outdoor, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMusicOutdoorMode(outdoor);
+
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_MusicOutdoorMode(outdoor);
 }
 
 void pbox_multi_displayEcho3A(bool enable, display_t policy) {

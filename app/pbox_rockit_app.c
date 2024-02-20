@@ -202,6 +202,36 @@ void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+void pbox_app_rockit_set_stereo_mode(stereo_mode_t stereo) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_STEREO_MODE,
+    };
+
+    msg.stereo = stereo;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_outdoor_mode(inout_door_t outdoor) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_OUTDOOR_MODE,
+    };
+
+    msg.outdoor = outdoor;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_placement(placement_t place) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_PLACEMENT_MODE,
+    };
+
+    msg.place = place;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
 void pbox_app_rockit_get_player_energy(void) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,

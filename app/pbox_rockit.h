@@ -34,10 +34,13 @@ typedef enum {
     PBOX_ROCKIT_SETRECORDERMUTE,
     PBOX_ROCKIT_SET_RECORDER_REVERT,
     PBOX_ROCKIT_SET_RECORDER_3A,
+    PBOX_ROCKIT_SET_STEREO_MODE,
+    PBOX_ROCKIT_SET_OUTDOOR_MODE,
+    PBOX_ROCKIT_SET_PLACEMENT_MODE,
     PBOX_ROCKIT_SET_UAC_STATE,
     PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
     PBOX_ROCKIT_SET_UAC_VOLUME,
-    PBOX_ROCKIT_SET_UAC_MUTE,//30
+    PBOX_ROCKIT_SET_UAC_MUTE,
     PBOX_ROCKIT_SET_UAC_PPM,
 
     //event
@@ -66,6 +69,9 @@ typedef struct {
         bool             echo3A_On;
         bool             micmute;
         pbox_audioFormat_t  audioFormat;
+        stereo_mode_t       stereo;
+        inout_door_t    outdoor;
+        placement_t     place;
 
         struct _wake_up {
             KARAOKE_WAKE_UP_CMD_E wakeCmd;

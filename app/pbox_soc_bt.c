@@ -52,7 +52,7 @@ int unix_socket_socbt_notify(void *info, int length) {
     return unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
 }
 
-void socbt_pbox_notify_dspver_query(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode) {
+void socbt_pbox_notify_dspver_query(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_VERSION_EVT,
@@ -63,7 +63,7 @@ void socbt_pbox_notify_dspver_query(uint32_t opcode, char *buff, int32_t len) {/
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_adjust_master_volume(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, uint32_t volume) {
+void socbt_pbox_notify_adjust_master_volume(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_MAIN_VOLUME_EVT,
@@ -75,7 +75,7 @@ void socbt_pbox_notify_adjust_master_volume(uint32_t opcode, char *buff, int32_t
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_adjust_placement(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, uint32_t placement) {
+void socbt_pbox_notify_adjust_placement(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_PLACEMENT_EVT,
@@ -87,7 +87,7 @@ void socbt_pbox_notify_adjust_placement(uint32_t opcode, char *buff, int32_t len
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_adjust_mic1_state(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, uint32_t state) {
+void socbt_pbox_notify_adjust_mic1_state(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_MIC1_STATE_EVT,
@@ -99,7 +99,7 @@ void socbt_pbox_notify_adjust_mic1_state(uint32_t opcode, char *buff, int32_t le
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_adjust_mic2_state(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, uint32_t state) {
+void socbt_pbox_notify_adjust_mic2_state(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_MIC2_STATE_EVT,
@@ -111,7 +111,7 @@ void socbt_pbox_notify_adjust_mic2_state(uint32_t opcode, char *buff, int32_t le
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_adjust_inout_door(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, inout_door_t inout) {
+void socbt_pbox_notify_adjust_inout_door(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,
@@ -135,7 +135,7 @@ void socbt_pbox_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_dsp_stereo_mode(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, stereo_mode_t mode) {
+void socbt_pbox_notify_dsp_stereo_mode(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_STEREO_MODE_EVT,
@@ -147,7 +147,7 @@ void socbt_pbox_notify_dsp_stereo_mode(uint32_t opcode, char *buff, int32_t len)
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_dsp_human_spilit(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, uint32_t human_level) {
+void socbt_pbox_notify_dsp_human_spilit(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_HUMAN_SPLIT_EVT,
@@ -159,7 +159,7 @@ void socbt_pbox_notify_dsp_human_spilit(uint32_t opcode, char *buff, int32_t len
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, play_status_t state, input_source_t source) {
+void socbt_pbox_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT,
@@ -186,7 +186,7 @@ void socbt_pbox_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t le
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_adjust_background_level(uint32_t opcode, char *buff, int32_t len) {//(uint32_t opcode, uint32_t level) {
+void socbt_pbox_notify_adjust_background_level(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_MUSIC_GROUND_EVT,

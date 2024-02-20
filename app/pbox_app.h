@@ -51,7 +51,9 @@ typedef struct {
 
     input_source_t inputDevice;
     struct _pbox_ui {
-        uint32_t placement;
+        placement_t placement;
+        stereo_mode_t stereo;
+        inout_door_t outdoor;
         uint32_t mVolumeLevel;
         uint32_t mMicVolumeLevel;
         uint32_t mMusicLevel;
@@ -124,11 +126,11 @@ void pbox_app_usb_start_scan(display_t policy);
 
 void pbox_app_btsoc_get_dsp_version(display_t policy);
 void pbox_app_btsoc_get_volume(display_t policy);
-void pbox_app_btsoc_set_placement(uint32_t placement, display_t policy);
+void pbox_app_btsoc_set_placement(placement_t placement, display_t policy);
 void pbox_app_btsoc_get_placement(display_t policy);
 void pbox_app_btsoc_get_mic1_state(display_t policy);
 void pbox_app_btsoc_get_mic2_state(display_t policy);
-void pbox_app_btsoc_set_inout_door(inout_door_t inout, display_t policy);
+void pbox_app_btsoc_set_outdoor_mode(inout_door_t inout, display_t policy);
 void pbox_app_btsoc_get_inout_door(display_t policy);
 void pbox_app_btsoc_get_poweron(display_t policy);
 void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy);

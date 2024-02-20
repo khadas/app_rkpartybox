@@ -11,7 +11,7 @@ void maintask_btsoc_fd_process(int fd);
 
 void pbox_app_btsoc_reply_dsp_version(char *dspver);
 void pbox_app_btsoc_reply_main_volume(uint32_t volume);
-void pbox_app_btsoc_reply_placement(uint32_t placement);
+void pbox_app_btsoc_reply_placement(placement_t placement);
 void pbox_app_btsoc_reply_inout_door(inout_door_t inout);
 void pbox_app_btsoc_reply_poweron(bool poweron);
 void pbox_app_btsoc_reply_stereo_mode(stereo_mode_t mode);

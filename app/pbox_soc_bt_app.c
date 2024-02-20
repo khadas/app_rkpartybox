@@ -57,7 +57,7 @@ void pbox_app_btsoc_reply_main_volume(uint32_t volume) {
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_placement(uint32_t placement) {
+void pbox_app_btsoc_reply_placement(placement_t placement) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_PLACEMENT_CMD,
@@ -178,7 +178,7 @@ void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
         pbox_app_btsoc_get_inout_door(DISP_All);
         return;
     }
-    pbox_app_btsoc_set_inout_door(msg->inout_door, DISP_All);
+    pbox_app_btsoc_set_outdoor_mode(msg->inout_door, DISP_All);
 }
 
 void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
@@ -188,13 +188,13 @@ void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    uint32_t stereo_mode= msg->stat[0] & 0xf;
-    uint32_t inout_door = msg->stat[0] >> 4;
+    stereo_mode_t stereo = msg->stat[0] & 0xf;
+    inout_door_t outdoor = msg->stat[0] >> 4;
     uint32_t volume     = msg->stat[1]*100/32;
     uint32_t accom_level= msg->stat[2]*100/32;
     mic_state_t mic1    = msg->stat[3];
     mic_state_t mic2    = msg->stat[4];
-    uint32_t placement  = msg->stat[5];
+    placement_t placement  = msg->stat[5];
     uint32_t human_level= msg->stat[6]? 0:100;
     play_status_t status = ((msg->stat[7]>>7)&0x01) ? _STOP:PLAYING;
     input_source_t source;
@@ -211,8 +211,8 @@ void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
             source = SRC_USB;
         } break;
     }
-    pbox_app_btsoc_set_stereo_mode(stereo_mode, DISP_All);
-    pbox_app_btsoc_set_inout_door(inout_door, DISP_All);
+    pbox_app_btsoc_set_stereo_mode(stereo, DISP_All);
+    pbox_app_btsoc_set_outdoor_mode(outdoor, DISP_All);
     pbox_app_music_set_volume(volume, DISP_All);
     pbox_app_btsoc_set_accom_level(accom_level, DISP_All);
     pbox_app_btsoc_set_placement(placement, DISP_All);

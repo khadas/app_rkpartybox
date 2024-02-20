@@ -30,6 +30,10 @@ void pbox_app_led_btState(btsink_state_t mode);
 
 void pbox_app_led_uacState(bool start);
 void pbox_app_led_uacVolume(uint32_t volume);
+
+#define pbox_app_led_MusicStereoMode(...)  ((void) 0)
+#define pbox_app_led_MusicPlaceMode(...)  ((void) 0)
+#define pbox_app_led_MusicOutdoorMode(...)  ((void) 0)
 #ifdef __cplusplus
 }
 #endif

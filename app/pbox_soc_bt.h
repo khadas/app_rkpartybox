@@ -43,9 +43,9 @@ typedef struct {
         char fw_ver[MAX_SHORT_NAME_LENGTH+1];
         char stat[32];
         uint32_t volume;
-        uint32_t placement;
         uint32_t poweron;
         mic_state_t mic_state[2];
+        placement_t placement;
         inout_door_t inout_door;
         stereo_mode_t stereo_mode;
         uint32_t human_level;

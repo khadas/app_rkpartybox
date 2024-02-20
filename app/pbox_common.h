@@ -193,6 +193,12 @@ typedef enum {
 }inout_door_t;
 
 typedef enum {
+    PLACE_AUTO,
+    PLACE_HORI,
+    PLACE_VERT,
+}placement_t;
+
+typedef enum {
     MODE_STEREO = 0,
     MODE_MONO = 1,
     MODE_WIDEN = 2,

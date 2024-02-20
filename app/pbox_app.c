@@ -624,6 +624,27 @@ void pbox_app_music_set_recoder_revert(pbox_revertb_t reverbMode, display_t poli
     pbox_multi_displayRevertMode(reverbMode, policy);
 }
 
+void pbox_app_music_set_stereo_mode(stereo_mode_t stereo, display_t policy) {
+    printf("%s :%d\n", __func__, stereo);
+    pboxUIdata->stereo = stereo;
+    pbox_app_rockit_set_stereo_mode(stereo);
+    pbox_multi_displayMusicStereoMode(stereo, policy);
+}
+
+void pbox_app_music_set_outdoor_mode(inout_door_t outdoor, display_t policy) {
+    printf("%s :%d\n", __func__, outdoor);
+    pboxUIdata->outdoor = outdoor;
+    pbox_app_rockit_set_outdoor_mode(outdoor);
+    pbox_multi_displayMusicOutdoorMode(outdoor, policy);
+}
+
+void pbox_app_music_set_placement(placement_t place, display_t policy) {
+    printf("%s :%d\n", __func__, place);
+    pboxUIdata->placement = place;
+    pbox_app_rockit_set_placement(place);
+    pbox_multi_displayMusicPlaceMode(place, policy);
+}
+
 void pbox_app_music_volume_up(display_t policy) {
     uint32_t *const volume = &pboxUIdata->mVolumeLevel;
 
@@ -780,11 +801,8 @@ void pbox_app_btsoc_get_volume(display_t policy) {
     //nothing to do with ui
 }
 
-void pbox_app_btsoc_set_placement(uint32_t placement, display_t policy) {
-    pboxUIdata->placement = placement;
-    //nothing to notify rockit
-    //nothing to do with ui
-    printf("%s placement: %d\n", __func__, placement);
+void pbox_app_btsoc_set_placement(placement_t placement, display_t policy) {
+    pbox_app_music_set_placement(placement, policy);
 }
 
 void pbox_app_btsoc_get_placement(display_t policy) {
@@ -799,8 +817,8 @@ void pbox_app_btsoc_get_mic1_state(display_t policy) {
 void pbox_app_btsoc_get_mic2_state(display_t policy) {
 }
 
-void pbox_app_btsoc_set_inout_door(inout_door_t inout, display_t policy) {
-    printf("%s inout door: %d\n", __func__, inout);
+void pbox_app_btsoc_set_outdoor_mode(inout_door_t inout, display_t policy) {
+    pbox_app_music_set_outdoor_mode(inout, policy);
 }
 
 void pbox_app_btsoc_get_inout_door(display_t policy) {
@@ -808,11 +826,11 @@ void pbox_app_btsoc_get_inout_door(display_t policy) {
 }
 
 void pbox_app_btsoc_get_poweron(display_t policy) {
-    pbox_app_btsoc_reply_poweron(0);
+    pbox_app_btsoc_reply_poweron(true);
 }
 
 void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy) {
-    printf("%s stereo Mode: %d\n", __func__, mode);
+    pbox_app_music_set_stereo_mode(mode, policy);
 }
 
 void pbox_app_btsoc_get_stereo_mode(display_t policy) {

@@ -41,6 +41,10 @@ void pbox_multi_displayUacFreq(uac_role_t role, uint32_t freq, display_t policy)
 void pbox_multi_displayUacVolume(uac_role_t role, uint32_t volume, display_t policy);
 void pbox_multi_displayUacMute(uac_role_t role, bool mute, display_t policy);
 void pbox_multi_displayUacPpm(uac_role_t role, int32_t ppm, display_t policy);
+
+void pbox_multi_displayMusicStereoMode(stereo_mode_t stereo, display_t policy);
+void pbox_multi_displayMusicPlaceMode(placement_t place, display_t policy);
+void pbox_multi_displayMusicOutdoorMode(inout_door_t outdoor, display_t policy);
 #ifdef __cplusplus
 }
 #endif

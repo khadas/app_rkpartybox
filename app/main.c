@@ -27,6 +27,7 @@
 #include "pbox_usb.h"
 #include "pbox_usb_app.h"
 #include "pbox_light_effect_app.h"
+#include "pbox_soc_bt_app.h"
 
 void maintask_timer_fd_process(int timer_fd);
 
