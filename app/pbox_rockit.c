@@ -508,9 +508,9 @@ static void pbox_rockit_music_voice_seperate(pbox_vocal_t vocal) {
     assert(RK_MPI_KARAOKE_SetPlayerParam_func);
 
     RK_BOOL enable = vocal.enable;
-    int32_t hLevel = vocal.u32HumanLevel;
-    int32_t mLevel = vocal.u32OtherLevel;
-    int32_t rLevel = vocal.u32ReservLevel;
+    int32_t hLevel = vocal.humanLevel;
+    int32_t mLevel = vocal.musicLevel;
+    int32_t rLevel = vocal.reservLevel;
 
     if(hLevel > 100) hLevel = 15;
     else if(hLevel < 0) hLevel = 0;

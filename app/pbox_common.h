@@ -92,9 +92,9 @@ typedef struct {
 
 typedef struct {
     bool enable;
-    unsigned int  u32HumanLevel;    /* RW; Range: [0, 100];*/
-    unsigned int  u32ReservLevel;   /* RW; Range: [0, 100];*/
-    unsigned int  u32OtherLevel;    /* RW; Range: [0, 100];*/
+    unsigned int  humanLevel;    /* RW; Range: [0, 100];*/
+    unsigned int  musicLevel;    /* RW; Range: [0, 100];*/
+    unsigned int  reservLevel;   /* RW; Range: [0, 100];*/
 } pbox_vocal_t;
 
 typedef enum {

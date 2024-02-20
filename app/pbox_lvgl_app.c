@@ -143,9 +143,9 @@ void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint3
     };
     pbox_vocal_t vocalSeparate = {
         .enable = enable,
-        .u32HumanLevel = hlevel,
-        .u32OtherLevel = mlevel,
-        .u32ReservLevel = rlevel,
+        .humanLevel = hlevel,
+        .musicLevel = mlevel,
+        .reservLevel = rlevel,
     };
 
     msg.vocalSeparate = vocalSeparate;
@@ -279,8 +279,8 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
             pbox_app_music_set_accomp_music_level(accomp_level, DISP_LED);
         } break;
         case PBOX_LCD_HUMAN_MUSIC_LEVEL_EVT: {
-            int32_t human_level = msg->human_music_level;
-            pbox_app_music_set_human_music_level(human_level, DISP_LED);
+            int32_t humanLevel = msg->human_music_level;
+            pbox_app_music_set_human_music_level(humanLevel, DISP_LED);
         } break;
         case PBOX_LCD_RESERV_MUSIC_LEVEL_EVT: {
             int32_t reserv_level = msg->reserv_music_level;

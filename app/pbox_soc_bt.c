@@ -83,7 +83,7 @@ void socbt_pbox_notify_adjust_placement(uint32_t opcode, char *buff, int32_t len
     assert(len>0);
     msg.op = opcode;
     msg.placement = buff[0];
-    printf("%s placement:%d\n", __func__, msg.placement);
+    printf("%s :%d\n", __func__, msg.placement);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -95,7 +95,7 @@ void socbt_pbox_notify_adjust_mic1_state(uint32_t opcode, char *buff, int32_t le
     assert(len>0);
     msg.op = opcode;
     msg.mic_state[0] = buff[0];
-    printf("%s mic_state1:%d\n", __func__, msg.mic_state[0]);
+    printf("%s :%d\n", __func__, msg.mic_state[0]);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -107,7 +107,7 @@ void socbt_pbox_notify_adjust_mic2_state(uint32_t opcode, char *buff, int32_t le
     assert(len>0);
     msg.op = opcode;
     msg.mic_state[1] = buff[0];
-    printf("%s mic_state2:%d\n", __func__, msg.mic_state[1]);
+    printf("%s :%d\n", __func__, msg.mic_state[1]);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -118,19 +118,18 @@ void socbt_pbox_notify_adjust_inout_door(uint32_t opcode, char *buff, int32_t le
     };
     assert(len>0);
     msg.op = opcode;
-    msg.inout_door = buff[0];
-    printf("%s inout door:%d\n", __func__, msg.inout_door);
+    msg.outdoor = buff[0];
+    printf("%s :%d\n", __func__, msg.inout_door);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
+void socbt_pbox_notify_dsp_power_state(uint32_t opcode) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_SOCBT_DSP_POWER_ON_EVT,
     };
-    assert(len>0);
     msg.op = opcode;
-    memcpy(&msg.stat[0], buff, len<=sizeof(msg.stat)? len: sizeof(msg.stat));
+    msg.poweron = true;
     printf("%s opcode:%d\n", __func__, opcode);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
@@ -142,8 +141,8 @@ void socbt_pbox_notify_dsp_stereo_mode(uint32_t opcode, char *buff, int32_t len)
     };
     assert(len>0);
     msg.op = opcode;
-    msg.stereo_mode = buff[0];
-    printf("%s opcode:%d stereo:%d\n", __func__, opcode, msg.stereo_mode);
+    msg.stereo = buff[0];
+    printf("%s opcode:%d stereo:%d\n", __func__, opcode, msg.stereo);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -154,8 +153,8 @@ void socbt_pbox_notify_dsp_human_spilit(uint32_t opcode, char *buff, int32_t len
     };
     assert(len>0);
     msg.op = opcode;
-    msg.human_level = buff[0]? 0:100;
-    printf("%s opcode:%d human_level:%d\n", __func__, opcode, msg.human_level);
+    msg.humanLevel = buff[0]? 0:100;
+    printf("%s opcode:%d humanLevel:%d\n", __func__, opcode, msg.humanLevel);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -193,9 +192,28 @@ void socbt_pbox_notify_adjust_background_level(uint32_t opcode, char *buff, int3
     };
     assert(len>0);
     msg.op = opcode;
-    msg.accom_level = buff[0]*100/32;
-    printf("%s opcode:%d accom_level:%d\n", __func__, opcode, msg.accom_level);
+    msg.accomLevel = buff[0]*100/32;
+    printf("%s opcode:%d accomLevel:%d\n", __func__, opcode, msg.accomLevel);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void socbt_pbox_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_dsp_power_state(opcode);
+    if(opcode == OP_WRITE) {
+        char temp;
+        assert(len>=8);
+        temp = buff[0] & 0xf;
+        socbt_pbox_notify_dsp_stereo_mode(opcode, &temp, 1);
+        temp = buff[0] >> 4;
+        socbt_pbox_notify_adjust_inout_door(opcode, &temp, 1);
+        socbt_pbox_notify_adjust_master_volume(opcode, &buff[1], 1);
+        socbt_pbox_notify_adjust_background_level(opcode, &buff[2], 1);
+        socbt_pbox_notify_adjust_mic1_state(opcode, &buff[3], 1);
+        socbt_pbox_notify_adjust_mic2_state(opcode, &buff[4], 1);
+        socbt_pbox_notify_adjust_placement(opcode, &buff[5], 1);
+        socbt_pbox_notify_dsp_human_spilit(opcode, &buff[6], 1);
+        socbt_pbox_notify_dsp_switch_source(opcode, &buff[7], 1);
+    }
 }
 
 bool is_check_sum_ok(unsigned char *buf, int len) {
@@ -431,13 +449,13 @@ void handleSocbtDspPoweronCmd(const pbox_socbt_msg_t* msg) {
 }
 
 void handleSocbtDspStereoModeCmd(const pbox_socbt_msg_t* msg) {
-    stereo_mode_t mode = msg->stereo_mode;
+    stereo_mode_t mode = msg->stereo;
     printf("%s dsp stereo mode:%d\n", __func__, mode);
 }
 
 void handleSocbtDspHumanSplitCmd(const pbox_socbt_msg_t* msg) {
-    uint32_t human_level = msg->human_level;
-    printf("%s human level:%d\n", __func__, human_level);
+    uint32_t humanLevel = msg->humanLevel;
+    printf("%s human level:%d\n", __func__, humanLevel);
 }
 
 void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg) {
@@ -446,8 +464,8 @@ void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg) {
 }
 
 void handleSocbtDspMusicGroundCmd(const pbox_socbt_msg_t* msg) {
-    uint32_t accom_level = msg->accom_level;
-    printf("%s accom_level:%d\n", __func__, accom_level);
+    uint32_t accomLevel = msg->accomLevel;
+    printf("%s accomLevel:%d\n", __func__, accomLevel);
 }
 
 // Function to process an incoming pbox_socbt_msg_t event

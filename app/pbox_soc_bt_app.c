@@ -73,7 +73,7 @@ void pbox_app_btsoc_reply_inout_door(inout_door_t inout){
         .msgId = PBOX_SOCBT_DSP_IN_OUT_DOOR_CMD,
     };
 
-    msg.inout_door = inout;
+    msg.outdoor = inout;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -93,7 +93,7 @@ void pbox_app_btsoc_reply_stereo_mode(stereo_mode_t mode){
         .msgId = PBOX_SOCBT_DSP_STEREO_MODE_CMD,
     };
 
-    msg.stereo_mode = mode;
+    msg.stereo = mode;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -103,7 +103,7 @@ void pbox_app_btsoc_reply_human_split(uint32_t level){
         .msgId = PBOX_SOCBT_DSP_HUMAN_SPLIT_CMD,
     };
 
-    msg.human_level = level;
+    msg.humanLevel = level;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -124,7 +124,7 @@ void pbox_app_btsoc_reply_accom_level(uint32_t level) {
         .msgId = PBOX_SOCBT_DSP_MUSIC_GROUND_CMD,
     };
 
-    msg.accom_level = level;
+    msg.accomLevel = level;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -173,12 +173,12 @@ void handleMic2StateEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s In/Out Door: %d\n", __func__, msg->inout_door);
+    printf("%s In/Out Door: %d\n", __func__, msg->outdoor);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_inout_door(DISP_All);
         return;
     }
-    pbox_app_btsoc_set_outdoor_mode(msg->inout_door, DISP_All);
+    pbox_app_btsoc_set_outdoor_mode(msg->outdoor, DISP_All);
 }
 
 void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
@@ -187,57 +187,26 @@ void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
         pbox_app_btsoc_get_poweron(DISP_All);
         return;
     }
-
-    stereo_mode_t stereo = msg->stat[0] & 0xf;
-    inout_door_t outdoor = msg->stat[0] >> 4;
-    uint32_t volume     = msg->stat[1]*100/32;
-    uint32_t accom_level= msg->stat[2]*100/32;
-    mic_state_t mic1    = msg->stat[3];
-    mic_state_t mic2    = msg->stat[4];
-    placement_t placement  = msg->stat[5];
-    uint32_t human_level= msg->stat[6]? 0:100;
-    play_status_t status = ((msg->stat[7]>>7)&0x01) ? _STOP:PLAYING;
-    input_source_t source;
-    switch(msg->stat[7]&0x1F) {
-        case 0: {
-            source = SRC_BT;
-        } break;
-#if ENABLE_AUX
-        case 1: {
-            source = SRC_AUX;
-        } break;
-#endif
-        case 2: {
-            source = SRC_USB;
-        } break;
-    }
-    pbox_app_btsoc_set_stereo_mode(stereo, DISP_All);
-    pbox_app_btsoc_set_outdoor_mode(outdoor, DISP_All);
-    pbox_app_music_set_volume(volume, DISP_All);
-    pbox_app_btsoc_set_accom_level(accom_level, DISP_All);
-    pbox_app_btsoc_set_placement(placement, DISP_All);
-    pbox_app_btsoc_set_human_split(human_level, DISP_All);
-    pbox_app_btsoc_set_input_source(source, status, DISP_All);
 }
 
 void handleStereoModeEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Sound Mode: %d\n", __func__, msg->stereo_mode);
+    printf("%s Sound Mode: %d\n", __func__, msg->stereo);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_stereo_mode(DISP_All);
         return;
     }
 
-    pbox_app_btsoc_set_stereo_mode(msg->stereo_mode, DISP_All);
+    pbox_app_btsoc_set_stereo_mode(msg->stereo, DISP_All);
 }
 
 void handleHumanSplitEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Human Split Level: %u\n", __func__, msg->human_level);
+    printf("%s Human Split Level: %u\n", __func__, msg->humanLevel);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_human_split(DISP_All);
         return;
     }
 
-    pbox_app_btsoc_set_human_split(msg->human_level, DISP_All);
+    pbox_app_btsoc_set_human_split(msg->humanLevel, DISP_All);
 }
 
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
@@ -252,13 +221,13 @@ void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMusicGroundEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Music Ground Volume: %u\n", __func__, msg->accom_level);
+    printf("%s Music Ground Volume: %u\n", __func__, msg->accomLevel);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_accom_level(DISP_All);
         return;
     }
 
-    pbox_app_btsoc_set_accom_level(msg->accom_level, DISP_All);
+    pbox_app_btsoc_set_accom_level(msg->accomLevel, DISP_All);
 }
 
 // Define a struct to associate opcodes with handles

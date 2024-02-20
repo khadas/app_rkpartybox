@@ -196,9 +196,9 @@ void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t
     };
 
     msg.vocalSeperate.enable = enable;
-    msg.vocalSeperate.u32HumanLevel = hlevel;
-    msg.vocalSeperate.u32OtherLevel = mlevel;
-    msg.vocalSeperate.u32ReservLevel = rlevel;
+    msg.vocalSeperate.humanLevel = hlevel;
+    msg.vocalSeperate.musicLevel = mlevel;
+    msg.vocalSeperate.reservLevel = rlevel;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
