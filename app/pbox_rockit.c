@@ -64,8 +64,13 @@ int rk_demo_music_create() {
     attr.u32AIChannels = 4;
     attr.u32AOChannels = 2;
     attr.u32ChnLayout = 0x0f;
+#if ENABLE_USE_SOCBT
+    attr.u32RecLayout = 0x01;
+    attr.u32RefLayout = 0x0c;
+#else
     attr.u32RecLayout = 0x04;
     attr.u32RefLayout = 0x03;
+#endif
     attr.callback = karaoke_callback;
 
     mpi_hdl = dlopen("librockit.so", RTLD_LAZY);
