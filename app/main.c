@@ -88,7 +88,7 @@ void main(int argc, char **argv) {
     signal(SIGINT, sigterm_handler);
     pbox_version_print();
 #if !ENABLE_USE_SOCBT
-    //pbox_init_background();
+    pbox_init_background();
 #endif
 
     for (i = 0; i< PBOX_SOCKPAIR_NUM; i++) {
