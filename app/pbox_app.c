@@ -15,7 +15,13 @@ pbox_data_t pbox_data = {
     },
     .ui = {
         .mVolumeLevel = 50,
-        .mMicVolumeLevel = 100,
+        .micData[0] = {
+            .micMux = MIC_IN,
+            .micVolume = 100,
+            .micTreble = 50,
+            .micBass = 50,
+            .micReverb = 50,
+        },
         .mMusicLevel = 100,
         .mHumanLevel = 15,
         .mReservLevel = 100,
@@ -63,9 +69,6 @@ void pbox_app_show_tack_info(char *title, char *artist, display_t policy) {
 void pbox_app_show_bt_state(btsink_state_t state, display_t policy) {
     //nothing to notify rockit
     pbox_multi_displaybtState(state, policy);
-    //if (state == BT_DISCONNECT) {
-    //    pbox_multi_displayUsbListupdate(pboxTrackdata->track_id, policy);
-    //}
 }
 
 void pbox_app_show_playingStatus(bool play, display_t policy) {
@@ -562,18 +565,44 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
     pbox_multi_displayTrackPosition(false, dest, duration, policy);
 }
 
-void pbox_app_music_set_mic_volume(uint32_t volume, display_t policy) {
-    pboxUIdata->mMicVolumeLevel = volume;
+void pbox_app_music_set_mic_volume(uint32_t micNum, uint32_t volume, display_t policy) {
+    pboxUIdata->micData[micNum].micVolume = volume;
     pbox_app_rockit_set_recoder_volume(volume);
     pbox_multi_displayMicVolumeLevel(volume, policy);
 }
 
 void pbox_app_music_set_mic_mute(bool mute, display_t policy){
-    uint32_t volume;
     pboxUIdata->mMute = mute;
-
     pbox_app_rockit_set_recoder_mute(mute);
     pbox_multi_displayMicMute(mute, policy);
+}
+
+void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy) {
+    pboxUIdata->micData[index].index = index;
+    pboxUIdata->micData[index].micMux = mux;
+    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_multi_displayMicMux(index, mux, policy);
+}
+
+void pbox_app_music_set_mic_treble(uint8_t index, uint32_t treble, display_t policy) {
+    pboxUIdata->micData[index].index = index;
+    pboxUIdata->micData[index].micTreble = treble;
+    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_multi_displayMicTreble(index, treble, policy);
+}
+
+void pbox_app_music_set_mic_bass(uint8_t index, uint32_t bass, display_t policy) {
+    pboxUIdata->micData[index].index = index;
+    pboxUIdata->micData[index].micBass = bass;
+    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_multi_displayMicBass(index, bass, policy);
+}
+
+void pbox_app_music_set_mic_reverb(uint8_t index, uint32_t reverb, display_t policy) {
+    pboxUIdata->micData[index].index = index;
+    pboxUIdata->micData[index].micReverb = reverb;
+    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_multi_displayMicBass(index, reverb, policy);
 }
 
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {

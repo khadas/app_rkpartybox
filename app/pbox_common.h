@@ -185,7 +185,16 @@ typedef enum {
     MIC_OFF = 1,
     MIC_IN = 2,
     MIC_GT = 3,
-}mic_state_t;
+}mic_mux_t;
+
+typedef struct {
+    uint8_t index;
+    mic_mux_t micMux;
+    uint32_t micVolume;
+    uint32_t micTreble;
+    uint32_t micBass;
+    uint32_t micReverb;
+} mic_data_t;
 
 typedef enum {
     INDOOR = 0,

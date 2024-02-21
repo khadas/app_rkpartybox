@@ -272,7 +272,7 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             int32_t mic_volume = msg->micVolume;
-            pbox_app_music_set_mic_volume(mic_volume, DISP_LED);
+            pbox_app_music_set_mic_volume(0, mic_volume, DISP_LED);
         } break;
         case PBOX_LCD_ACCOMP_MUSIC_LEVEL_EVT: {
             int32_t accomp_level = msg->accomp_music_level;

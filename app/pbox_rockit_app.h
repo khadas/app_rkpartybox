@@ -55,6 +55,8 @@ void pbox_app_rockit_stop_recorder(void);
 
 void pbox_app_rockit_set_recoder_volume(uint32_t volume);
 
+void pbox_app_rockit_set_mic_data(mic_data_t micState);
+
 void pbox_app_rockit_get_recoder_volume(void);
 
 void pbox_app_rockit_set_recoder_revert(pbox_revertb_t reverbMode);

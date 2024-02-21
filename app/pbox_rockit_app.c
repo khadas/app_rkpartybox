@@ -269,6 +269,16 @@ void pbox_app_rockit_set_recoder_volume(uint32_t volume) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+void pbox_app_rockit_set_mic_data(mic_data_t micState) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_MIC_STATE,
+    };
+
+    msg.micState = micState;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
 void pbox_app_rockit_get_recoder_volume(void) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,

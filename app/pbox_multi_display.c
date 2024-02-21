@@ -75,6 +75,34 @@ void pbox_multi_displayMicMute(bool mute, display_t policy) {
         pbox_app_lcd_displayMicMute(mute);
 }
 
+void pbox_multi_displayMicMux(uint8_t index, mic_mux_t mux, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMicMux(index, mux);
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_MicMux(index, mux);
+}
+
+void pbox_multi_displayMicTreble(uint8_t index, uint32_t treble, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMicTreble(index, treble);
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_MicTreble(index, treble);
+}
+
+void pbox_multi_displayMicBass(uint8_t index, uint32_t bass, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMicBass(index, bass);
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_MicBass(index, bass);
+}
+
+void pbox_multi_displayMicReverb(uint8_t index, uint32_t reverb, display_t policy) {
+    if(policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMicReverb(index, reverb);
+    if(policy & LED_DISPLAY_MASK)
+        pbox_app_led_MicReverb(index, reverb);
+}
+
 void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy) {
     if(policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayAccompMusicLevel(accomp_music_level);

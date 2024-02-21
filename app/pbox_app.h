@@ -55,7 +55,7 @@ typedef struct {
         stereo_mode_t stereo;
         inout_door_t outdoor;
         uint32_t mVolumeLevel;
-        uint32_t mMicVolumeLevel;
+        mic_data_t micData[MIC_NUM];//mMicVolumeLevel
         uint32_t mMusicLevel;
         uint32_t mHumanLevel;
         uint32_t mReservLevel;
@@ -104,13 +104,17 @@ void pbox_app_music_original_singer_open(bool original, display_t policy);
 void pbox_app_music_album_loop(uint32_t mode, display_t policy);
 void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t policy);
 char* pbox_app_usb_get_title(uint32_t trackId);
-void pbox_app_music_set_mic_volume(uint32_t volume, display_t policy);
+void pbox_app_music_set_mic_volume(uint32_t micNum, uint32_t volume, display_t policy);
 void pbox_app_music_set_mic_mute(bool mute, display_t policy);
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy);
+void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy);
 void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_echo_3a(bool enable, display_t policy);
 void pbox_app_music_set_recoder_revert(pbox_revertb_t reverbMode, display_t policy);
+void pbox_app_music_set_mic_treble(uint8_t index, uint32_t treble, display_t policy);
+void pbox_app_music_set_mic_bass(uint8_t index, uint32_t bass, display_t policy);
+void pbox_app_music_set_mic_reverb(uint8_t index, uint32_t reverb, display_t policy);
 void pbox_version_print(void);
 
 void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy);

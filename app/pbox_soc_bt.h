@@ -44,7 +44,7 @@ typedef struct {
         //char stat[32];
         uint32_t volume;
         uint32_t poweron;
-        mic_state_t mic_state[2];
+        mic_mux_t micMux;
         placement_t placement;
         inout_door_t outdoor;
         stereo_mode_t stereo;

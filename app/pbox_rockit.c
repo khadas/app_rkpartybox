@@ -562,7 +562,6 @@ static void pbox_rockit_music_set_stereo_mode(stereo_mode_t stereo) {
 static void pbox_rockit_music_set_inout_door(inout_door_t outdoor) {
     printf("%s:%d\n", __func__, outdoor);
     assert(player_ctx);
-
 }
 
 static void pbox_rockit_music_set_placement(placement_t place) {
@@ -582,6 +581,39 @@ static void pbox_rockit_music_mic_mute(bool mute) {
     assert(RK_MPI_KARAOKE_MuteRecorder_func);
     RK_MPI_KARAOKE_MuteRecorder_func(player_ctx, mute);
     printf("RK_MPI_KARAOKE_MuteRecorder_func State : %s\n", mute?"on":"off");
+}
+
+static void pbox_rockit_set_mic_treble(uint32_t treble) {
+    assert(player_ctx);
+
+}
+
+static void pbox_rockit_set_mic_bass(uint32_t bass) {
+    assert(player_ctx);
+
+}
+
+static void pbox_rockit_set_mic_reverb(uint32_t reverb) {
+    assert(player_ctx);
+
+}
+
+static void pbox_rockit_music_mic_set_parameter(mic_data_t micState) {
+    uint8_t index = micState.index;
+    mic_mux_t micMux = micState.micMux;
+    uint32_t micVolume = micState.micVolume;
+    uint32_t micTreble = micState.micTreble;
+    uint32_t micBass = micState.micBass;
+    uint32_t micReverb = micState.micReverb;
+
+    printf("%s: index:%d, micMux:%d, volume: %d, treble:%d, bass:%d, reverb:%d\n",
+        __func__, index, micMux, micVolume, micTreble, micBass, micReverb);
+
+    pbox_rockit_music_mic_mute(micMux == MIC_OFF? true: false);
+    pbox_rockit_music_mic_volume_adjust(micVolume);
+    pbox_rockit_set_mic_treble(micTreble);
+    pbox_rockit_set_mic_bass(micBass);
+    pbox_rockit_set_mic_reverb(micReverb);
 }
 
 static void pbox_rockit_music_seek_set(uint64_t usec) {
@@ -914,6 +946,10 @@ static void *pbox_rockit_server(void *arg)
             case PBOX_ROCKIT_SETRECORDERVOLUME: {
                 pbox_rockit_music_mic_volume_adjust(msg->volume);
             } break;
+
+            case PBOX_ROCKIT_SET_MIC_STATE: {
+                pbox_rockit_music_mic_set_parameter(msg->micState);
+            }
 
             case PBOX_ROCKIT_SET_STEREO_MODE: {
                 pbox_rockit_music_set_stereo_mode(msg->stereo);

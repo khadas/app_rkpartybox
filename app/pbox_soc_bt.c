@@ -94,8 +94,8 @@ void socbt_pbox_notify_adjust_mic1_state(uint32_t opcode, char *buff, int32_t le
     };
     assert(len>0);
     msg.op = opcode;
-    msg.mic_state[0] = buff[0];
-    printf("%s :%d\n", __func__, msg.mic_state[0]);
+    msg.micMux = buff[0];
+    printf("%s :%d\n", __func__, msg.micMux);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -106,8 +106,8 @@ void socbt_pbox_notify_adjust_mic2_state(uint32_t opcode, char *buff, int32_t le
     };
     assert(len>0);
     msg.op = opcode;
-    msg.mic_state[1] = buff[0];
-    printf("%s :%d\n", __func__, msg.mic_state[1]);
+    msg.micMux = buff[0];
+    printf("%s :%d\n", __func__, msg.micMux);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -119,7 +119,7 @@ void socbt_pbox_notify_adjust_inout_door(uint32_t opcode, char *buff, int32_t le
     assert(len>0);
     msg.op = opcode;
     msg.outdoor = buff[0];
-    printf("%s :%d\n", __func__, msg.inout_door);
+    printf("%s :%d\n", __func__, msg.outdoor);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -428,18 +428,18 @@ void handleSocbtDspMainVolumeCmd(const pbox_socbt_msg_t* msg) {
 }
 
 void handleSocbtDspMic1StateCmd(const pbox_socbt_msg_t* msg) {
-    mic_state_t mic = msg->mic_state[0];
+    mic_mux_t mic = msg->micMux;
     printf("%s mic:%d\n", __func__, mic);
 }
 
 void handleSocbtDspMic2StateCmd(const pbox_socbt_msg_t* msg) {
-    mic_state_t mic = msg->mic_state[1];
+    mic_mux_t mic = msg->micMux;
     printf("%s mic:%d\n", __func__, mic);
 
 }
 
 void handleSocbtDspInoutDoorCmd(const pbox_socbt_msg_t* msg) {
-    inout_door_t inout = msg->inout_door;
+    inout_door_t inout = msg->outdoor;
     printf("%s inout:%d\n", __func__, inout);
 }
 

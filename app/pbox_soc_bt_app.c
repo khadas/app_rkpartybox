@@ -22,8 +22,8 @@ typedef void (*socbt_event_handle)(const pbox_socbt_msg_t*);
 static void handleDspVersionEvent(const pbox_socbt_msg_t *msg);
 static void handleMainVolumeEvent(const pbox_socbt_msg_t *msg);
 static void handlePlacementEvent(const pbox_socbt_msg_t *msg);
-static void handleMic1StateEvent(const pbox_socbt_msg_t *msg);
-static void handleMic2StateEvent(const pbox_socbt_msg_t *msg);
+static void handleMic1MuxEvent(const pbox_socbt_msg_t *msg);
+static void handleMic2MuxEvent(const pbox_socbt_msg_t *msg);
 static void handleInOutDoorEvent(const pbox_socbt_msg_t *msg);
 static void handlePowerOnEvent(const pbox_socbt_msg_t *msg);
 static void handleStereoModeEvent(const pbox_socbt_msg_t *msg);
@@ -156,20 +156,22 @@ void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_btsoc_set_placement(msg->placement, DISP_All);
 }
 
-void handleMic1StateEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Mic State: %d\n", __func__, msg->mic_state[0]);
+void handleMic1MuxEvent(const pbox_socbt_msg_t *msg) {
+    printf("%s Mic State: %d\n", __func__, msg->micMux);
     if(msg->op == OP_READ) {
         //add implement
         return;
     }
+    pbox_app_music_set_mic_mux(0, msg->micMux, DISP_All);
 }
 
-void handleMic2StateEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Mic State: %d\n", __func__, msg->mic_state[1]);
+void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
+    printf("%s Mic State: %d\n", __func__, msg->micMux);
     if(msg->op == OP_READ) {
         //add implement
         return;
     }
+    pbox_app_music_set_mic_mux(1, msg->micMux, DISP_All);
 }
 
 void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
@@ -241,8 +243,8 @@ const socbt_event_handle_t socbtEventTable[] = {
     { PBOX_SOCBT_DSP_MAIN_VOLUME_EVT,   handleMainVolumeEvent   },
 
     { PBOX_SOCBT_DSP_PLACEMENT_EVT,     handlePlacementEvent    },
-    { PBOX_SOCBT_DSP_MIC1_STATE_EVT,    handleMic1StateEvent    },
-    { PBOX_SOCBT_DSP_MIC2_STATE_EVT,    handleMic2StateEvent    },
+    { PBOX_SOCBT_DSP_MIC1_STATE_EVT,    handleMic1MuxEvent    },
+    { PBOX_SOCBT_DSP_MIC2_STATE_EVT,    handleMic2MuxEvent    },
     { PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,   handleInOutDoorEvent    },
     { PBOX_SOCBT_DSP_POWER_ON_EVT,      handlePowerOnEvent      },
     { PBOX_SOCBT_DSP_STEREO_MODE_EVT,   handleStereoModeEvent   },
