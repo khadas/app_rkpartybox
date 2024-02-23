@@ -4,7 +4,21 @@ export LD_LIBRARY_PATH=/data/
 
 echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
 
-ln -sf /oem/SmileySans-Oblique.ttf /data/SmileySans-Oblique.ttf
+if [ ! -e /oem/SmileySans-Oblique.ttf ]; then
+	ln -s /etc/SmileySans-Oblique.ttf /oem/SmileySans-Oblique.ttf
+fi
+if [ ! -e /oem/eq_drc_player.bin ]; then
+	ln -s /etc/eq_drc_player.bin /oem/eq_drc_player.bin
+fi
+if [ ! -e /oem/eq_drc_recorder.bin ]; then
+	ln -s /etc/eq_drc_recorder.bin /oem/eq_drc_recorder.bin
+fi
+if [ ! -e /oem/wozai-48k2ch.pcm ]; then
+	ln -s /etc/wozai-48k2ch.pcm /oem/wozai-48k2ch.pcm
+fi
+if [ ! -e /oem/config_3a.json ]; then
+	ln -s /etc/config_3a.json /oem/config_3a.json
+fi
 
 export rt_cfg_path_3a=/oem/config_3a.json
 export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
