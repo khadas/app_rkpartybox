@@ -30,15 +30,6 @@ void pbox_app_led_PrevNext(bool next) {
 	}
 }
 
-void pbox_app_led_TrackInfo(const char* title, const char* artist) {
-
-}
-
-void pbox_app_led_TrackPosition(uint32_t mCurrent, uint32_t mDuration) {
-
-	//printf("%s mCurrent: %d mDuration: %d\n", __func__, mCurrent, mDuration);
-}
-
 void pbox_app_led_MainVolumeLevel(uint32_t mainVolume) {
 	printf("%s mainVolumeLevel: %d\n", __func__, mainVolume);
 
@@ -68,29 +59,6 @@ void pbox_app_led_energyInfo(energy_info_t energy) {
 	pbox_light_effect_send_cmd(PBOX_LIGHT_EFFECT_SOUNDREACTIVE_EVT, (void*)&energy, sizeof(energy));
 }
 
-void pbox_app_led_echo3A(bool enable) {
-
-}
-
-void pbox_app_led_revertMode(pbox_revertb_t mode) {
-
-}
-
-void pbox_app_led_usbState(usb_state_t mode) {
-	//printf("%s btsink_state_t: %d\n", __func__, mode);
-	//switch (mode)
-	//{
-	//	case USB_SCANNED:
-	//		break;
-	//	case USB_SCANNING:
-	//		break;
-	//	case USB_CONNECTED:
-	//		break;
-	//	case USB_DISCONNECTED:
-	//		break;
-	//}
-}
-
 void pbox_app_led_btState(btsink_state_t mode) {
 
 	printf("%s btsink_state_t: %d\n", __func__, mode);
@@ -109,14 +77,6 @@ void pbox_app_led_btState(btsink_state_t mode) {
 }
 
 void pbox_app_led_startup_effect(void) {
-
 	pbox_light_effect_send_cmd(RK_ECHO_LED_OFF_EVT, NULL, NULL);
 	pbox_light_effect_send_cmd(RK_ECHO_SYSTEM_BOOTING_EVT, NULL, NULL);
-}
-
-void pbox_app_led_uacState(bool start) {
-
-}
-void pbox_app_led_uacVolume(uint32_t volume) {
-
 }
