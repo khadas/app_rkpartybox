@@ -14,64 +14,58 @@
 #include <sys/timerfd.h>
 #include <sys/select.h>
 #include <sys/time.h>
-#include "rk_comm_karaoke.h"
+#include "rc_partybox.h"
 #include "pbox_common.h"
 #include "pbox_rockit.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
 
 
-static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, RK_S32 ext1, RK_VOID *ptr);
+//static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
+static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
 
 pthread_t rockit_task_id;
-void *player_ctx = NULL;
+//void *player_ctx = NULL;
+rc_pb_ctx partyboxCtx;
 void *mpi_hdl = NULL;
-RK_S32 (*RK_MPI_KARAOKE_Create_func)(void **ctx, KARAOKE_ATTR_S *attr);
-RK_S32 (*RK_MPI_KARAOKE_Destroy_func)(void *ctx);
-RK_S32 (*RK_MPI_KARAOKE_SetDataSource_func)(void *ctx, const char *url, const char *headers);
-RK_S32 (*RK_MPI_KARAOKE_StartPlayer_func)(void *ctx);
-RK_S32 (*RK_MPI_KARAOKE_PausePlayer_func)(void *ctx);
-RK_S32 (*RK_MPI_KARAOKE_ResumePlayer_func)(void *ctx);
-RK_S32 (*RK_MPI_KARAOKE_StopPlayer_func)(void *ctx);
-RK_S32 (*RK_MPI_KARAOKE_StartRecorder_func)(void *ctx);
-RK_S32 (*RK_MPI_KARAOKE_StopRecorder_func)(void *ctx);
-RK_S32 (*RK_MPI_KARAOKE_GetPlayerDuration_func)(void *ctx, RK_S64 *usec);
-RK_S32 (*RK_MPI_KARAOKE_SetPlayerLooping_func)(void *ctx, RK_BOOL loop);
-RK_S32 (*RK_MPI_KARAOKE_SetPlayerSeekTo_func)(void *ctx, RK_S64 usec);
-RK_S32 (*RK_MPI_KARAOKE_SetPlayerVolume_func)(void *ctx, RK_U32 volume);
-RK_S32 (*RK_MPI_KARAOKE_GetPlayerVolume_func)(void *ctx, RK_U32 *volume);
-RK_S32 (*RK_MPI_KARAOKE_GetPlayerCurrentPosition_func)(void *ctx, RK_S64 *usec);
-RK_S32 (*RK_MPI_KARAOKE_GetPlayerParam_func)(void *ctx, KARAOKE_PARAM_S *param);
-RK_S32 (*RK_MPI_KARAOKE_SetPlayerParam_func)(void *ctx, KARAOKE_PARAM_S *param);
-RK_S32 (*RK_MPI_KARAOKE_SetRecorderParam_func)(void *ctx, KARAOKE_PARAM_S *param);
-RK_S32 (*RK_MPI_KARAOKE_GetRecorderParam_func)(void *ctx, KARAOKE_PARAM_S *param);
-RK_S32 (*RK_MPI_KARAOKE_SetRecorderVolume_func)(void *ctx, RK_U32 volume);
-RK_S32 (*RK_MPI_KARAOKE_GetRecorderVolume_func)(void *ctx, RK_U32 *volume);
-RK_S32 (*RK_MPI_KARAOKE_MuteRecorder_func)(void *ctx, RK_BOOL mute);
-RK_S32 (*RK_MPI_KARAOKE_GetPlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy);
-RK_S32 (*RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy);
-RK_S32 (*RK_MPI_KARAOKE_StartBTPlayer_func)(void *ctx, KARAOKE_AUDIO_ATTR_S *attr);
-RK_S32 (*RK_MPI_KARAOKE_StopBTPlayer_func)(void *ctx);
-RK_S32 (*RK_MPI_AMIX_SetControl_func)(RK_S32 AmixDevId, const char *ctrlName, const char *value);
+
+rc_s32 (*rc_pb_create)(rc_pb_ctx *ctx, struct rc_pb_attr *attr);
+rc_s32 (*rc_pb_destroy)(rc_pb_ctx ctx);
+
+rc_s32 (*rc_pb_player_start)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_player_attr *attr);
+rc_s32 (*rc_pb_player_stop)(rc_pb_ctx ctx, enum rc_pb_play_src src);
+rc_s32 (*rc_pb_player_pause)(rc_pb_ctx ctx, enum rc_pb_play_src src);
+rc_s32 (*rc_pb_player_resume)(rc_pb_ctx ctx, enum rc_pb_play_src src);
+rc_s32 (*rc_pb_player_dequeue_frame)(rc_pb_ctx ctx, enum rc_pb_play_src src,
+                                     struct rc_pb_frame_info *frame_info, rc_s32 s32MilliSec);
+rc_s32 (*rc_pb_player_queue_frame)(rc_pb_ctx ctx, enum rc_pb_play_src src,
+                                   struct rc_pb_frame_info *frame_info, rc_s32 s32MilliSec);
+
+rc_s32 (*rc_pb_player_get_position)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec);
+rc_s32 (*rc_pb_player_get_duration)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec);
+rc_s32 (*rc_pb_player_set_loop)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_bool loop);
+rc_s32 (*rc_pb_player_seek)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 usec);
+rc_s32 (*rc_pb_player_set_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 volume);
+rc_s32 (*rc_pb_player_get_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 *volume);
+rc_s32 (*rc_pb_player_set_param)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param);
+rc_s32 (*rc_pb_player_get_param)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param);
+rc_s32 (*rc_pb_player_get_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy);
+rc_s32 (*rc_pb_player_release_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy);
+
+rc_s32 (*rc_pb_recorder_start)(rc_pb_ctx ctx, struct rc_pb_recorder_attr *attr);
+rc_s32 (*rc_pb_recorder_stop)(rc_pb_ctx ctx);
+rc_s32 (*rc_pb_recorder_mute)(rc_pb_ctx ctx, rc_bool mute);
+rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, rc_u32 volume);
+rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, rc_u32 *volume);
+rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, struct rc_pb_param *param);
+
 
 
 int rk_demo_music_create() {
     //create karaoke recorder && player
-    KARAOKE_ATTR_S attr;
-    attr.pRecorderCardName = "hw:0,0";
-    attr.pPlayerCardName = "hw:0,0";
-    attr.u32PlayerEnergyBandCnt = 10;
-    attr.u32AIChannels = 4;
-    attr.u32AOChannels = 2;
-    attr.u32ChnLayout = 0x0f;
-#if ENABLE_USE_SOCBT
-    attr.u32RecLayout = 0x01;
-    attr.u32RefLayout = 0x0c;
-#else
-    attr.u32RecLayout = 0x04;
-    attr.u32RefLayout = 0x03;
-#endif
-    attr.callback = karaoke_callback;
+    struct rc_pb_attr attr;
+    struct rc_pb_recorder_attr recorder_attr;
 
     mpi_hdl = dlopen("librockit.so", RTLD_LAZY);
     if (NULL == mpi_hdl) {
@@ -80,178 +74,186 @@ int rk_demo_music_create() {
     }
 
     if (mpi_hdl != NULL) {
-         RK_MPI_KARAOKE_Create_func = (RK_S32 (*)(void **ctx, KARAOKE_ATTR_S *attr))dlsym(mpi_hdl, "RK_MPI_KARAOKE_Create");
-	 if (NULL == RK_MPI_KARAOKE_Create_func) {
+         rc_pb_create = (rc_s32 (*)(rc_pb_ctx *ctx, struct rc_pb_attr *attr))dlsym(mpi_hdl, "rc_pb_create");
+        if (NULL == rc_pb_create) {
+                printf("failed to open func, err=%s\n", dlerror());
+                return -1;
+        }
+        rc_pb_destroy = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_destroy");
+        if (NULL == rc_pb_destroy) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_start = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_player_attr *attr))dlsym(mpi_hdl, "rc_pb_player_start");
+        if (NULL == rc_pb_player_start) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_stop = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src))dlsym(mpi_hdl, "rc_pb_player_stop");
+        if (NULL == rc_pb_player_stop) {
+        printf("failed to open  func, err=%s\n", dlerror());
+        return -1;
+        }
+
+        rc_pb_player_pause = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src))dlsym(mpi_hdl, "rc_pb_player_pause");
+        if (NULL == rc_pb_player_pause) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_resume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src))dlsym(mpi_hdl, "rc_pb_player_resume");
+        if (NULL == rc_pb_player_resume) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_get_position = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec))dlsym(mpi_hdl, 
+                                                "rc_pb_player_get_position");
+        if (NULL == rc_pb_player_get_position) {
+        printf("failed to open  func, err=%s\n", dlerror());
+        return -1;
+            }
+
+        rc_pb_player_get_duration = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec))dlsym(mpi_hdl, 
+                                                "rc_pb_player_get_duration");
+        if (NULL == rc_pb_player_get_duration) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_set_loop = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_bool loop))dlsym(mpi_hdl, "rc_pb_player_set_loop");
+        if (NULL == rc_pb_player_set_loop) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_seek = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 usec))dlsym(mpi_hdl, "rc_pb_player_seek");
+        if (NULL == rc_pb_player_seek) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_set_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 volume))dlsym(mpi_hdl, 
+                                                "rc_pb_player_set_volume");
+        if (NULL == rc_pb_player_set_volume) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 *volume))dlsym(mpi_hdl, 
+                                                "rc_pb_player_get_volume");
+        if (NULL == rc_pb_player_get_volume) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_set_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param))dlsym(mpi_hdl,
+                                                "rc_pb_player_set_param");
+        if (NULL == rc_pb_player_set_param) {
             printf("failed to open func, err=%s\n", dlerror());
             return -1;
-	 }
-         RK_MPI_KARAOKE_Destroy_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_Destroy");
-         if (NULL == RK_MPI_KARAOKE_Destroy_func) {
-             printf("failed to open  func, err=%s\n", dlerror());
-             return -1;
-         }
-         RK_MPI_KARAOKE_SetDataSource_func = (RK_S32 (*)(void *ctx, const char *url, const char *header))
-	                            dlsym(mpi_hdl, "RK_MPI_KARAOKE_SetDataSource");
-         if (NULL == RK_MPI_KARAOKE_SetDataSource_func) {
-             printf("failed to open  func, err=%s\n", dlerror());
-             return -1;
-         }
-         RK_MPI_KARAOKE_StartPlayer_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_StartPlayer");
-         if (NULL == RK_MPI_KARAOKE_StartPlayer_func) {
-             printf("failed to open  func, err=%s\n", dlerror());
-             return -1;
-         }
-         RK_MPI_KARAOKE_PausePlayer_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_PausePlayer");
-         if (NULL == RK_MPI_KARAOKE_PausePlayer_func) {
-             printf("failed to open  func, err=%s\n", dlerror());
-             return -1;
-         }  
-         RK_MPI_KARAOKE_ResumePlayer_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_ResumePlayer");
-         if (NULL == RK_MPI_KARAOKE_ResumePlayer_func) {
-             printf("failed to open  func, err=%s\n", dlerror());
-             return -1;
-         }
-         RK_MPI_KARAOKE_StopPlayer_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_StopPlayer");
-         if (NULL == RK_MPI_KARAOKE_StopPlayer_func) {
+        }
+
+        rc_pb_player_get_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param))dlsym(mpi_hdl, 
+                                            "rc_pb_player_get_param");
+        if (NULL == rc_pb_player_get_param) {
             printf("failed to open  func, err=%s\n", dlerror());
             return -1;
-         }  
-	 RK_MPI_KARAOKE_StartRecorder_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_StartRecorder");
-         if (NULL == RK_MPI_KARAOKE_StartRecorder_func) {
+        }
+
+        rc_pb_player_get_energy = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy))dlsym(mpi_hdl, 
+                                            "rc_pb_player_get_energy");
+        if (NULL == rc_pb_player_get_energy) {
+            printf("failed to open func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_release_energy = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy))dlsym(mpi_hdl,
+                                                            "rc_pb_player_release_energy");
+        if (NULL == rc_pb_player_release_energy) {
+            printf("failed to open func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_recorder_start = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_recorder_attr *attr))dlsym(mpi_hdl, "rc_pb_recorder_start");
+        if (NULL == rc_pb_recorder_start) {
             printf("failed to open  func, err=%s\n", dlerror());
             return -1;
-         }
-	 RK_MPI_KARAOKE_StopRecorder_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_StopRecorder");
-         if (NULL == RK_MPI_KARAOKE_StopRecorder_func) {
+        }
+
+        rc_pb_recorder_stop = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_recorder_stop");
+        if (NULL == rc_pb_recorder_stop) {
             printf("failed to open  func, err=%s\n", dlerror());
             return -1;
-         }
+        }
 
-	 RK_MPI_KARAOKE_GetPlayerCurrentPosition_func = (RK_S32 (*)(void *ctx, RK_S64 *usec))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_GetPlayerCurrentPosition");
-	 if (NULL == RK_MPI_KARAOKE_GetPlayerCurrentPosition_func) {
-	    printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-
-	 RK_MPI_KARAOKE_GetPlayerDuration_func = (RK_S32 (*)(void *ctx,  RK_S64 *usec))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_GetPlayerDuration");
-	 if (NULL == RK_MPI_KARAOKE_GetPlayerDuration_func) {
-            printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-
-	 RK_MPI_KARAOKE_SetPlayerLooping_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl, "RK_MPI_KARAOKE_SetPlayerLooping");
-         if (NULL == RK_MPI_KARAOKE_SetPlayerLooping_func) {
-            printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-
-    RK_MPI_KARAOKE_SetPlayerSeekTo_func = (RK_S32 (*)(void *ctx,  RK_S64 usec))dlsym(mpi_hdl, "RK_MPI_KARAOKE_SetPlayerSeekTo");
-         if (NULL == RK_MPI_KARAOKE_SetPlayerSeekTo_func) {
-            printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-
-	 RK_MPI_KARAOKE_SetPlayerVolume_func = (RK_S32 (*)(void *ctx, RK_U32 volume))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_SetPlayerVolume");
-         if (NULL == RK_MPI_KARAOKE_SetPlayerVolume_func) {
-            printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-	 RK_MPI_KARAOKE_GetPlayerVolume_func = (RK_S32 (*)(void *ctx,  RK_U32 *volume))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_GetPlayerVolume");
-         if (NULL == RK_MPI_KARAOKE_GetPlayerDuration_func) {
-            printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-	 RK_MPI_KARAOKE_GetPlayerParam_func = (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl,
-			                                 "RK_MPI_KARAOKE_GetPlayerParam");
-	 if (NULL == RK_MPI_KARAOKE_GetPlayerParam_func) {
-	    printf("failed to open func, err=%s\n", dlerror());
-	    return -1;
-	 }
-	 RK_MPI_KARAOKE_SetPlayerParam_func = (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_SetPlayerParam");
-         if (NULL == RK_MPI_KARAOKE_GetPlayerDuration_func) {
-            printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-	 RK_MPI_KARAOKE_SetRecorderParam_func = (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_SetRecorderParam");
-	 if (NULL == RK_MPI_KARAOKE_SetRecorderParam_func) {
-	    printf("failed to open  func, err=%s\n", dlerror());
-	    return -1;
-         }
-	 RK_MPI_KARAOKE_GetRecorderParam_func = (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_GetRecorderParam");
-         if (NULL == RK_MPI_KARAOKE_GetRecorderParam_func) {
-            printf("failed to open  func, err=%s\n", dlerror());
-            return -1;
-         }
-
-	 RK_MPI_KARAOKE_SetRecorderVolume_func =  (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl,
-			                                  "RK_MPI_KARAOKE_SetRecorderVolume");
-	 if (NULL == RK_MPI_KARAOKE_SetRecorderVolume_func) {
-	    printf("failed to open func, err=%s",dlerror());
-	    return -1;
-         }
-         RK_MPI_KARAOKE_GetRecorderVolume_func =  (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl,
-			                                  "RK_MPI_KARAOKE_GetRecorderVolume");
-	 if (NULL == RK_MPI_KARAOKE_GetRecorderVolume_func) {
+        rc_pb_recorder_mute =  (rc_s32 (*)(rc_pb_ctx ctx, rc_bool mute))dlsym(mpi_hdl,
+                                                    "rc_pb_recorder_mute");
+        if (NULL == rc_pb_recorder_mute) {
             printf("failed to open func, err=%s", dlerror());
-	    return -1;
-	 }
+            return -1;
+        }
 
-    RK_MPI_KARAOKE_MuteRecorder_func =  (RK_S32 (*)(void *ctx, KARAOKE_PARAM_S *param))dlsym(mpi_hdl,
-                                                "RK_MPI_KARAOKE_MuteRecorder");
-    if (NULL == RK_MPI_KARAOKE_MuteRecorder_func) {
-        printf("failed to open func, err=%s", dlerror());
+        rc_pb_recorder_set_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_u32 volume))dlsym(mpi_hdl,
+                                                "rc_pb_recorder_set_volume");
+        if (NULL == rc_pb_recorder_set_volume) {
+            printf("failed to open func, err=%s",dlerror());
+            return -1;
+        }
+
+        rc_pb_recorder_get_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_u32 *volume))dlsym(mpi_hdl,
+                                            "rc_pb_recorder_get_volume");
+        if (NULL == rc_pb_recorder_get_volume) {
+            printf("failed to open func, err=%s", dlerror());
+            return -1;
+        }
+
+        rc_pb_recorder_set_param = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_param *param))dlsym(mpi_hdl, 
+                                            "rc_pb_recorder_set_param");
+        if (NULL == rc_pb_recorder_set_param) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_recorder_get_param = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_param *param))dlsym(mpi_hdl, 
+                                            "rc_pb_recorder_get_param");
+        if (NULL == rc_pb_recorder_get_param) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+    }
+
+    attr.card_name              = "hw:0,0";
+    attr.sample_rate            = 48000;
+    attr.channels               = 2;
+    attr.bit_width              = 16;
+    attr.notify                 = pb_rockit_notify;
+    attr.opaque                 = NULL;
+
+    if (rc_pb_create(&partyboxCtx, &attr) != 0) {
+        printf("rc_pb_create failed, err!!!\n");
         return -1;
     }
 
-         RK_MPI_KARAOKE_GetPlayerEnergyLevel_func = (RK_S32 (*)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy))dlsym(mpi_hdl, 
-			                                 "RK_MPI_KARAOKE_GetPlayerEnergyLevel");
-	 if (NULL == RK_MPI_KARAOKE_GetPlayerEnergyLevel_func) {
-	    printf("failed to open func, err=%s\n", dlerror());
-	    return -1;
-	 }
-	 RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func = (RK_S32 (*)(void *ctx, KARAOKE_ENERGY_LEVEL_S *energy))dlsym(mpi_hdl,
-                                                         "RK_MPI_KARAOKE_ReleasePlayerEnergyLevel");
-         if (NULL == RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func) {
-            printf("failed to open func, err=%s\n", dlerror());
-	    return -1;
-         }
-
-	 RK_MPI_KARAOKE_StartBTPlayer_func = (RK_S32 (*)(void *ctx, KARAOKE_AUDIO_ATTR_S *attr))dlsym(mpi_hdl,
-                                                         "RK_MPI_KARAOKE_StartBTPlayer");
-         if (NULL == RK_MPI_KARAOKE_StartBTPlayer_func) {
-            printf("failed to open func, err=%s, line:%d\n", dlerror(), __LINE__);
-	    return -1;
-         }
-
-	 RK_MPI_KARAOKE_StopBTPlayer_func = (RK_S32 (*)(void *ctx))dlsym(mpi_hdl,
-                                                         "RK_MPI_KARAOKE_StopBTPlayer");
-         if (NULL == RK_MPI_KARAOKE_StopBTPlayer_func) {
-            printf("failed to open func, err=%s, line:%d\n", dlerror(), __LINE__);
-	    return -1;
-         }
+    recorder_attr.card_name = "hw:0,0";
+    recorder_attr.sample_rate = 48000;
+    recorder_attr.channels    = 4;
+    recorder_attr.bit_width   = 16;
+    recorder_attr.chn_layout  = 0x0f;
+#if ENABLE_USE_SOCBT
+    recorder_attr.ref_layout = 0x0c;
+    recorder_attr.rec_layout = 0x01;
+#else
+    recorder_attr.ref_layout = 0x03;
+    recorder_attr.rec_layout = 0x04;
+#endif
+    if (rc_pb_recorder_start(partyboxCtx, &recorder_attr) != 0) {
+        printf("rc_pb_recorder_start failed, err!!!\n");
+        return -1;
     }
-
-    RK_MPI_AMIX_SetControl_func = (RK_S32 (*)(RK_S32 AmixDevId, const char *ctrlName, const char *value))dlsym(mpi_hdl,
-                                                         "RK_MPI_AMIX_SetControl");
-
-    if (RK_MPI_KARAOKE_Create_func(&player_ctx, &attr) != 0) {
-        printf("RK_MPI_KARAOKE_Create_func failed, err!!!\n");
-	return -1;
-    }
-
-    if (RK_MPI_KARAOKE_StartRecorder_func(player_ctx) != 0) {
-	printf("RK_MPI_KARAOKE_StartRecorder_func failed, err!!!\n");
-	return -1;
-    }
-
-    printf("rockit media player created successfully, player_ctx=%p\n", player_ctx);
+    printf("rockit media player created successfully, partyboxCtx=%p\n", partyboxCtx);
 }
 
 static void rockit_pbbox_notify_awaken(uint32_t wakeCmd)
@@ -266,13 +268,13 @@ static void rockit_pbbox_notify_awaken(uint32_t wakeCmd)
     #endif
 }
 
-static void rockit_pbbox_notify_playback_status(uint32_t ext1)
+static void rockit_pbbox_notify_playback_status(enum rc_pb_event event)
 {
     #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
     msg.type = PBOX_EVT;
 
-    if(ext1 == KARAOKE_EVT_PLAYBACK_COMPLETE || KARAOKE_EVT_PLAYBACK_ERROR == KARAOKE_EVT_PLAYBACK_ERROR)
+    if(event == RC_PB_EVENT_PLAYBACK_COMPLETE || event == RC_PB_EVENT_PLAYBACK_ERROR)
         msg.msgId = PBOX_ROCKIT_PLAY_COMPLETED_EVT;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
@@ -329,297 +331,273 @@ static void rockit_pbbox_notify_energy(energy_info_t energy)
     #endif
 }
 
-static void pbox_rockit_music_setDataSource(const char *track_uri, const char *headers)
-{
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_SetDataSource_func);
-
-    printf("%s :%s, ctx=%p\n", __func__, track_uri, player_ctx);
-    RK_MPI_KARAOKE_SetDataSource_func(player_ctx, track_uri, headers);  
+static enum rc_pb_play_src covert2rockitSource(input_source_t source) {
+    enum rc_pb_play_src destSource = RC_PB_PLAY_SRC_BUTT;
+    switch (source) {
+        case SRC_USB: {
+#if ENABLE_LOCAL_USB
+            destSource = RC_PB_PLAY_SRC_LOCAL;
+#else
+            destSource = RC_PB_PLAY_SRC_BT; //recieve it from audiocard..
+#endif
+        } break;
+        case SRC_BT: {
+            destSource = RC_PB_PLAY_SRC_BT; //recieve it from audiocard..
+        } break;
+#if ENABLE_UAC
+        case SRC_UAC: {
+            destSource = RC_PB_PLAY_SRC_UAC;
+        } break;
+#endif
+#if ENABLE_AUX
+        case SRC_AUX: {
+            destSource = RC_PB_PLAY_SRC_BT;
+        } break;
+#endif
+#if ENABLE_RAW_PCM
+        case SRC_PCM: {
+            destSource = RC_PB_PLAYER_SOURCE_PCM; //send raw pcm to rockit
+        } break;
+#endif
+        default:
+            break;
+    }
+    return destSource;
 }
 
-bool stopped_bt_player = false;
-static void pbox_rockit_music_stop_bt(void)
+bool stopped_player[RC_PB_PLAY_SRC_BUTT] = {false};
+static void pbox_rockit_music_stop(input_source_t source)
 {
-    printf("%s:%p, %p\n", __func__, player_ctx, RK_MPI_KARAOKE_StopBTPlayer_func);
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_StopBTPlayer_func);
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_stop);
 
-    if(!stopped_bt_player) {
-        stopped_bt_player = true;
-        RK_MPI_KARAOKE_StopBTPlayer_func(player_ctx);
+    printf("%s source:%d, dest:%d\n", __func__, partyboxCtx, source, dest);
+
+    if(!stopped_player[dest]) {
+        stopped_player[dest] = true;
+        rc_pb_player_stop(partyboxCtx, dest);
     }
 }
 
-static void pbox_rockit_music_start(void)
+static void pbox_rockit_music_loacal_start(const char *track_uri, const char *headers)
 {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_StartPlayer_func);
+    struct rc_pb_player_attr playerAttr;
 
-    printf("%s\n", __func__);
-    RK_MPI_KARAOKE_StartPlayer_func(player_ctx);
-    //set_vocal_separate_thread_cpu();
+    assert(partyboxCtx);
+    assert(rc_pb_player_start);
+    memset(&playerAttr, 0, sizeof(playerAttr));
+    playerAttr.url = track_uri;
+    playerAttr.headers = headers;
+    playerAttr.energy_band_cnt = 10;
+
+    printf("%s :%s, ctx=%p\n", __func__, track_uri, partyboxCtx);
+    rc_pb_player_start(partyboxCtx, RC_PB_PLAY_SRC_LOCAL, &playerAttr);  
 }
 
-static void pbox_rockit_music_stop(void) {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_StopPlayer_func);
-
-    printf("%s\n", __func__);
-    RK_MPI_KARAOKE_StopPlayer_func(player_ctx);
-}
-
-static void pbox_rockit_music_pause(void)
+static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioFormat_t audioFormat)
 {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_PausePlayer_func);
+    struct rc_pb_player_attr playerAttr;
+    int sampleFreq = audioFormat.sampingFreq;
+    int channel = audioFormat.channel;
+    char *cardName = audioFormat.cardName;
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    memset(&playerAttr, 0, sizeof(playerAttr));
 
-    printf("%s\n", __func__);
-    RK_MPI_KARAOKE_PausePlayer_func(player_ctx);
-}
-
-static void pbox_rockit_music_start_bt(int sampleFreq, int channel, char *cardName)
-{
-    KARAOKE_AUDIO_ATTR_S attr;
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
     switch (sampleFreq) {
         case 0: {
-            attr.u32SampleRate = 44100;
+            playerAttr.sample_rate = 48000;
         } break;
-
         default: {
-            attr.u32SampleRate = sampleFreq;
+            playerAttr.sample_rate = sampleFreq;
         } break;
     }
 
     switch (channel) {
         case 0: {
-            attr.u32Channels = 2;
+            playerAttr.channels = 2;
         } break;
-
         default: {
-            attr.u32Channels = channel;
+            playerAttr.channels = channel;
         } break;
     }
 
-    attr.u32BitWidth = 16;
-    snprintf(attr.u8CardName, sizeof(attr.u8CardName), "%s", cardName);
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_StartBTPlayer_func);
-    assert(RK_MPI_KARAOKE_StopBTPlayer_func);
+    playerAttr.bit_width = 16;
+    playerAttr.card_name = cardName;
+    assert(partyboxCtx);
+    assert(rc_pb_player_start);
 
-    printf("%s sampe:%d, channel: %d, card:%s !!!!!!!!!!!!!!!\n", __func__, attr.u32SampleRate, attr.u32Channels, cardName);
-    pbox_rockit_music_stop();
-    pbox_rockit_music_stop_bt();
-    RK_MPI_KARAOKE_StartBTPlayer_func(player_ctx, &attr);
-    stopped_bt_player = false;
+    printf("%s freq:%d, channel: %d, card:%s source:%d\n", __func__, sampleFreq, channel, cardName, source);
+    pbox_rockit_music_stop(source);
+    rc_pb_player_start(partyboxCtx, dest, &playerAttr);
+    stopped_player[dest] = false;
     //set_vocal_separate_thread_cpu();
 }
 
-static void pbox_rockit_music_resume(uint32_t volume)
+static void pbox_rockit_music_pause(input_source_t source)
 {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_ResumePlayer_func);
-    assert(RK_MPI_KARAOKE_SetPlayerVolume_func);
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_pause);
+
+    printf("%s\n", __func__);
+    rc_pb_player_pause(partyboxCtx, dest);
+}
+
+static void pbox_rockit_music_resume(input_source_t source, uint32_t volume)
+{
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_resume);
 
     printf("%s volume: %lld\n", __func__, volume);
 
-    RK_MPI_KARAOKE_ResumePlayer_func(player_ctx);
-    //RK_MPI_KARAOKE_SetPlayerVolume_func(player_ctx, volume);
-
+    rc_pb_player_resume(partyboxCtx, dest);
 }
 
-static int64_t pbox_rockit_music_get_duration(void) {
-    RK_S64 duration = 0;
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_GetPlayerDuration_func);
+static int64_t pbox_rockit_music_get_duration(input_source_t source) {
+    rc_s64 duration = 0;
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_get_duration);
 
-    RK_MPI_KARAOKE_GetPlayerDuration_func(player_ctx, &duration);
+    rc_pb_player_get_duration(partyboxCtx, dest, &duration);
     printf("%s duration: %lld\n", __func__, duration);
 
     return duration;
 }
 
-static int64_t pbox_rockit_music_get_position(void) {
-    RK_S64 position = 0;
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_GetPlayerDuration_func);
+static int64_t pbox_rockit_music_get_position(input_source_t source) {
+    rc_s64 position = 0;
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_get_duration);
 
-    RK_MPI_KARAOKE_GetPlayerCurrentPosition_func(player_ctx, &position);
+    rc_pb_player_get_duration(partyboxCtx, dest, &position);
     //printf("%s poststion: %lld\n", __func__, position);
-    
+
     return position;
 }
 
 static void pbox_rockit_music_reverb_mode(const pbox_rockit_msg_t* msg) {
-   KARAOKE_PARAM_S param;
-   param.enType = KARAOKE_PARAM_REVERB;
-   pbox_revertb_t mode = msg->reverbMode;
+    struct rc_pb_param param;
+    param.type = RC_PB_PARAM_TYPE_REVERB;
+    pbox_revertb_t mode = msg->reverbMode;
+    enum rc_pb_play_src dest = covert2rockitSource(msg->source);
 
-   switch (mode) {
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_set_param);
+    switch (mode) {
         case PBOX_REVERT_USER: {
-            param.stReverbParam.enMode = KARAOKE_REVERB_MODE_USER;
+            param.reverb.mode = RC_PB_REVERB_MODE_USER;
         } break;
         case PBOX_REVERT_STUDIO: {
-            param.stReverbParam.enMode = KARAOKE_REVERB_MODE_STUDIO;
+            param.reverb.mode = RC_PB_REVERB_MODE_STUDIO;
         } break;
         case PBOX_REVERT_KTV: {
-            param.stReverbParam.enMode = KARAOKE_REVERB_MODE_KTV;
+            param.reverb.mode = RC_PB_REVERB_MODE_KTV;
         } break;
         case PBOX_REVERT_CONCERT: {
-            param.stReverbParam.enMode = KARAOKE_REVERB_MODE_CONCERT;
+            param.reverb.mode = RC_PB_REVERB_MODE_CONCERT;
         } break;
         case PBOX_REVERT_ECHO: {
-            param.stReverbParam.enMode = KARAOKE_REVERB_MODE_ECHO;
+            param.reverb.mode = RC_PB_REVERB_MODE_ECHO;
         } break;
-
         default: break;
-   }
+    }
 
-   assert(player_ctx);
-   assert(RK_MPI_KARAOKE_SetRecorderParam_func);
-
-   if (mode == KARAOKE_REVERB_MODE_USER) 
-       param.stReverbParam.bBypass = true;
-   else 
-       param.stReverbParam.bBypass = false;
-   RK_MPI_KARAOKE_SetRecorderParam_func(player_ctx, &param);
+    if (mode == RC_PB_REVERB_MODE_USER) 
+        param.reverb.bypass = true;
+    else 
+        param.reverb.bypass = false;
+    rc_pb_player_set_param(partyboxCtx, dest, &param);
 }
 
 static void pbox_rockit_music_echo_reduction(const pbox_rockit_msg_t* msg) {
-    KARAOKE_PARAM_S param;
-
+    int ret;
+    struct rc_pb_param param;
     bool on = msg->echo3A_On;
-    param.enType = KARAOKE_PARAM_3A;
-    param.st3AParam.bBypass = !on;
+    enum rc_pb_play_src dest = covert2rockitSource(msg->source);
 
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_SetRecorderParam_func);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(rc_pb_recorder_set_param);
+    assert(partyboxCtx);
 
-    int ret = RK_MPI_KARAOKE_SetRecorderParam_func(player_ctx, &param);
-    printf("%s RK_MPI_KARAOKE_SetRecorderParam bypass:%d res:%d\n" ,__func__, param.st3AParam.bBypass, ret);
+    param.type = RC_PB_PARAM_TYPE_3A;
+    param.howling.bypass = !on;
+    ret = rc_pb_recorder_set_param(partyboxCtx, &param);
+    printf("%s rc_pb_recorder_set_param 3a:%s res:%d\n" ,__func__, on?"on":"off", ret);
 }
 
-static void pbox_rockit_music_voice_seperate(pbox_vocal_t vocal) {
-    KARAOKE_PARAM_S param;
-    param.enType = KARAOKE_PARAM_VOLCAL_SEPARATE;
+static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t vocal) {
+    bool enable = vocal.enable;
+    uint32_t hLevel = vocal.humanLevel;
+    uint32_t mLevel = vocal.musicLevel;
+    uint32_t rLevel = vocal.reservLevel;
+    struct rc_pb_param param;
+    enum rc_pb_play_src dest = covert2rockitSource(source);
 
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_GetPlayerParam_func);
-    assert(RK_MPI_KARAOKE_SetPlayerParam_func);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_get_param);
+    assert(rc_pb_player_set_param);
 
-    RK_BOOL enable = vocal.enable;
-    int32_t hLevel = vocal.humanLevel;
-    int32_t mLevel = vocal.musicLevel;
-    int32_t rLevel = vocal.reservLevel;
-
-    if(hLevel > 100) hLevel = 15;
-    else if(hLevel < 0) hLevel = 0;
-
-    if(mLevel > 100 ) mLevel = 100;
-    else if(mLevel < 0) mLevel = 0;
-
-    if(rLevel > 100 ) rLevel = 100;
-    else if(rLevel < 0) rLevel = 0;
+    param.type = RC_PB_PARAM_TYPE_VOLCAL_SEPARATE;
+    hLevel = hLevel>100?15 :hLevel;
+    mLevel = mLevel>100?100:hLevel;
+    rLevel = rLevel>100?100:hLevel;
     printf("%s hLevel:%d, mLevel:%d rLevel:%d , on:%d\n",__func__, hLevel, mLevel, rLevel, enable);
 
-    int ret = RK_MPI_KARAOKE_GetPlayerParam_func(player_ctx, &param);
+    int ret = rc_pb_player_get_param(partyboxCtx, dest, &param);
 
     if (enable)
-        param.stVolcalSeparateParam.bBypass = false;
+        param.vocal.bypass = false;
     else
-        param.stVolcalSeparateParam.bBypass = true;
-    param.stVolcalSeparateParam.u32HumanLevel = hLevel;
-    param.stVolcalSeparateParam.u32OtherLevel = mLevel;
-    param.stVolcalSeparateParam.u32ReserveLevel[0] = rLevel;
-    ret = RK_MPI_KARAOKE_SetPlayerParam_func(player_ctx, &param);
-    printf("%s RK_MPI_KARAOKE_SetPlayerParam_func res:%d\n" ,__func__, ret);
+        param.vocal.bypass = true;
+    param.vocal.human_level = hLevel;
+    param.vocal.other_level = mLevel;
+    param.vocal.reserve_level[0] = rLevel;
+    ret = rc_pb_player_set_param(partyboxCtx, dest, &param);
+    printf("%s rc_pb_player_set_param res:%d\n" ,__func__, ret);
 }
 
-uint32_t pbox_rockit_music_master_volume_get() {
-    RK_U32 volume = 0; 
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_GetPlayerVolume_func);
-    RK_MPI_KARAOKE_GetPlayerVolume_func(player_ctx, &volume);
+uint32_t pbox_rockit_music_master_volume_get(input_source_t source) {
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    rc_u32 volume = 0; 
+    assert(partyboxCtx);
+    assert(rc_pb_player_get_volume);
+    rc_pb_player_get_volume(partyboxCtx, dest, &volume);
 
     return volume;
 }
 
-static uint32_t pbox_rockit_music_master_volume_adjust(int Level) {
-    int volume;
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_SetPlayerVolume_func);
-    RK_MPI_KARAOKE_SetPlayerVolume_func(player_ctx, Level);
+static uint32_t pbox_rockit_music_master_volume_adjust(input_source_t source, int Level) {
+    enum rc_pb_play_src dest = covert2rockitSource(source);
 
-    return pbox_rockit_music_master_volume_get();
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_set_volume);
+    rc_pb_player_set_volume(partyboxCtx, dest, Level);
+
+    return pbox_rockit_music_master_volume_get(source);
 }
 
-static void pbox_rockit_music_set_stereo_mode(stereo_mode_t stereo) {
-    printf("%s:%d\n", __func__, stereo);
-    assert(player_ctx);
+static void pbox_rockit_music_seek_set(input_source_t source, uint64_t usec) {
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+    assert(rc_pb_player_seek);
 
-}
-
-static void pbox_rockit_music_set_inout_door(inout_door_t outdoor) {
-    printf("%s:%d\n", __func__, outdoor);
-    assert(player_ctx);
-}
-
-static void pbox_rockit_music_set_placement(placement_t place) {
-    printf("%s:%d\n", __func__, place);
-    assert(player_ctx);
-
-}
-
-static void pbox_rockit_music_mic_volume_adjust(int micLevel) {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_SetRecorderVolume_func);
-    RK_MPI_KARAOKE_SetRecorderVolume_func(player_ctx, micLevel);
-}
-
-static void pbox_rockit_music_mic_mute(bool mute) {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_MuteRecorder_func);
-    RK_MPI_KARAOKE_MuteRecorder_func(player_ctx, mute);
-    printf("RK_MPI_KARAOKE_MuteRecorder_func State : %s\n", mute?"on":"off");
-}
-
-static void pbox_rockit_set_mic_treble(uint32_t treble) {
-    assert(player_ctx);
-
-}
-
-static void pbox_rockit_set_mic_bass(uint32_t bass) {
-    assert(player_ctx);
-
-}
-
-static void pbox_rockit_set_mic_reverb(uint32_t reverb) {
-    assert(player_ctx);
-
-}
-
-static void pbox_rockit_music_mic_set_parameter(mic_data_t micState) {
-    uint8_t index = micState.index;
-    mic_mux_t micMux = micState.micMux;
-    uint32_t micVolume = micState.micVolume;
-    uint32_t micTreble = micState.micTreble;
-    uint32_t micBass = micState.micBass;
-    uint32_t micReverb = micState.micReverb;
-
-    printf("%s: index:%d, micMux:%d, volume: %d, treble:%d, bass:%d, reverb:%d\n",
-        __func__, index, micMux, micVolume, micTreble, micBass, micReverb);
-
-    pbox_rockit_music_mic_mute(micMux == MIC_OFF? true: false);
-    pbox_rockit_music_mic_volume_adjust(micVolume);
-    pbox_rockit_set_mic_treble(micTreble);
-    pbox_rockit_set_mic_bass(micBass);
-    pbox_rockit_set_mic_reverb(micReverb);
-}
-
-static void pbox_rockit_music_seek_set(uint64_t usec) {
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_SetPlayerSeekTo_func);
-    RK_MPI_KARAOKE_SetPlayerSeekTo_func(player_ctx, usec);
+    rc_pb_player_seek(partyboxCtx, dest, usec);
 }
 
 static void selectionSort(int length, int arr[]) {
@@ -696,32 +674,35 @@ static void mapDataToNewRange(int energyData[], int length, int nowMin, int nowM
     }
 }
 
-static bool pbox_rockit_music_energyLevel_get(energy_info_t* pEnergy) {
-    KARAOKE_ENERGY_LEVEL_S energy;
+static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info_t* pEnergy) {
+    struct rc_pb_energy energy;
     int energyData[10];
     static int energyDataPrev[10];
     static int energykeep[10];
-    static bool energy_debug = 0;
-    assert(pEnergy);
-    assert(player_ctx);
-    assert(RK_MPI_KARAOKE_GetPlayerEnergyLevel_func);
-    assert(RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func);
+    bool energy_debug = 0;
+    enum rc_pb_play_src dest = covert2rockitSource(source);
 
-    int ret = RK_MPI_KARAOKE_GetPlayerEnergyLevel_func(player_ctx, &energy);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(pEnergy);
+    assert(partyboxCtx);
+    assert(rc_pb_player_get_energy);
+    assert(rc_pb_player_release_energy);
+
+    int ret = rc_pb_player_get_energy(partyboxCtx, dest, &energy);
     if (!ret) {
-        for (RK_S32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
+        for (rc_s32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
             //translate energy range from [-90, 0] to [0, 100]
-            energyData[i] = energy.ps16EnergyVec[10 + i] + 90;
+            energyData[i] = energy.energy_vec[10 + i] + 90;
             energyData[i] = energyData[i] + energyData[i]/10 + 1; //map to [1, 100]
             if(energy_debug) {
                 printf("freq[%05d]HZ energy[%05d]DB energyData[%05d]\n",
-                                energy.ps16EnergyVec[i], energy.ps16EnergyVec[10 + i], energyData[i]);
+                                energy.energy_vec[i], energy.energy_vec[10 + i], energyData[i]);
             }
         }
 
         mapDataToNewRange(energyData, sizeof(energyData)/sizeof(int), 0 , 100);
 
-        for(RK_S32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
+        for(rc_s32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
             if(abs(energyDataPrev[i] - energyData[i]) < 3){
                 energykeep[i]++;
             } else {
@@ -737,28 +718,98 @@ static bool pbox_rockit_music_energyLevel_get(energy_info_t* pEnergy) {
 
         pEnergy->size = 10;
         for(int i = 0; i < pEnergy->size; i++) {
-            pEnergy->energykeep[i].freq = energy.ps16EnergyVec[i];
+            pEnergy->energykeep[i].freq = energy.energy_vec[i];
             pEnergy->energykeep[i].energy = energyData[i];
         }
 
-        RK_MPI_KARAOKE_ReleasePlayerEnergyLevel_func(player_ctx, &energy);
-
+        rc_pb_player_release_energy(partyboxCtx, dest, &energy);
         return true;
     }
     return 0;
 }
 
+static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode_t stereo) {
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+
+    printf("%s:%d\n", __func__, stereo);
+}
+
+static void pbox_rockit_music_set_inout_door(input_source_t source, inout_door_t outdoor) {
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+
+    printf("%s:%d\n", __func__, outdoor);
+
+}
+
+static void pbox_rockit_music_set_placement(input_source_t source, placement_t place) {
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(partyboxCtx);
+
+    printf("%s:%d\n", __func__, place);
+}
+
+static void pbox_rockit_music_mic_volume_adjust(int micLevel) {
+    assert(partyboxCtx);
+    assert(rc_pb_recorder_set_volume);
+    rc_pb_recorder_set_volume(partyboxCtx, micLevel);
+}
+
+static void pbox_rockit_music_mic_mute(bool mute) {
+    assert(partyboxCtx);
+    assert(rc_pb_recorder_mute);
+    rc_pb_recorder_mute(partyboxCtx, mute);
+    printf("%s: %s\n", __func__, mute?"on":"off");
+}
+
+static void pbox_rockit_set_mic_treble(uint32_t treble) {
+    assert(partyboxCtx);
+
+}
+
+static void pbox_rockit_set_mic_bass(uint32_t bass) {
+    assert(partyboxCtx);
+
+}
+
+static void pbox_rockit_set_mic_reverb(uint32_t reverb) {
+    assert(partyboxCtx);
+
+}
+
+static void pbox_rockit_music_mic_set_parameter(mic_data_t micState) {
+    uint8_t index = micState.index;
+    mic_mux_t micMux = micState.micMux;
+    uint32_t micVolume = micState.micVolume;
+    uint32_t micTreble = micState.micTreble;
+    uint32_t micBass = micState.micBass;
+    uint32_t micReverb = micState.micReverb;
+
+    printf("%s: index:%d, micMux:%d, volume: %d, treble:%d, bass:%d, reverb:%d\n",
+        __func__, index, micMux, micVolume, micTreble, micBass, micReverb);
+
+    pbox_rockit_music_mic_mute(micMux == MIC_OFF? true: false);
+    pbox_rockit_music_mic_volume_adjust(micVolume);
+    pbox_rockit_set_mic_treble(micTreble);
+    pbox_rockit_set_mic_bass(micBass);
+    pbox_rockit_set_mic_reverb(micReverb);
+}
+
 static void pbox_rockit_music_destroy(void) {
-   if (RK_MPI_KARAOKE_StopPlayer_func != NULL) {
-       RK_MPI_KARAOKE_StopPlayer_func(player_ctx);
-   }
-   if (RK_MPI_KARAOKE_StopRecorder_func != NULL) {
-       RK_MPI_KARAOKE_StopRecorder_func(player_ctx);
-   }
-   if (RK_MPI_KARAOKE_Destroy_func != NULL) {  
-       RK_MPI_KARAOKE_Destroy_func(player_ctx);
-   }
-   printf("destroy karaoke player\n");
+    for(int i = 0; i < SRC_NUM; i++)
+        pbox_rockit_music_stop(i);
+    assert(rc_pb_recorder_stop);
+    assert(rc_pb_destroy);
+    rc_pb_recorder_stop(partyboxCtx);
+    rc_pb_destroy(partyboxCtx);
+
+    printf("destroy karaoke player\n");
 }
 
 static void pbox_rockit_uac_set_state(pbox_rockit_msg_t *msg) {
@@ -775,7 +826,9 @@ static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {
     uac_role_t role = msg->uac.uac_role;
     uint32_t volume = msg->uac.volume;
     if(role == UAC_ROLE_SPEAKER) {
-        pbox_rockit_music_master_volume_adjust(volume);
+#if ENABLE_UAC
+        pbox_rockit_music_master_volume_adjust(SRC_UAC, volume);
+#endif
     }
     else if(role == UAC_ROLE_RECORDER) {
         pbox_rockit_music_mic_volume_adjust(volume);
@@ -785,12 +838,8 @@ static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {
 static void pbox_rockit_uac_set_mute(pbox_rockit_msg_t *msg) {
     uac_role_t role = msg->uac.uac_role;
     bool mute = msg->uac.mute;
-    if(role == UAC_ROLE_SPEAKER) {
-
-    }
-    else if(role == UAC_ROLE_RECORDER) {
-        pbox_rockit_music_mic_mute(mute);
-    }
+    if(role == UAC_ROLE_SPEAKER) {}
+    else if(role == UAC_ROLE_RECORDER) {}
 }
 
 #define MIC_SPK_SOUNDCARD_INDEX 0
@@ -798,10 +847,19 @@ static void pbox_rockit_uac_set_ppm(pbox_rockit_msg_t *msg) {
     char str[64] = {0};
     uac_role_t role = msg->uac.uac_role;
     int32_t ppm = msg->uac.ppm;
-    snprintf(str, sizeof(str), "%d", ppm);
-    printf("%s ppm:%d\n", __func__, ppm);
+    struct rc_pb_param param;
+    enum rc_pb_play_src dest = covert2rockitSource(msg->source);
+    assert(dest != RC_PB_PLAY_SRC_BUTT);
+    assert(rc_pb_player_set_param);
 
-    RK_MPI_AMIX_SetControl_func(MIC_SPK_SOUNDCARD_INDEX, "PCM Clk Compensation In PPM", str);
+    snprintf(str, sizeof(str), "%d", ppm);
+    param.type = RC_PB_PARAM_TYPE_AMIX;
+    param.amix.card = MIC_SPK_SOUNDCARD_INDEX;
+    param.amix.control = "PCM Clk Compensation In PPM";
+    param.amix.values = str;
+
+    printf("%s ppm:%d\n", __func__, ppm);
+    rc_pb_player_set_param(partyboxCtx, dest, &param);
 }
 
 #define MIN_ROCKIT_TIMER_INTER 50
@@ -861,46 +919,37 @@ static void *pbox_rockit_server(void *arg)
                 pbox_rockit_music_destroy();
             } break;
 
-            case PBOX_ROCKIT_SETDATASOURCE: {
+            case PBOX_ROCKIT_START_LOCAL_PLAYER: {
                 char *track_path = (char *)msg->dataSource.track_uri;
                 if(strlen(track_path) == 0)
                     break;
-                pbox_rockit_music_setDataSource(track_path, NULL);
+                pbox_rockit_music_loacal_start(track_path, NULL);
             } break;
 
-            case PBOX_ROCKIT_STARTBTPLAYER: {
-                pbox_audioFormat_t audioFormat = msg->audioFormat;
-                pbox_rockit_music_start_bt(audioFormat.sampingFreq, audioFormat.channel, audioFormat.cardName);
-            } break;
-
-            case PBOX_ROCKIT_STOPBTPLAYER: {
-                pbox_rockit_music_stop_bt();
-            } break;
-
-            case PBOX_ROCKIT_STARTPLAYER: {
-                pbox_rockit_music_start();
+            case PBOX_ROCKIT_START_AUDIOCARD_PLAYER: {
+                pbox_rockit_music_start_audiocard(msg->source, msg->audioFormat);
             } break;
 
             case PBOX_ROCKIT_PAUSEPLAYER: {
-                pbox_rockit_music_pause();
+                pbox_rockit_music_pause(msg->source);
             } break;
 
             case PBOX_ROCKIT_RESUMEPLAYER: {
                 int volume = msg->volume;
-                pbox_rockit_music_resume(volume);
+                pbox_rockit_music_resume(msg->source, volume);
             } break;
 
             case PBOX_ROCKIT_STOPPLAYER: {
-                pbox_rockit_music_stop();
+                pbox_rockit_music_stop(msg->source);
             } break;
 
             case PBOX_ROCKIT_GETPLAYERCURRENTPOSITION: {
-                uint32_t position = (uint32_t)(pbox_rockit_music_get_position()/1000);
+                uint32_t position = (uint32_t)(pbox_rockit_music_get_position(msg->source)/1000);
                 rockit_pbbox_notify_current_postion(position);
             } break;
 
             case PBOX_ROCKIT_GETPLAYERDURATION: {
-                int64_t duration = pbox_rockit_music_get_duration();
+                int64_t duration = pbox_rockit_music_get_duration(msg->source);
                 rockit_pbbox_notify_duration(duration/1000);
             } break;
 
@@ -910,12 +959,12 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_SETPLAYERSEEKTO: {
                 uint64_t seek = msg->mPosition*1000;
-                pbox_rockit_music_seek_set(seek);
+                pbox_rockit_music_seek_set(msg->source, seek);
             } break;
 
             case PBOX_ROCKIT_SETPLAYERVOLUME: {
                 uint32_t volume = msg->volume;
-                uint32_t vol_ret = pbox_rockit_music_master_volume_adjust(volume);
+                uint32_t vol_ret = pbox_rockit_music_master_volume_adjust(msg->source, volume);
                 if (volume != vol_ret) {
                     rockit_pbbox_notify_volume(volume);
                 }
@@ -923,13 +972,13 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_GETPLAYERVOLUME: {
-                uint32_t volume = pbox_rockit_music_master_volume_get();
+                uint32_t volume = pbox_rockit_music_master_volume_get(msg->source);
                 rockit_pbbox_notify_volume(volume);
             } break;
 
             case PBOX_ROCKIT_SETPLAYER_SEPERATE: {
                 pbox_vocal_t vocal = msg->vocalSeperate;
-                pbox_rockit_music_voice_seperate(vocal);
+                pbox_rockit_music_voice_seperate(msg->source, vocal);
             } break;
 
             case PBOX_ROCKIT_GETPLAYER_SEPERATE: {
@@ -938,7 +987,7 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_GETPLAYERENERGYLEVEL: {
                 energy_info_t energy;
-                if(pbox_rockit_music_energyLevel_get(&energy)) {
+                if(pbox_rockit_music_energyLevel_get(msg->source, &energy)) {
                     rockit_pbbox_notify_energy(energy);
                 }
             } break;
@@ -952,15 +1001,15 @@ static void *pbox_rockit_server(void *arg)
             }
 
             case PBOX_ROCKIT_SET_STEREO_MODE: {
-                pbox_rockit_music_set_stereo_mode(msg->stereo);
+                pbox_rockit_music_set_stereo_mode(msg->source, msg->stereo);
             } break;
 
             case PBOX_ROCKIT_SET_OUTDOOR_MODE: {
-                pbox_rockit_music_set_inout_door(msg->outdoor);
+                pbox_rockit_music_set_inout_door(msg->source, msg->outdoor);
             } break;
 
             case PBOX_ROCKIT_SET_PLACEMENT_MODE: {
-                pbox_rockit_music_set_placement(msg->place);
+                pbox_rockit_music_set_placement(msg->source, msg->place);
             } break;
 
             case PBOX_ROCKIT_SETRECORDERMUTE: {
@@ -1016,17 +1065,15 @@ int pbox_create_rockitTask(void)
 }
 #endif
 
-void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, RK_S32 ext1, RK_VOID *ptr) {
-    int ret = 0;
-
-    printf("event: %d, ext1: %d\n", event, ext1);
+void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque) {
+    printf("event: %d, cmd: %d\n", event, cmd);
     switch (event) {
-        case KARAOKE_EVT_PLAYBACK_COMPLETE:
-        case KARAOKE_EVT_PLAYBACK_ERROR: {
+        case RC_PB_EVENT_PLAYBACK_ERROR:
+        case RC_PB_EVENT_PLAYBACK_COMPLETE: {
             rockit_pbbox_notify_playback_status(event);
         } break;
-        case KARAOKE_EVT_AWAKEN: {
-            rockit_pbbox_notify_awaken(ext1);
+        case RC_PB_EVENT_AWAKEN: {
+            rockit_pbbox_notify_awaken(cmd);
         }
         break;
         default:

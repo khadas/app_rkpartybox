@@ -30,18 +30,19 @@ void pbox_app_rockit_create(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_destroy(void) {
+void pbox_app_rockit_destroy(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_DESTROY,
+        .source = source,
     };
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_datasource(char *path, char *headers) {
+void pbox_app_rockit_start_local_player(char *path, char *headers) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SETDATASOURCE,
+        .msgId = PBOX_ROCKIT_START_LOCAL_PLAYER,
         .dataSource = {0},
     };
 
@@ -52,10 +53,11 @@ void pbox_app_rockit_set_datasource(char *path, char *headers) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel, const char *cardName) {
+void pbox_app_rockit_start_audiocard_player(input_source_t source, int sampleFreq, int channel, const char *cardName) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_STARTBTPLAYER,
+        .msgId = PBOX_ROCKIT_START_AUDIOCARD_PLAYER,
+        .source = source,
     };
 
     switch (sampleFreq) {
@@ -80,119 +82,111 @@ void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel, const char *car
         default: {
         } break;
     }
+
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
     strncpy(msg.audioFormat.cardName, cardName, 30);
-    printf("zdm %s sampleFreq:%d, channel:%d, cardname:%s \n", __func__, sampleFreq, channel, cardName);
+    printf("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s \n", __func__, source, sampleFreq, channel, cardName);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_stop_BTplayer(void) {
-    pbox_rockit_msg_t msg = {
-        .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_STOPBTPLAYER,
-    };
-
-    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
-}
-
-void pbox_app_rockit_start_player(void) {
-    pbox_rockit_msg_t msg = {
-        .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_STARTPLAYER,
-    };
-
-    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
-}
-
-void pbox_app_rockit_pause_player(void) {
+void pbox_app_rockit_pause_player(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_PAUSEPLAYER,
+        .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_stop_player(void) {
+void pbox_app_rockit_stop_player(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_STOPPLAYER,
+        .source = source,
     };
-
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_resume_player(void) {
+void pbox_app_rockit_resume_player(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_RESUMEPLAYER,
+        .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_get_music_current_postion(void) {
+void pbox_app_rockit_get_music_current_postion(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_GETPLAYERCURRENTPOSITION,
+        .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_get_player_duration(void) {
+void pbox_app_rockit_get_player_duration(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_GETPLAYERDURATION,
+        .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_loop(bool loop) {
+void pbox_app_rockit_set_player_loop(input_source_t source, bool loop) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYERLOOPING,
+        .source = source,
     };
 
     msg.loop = loop;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_seek(uint32_t mPosition) {
+void pbox_app_rockit_set_player_seek(input_source_t source, uint32_t mPosition) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYERSEEKTO,
+        .source = source,
     };
 
     msg.mPosition = mPosition;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_volume(uint32_t volume) {
+void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYERVOLUME,
+        .source = source,
     };
 
     msg.volume = volume;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_get_player_volume(void) {
+void pbox_app_rockit_get_player_volume(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_GETPLAYERVOLUME,
+        .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel) {
+void pbox_app_rockit_set_player_seperate(input_source_t source, bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SETPLAYER_SEPERATE,
+        .source = source,
     };
 
     msg.vocalSeperate.enable = enable;
@@ -202,40 +196,44 @@ void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_stereo_mode(stereo_mode_t stereo) {
+void pbox_app_rockit_set_stereo_mode(input_source_t source, stereo_mode_t stereo) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_STEREO_MODE,
+        .source = source,
     };
 
     msg.stereo = stereo;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_outdoor_mode(inout_door_t outdoor) {
+void pbox_app_rockit_set_outdoor_mode(input_source_t source, inout_door_t outdoor) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_OUTDOOR_MODE,
+        .source = source,
     };
 
     msg.outdoor = outdoor;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_placement(placement_t place) {
+void pbox_app_rockit_set_placement(input_source_t source, placement_t place) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_PLACEMENT_MODE,
+        .source = source,
     };
 
     msg.place = place;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_get_player_energy(void) {
+void pbox_app_rockit_get_player_energy(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_GETPLAYERENERGYLEVEL,
+        .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
@@ -322,6 +320,9 @@ void pbox_app_rockit_set_uac_state(uac_role_t role, bool start) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_STATE,
+#if ENABLE_AUX
+        .source = SRC_AUX,
+#endif
     };
     msg.uac.uac_role = role;
     msg.uac.state = start;
@@ -332,6 +333,9 @@ void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
+#if ENABLE_AUX
+        .source = SRC_AUX,
+#endif
     };
     msg.uac.uac_role = role;
     msg.uac.sampleFreq = freq;
@@ -342,6 +346,9 @@ void pbox_app_rockit_set_uac_volume(uac_role_t role, uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_VOLUME,
+#if ENABLE_AUX
+        .source = SRC_AUX,
+#endif
     };
     msg.uac.uac_role = role;
     msg.uac.volume = volume;
@@ -352,6 +359,9 @@ void pbox_app_rockit_set_mute(uac_role_t role, bool mute) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_MUTE,
+#if ENABLE_AUX
+        .source = SRC_AUX,
+#endif
     };
     msg.uac.uac_role = role;
     msg.uac.mute = mute;
@@ -362,6 +372,9 @@ void pbox_app_rockit_set_ppm(uac_role_t role, int32_t ppm) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_PPM,
+#if ENABLE_AUX
+        .source = SRC_AUX,
+#endif
     };
     msg.uac.uac_role = role;
     msg.uac.ppm = ppm;
@@ -423,19 +436,19 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
 
             printf("%s WakeCmd:%d\n",__func__, mWakeUp);
             switch (mWakeCmd) {
-                case KARAOKE_WAKE_UP_CMD_RECIEVE: {
+                case RC_PB_WAKE_UP_CMD_RECIEVE: {
                     printf("wakeup command receive\n");
                     pboxUIdata->play_status_prev= pboxUIdata->play_status;
                     pbox_app_music_pause(DISP_All);
                 } break;
-                case KARAOKE_WAKE_UP_CMD_RECIEVE_BUT_NO_TASK: {
+                case RC_PB_WAKE_UP_CMD_RECIEVE_BUT_NO_TASK: {
                         printf("wakeup command receive but no task\n");
                         if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
                             pbox_app_music_resume(DISP_All);
                         }
                     } break;
 
-                case KARAOKE_WAKE_UP_CMD_VOLUME_UP: {
+                case RC_PB_WAKE_UP_CMD_VOLUME_UP: {
                     uint32_t *const volume = &pboxUIdata->mVolumeLevel;
 
                     if (*volume <= 5)
@@ -452,7 +465,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                     }
                     } break;
 
-                case KARAOKE_WAKE_UP_CMD_VOLUME_DOWN: {
+                case RC_PB_WAKE_UP_CMD_VOLUME_DOWN: {
                     uint32_t *const volume = &pboxUIdata->mVolumeLevel;
 
                     printf("%s volume down:%d\n", __func__, *volume);
@@ -472,40 +485,40 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                     }
                 } break;
 
-                case KARAOKE_WAKE_UP_CMD_PAUSE_PLARER: {
+                case RC_PB_WAKE_UP_CMD_PAUSE_PLARER: {
                     pbox_app_music_pause(DISP_All);
                 } break;
 
-                case KARAOKE_WAKE_UP_CMD_START_PLAYER: {
+                case RC_PB_WAKE_UP_CMD_START_PLAYER: {
                     pbox_app_music_resume(DISP_All);
                 } break;
 
-                case KARAOKE_WAKE_UP_CMD_STOP_PLARER: {
+                case RC_PB_WAKE_UP_CMD_STOP_PLARER: {
                     pbox_app_music_stop(DISP_All);
                 } break;
 
-                case KARAOKE_WAKE_UP_CMD_PREV: {
+                case RC_PB_WAKE_UP_CMD_PREV: {
                     pbox_app_music_album_next(false, DISP_All);
                     if(pboxUIdata->play_status != PLAYING) {
                         pbox_app_music_resume(DISP_All);
                     }
                 } break;
 
-                case KARAOKE_WAKE_UP_CMD_NEXT: {
+                case RC_PB_WAKE_UP_CMD_NEXT: {
                     pbox_app_music_album_next(true, DISP_All);
                     if(pboxUIdata->play_status != PLAYING) {
                         pbox_app_music_resume(DISP_All);
                     }
                 } break;
 
-                case KARAOKE_WAKE_UP_CMD_ORIGINAL_SINGER_OPEN: {
+                case RC_PB_WAKE_UP_CMD_ORIGINAL_SINGER_OPEN: {
                     pbox_app_music_original_singer_open(true, DISP_All);
                     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
                         pbox_app_music_resume(DISP_All);
                     }
                 } break;
 
-                case KARAOKE_WAKE_UP_CMD_ORIGINAL_SINGER_CLOSE: {
+                case RC_PB_WAKE_UP_CMD_ORIGINAL_SINGER_CLOSE: {
                     pbox_app_music_original_singer_open(false, DISP_All);
                     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
                         pbox_app_music_resume(DISP_All);

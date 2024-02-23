@@ -1,8 +1,7 @@
 #ifndef _PBOX_ROCKIT_H_
 #define _PBOX_ROCKIT_H_
 #include "pbox_common.h"
-#include "rk_type.h"
-#include "rk_comm_karaoke.h"
+#include "rc_partybox.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -10,10 +9,10 @@ typedef enum {
     //command
     PBOX_ROCKIT_CREATE = 1,
     PBOX_ROCKIT_DESTROY,
-    PBOX_ROCKIT_SETDATASOURCE,
-    PBOX_ROCKIT_STARTBTPLAYER,
-    PBOX_ROCKIT_STOPBTPLAYER,
-    PBOX_ROCKIT_STARTPLAYER,
+//    PBOX_ROCKIT_SETDATASOURCE,
+    PBOX_ROCKIT_START_AUDIOCARD_PLAYER,
+//    PBOX_ROCKIT_STOPBTPLAYER,
+    PBOX_ROCKIT_START_LOCAL_PLAYER,
     PBOX_ROCKIT_PAUSEPLAYER,
     PBOX_ROCKIT_RESUMEPLAYER,
     PBOX_ROCKIT_STOPPLAYER,
@@ -55,28 +54,28 @@ typedef enum {
 } pbox_rockit_opcode_t;
 
 typedef struct {
-    pbox_msg_t type;
+    pbox_msg_t      type;
     pbox_rockit_opcode_t msgId;
+    input_source_t  source;
     union {
         struct {
             char track_uri[MAX_MUSIC_NAME_LENGTH +1];
             char headers[MAX_APP_NAME_LENGTH +1];
         } dataSource;
-        bool loop;
-        uint32_t mPosition;
-        uint32_t volume;
+        bool            loop;
+        uint32_t        mPosition;
+        uint32_t        volume;
         pbox_revertb_t  reverbMode;
         pbox_vocal_t    vocalSeperate;
         bool            echo3A_On;
         mic_data_t      micState;
         bool            micmute;
         pbox_audioFormat_t  audioFormat;
-        stereo_mode_t       stereo;
+        stereo_mode_t   stereo;
         inout_door_t    outdoor;
         placement_t     place;
-
         struct _wake_up {
-            KARAOKE_WAKE_UP_CMD_E wakeCmd;
+            enum rc_pb_wake_up_cmd wakeCmd;
             union {
                 uint32_t volume;
             };

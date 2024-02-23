@@ -82,26 +82,26 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
     }
 
     if(restart) {
-        pbox_app_rockit_stop_BTplayer();
+        pbox_app_rockit_stop_player(source);
     }
 
     switch(source) {
         case SRC_BT: {
-            pbox_app_rockit_start_BTplayer(pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_BT);
+            pbox_app_rockit_start_audiocard_player(SRC_BT, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_BT);
         } break;
 #if ENABLE_UAC
         case SRC_UAC: {
-            pbox_app_rockit_start_BTplayer(pboxUacdata->freq, 2, AUDIO_CARD_UAC);
+            pbox_app_rockit_start_audiocard_player(SRC_UAC, pboxUacdata->freq, 2, AUDIO_CARD_UAC);
         }
 #endif
 #if ENABLE_EXT_MCU_USB
         case SRC_USB: {
-            pbox_app_rockit_start_BTplayer(48000, 2, AUDIO_CARD_USB);
+            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_USB);
         }
 #endif
 #if ENABLE_AUX
         case SRC_AUX: {
-            pbox_app_rockit_start_BTplayer(48000, 2, AUDIO_CARD_AUX);
+            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_AUX);
         }
 #endif
     }
@@ -129,7 +129,7 @@ void pbox_app_drive_passive_player(input_source_t source, play_status_t status, 
 }
 
 void pbox_app_music_stop_bt_player(display_t policy) {
-    pbox_app_rockit_stop_BTplayer();
+    pbox_app_rockit_stop_player(SRC_BT);
     //nothing to do with ui
 }
 
@@ -359,7 +359,7 @@ void pbox_app_music_pause(display_t policy)
 #endif
     }
 
-    pbox_app_rockit_pause_player();
+    pbox_app_rockit_pause_player(pboxData->inputDevice);
     pbox_multi_displayIsPlaying(false, policy);
     pboxUIdata->play_status = _PAUSE;
 }
@@ -389,14 +389,13 @@ void pbox_app_music_start(display_t policy) {
             char *track_name = pbox_app_usb_get_title(pboxTrackdata->track_id);
             sprintf(track_uri, MUSIC_PATH"%s", track_name);
             printf("play track [%s]\n", track_uri);
-            pbox_app_rockit_set_datasource(track_uri, NULL);
+            pbox_app_rockit_start_local_player(track_uri, NULL);
             pbox_multi_displayTrackInfo(track_name, NULL, policy);
-            pbox_app_rockit_start_player();
         } break;
 #if ENABLE_UAC
         case SRC_UAC: {
             pbox_multi_displayTrackInfo("", NULL, policy);
-            //pbox_app_rockit_stop_BTplayer();
+            //pbox_app_rockit_stop_player(SRC_UAC);
         } break;
         default:
 #endif
@@ -419,7 +418,7 @@ void pbox_app_music_resume(display_t policy) {
                 return;
             }
             pbox_app_music_start(policy);
-            pbox_app_rockit_get_player_duration();
+            pbox_app_rockit_get_player_duration(SRC_USB);
         } break;
 #if ENABLE_UAC
         case SRC_UAC: {
@@ -440,23 +439,23 @@ void pbox_app_music_stop(display_t policy)
         case SRC_BT: {
             if (isBtA2dpConnected())
                 pbox_btsink_a2dp_stop();
-            pbox_app_rockit_stop_BTplayer();
+            pbox_app_rockit_stop_player(SRC_BT);
         } break;
 #if ENABLE_AUX
         case SRC_AUX: {
-            pbox_app_rockit_stop_BTplayer();
+            pbox_app_rockit_stop_player(SRC_BT);
         } break;
 #endif
         case SRC_USB: {
 #if ENABLE_EXT_MCU_USB
-            pbox_app_rockit_stop_BTplayer();
+            pbox_app_rockit_stop_player(SRC_BT);
 #else
-            pbox_app_rockit_stop_player();
+            pbox_app_rockit_stop_player(SRC_USB);
 #endif
         } break;
 #if ENABLE_UAC
         case SRC_UAC: {
-            pbox_app_rockit_stop_BTplayer();
+            pbox_app_rockit_stop_player(SRC_UAC);
         } break;
 #endif
         default:
@@ -470,7 +469,7 @@ void pbox_app_music_stop(display_t policy)
 void pbox_app_music_set_volume(uint32_t volume, display_t policy) {
     printf("%s main volume: %d\n", __func__, volume);
     pboxUIdata->mVolumeLevel = volume;
-    pbox_app_rockit_set_player_volume(volume);
+    pbox_app_rockit_set_player_volume(pboxData->inputDevice, volume);
     pbox_multi_displayMainVolumeLevel(volume, policy);
 }
 
@@ -544,7 +543,7 @@ void pbox_app_music_original_singer_open(bool orignal, display_t policy)
     uint32_t rlevel = pboxUIdata->mReservLevel;
 
     pboxUIdata->mVocalSeperateEnable = !orignal;
-    pbox_app_rockit_set_player_seperate(seperate , hlevel, mlevel, rlevel);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate , hlevel, mlevel, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate , hlevel, mlevel, rlevel, policy);
 }
 
@@ -561,7 +560,7 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
     if (isBtA2dpConnected())
         return;
 
-    pbox_app_rockit_set_player_seek(dest);
+    pbox_app_rockit_set_player_seek(pboxData->inputDevice, dest);
     pbox_multi_displayTrackPosition(false, dest, duration, policy);
 }
 
@@ -613,7 +612,7 @@ void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
 
     printf("%s hlevel: %d, mlevel: %d, seperate:%d\n", __func__, hlevel, volume, seperate);
     pboxUIdata->mMusicLevel = volume;
-    pbox_app_rockit_set_player_seperate(seperate, hlevel, volume, rlevel);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, volume, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, volume, rlevel, policy);
 }
 
@@ -625,7 +624,7 @@ void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy) {
 
     printf("%s hlevel: %d, mlevel: %d, seperate:%d\n", __func__, volume, mlevel, seperate);
     pboxUIdata->mHumanLevel = volume;
-    pbox_app_rockit_set_player_seperate(seperate, volume, mlevel, rlevel);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, volume, mlevel, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate, volume, mlevel, rlevel, policy);
 }
 
@@ -637,7 +636,7 @@ void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
 
     printf("%s hlevel: %d, mlevel: %d, rlevel:%d, seperate:%d\n", __func__, hlevel, mlevel, volume, seperate);
     pboxUIdata->mReservLevel = volume;
-    pbox_app_rockit_set_player_seperate(seperate, hlevel, mlevel, volume);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, mlevel, volume);
     pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, mlevel, volume, policy);
 }
 
@@ -656,21 +655,21 @@ void pbox_app_music_set_recoder_revert(pbox_revertb_t reverbMode, display_t poli
 void pbox_app_music_set_stereo_mode(stereo_mode_t stereo, display_t policy) {
     printf("%s :%d\n", __func__, stereo);
     pboxUIdata->stereo = stereo;
-    pbox_app_rockit_set_stereo_mode(stereo);
+    pbox_app_rockit_set_stereo_mode(pboxData->inputDevice, stereo);
     pbox_multi_displayMusicStereoMode(stereo, policy);
 }
 
 void pbox_app_music_set_outdoor_mode(inout_door_t outdoor, display_t policy) {
     printf("%s :%d\n", __func__, outdoor);
     pboxUIdata->outdoor = outdoor;
-    pbox_app_rockit_set_outdoor_mode(outdoor);
+    pbox_app_rockit_set_outdoor_mode(pboxData->inputDevice, outdoor);
     pbox_multi_displayMusicOutdoorMode(outdoor, policy);
 }
 
 void pbox_app_music_set_placement(placement_t place, display_t policy) {
     printf("%s :%d\n", __func__, place);
     pboxUIdata->placement = place;
-    pbox_app_rockit_set_placement(place);
+    pbox_app_rockit_set_placement(pboxData->inputDevice, place);
     pbox_multi_displayMusicPlaceMode(place, policy);
 }
 
@@ -763,7 +762,7 @@ void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy) 
     printf("%s freq:%d\n", __func__, freq);
     if(pboxUacdata->freq != freq) {
         pboxUacdata->freq = freq;
-        pbox_app_rockit_start_BTplayer(freq, 2, AUDIO_CARD_UAC);
+        pbox_app_rockit_start_audiocard_player(SRC_UAC, freq, 2, AUDIO_CARD_UAC);
     }
 #endif
 }

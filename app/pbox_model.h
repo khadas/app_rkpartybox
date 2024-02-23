@@ -21,6 +21,8 @@ extern "C" {
 #define ENABLE_EXT_MCU_USB  1
 #define ENABLE_AUX          1
 #define MIC_NUM             2
+#define ENABLE_LOCAL_USB    0
+#define ENABLE_RAW_PCM      0
 #else
 #define ENABLE_LCD_DISPLAY 1
 #define ENABLE_USE_SOCBT 0
@@ -34,6 +36,8 @@ extern "C" {
 #define ENABLE_EXT_MCU_USB   0
 #define ENABLE_AUX          0
 #define MIC_NUM             1
+#define ENABLE_LOCAL_USB    1
+#define ENABLE_RAW_PCM      0
 #endif
 
 #ifdef __cplusplus

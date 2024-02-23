@@ -3,11 +3,13 @@
 export LD_LIBRARY_PATH=/data/
 
 echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
-ln -sf /oem/eq_drc_player.bin /data/eq_drc_player.bin
-ln -sf /oem/eq_drc_recorder.bin /data/eq_drc_recorder.bin
-ln -sf /oem/wozai-48k2ch.pcm /data/wozai-48k2ch.pcm
+
 ln -sf /oem/SmileySans-Oblique.ttf /data/SmileySans-Oblique.ttf
 
+export rt_cfg_path_3a=/oem/config_3a.json
+export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
+export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
+export rt_response_path=/oem/wozai-48k2ch.pcm
 export player_weight=100
 export rt_level_det_up=400
 export rt_level_det_hold=400

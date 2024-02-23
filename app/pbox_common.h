@@ -166,6 +166,9 @@ typedef enum {
 #if ENABLE_AUX
     SRC_AUX,
 #endif
+#if ENABLE_RAW_PCM
+    SRC_PCM,
+#endif
     SRC_NUM
 } input_source_t;
 

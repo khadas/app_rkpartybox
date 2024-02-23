@@ -13,7 +13,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include "pbox_app.h"
-#include "rk_comm_karaoke.h"
+#include "rc_partybox.h"
 #include "rk_btsink.h"
 #include "pbox_common.h"
 #include "pbox_rockit.h"
@@ -214,12 +214,15 @@ void maintask_timer_fd_process(int timer_fd) {
 
     if((0 == msTimePassed%50) && (pboxUIdata->play_status == PLAYING)) {
         //send commamd to get engery.
-        pbox_app_rockit_get_player_energy();
+        pbox_app_rockit_get_player_energy(pboxData->inputDevice);
     }
 
     if ((0 == msTimePassed%1000) && (pboxUIdata->play_status == PLAYING)) {
         //every one second send command to refresh position
-        pbox_app_rockit_get_music_current_postion();
+        #if ENABLE_LOCAL_USB
+        if(pboxData->inputDevice == SRC_USB)
+            pbox_app_rockit_get_music_current_postion(SRC_USB);
+        #endif
     }
 
     if((isPoweron == false) && (0 == msTimePassed%100)) {

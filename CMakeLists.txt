@@ -71,6 +71,7 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkaudio_effect_vocal.so
        ./lib64/librkaudio_howling_suppression.so
        ./lib64/librkstudio.so
+       ./lib64/libdrm.so.2
 )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

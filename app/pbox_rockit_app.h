@@ -13,41 +13,39 @@ void pbox_app_rockit_create(void);
 
 void pbox_app_rockit_destroy(void);
 
-void pbox_app_rockit_set_datasource(char *path, char *headers);
+//void pbox_app_rockit_set_datasource(char *path, char *headers);
 
-void pbox_app_rockit_start_BTplayer(int sampleFreq, int channel,  const char *cardName);
+void pbox_app_rockit_start_audiocard_player(input_source_t source, int sampleFreq, int channel, const char *cardName);
 
-void pbox_app_rockit_stop_BTplayer(void);
+void pbox_app_rockit_start_local_player(char *path, char *headers);
 
-void pbox_app_rockit_start_player(void);
+void pbox_app_rockit_pause_player(input_source_t source);
 
-void pbox_app_rockit_pause_player(void);
+void pbox_app_rockit_stop_player(input_source_t source);
 
-void pbox_app_rockit_stop_player(void);
+void pbox_app_rockit_resume_player(input_source_t source);
 
-void pbox_app_rockit_resume_player(void);
+void pbox_app_rockit_get_music_current_postion(input_source_t source);
 
-void pbox_app_rockit_get_music_current_postion(void);
+void pbox_app_rockit_get_player_duration(input_source_t source);
 
-void pbox_app_rockit_get_player_duration(void);
+void pbox_app_rockit_set_player_loop(input_source_t source, bool loop);
 
-void pbox_app_rockit_set_player_loop(bool loop);
+void pbox_app_rockit_set_player_seek(input_source_t source, uint32_t mPosition);
 
-void pbox_app_rockit_set_player_seek(uint32_t mPosition);
+void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume);
 
-void pbox_app_rockit_set_player_volume(uint32_t volume);
+void pbox_app_rockit_get_player_volume(input_source_t source);
 
-void pbox_app_rockit_get_player_volume(void);
+void pbox_app_rockit_set_player_seperate(input_source_t source, bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel);
 
-void pbox_app_rockit_set_player_seperate(bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel);
+void pbox_app_rockit_set_stereo_mode(input_source_t source, stereo_mode_t mode);
 
-void pbox_app_rockit_set_stereo_mode(stereo_mode_t mode);
+void pbox_app_rockit_set_outdoor_mode(input_source_t source, inout_door_t mode);
 
-void pbox_app_rockit_set_outdoor_mode(inout_door_t mode);
+void pbox_app_rockit_set_placement(input_source_t source, placement_t mode);
 
-void pbox_app_rockit_set_placement(placement_t mode);
-
-void pbox_app_rockit_get_player_energy(void);
+void pbox_app_rockit_get_player_energy(input_source_t source);
 
 void pbox_app_rockit_start_recorder(void);
 
