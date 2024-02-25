@@ -24,12 +24,11 @@
 #define _GET_KEYSCAN_H_
 
 #include "pbox_keyscan_app.h"
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#if ENABLE_SARAADC==0
 enum event_type
 {
     FUNC_KEY_WAKEUP  = 0,
@@ -68,6 +67,8 @@ struct dot_vol_control
 int  pbox_create_KeyScanTask(void);
 
 int find_event_dev(int event_type);
+#endif
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* C++ */

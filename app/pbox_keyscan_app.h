@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+#if ENABLE_SARAADC==0
 #define MAX_KEY_BUFFERED	8
 
 #define KEY_DOUBLE_CLICK_PERIOD        (300*1000)   //双击键间隔时间，单位US
@@ -43,27 +44,7 @@ struct dot_key
 
 void maintask_keyscan_fd_process(int fd);
 int  pbox_create_KeyProcessTask(void);
-
-int pbox_app_key_set_playpause();
-int pbox_app_key_set_volume_up();
-int pbox_app_key_set_volume_down();
-int pbox_app_key_set_mic();
-int pbox_app_key_set_echo_3a();
-int pbox_app_key_switch_input_source(void);
-
-int enter_long_playpause_mode();
-int long_volume_step_down();
-int long_volume_step_up();
-int enter_long_key_mode();
-
-int enter_recovery_mode();
-int enter_combain_mode();
-
-int pbox_key_music_album_next();
-int enter_double_voldown_mode();
-int enter_double_volup_mode();
-int enter_double_key_mode();
-int enter_double_mic_mode();
+#endif
 
 #ifdef __cplusplus
 }

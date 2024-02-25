@@ -23,7 +23,12 @@
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
 #include "pbox_lvgl_app.h"
+#if ENABLE_SARAADC
+#include "pbox_keyadcSara.h"
+#include "pbox_keyadcSara_app.h"
+#else
 #include "pbox_keyscan_app.h"
+#endif
 #include "pbox_usb.h"
 #include "pbox_usb_app.h"
 #include "pbox_light_effect_app.h"
@@ -124,8 +129,12 @@ void main(int argc, char **argv) {
 #if ENABLE_RK_LED_EFFECT
     pbox_create_lightEffectTask();
 #endif
+#if ENABLE_SARAADC
+    pbox_create_KeyadcSaraTask();
+#else
     pbox_create_KeyScanTask();
     pbox_create_KeyProcessTask();
+#endif
     pbox_create_usb_task();
     #if ENABLE_USE_SOCBT
     pbox_create_btsoc_task();

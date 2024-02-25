@@ -8,7 +8,11 @@
 #include <sys/un.h>
 #include "pbox_common.h"
 #include "pbox_usb.h"
+#if ENABLE_SARAADC
+#include "pbox_keyadcSara.h"
+#else
 #include "pbox_keyscan_app.h"
+#endif
 #include "pbox_lvgl.h"
 #include "pbox_rockit.h"
 #include "rk_btsink.h"
@@ -77,7 +81,11 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
                 id = ((pbox_usb_msg_t*)info)->msgId;
                 break;
             case PBOX_MAIN_KEYSCAN:
+            #if ENABLE_SARAADC
+                id = ((pbox_keyscan_msg_t*)info)->msgId;
+            #else
                 id = ((pbox_keyevent_msg_t*)info)->key_code;
+            #endif
                 break;
         }
         printf("%s: Socket send failed!  source = %d, id:%d, ret = %d, errno: %d\n", __func__, module, id, ret, errno);

@@ -47,6 +47,7 @@
 #include "vad.h"
 #endif
 
+#if ENABLE_SARAADC==0
 #define DEV_INPUT_EVENT     "/dev/input"
 #define EVENT_DEV_NAME      "event"
 #define BITS_PER_LONG       (sizeof(long) * 8)
@@ -497,3 +498,4 @@ int pbox_create_KeyScanTask(void)
         printf("cant creat thread event_read_thread_ex");
     return err;
 }
+#endif

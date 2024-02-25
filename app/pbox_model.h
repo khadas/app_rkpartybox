@@ -23,6 +23,7 @@ extern "C" {
 #define MIC_NUM             2
 #define ENABLE_LOCAL_USB    0
 #define ENABLE_RAW_PCM      0
+#define ENABLE_SARAADC   1
 #else
 #define ENABLE_LCD_DISPLAY 1
 #define ENABLE_USE_SOCBT 0
@@ -38,6 +39,7 @@ extern "C" {
 #define MIC_NUM             1
 #define ENABLE_LOCAL_USB    1
 #define ENABLE_RAW_PCM      0
+#define ENABLE_SARAADC   0
 #endif
 
 #ifdef __cplusplus

@@ -6,10 +6,31 @@
 #include <pthread.h>
 #include "pbox_app.h"
 #include "pbox_common.h"
-
+#if ENABLE_SARAADC == 0
 pthread_mutex_t key_mutex;
 pbox_keyevent_msg_t key_event[MAX_KEY_BUFFERED];
 void keyscan_data_recv();
+
+static int pbox_app_key_set_playpause();
+static int pbox_app_key_set_volume_up();
+static int pbox_app_key_set_volume_down();
+static int pbox_app_key_set_mic();
+static int pbox_app_key_set_echo_3a();
+static int pbox_app_key_switch_input_source(void);
+
+static int enter_long_playpause_mode();
+static int long_volume_step_down();
+static int long_volume_step_up();
+static int enter_long_key_mode();
+
+static int enter_recovery_mode();
+static int enter_combain_mode();
+
+static int pbox_key_music_album_next();
+static int enter_double_voldown_mode();
+static int enter_double_volup_mode();
+static int enter_double_key_mode();
+static int enter_double_mic_mode();
 
 struct dot_key support_keys [] =
 {
@@ -266,3 +287,4 @@ int pbox_create_KeyProcessTask(void)
         printf("cant creat thread event_read_thread_ex");
     return err;
 }
+#endif
