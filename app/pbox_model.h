@@ -17,7 +17,7 @@ extern "C" {
 #define ENABLE_RK_ROCKIT    1
 #define ENABLE_UAC          0
 #define DEFAULT_SAMPLE_FREQ 48000
-#define DEFAULT_MIC_3A      false
+#define DEFAULT_MIC_3A      true
 #define ENABLE_EXT_MCU_USB  1
 #define ENABLE_AUX          1
 #define MIC_NUM             2
