@@ -72,7 +72,8 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkaudio_howling_suppression.so
        ./lib64/librkstudio.so
        ./lib64/libdrm.so.2
-)
+       ./lib64/librkaudio_effect_howling.so
+       )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES ${ROCKIT_FILE_LIBS} DESTINATION "lib")
@@ -84,6 +85,8 @@ install(FILES bins/eq_drc_player.bin DESTINATION /etc)
 install(FILES bins/eq_drc_recorder.bin DESTINATION /etc)
 install(FILES bins/wozai-48k2ch.pcm DESTINATION /etc)
 install(FILES bins/config_3a.json DESTINATION /etc)
+install(FILES bins/rkstudio_2in2out.bin DESTINATION /etc)
+install(FILES bins/rkstudio_6in6out.bin DESTINATION /etc)
 install(PROGRAMS bins/S40-rkpartybox DESTINATION /etc/init.d)
 install(PROGRAMS bins/partybox_app.sh DESTINATION bin)
 install(PROGRAMS bins/partybox_play.sh DESTINATION bin)

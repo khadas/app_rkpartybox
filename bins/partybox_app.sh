@@ -20,9 +20,16 @@ if [ ! -e /oem/config_3a.json ]; then
 	ln -s /etc/config_3a.json /oem/config_3a.json
 fi
 
+if [[ $(cat /proc/device-tree/acodec@ff560000/status 2>/dev/null) != "okay" ]]; then
+    ln -s /etc/rkstudio_6in6out.bin /oem/rkstudio.bin
+else
+    ln -s /etc/rkstudio_2in2out.bin /oem/rkstudio.bin
+fi
+
 export rt_cfg_path_3a=/oem/config_3a.json
 export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
 export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
+export rt_cfg_path_rkstudio=/oem/rkstudio.bin
 export rt_response_path=/oem/wozai-48k2ch.pcm
 export player_weight=100
 export rt_level_det_up=400

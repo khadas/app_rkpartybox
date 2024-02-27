@@ -165,12 +165,13 @@ struct rc_pb_recorder_attr {
 
 typedef void (*notifyfun_t)(enum rc_pb_event event, rc_s32 cmd, void *opaque);
 struct rc_pb_attr {
-    char        *card_name;
-    rc_u32       sample_rate;
-    rc_u32       channels;
-    rc_u32       bit_width;
-    notifyfun_t  notify;
-    void        *opaque;
+    char                       *card_name;
+    rc_u32                      sample_rate;
+    rc_u32                      channels;
+    rc_u32                      bit_width;
+    notifyfun_t                 notify;
+    void                       *opaque;
+    struct rc_pb_recorder_attr *record_attr;
 };
 
 #ifdef __cplusplus

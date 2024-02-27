@@ -48,7 +48,7 @@ rc_s32 rc_pb_player_get_param(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_
 rc_s32 rc_pb_player_get_energy(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy);
 rc_s32 rc_pb_player_release_energy(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy);
 
-rc_s32 rc_pb_recorder_start(rc_pb_ctx ctx, struct rc_pb_recorder_attr *attr);
+rc_s32 rc_pb_recorder_start(rc_pb_ctx ctx);
 rc_s32 rc_pb_recorder_stop(rc_pb_ctx ctx);
 rc_s32 rc_pb_recorder_mute(rc_pb_ctx ctx, rc_bool mute);
 rc_s32 rc_pb_recorder_set_volume(rc_pb_ctx ctx, rc_u32 volume);

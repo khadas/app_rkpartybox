@@ -52,7 +52,7 @@ rc_s32 (*rc_pb_player_get_param)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct 
 rc_s32 (*rc_pb_player_get_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy);
 rc_s32 (*rc_pb_player_release_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy);
 
-rc_s32 (*rc_pb_recorder_start)(rc_pb_ctx ctx, struct rc_pb_recorder_attr *attr);
+rc_s32 (*rc_pb_recorder_start)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_recorder_stop)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_recorder_mute)(rc_pb_ctx ctx, rc_bool mute);
 rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, rc_u32 volume);
@@ -177,7 +177,7 @@ int rk_demo_music_create() {
             return -1;
         }
 
-        rc_pb_recorder_start = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_recorder_attr *attr))dlsym(mpi_hdl, "rc_pb_recorder_start");
+        rc_pb_recorder_start = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_recorder_start");
         if (NULL == rc_pb_recorder_start) {
             printf("failed to open  func, err=%s\n", dlerror());
             return -1;
@@ -227,29 +227,34 @@ int rk_demo_music_create() {
 
     attr.card_name              = "hw:0,0";
     attr.sample_rate            = 48000;
+#if ENABLE_USE_SOCBT
+    attr.channels               = 6;
+#else
     attr.channels               = 2;
+#endif
     attr.bit_width              = 16;
     attr.notify                 = pb_rockit_notify;
     attr.opaque                 = NULL;
-
-    if (rc_pb_create(&partyboxCtx, &attr) != 0) {
-        printf("rc_pb_create failed, err!!!\n");
-        return -1;
-    }
+    attr.record_attr            = &recorder_attr;
 
     recorder_attr.card_name = "hw:0,0";
     recorder_attr.sample_rate = 48000;
     recorder_attr.channels    = 4;
     recorder_attr.bit_width   = 16;
-    recorder_attr.chn_layout  = 0x0f;
 #if ENABLE_USE_SOCBT
     recorder_attr.ref_layout = 0x0c;
-    recorder_attr.rec_layout = 0x01;
+    recorder_attr.rec_layout = 0x03;
 #else
     recorder_attr.ref_layout = 0x03;
     recorder_attr.rec_layout = 0x04;
 #endif
-    if (rc_pb_recorder_start(partyboxCtx, &recorder_attr) != 0) {
+    recorder_attr.chn_layout  = 0x0f;
+    if (rc_pb_create(&partyboxCtx, &attr) != 0) {
+        printf("rc_pb_create failed, err!!!\n");
+        return -1;
+    }
+
+    if (rc_pb_recorder_start(partyboxCtx) != 0) {
         printf("rc_pb_recorder_start failed, err!!!\n");
         return -1;
     }
