@@ -556,8 +556,8 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
 
     param.type = RC_PB_PARAM_TYPE_VOLCAL_SEPARATE;
     hLevel = hLevel>100?15 :hLevel;
-    mLevel = mLevel>100?100:hLevel;
-    rLevel = rLevel>100?100:hLevel;
+    mLevel = mLevel>100?100:mLevel;
+    rLevel = rLevel>100?100:rLevel;
     printf("%s hLevel:%d, mLevel:%d rLevel:%d , on:%d\n",__func__, hLevel, mLevel, rLevel, enable);
 
     int ret = rc_pb_player_get_param(partyboxCtx, dest, &param);

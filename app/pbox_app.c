@@ -19,7 +19,7 @@ pbox_data_t pbox_data = {
         #if ENABLE_LCD_DISPLAY
         .mHumanLevel = 15,
         #else
-        .mHumanLevel = 0,
+        .mHumanLevel = 5,
         #endif
         .mReservLevel = 100,
         .mVocalSeperateEnable = false,
