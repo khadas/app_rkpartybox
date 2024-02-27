@@ -22,7 +22,7 @@ typedef enum {
     DSP_IN_OUT_DOOR = 0x05,
     DSP_POWER_ON = 0x06,
     DSP_SOUND_MODE = 0x08,
-    DSP_HUMAN_SPLIT = 0x0A,
+    DSP_HUMAN_VOICE_FADEOUT = 0x0A,
     DSP_SWITCH_SOURCE = 0x0B,
     DSP_MUSIC_GROUND = 0x10,
 } soc_dsp_cmd_t;
@@ -43,7 +43,7 @@ static void handleSocbtDspMic2StateCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspInoutDoorCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspPoweronCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspStereoModeCmd(const pbox_socbt_msg_t* msg);
-static void handleSocbtDspHumanSplitCmd(const pbox_socbt_msg_t* msg);
+static void handleSocbtDspHumanVoiceFadeoutCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspMusicGroundCmd(const pbox_socbt_msg_t* msg);
 
@@ -146,15 +146,15 @@ void socbt_pbox_notify_dsp_stereo_mode(uint32_t opcode, char *buff, int32_t len)
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_dsp_human_spilit(uint32_t opcode, char *buff, int32_t len) {
+void socbt_pbox_notify_dsp_human_voice_fadeout(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
-        .msgId = PBOX_SOCBT_DSP_HUMAN_SPLIT_EVT,
+        .msgId = PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,
     };
     assert(len>0);
     msg.op = opcode;
-    msg.humanLevel = buff[0]? 0:100;
-    printf("%s opcode:%d humanLevel:%d\n", __func__, opcode, msg.humanLevel);
+    msg.fadeout = buff[0];
+    printf("%s opcode:%d fadeout:%s\n", __func__, opcode, msg.fadeout? "mute":"org");
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -211,7 +211,7 @@ void socbt_pbox_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
         socbt_pbox_notify_adjust_mic1_state(opcode, &buff[3], 1);
         socbt_pbox_notify_adjust_mic2_state(opcode, &buff[4], 1);
         socbt_pbox_notify_adjust_placement(opcode, &buff[5], 1);
-        socbt_pbox_notify_dsp_human_spilit(opcode, &buff[6], 1);
+        socbt_pbox_notify_dsp_human_voice_fadeout(opcode, &buff[6], 1);
         socbt_pbox_notify_dsp_switch_source(opcode, &buff[7], 1);
     }
 }
@@ -271,8 +271,8 @@ void process_data(unsigned char *buff, int len) {
         case DSP_SOUND_MODE: {
             socbt_pbox_notify_dsp_stereo_mode(opcode, &buff[4], para_len);
         } break;
-        case DSP_HUMAN_SPLIT: {
-            socbt_pbox_notify_dsp_human_spilit(opcode, &buff[4], para_len);
+        case DSP_HUMAN_VOICE_FADEOUT: {
+            socbt_pbox_notify_dsp_human_voice_fadeout(opcode, &buff[4], para_len);
         } break;
         case DSP_SWITCH_SOURCE: {
             socbt_pbox_notify_dsp_switch_source(opcode, &buff[4], para_len);//status, source);
@@ -371,7 +371,7 @@ const socbt_cmd_handle_t socbtCmdTable[] = {
     { PBOX_SOCBT_DSP_IN_OUT_DOOR_CMD,   handleSocbtDspInoutDoorCmd },
     { PBOX_SOCBT_DSP_POWER_ON_CMD,      handleSocbtDspPoweronCmd   },
     { PBOX_SOCBT_DSP_STEREO_MODE_CMD,   handleSocbtDspStereoModeCmd },
-    { PBOX_SOCBT_DSP_HUMAN_SPLIT_CMD,   handleSocbtDspHumanSplitCmd},
+    { PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_CMD,   handleSocbtDspHumanVoiceFadeoutCmd},
     { PBOX_SOCBT_DSP_SWITCH_SOURCE_CMD, handleSocbtDspSwitchSourceCmd},
     { PBOX_SOCBT_DSP_MUSIC_GROUND_CMD,  handleSocbtDspMusicGroundCmd},
 };
@@ -393,6 +393,21 @@ int sendPowerOnCmd(void) {
     command[i++] = 0x03; //len
     command[i++] = 0x00; //op code
     command[i++] = 0x06; //cmd code
+    command[i] = calculate_checksum(&command[0], i);
+    i++;
+
+    userial_send(command, i);
+}
+
+int sendAccomVolume(uint32_t volume) {
+    uint8_t len = 0;
+    uint8_t command[32];
+    int i = 0;
+    command[i++] = 0xEE;
+    command[i++] = 0x04; //len
+    command[i++] = 0x00; //op code
+    command[i++] = 0x10; //cmd code
+    command[i++] = 32*volume/100;
     command[i] = calculate_checksum(&command[0], i);
     i++;
 
@@ -453,9 +468,9 @@ void handleSocbtDspStereoModeCmd(const pbox_socbt_msg_t* msg) {
     printf("%s dsp stereo mode:%d\n", __func__, mode);
 }
 
-void handleSocbtDspHumanSplitCmd(const pbox_socbt_msg_t* msg) {
-    uint32_t humanLevel = msg->humanLevel;
-    printf("%s human level:%d\n", __func__, humanLevel);
+void handleSocbtDspHumanVoiceFadeoutCmd(const pbox_socbt_msg_t* msg) {
+    bool fadeout = msg->fadeout;
+    printf("%s fadeout :%d\n", __func__, fadeout);
 }
 
 void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg) {
@@ -466,6 +481,7 @@ void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg) {
 void handleSocbtDspMusicGroundCmd(const pbox_socbt_msg_t* msg) {
     uint32_t accomLevel = msg->accomLevel;
     printf("%s accomLevel:%d\n", __func__, accomLevel);
+    sendAccomVolume(accomLevel);
 }
 
 // Function to process an incoming pbox_socbt_msg_t event

@@ -27,7 +27,7 @@ static void handleMic2MuxEvent(const pbox_socbt_msg_t *msg);
 static void handleInOutDoorEvent(const pbox_socbt_msg_t *msg);
 static void handlePowerOnEvent(const pbox_socbt_msg_t *msg);
 static void handleStereoModeEvent(const pbox_socbt_msg_t *msg);
-static void handleHumanSplitEvent(const pbox_socbt_msg_t *msg);
+static void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg);
 static void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg);
 static void handleMusicGroundEvent(const pbox_socbt_msg_t *msg);
 
@@ -97,13 +97,13 @@ void pbox_app_btsoc_reply_stereo_mode(stereo_mode_t mode){
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_human_split(uint32_t level){
+void pbox_app_btsoc_reply_human_voice_fadeout(bool fadeout){
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_SOCBT_DSP_HUMAN_SPLIT_CMD,
+        .msgId = PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_CMD,
     };
 
-    msg.humanLevel = level;
+    msg.fadeout = fadeout;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -126,6 +126,13 @@ void pbox_app_btsoc_reply_accom_level(uint32_t level) {
 
     msg.accomLevel = level;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void pbox_app_btsoc_init(void) {
+
+    pbox_app_btsoc_reply_poweron(true);
+//    pbox_app_btsoc_reply_main_volume(pboxUIdata->mVolumeLevel);
+    pbox_app_btsoc_reply_accom_level(pboxUIdata->mMusicLevel);
 }
 
 void handleDspVersionEvent(const pbox_socbt_msg_t *msg) {
@@ -162,7 +169,14 @@ void handleMic1MuxEvent(const pbox_socbt_msg_t *msg) {
         //add implement
         return;
     }
+
     pbox_app_music_set_mic_mux(0, msg->micMux, DISP_All);
+
+    if(msg->micMux == MIC_IN) {
+        pbox_app_btsoc_set_human_voice_fadeout(true, DISP_All);
+    } else {
+        pbox_app_btsoc_set_human_voice_fadeout(false, DISP_All);
+    }
 }
 
 void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
@@ -171,7 +185,14 @@ void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
         //add implement
         return;
     }
+
     pbox_app_music_set_mic_mux(1, msg->micMux, DISP_All);
+
+    if(msg->micMux == MIC_IN) {
+        pbox_app_btsoc_set_human_voice_fadeout(true, DISP_All);
+    } else {
+        pbox_app_btsoc_set_human_voice_fadeout(false, DISP_All);
+    }
 }
 
 void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
@@ -201,14 +222,14 @@ void handleStereoModeEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_btsoc_set_stereo_mode(msg->stereo, DISP_All);
 }
 
-void handleHumanSplitEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Human Split Level: %u\n", __func__, msg->humanLevel);
+void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg) {
+    printf("%s Human VoiceFadeout: %u\n", __func__, msg->fadeout);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_human_split(DISP_All);
+        pbox_app_btsoc_get_human_voice_fadeout(DISP_All);
         return;
     }
 
-    pbox_app_btsoc_set_human_split(msg->humanLevel, DISP_All);
+    //pbox_app_btsoc_set_human_voice_fadeout(msg->fadeout, DISP_All);
 }
 
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
@@ -248,7 +269,7 @@ const socbt_event_handle_t socbtEventTable[] = {
     { PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,   handleInOutDoorEvent    },
     { PBOX_SOCBT_DSP_POWER_ON_EVT,      handlePowerOnEvent      },
     { PBOX_SOCBT_DSP_STEREO_MODE_EVT,   handleStereoModeEvent   },
-    { PBOX_SOCBT_DSP_HUMAN_SPLIT_EVT,   handleHumanSplitEvent   },
+    { PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,   handleHumanVoiceFadeoutEvent   },
     { PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT, handleSwitchSourceEvent },
     { PBOX_SOCBT_DSP_MUSIC_GROUND_EVT,  handleMusicGroundEvent  },
 };

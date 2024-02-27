@@ -17,7 +17,7 @@ typedef enum {
     PBOX_SOCBT_DSP_IN_OUT_DOOR_CMD,
     PBOX_SOCBT_DSP_POWER_ON_CMD,
     PBOX_SOCBT_DSP_STEREO_MODE_CMD,
-    PBOX_SOCBT_DSP_HUMAN_SPLIT_CMD,
+    PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_CMD,
     PBOX_SOCBT_DSP_SWITCH_SOURCE_CMD,
     PBOX_SOCBT_DSP_MUSIC_GROUND_CMD,
 
@@ -30,7 +30,7 @@ typedef enum {
     PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,
     PBOX_SOCBT_DSP_POWER_ON_EVT,
     PBOX_SOCBT_DSP_STEREO_MODE_EVT,
-    PBOX_SOCBT_DSP_HUMAN_SPLIT_EVT,
+    PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,
     PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT,
     PBOX_SOCBT_DSP_MUSIC_GROUND_EVT,
 } pbox_socbt_opcode_t;
@@ -48,7 +48,7 @@ typedef struct {
         placement_t placement;
         inout_door_t outdoor;
         stereo_mode_t stereo;
-        uint32_t humanLevel;
+        bool fadeout;
         uint32_t accomLevel;
         struct socbt_input_source {
             play_status_t status;

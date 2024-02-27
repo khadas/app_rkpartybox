@@ -15,17 +15,13 @@ pbox_data_t pbox_data = {
     },
     .ui = {
         .mVolumeLevel = 50,
-        .micData[0] = {
-            .micMux = MIC_IN,
-            .micVolume = 100,
-            .micTreble = 50,
-            .micBass = 50,
-            .micReverb = 50,
-        },
         .mMusicLevel = 100,
+        #if ENABLE_LCD_DISPLAY
         .mHumanLevel = 15,
+        #else
+        .mHumanLevel = 0,
+        #endif
         .mReservLevel = 100,
-        .mEchoReductionEnable = true,
         .mVocalSeperateEnable = false,
         .play_status = IDLE,
         .play_status_prev = IDLE,
@@ -576,6 +572,18 @@ void pbox_app_music_set_mic_mute(bool mute, display_t policy){
     pbox_multi_displayMicMute(mute, policy);
 }
 
+void pbox_app_music_mics_init(display_t policy) {
+    for (int i = 0; i < MIC_NUM; i++) {
+        pboxUIdata->micData[i].index = i;
+        pboxUIdata->micData[i].micMux = MIC_IN;
+        pboxUIdata->micData[i].micVolume = 100;
+        pboxUIdata->micData[i].micTreble = 50;
+        pboxUIdata->micData[i].micBass = 50;
+        pboxUIdata->micData[i].micReverb = 50;
+        pbox_app_rockit_set_mic_data(pboxUIdata->micData[i]);
+    }
+}
+
 void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy) {
     pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micMux = mux;
@@ -865,13 +873,13 @@ void pbox_app_btsoc_get_stereo_mode(display_t policy) {
     pbox_app_btsoc_reply_stereo_mode(MODE_STEREO);
 }
 
-void pbox_app_btsoc_get_human_split(display_t policy) {
-    pbox_app_btsoc_reply_human_split(pboxUIdata->mHumanLevel);
+void pbox_app_btsoc_get_human_voice_fadeout(display_t policy) {
+    //pbox_app_btsoc_reply_human_voice_fadeout(pboxUIdata->fadeout);
 }
 
-void pbox_app_btsoc_set_human_split(uint32_t level, display_t policy) {
-    printf("%s hlevel: %d\n", __func__, level);
-    pbox_app_music_set_human_music_level(level, policy);
+void pbox_app_btsoc_set_human_voice_fadeout(bool mute, display_t policy) {
+    printf("%s hmute: %d\n", __func__, mute);
+    pbox_app_music_original_singer_open(mute? false: true, policy);
 }
 
 void pbox_app_btsoc_get_input_source(display_t policy) {

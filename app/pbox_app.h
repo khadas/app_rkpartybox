@@ -59,7 +59,6 @@ typedef struct {
         uint32_t mMusicLevel;
         uint32_t mHumanLevel;
         uint32_t mReservLevel;
-        bool mEchoReductionEnable;
         bool mVocalSeperateEnable;
         bool echo3A;
         bool mMute;
@@ -106,6 +105,7 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
 char* pbox_app_usb_get_title(uint32_t trackId);
 void pbox_app_music_set_mic_volume(uint32_t micNum, uint32_t volume, display_t policy);
 void pbox_app_music_set_mic_mute(bool mute, display_t policy);
+void pbox_app_music_mics_init(display_t policy);
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy);
 void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy);
@@ -139,8 +139,8 @@ void pbox_app_btsoc_get_inout_door(display_t policy);
 void pbox_app_btsoc_get_poweron(display_t policy);
 void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy);
 void pbox_app_btsoc_get_stereo_mode(display_t policy);
-void pbox_app_btsoc_get_human_split(display_t policy);
-void pbox_app_btsoc_set_human_split(uint32_t level, display_t policy);
+void pbox_app_btsoc_get_human_voice_fadeout(display_t policy);
+void pbox_app_btsoc_set_human_voice_fadeout(bool mute, display_t policy);
 void pbox_app_btsoc_get_input_source(display_t policy);
 void pbox_app_music_set_input_source(input_source_t source, play_status_t status, display_t policy);
 void pbox_app_music_get_accom_level(display_t policy);
