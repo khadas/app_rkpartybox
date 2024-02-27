@@ -370,7 +370,7 @@ static enum rc_pb_play_src covert2rockitSource(input_source_t source) {
     return destSource;
 }
 
-bool stopped_player[RC_PB_PLAY_SRC_BUTT] = {false};
+bool started_player[RC_PB_PLAY_SRC_BUTT] = {false};
 static void pbox_rockit_music_stop(input_source_t source)
 {
     enum rc_pb_play_src dest = covert2rockitSource(source);
@@ -378,17 +378,18 @@ static void pbox_rockit_music_stop(input_source_t source)
     assert(partyboxCtx);
     assert(rc_pb_player_stop);
 
-    printf("%s source:%d, dest:%d\n", __func__, partyboxCtx, source, dest);
+    printf("%s source:%d, started_player[%d]= %d, \n", __func__, source, dest, started_player[dest]);
 
-    if(!stopped_player[dest]) {
-        stopped_player[dest] = true;
+    if(started_player[dest]) {
+        started_player[dest] = false;
         rc_pb_player_stop(partyboxCtx, dest);
     }
 }
 
-static void pbox_rockit_music_loacal_start(const char *track_uri, const char *headers)
+static void pbox_rockit_music_local_start(const char *track_uri, const char *headers)
 {
     struct rc_pb_player_attr playerAttr;
+    enum rc_pb_play_src dest = covert2rockitSource(SRC_USB);
 
     assert(partyboxCtx);
     assert(rc_pb_player_start);
@@ -398,7 +399,10 @@ static void pbox_rockit_music_loacal_start(const char *track_uri, const char *he
     playerAttr.energy_band_cnt = 10;
 
     printf("%s :%s, ctx=%p\n", __func__, track_uri, partyboxCtx);
-    rc_pb_player_start(partyboxCtx, RC_PB_PLAY_SRC_LOCAL, &playerAttr);  
+    pbox_rockit_music_stop(SRC_USB);
+    rc_pb_player_start(partyboxCtx, RC_PB_PLAY_SRC_LOCAL, &playerAttr);
+
+    started_player[dest] = true;
 }
 
 static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioFormat_t audioFormat)
@@ -437,7 +441,7 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     printf("%s freq:%d, channel: %d, card:%s source:%d\n", __func__, sampleFreq, channel, cardName, source);
     pbox_rockit_music_stop(source);
     rc_pb_player_start(partyboxCtx, dest, &playerAttr);
-    stopped_player[dest] = false;
+    started_player[dest] = true;
     //set_vocal_separate_thread_cpu();
 }
 
@@ -928,7 +932,7 @@ static void *pbox_rockit_server(void *arg)
                 char *track_path = (char *)msg->dataSource.track_uri;
                 if(strlen(track_path) == 0)
                     break;
-                pbox_rockit_music_loacal_start(track_path, NULL);
+                pbox_rockit_music_local_start(track_path, NULL);
             } break;
 
             case PBOX_ROCKIT_START_AUDIOCARD_PLAYER: {
