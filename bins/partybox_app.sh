@@ -20,10 +20,12 @@ if [ ! -e /oem/config_3a.json ]; then
 	ln -s /etc/config_3a.json /oem/config_3a.json
 fi
 
-if [[ $(cat /proc/device-tree/acodec@ff560000/status 2>/dev/null) != "okay" ]]; then
-    ln -s /etc/rkstudio_6in6out.bin /oem/rkstudio.bin
-else
-    ln -s /etc/rkstudio_2in2out.bin /oem/rkstudio.bin
+if [ ! -e /oem/rkstudio.bin ]; then
+    if [[ $(cat /proc/device-tree/acodec@ff560000/status 2>/dev/null) != "okay" ]]; then
+        ln -s /etc/rkstudio_2in6out.bin /oem/rkstudio.bin
+    else
+        ln -s /etc/rkstudio_2in2out.bin /oem/rkstudio.bin
+    fi
 fi
 
 export rt_cfg_path_3a=/oem/config_3a.json
