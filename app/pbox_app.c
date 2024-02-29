@@ -880,9 +880,8 @@ void pbox_app_btsoc_get_human_voice_fadeout(display_t policy) {
     //pbox_app_btsoc_reply_human_voice_fadeout(pboxUIdata->fadeout);
 }
 
-void pbox_app_btsoc_set_human_voice_fadeout(bool mute, display_t policy) {
-    printf("%s hmute: %d\n", __func__, mute);
-    pbox_app_music_original_singer_open(mute? false: true, policy);
+void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy) {
+    pbox_app_music_original_singer_open(fadeout? false: true, policy);
 }
 
 void pbox_app_btsoc_get_input_source(display_t policy) {

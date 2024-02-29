@@ -154,7 +154,7 @@ void socbt_pbox_notify_dsp_human_voice_fadeout(uint32_t opcode, char *buff, int3
     assert(len>0);
     msg.op = opcode;
     msg.fadeout = buff[0];
-    printf("%s opcode:%d fadeout:%s\n", __func__, opcode, msg.fadeout? "mute":"org");
+    printf("%s opcode:%d fadeout:%s\n", __func__, opcode, msg.fadeout? "fade":"org");
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 

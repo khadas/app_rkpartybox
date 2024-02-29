@@ -173,9 +173,9 @@ void handleMic1MuxEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_music_set_mic_mux(0, msg->micMux, DISP_All);
 
     if(msg->micMux == MIC_IN) {
-        pbox_app_btsoc_set_human_voice_fadeout(true, DISP_All);
+        //pbox_app_btsoc_set_human_voice_fadeout(true, DISP_All);
     } else {
-        pbox_app_btsoc_set_human_voice_fadeout(false, DISP_All);
+        //pbox_app_btsoc_set_human_voice_fadeout(false, DISP_All);
     }
 }
 
@@ -189,9 +189,9 @@ void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_music_set_mic_mux(1, msg->micMux, DISP_All);
 
     if(msg->micMux == MIC_IN) {
-        pbox_app_btsoc_set_human_voice_fadeout(true, DISP_All);
+        //pbox_app_btsoc_set_human_voice_fadeout(true, DISP_All);
     } else {
-        pbox_app_btsoc_set_human_voice_fadeout(false, DISP_All);
+        //pbox_app_btsoc_set_human_voice_fadeout(false, DISP_All);
     }
 }
 
@@ -230,7 +230,7 @@ void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    //pbox_app_btsoc_set_human_voice_fadeout(msg->fadeout, DISP_All);
+    pbox_app_btsoc_set_human_voice_fadeout(msg->fadeout, DISP_All);
 }
 
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
