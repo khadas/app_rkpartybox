@@ -352,10 +352,10 @@ static enum rc_pb_play_src covert2rockitSource(input_source_t source) {
     enum rc_pb_play_src destSource = RC_PB_PLAY_SRC_BUTT;
     switch (source) {
         case SRC_USB: {
-#if ENABLE_LOCAL_USB
-            destSource = RC_PB_PLAY_SRC_LOCAL;
+#if ENABLE_EXT_MCU_USB
+            destSource = RC_PB_PLAY_SRC_BT;
 #else
-            destSource = RC_PB_PLAY_SRC_BT; //recieve it from audiocard..
+            destSource = RC_PB_PLAY_SRC_LOCAL;
 #endif
         } break;
         case SRC_BT: {

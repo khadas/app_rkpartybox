@@ -230,7 +230,7 @@ void maintask_timer_fd_process(int timer_fd) {
 
     if ((0 == msTimePassed%1000) && (pboxUIdata->play_status == PLAYING)) {
         //every one second send command to refresh position
-        #if ENABLE_LOCAL_USB
+        #if !ENABLE_EXT_MCU_USB
         if(pboxData->inputDevice == SRC_USB)
             pbox_app_rockit_get_music_current_postion(SRC_USB);
         #endif

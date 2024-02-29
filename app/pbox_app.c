@@ -93,12 +93,12 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
 #endif
 #if ENABLE_EXT_MCU_USB
         case SRC_USB: {
-            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_USB);
+            pbox_app_rockit_start_audiocard_player(SRC_USB, 48000, 2, AUDIO_CARD_USB);
         }
 #endif
 #if ENABLE_AUX
         case SRC_AUX: {
-            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_AUX);
+            pbox_app_rockit_start_audiocard_player(SRC_AUX, 48000, 2, AUDIO_CARD_AUX);
         }
 #endif
     }
@@ -443,12 +443,12 @@ void pbox_app_music_stop(display_t policy)
         } break;
 #if ENABLE_AUX
         case SRC_AUX: {
-            pbox_app_rockit_stop_player(SRC_BT);
+            pbox_app_rockit_stop_player(SRC_AUX);
         } break;
 #endif
         case SRC_USB: {
 #if ENABLE_EXT_MCU_USB
-            pbox_app_rockit_stop_player(SRC_BT);
+            pbox_app_rockit_stop_player(SRC_USB);
 #else
             pbox_app_rockit_stop_player(SRC_USB);
 #endif
@@ -717,7 +717,7 @@ void pbox_app_music_volume_down(display_t policy) {
     if (*volume >= 50)
         *volume -= 25;
     else if (*volume >= 25) 
-        *volume -= 15; 
+        *volume -= 15;
     else if (*volume >= 5)
         *volume -= 5;
     else

@@ -19,7 +19,6 @@ extern "C" {
 #define ENABLE_EXT_MCU_USB  1
 #define ENABLE_AUX          1
 #define MIC_NUM             2
-#define ENABLE_LOCAL_USB    0
 #define ENABLE_RAW_PCM      0
 #define ENABLE_SARAADC   1
 #else
@@ -35,7 +34,6 @@ extern "C" {
 #define ENABLE_EXT_MCU_USB   0
 #define ENABLE_AUX          0
 #define MIC_NUM             1
-#define ENABLE_LOCAL_USB    1
 #define ENABLE_RAW_PCM      0
 #define ENABLE_SARAADC   0
 #endif
