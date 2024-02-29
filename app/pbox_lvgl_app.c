@@ -136,7 +136,7 @@ void pbox_app_lcd_displayReservLevel(uint32_t reserv_music_level) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t rlevel) {
+void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH,
@@ -144,7 +144,7 @@ void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint3
     pbox_vocal_t vocalSeparate = {
         .enable = enable,
         .humanLevel = hlevel,
-        .musicLevel = mlevel,
+        .accomLevel = alevel,
         .reservLevel = rlevel,
     };
 

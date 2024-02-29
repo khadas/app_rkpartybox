@@ -26,7 +26,7 @@ void pbox_multi_displayMicMute(bool mute, display_t policy);
 void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy);
 void pbox_multi_displayHumanMusicLevel(uint32_t human_music_level, display_t policy);
 void pbox_multi_displayReservLevel(uint32_t reserv_music_level, display_t policy);
-void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t rlevel, display_t policy);
+void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel, display_t policy);
 void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy);
 void pbox_multi_displayEcho3A(bool enable, display_t policy);
 void pbox_multi_displayRevertMode(pbox_revertb_t mode, display_t policy);
@@ -45,6 +45,8 @@ void pbox_multi_displayUacPpm(uac_role_t role, int32_t ppm, display_t policy);
 void pbox_multi_displayMusicStereoMode(stereo_mode_t stereo, display_t policy);
 void pbox_multi_displayMusicPlaceMode(placement_t place, display_t policy);
 void pbox_multi_displayMusicOutdoorMode(inout_door_t outdoor, display_t policy);
+
+#define pbox_multi_displayMusicVolumeLevel(...)    ((void) 0)
 #ifdef __cplusplus
 }
 #endif

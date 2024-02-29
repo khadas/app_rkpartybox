@@ -93,7 +93,7 @@ typedef struct {
 typedef struct {
     bool enable;
     unsigned int  humanLevel;    /* RW; Range: [0, 100];*/
-    unsigned int  musicLevel;    /* RW; Range: [0, 100];*/
+    unsigned int  accomLevel;    /* RW; Range: [0, 100];*/
     unsigned int  reservLevel;   /* RW; Range: [0, 100];*/
 } pbox_vocal_t;
 

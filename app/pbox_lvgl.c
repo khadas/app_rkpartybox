@@ -313,7 +313,7 @@ void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
     printf("Music Separate Switch Command: Enable - %s, Human Level - %u, Music Level - %u, Reserv Level - %u\n",
            vocalSeparate.enable ? "Enabled" : "Disabled", 
            vocalSeparate.humanLevel,
-            vocalSeparate.musicLevel,
+            vocalSeparate.accomLevel,
            vocalSeparate.reservLevel);
     _lv_demo_music_update_ui_info(UI_WIDGET_VOCAL_SEPERATE, msg);
 }

@@ -24,7 +24,7 @@ typedef enum {
     DSP_SOUND_MODE = 0x08,
     DSP_HUMAN_VOICE_FADEOUT = 0x0A,
     DSP_SWITCH_SOURCE = 0x0B,
-    DSP_MUSIC_GROUND = 0x10,
+    DSP_MUSIC_VOLUME = 0x10,
 } soc_dsp_cmd_t;
 
 enum State {
@@ -45,7 +45,7 @@ static void handleSocbtDspPoweronCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspStereoModeCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspHumanVoiceFadeoutCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg);
-static void handleSocbtDspMusicGroundCmd(const pbox_socbt_msg_t* msg);
+static void handleSocbtDspMusicVolumeCmd(const pbox_socbt_msg_t* msg);
 
 
 int unix_socket_socbt_notify(void *info, int length) {
@@ -185,15 +185,15 @@ void socbt_pbox_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t le
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void socbt_pbox_notify_adjust_background_level(uint32_t opcode, char *buff, int32_t len) {
+void socbt_pbox_notify_adjust_music_volume_level(uint32_t opcode, char *buff, int32_t len) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
-        .msgId = PBOX_SOCBT_DSP_MUSIC_GROUND_EVT,
+        .msgId = PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,
     };
     assert(len>0);
     msg.op = opcode;
-    msg.accomLevel = buff[0]*100/32;
-    printf("%s opcode:%d accomLevel:%d\n", __func__, opcode, msg.accomLevel);
+    msg.musicVolLevel = buff[0]*100/32;
+    printf("%s opcode:%d musicVolLevel:%d\n", __func__, opcode, msg.musicVolLevel);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -207,7 +207,7 @@ void socbt_pbox_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
         temp = buff[0] >> 4;
         socbt_pbox_notify_adjust_inout_door(opcode, &temp, 1);
         socbt_pbox_notify_adjust_master_volume(opcode, &buff[1], 1);
-        socbt_pbox_notify_adjust_background_level(opcode, &buff[2], 1);
+        socbt_pbox_notify_adjust_music_volume_level(opcode, &buff[2], 1);
         socbt_pbox_notify_adjust_mic1_state(opcode, &buff[3], 1);
         socbt_pbox_notify_adjust_mic2_state(opcode, &buff[4], 1);
         socbt_pbox_notify_adjust_placement(opcode, &buff[5], 1);
@@ -277,8 +277,8 @@ void process_data(unsigned char *buff, int len) {
         case DSP_SWITCH_SOURCE: {
             socbt_pbox_notify_dsp_switch_source(opcode, &buff[4], para_len);//status, source);
         } break;
-        case DSP_MUSIC_GROUND: {
-            socbt_pbox_notify_adjust_background_level(opcode, &buff[4], para_len);
+        case DSP_MUSIC_VOLUME: {
+            socbt_pbox_notify_adjust_music_volume_level(opcode, &buff[4], para_len);
         } break;
     }
 }
@@ -373,7 +373,7 @@ const socbt_cmd_handle_t socbtCmdTable[] = {
     { PBOX_SOCBT_DSP_STEREO_MODE_CMD,   handleSocbtDspStereoModeCmd },
     { PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_CMD,   handleSocbtDspHumanVoiceFadeoutCmd},
     { PBOX_SOCBT_DSP_SWITCH_SOURCE_CMD, handleSocbtDspSwitchSourceCmd},
-    { PBOX_SOCBT_DSP_MUSIC_GROUND_CMD,  handleSocbtDspMusicGroundCmd},
+    { PBOX_SOCBT_DSP_MUSIC_VOLUME_CMD,  handleSocbtDspMusicVolumeCmd},
 };
 
 uint8_t calculate_checksum(char buf[], int len) {
@@ -399,7 +399,7 @@ int sendPowerOnCmd(void) {
     userial_send(command, i);
 }
 
-int sendAccomVolume(uint32_t volume) {
+int sendMusicVolume(uint32_t volume) {
     uint8_t len = 0;
     uint8_t command[32];
     int i = 0;
@@ -478,10 +478,10 @@ void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg) {
     printf("%s inputsource:%d, status:%d\n", __func__, source.input, source.status);
 }
 
-void handleSocbtDspMusicGroundCmd(const pbox_socbt_msg_t* msg) {
-    uint32_t accomLevel = msg->accomLevel;
-    printf("%s accomLevel:%d\n", __func__, accomLevel);
-    sendAccomVolume(accomLevel);
+void handleSocbtDspMusicVolumeCmd(const pbox_socbt_msg_t* msg) {
+    uint32_t musicVolLevel = msg->musicVolLevel;
+    printf("%s musicVolLevel:%d\n", __func__, musicVolLevel);
+    sendMusicVolume(musicVolLevel);
 }
 
 // Function to process an incoming pbox_socbt_msg_t event

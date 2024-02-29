@@ -203,18 +203,18 @@ void update_music_positions(uint32_t current, uint32_t total) {
     }
 }
 
-void update_bt_music_volume(int mVolumeLevel ,display_t policy)
+void update_bt_music_volume(int volumeLevel ,display_t policy)
 {
 	int volumeLevelMapp = 0;
 
-	if (mVolumeLevel > 127)
-		mVolumeLevel = 127;
-	if (mVolumeLevel < 0)
-		mVolumeLevel = 0;
+	if (volumeLevel > 127)
+		volumeLevel = 127;
+	if (volumeLevel < 0)
+		volumeLevel = 0;
 
-	volumeLevelMapp = mVolumeLevel * 100 / 127;
+	volumeLevelMapp = volumeLevel * 100 / 127;
 
-	printf("%s bt volume :%d (0-127)mapping to %d (0-100)\n", __func__, mVolumeLevel, volumeLevelMapp);
+	printf("%s bt volume :%d (0-127)mapping to %d (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
 
 	pbox_app_music_set_volume(volumeLevelMapp, policy);
 
@@ -330,7 +330,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
 
         case RK_BT_ABS_VOL: {
 		//when seperate function is enable, don't set bt volume to mainVolume.
-		if ((!pboxUIdata->mVocalSeperateEnable) && is_input_source_selected(SRC_BT, ANY))
+		if ((!pboxUIdata->vocalSplit) && is_input_source_selected(SRC_BT, ANY))
 			update_bt_music_volume(msg->media_volume, DISP_All);
         } break;
 

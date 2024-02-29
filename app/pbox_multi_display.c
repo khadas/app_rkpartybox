@@ -127,12 +127,12 @@ void pbox_multi_displayReservLevel(uint32_t reserv_music_level, display_t policy
         pbox_app_led_ReservLevel(reserv_music_level);
 }
 
-void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t mlevel, uint32_t rlevel, display_t policy) {
+void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel, display_t policy) {
     if(policy & LCD_DISPLAY_MASK)
-        pbox_app_lcd_displayMusicSeparateSwitch(enable, hlevel, mlevel, rlevel);
+        pbox_app_lcd_displayMusicSeparateSwitch(enable, hlevel, alevel, rlevel);
 
     if(policy & LED_DISPLAY_MASK)
-        pbox_app_led_MusicSeparateSwitch(enable, hlevel, mlevel, rlevel);
+        pbox_app_led_MusicSeparateSwitch(enable, hlevel, alevel, rlevel);
 }
 
 void pbox_multi_displayMusicStereoMode(stereo_mode_t stereo, display_t policy) {

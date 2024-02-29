@@ -17,7 +17,7 @@ void pbox_app_btsoc_reply_poweron(bool poweron);
 void pbox_app_btsoc_reply_stereo_mode(stereo_mode_t mode);
 void pbox_app_btsoc_reply_human_voice_fadeout(bool fadeout);
 void pbox_app_btsoc_reply_input_source_with_playing_status(input_source_t source, play_status_t status);
-void pbox_app_btsoc_reply_accom_level(uint32_t level);
+void pbox_app_btsoc_reply_music_volume(uint32_t level);
 void pbox_app_btsoc_init(void);
 
 #ifdef __cplusplus

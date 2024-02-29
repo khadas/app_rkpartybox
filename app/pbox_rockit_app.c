@@ -93,7 +93,7 @@ void pbox_app_rockit_start_audiocard_player(input_source_t source, int sampleFre
 void pbox_app_rockit_pause_player(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_PAUSEPLAYER,
+        .msgId = PBOX_ROCKIT_PAUSE_PLAYER,
         .source = source,
     };
 
@@ -103,7 +103,7 @@ void pbox_app_rockit_pause_player(input_source_t source) {
 void pbox_app_rockit_stop_player(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_STOPPLAYER,
+        .msgId = PBOX_ROCKIT_STOP_PLAYER,
         .source = source,
     };
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
@@ -112,7 +112,7 @@ void pbox_app_rockit_stop_player(input_source_t source) {
 void pbox_app_rockit_resume_player(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_RESUMEPLAYER,
+        .msgId = PBOX_ROCKIT_RESUME_PLAYER,
         .source = source,
     };
 
@@ -122,7 +122,7 @@ void pbox_app_rockit_resume_player(input_source_t source) {
 void pbox_app_rockit_get_music_current_postion(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_GETPLAYERCURRENTPOSITION,
+        .msgId = PBOX_ROCKIT_GET_PLAYERCURRENTPOSITION,
         .source = source,
     };
 
@@ -132,7 +132,7 @@ void pbox_app_rockit_get_music_current_postion(input_source_t source) {
 void pbox_app_rockit_get_player_duration(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_GETPLAYERDURATION,
+        .msgId = PBOX_ROCKIT_GET_PLAYERDURATION,
         .source = source,
     };
 
@@ -142,7 +142,7 @@ void pbox_app_rockit_get_player_duration(input_source_t source) {
 void pbox_app_rockit_set_player_loop(input_source_t source, bool loop) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SETPLAYERLOOPING,
+        .msgId = PBOX_ROCKIT_SET_PLAYERLOOPING,
         .source = source,
     };
 
@@ -153,7 +153,7 @@ void pbox_app_rockit_set_player_loop(input_source_t source, bool loop) {
 void pbox_app_rockit_set_player_seek(input_source_t source, uint32_t mPosition) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SETPLAYERSEEKTO,
+        .msgId = PBOX_ROCKIT_SET_PLAYERSEEKTO,
         .source = source,
     };
 
@@ -164,7 +164,7 @@ void pbox_app_rockit_set_player_seek(input_source_t source, uint32_t mPosition) 
 void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SETPLAYERVOLUME,
+        .msgId = PBOX_ROCKIT_SET_PLAYERVOLUME,
         .source = source,
     };
 
@@ -175,23 +175,44 @@ void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume) {
 void pbox_app_rockit_get_player_volume(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_GETPLAYERVOLUME,
+        .msgId = PBOX_ROCKIT_GET_PLAYERVOLUME,
         .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_seperate(input_source_t source, bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel) {
+void pbox_app_rockit_set_music_volume(input_source_t source, uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SETPLAYER_SEPERATE,
+        .msgId = PBOX_ROCKIT_SET_MUSICVOLUME,
+        .source = source,
+    };
+
+    msg.volume = volume;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_get_music_volume(input_source_t source) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_GET_MUSICVOLUME,
+        .source = source,
+    };
+
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_set_player_seperate(input_source_t source, bool enable , uint32_t hlevel, uint32_t alevel, uint32_t rlevel) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_PLAYER_SEPERATE,
         .source = source,
     };
 
     msg.vocalSeperate.enable = enable;
     msg.vocalSeperate.humanLevel = hlevel;
-    msg.vocalSeperate.musicLevel = mlevel;
+    msg.vocalSeperate.accomLevel = alevel;
     msg.vocalSeperate.reservLevel = rlevel;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
@@ -232,7 +253,7 @@ void pbox_app_rockit_set_placement(input_source_t source, placement_t place) {
 void pbox_app_rockit_get_player_energy(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_GETPLAYERENERGYLEVEL,
+        .msgId = PBOX_ROCKIT_GET_PLAYERENERGYLEVEL,
         .source = source,
     };
 
@@ -242,7 +263,7 @@ void pbox_app_rockit_get_player_energy(input_source_t source) {
 void pbox_app_rockit_start_recorder(void) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_STARTRECORDER,
+        .msgId = PBOX_ROCKIT_START_RECORDER,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
@@ -251,7 +272,7 @@ void pbox_app_rockit_start_recorder(void) {
 void pbox_app_rockit_stop_recorder(void) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_STOPRECORDER,
+        .msgId = PBOX_ROCKIT_STOP_RECORDER,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
@@ -260,7 +281,7 @@ void pbox_app_rockit_stop_recorder(void) {
 void pbox_app_rockit_set_recoder_volume(uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SETRECORDERVOLUME,
+        .msgId = PBOX_ROCKIT_SET_RECORDERVOLUME,
     };
 
     msg.volume = volume;
@@ -280,7 +301,7 @@ void pbox_app_rockit_set_mic_data(mic_data_t micState) {
 void pbox_app_rockit_get_recoder_volume(void) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_GETRECORDERVOLUME,
+        .msgId = PBOX_ROCKIT_GET_RECORDERVOLUME,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
@@ -289,7 +310,7 @@ void pbox_app_rockit_get_recoder_volume(void) {
 void pbox_app_rockit_set_recoder_mute(bool mute) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SETRECORDERMUTE,
+        .msgId = PBOX_ROCKIT_SET_RECORDERMUTE,
     };
 
     msg.micmute = mute;
@@ -413,11 +434,17 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                 pbox_multi_displayTrackPosition(true, music_position, music_duration, DISP_All);
             }
         } break;
-        case PBOX_ROCKIT_MUSIC_VOLUME_EVT: {
+        case PBOX_ROCKIT_MUSIC_MAIN_VOLUME_EVT: {
             uint32_t volume = msg->volume;
             printf("volume: %d", volume);
-            pboxUIdata->mVolumeLevel = volume;
+            pboxUIdata->mainVolumeLevel = volume;
             pbox_multi_displayMainVolumeLevel(volume, DISP_All);
+        } break;
+        case PBOX_ROCKIT_MUSIC_CHANNEL_VOLUME_EVT: {
+            uint32_t volume = msg->volume;
+            printf("volume: %d", volume);
+            pboxUIdata->musicVolumeLevel = volume;
+            pbox_multi_displayMusicVolumeLevel(volume, DISP_All);
         } break;
         case PBOX_ROCKIT_PLAY_COMPLETED_EVT: {
             music_position = 0;
@@ -449,7 +476,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                     } break;
 
                 case RC_PB_WAKE_UP_CMD_VOLUME_UP: {
-                    uint32_t *const volume = &pboxUIdata->mVolumeLevel;
+                    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
 
                     if (*volume <= 5)
                         *volume += 5;
@@ -466,7 +493,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                     } break;
 
                 case RC_PB_WAKE_UP_CMD_VOLUME_DOWN: {
-                    uint32_t *const volume = &pboxUIdata->mVolumeLevel;
+                    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
 
                     printf("%s volume down:%d\n", __func__, *volume);
 

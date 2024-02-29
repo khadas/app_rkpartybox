@@ -54,12 +54,13 @@ typedef struct {
         placement_t placement;
         stereo_mode_t stereo;
         inout_door_t outdoor;
-        uint32_t mVolumeLevel;
+        uint32_t mainVolumeLevel;//main volume
+        uint32_t musicVolumeLevel;//music volume
         mic_data_t micData[MIC_NUM];//mMicVolumeLevel
-        uint32_t mMusicLevel;
-        uint32_t mHumanLevel;
-        uint32_t mReservLevel;
-        bool mVocalSeperateEnable;
+        uint32_t accomLevel;
+        uint32_t humanLevel;
+        uint32_t reservLevel;
+        bool vocalSplit;
         bool echo3A;
         bool mMute;
         pbox_revertb_t reverbMode;
@@ -143,7 +144,8 @@ void pbox_app_btsoc_get_human_voice_fadeout(display_t policy);
 void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy);
 void pbox_app_btsoc_get_input_source(display_t policy);
 void pbox_app_music_set_input_source(input_source_t source, play_status_t status, display_t policy);
-void pbox_app_music_get_accom_level(display_t policy);
+void pbox_app_music_get_music_volume(display_t policy);
+void pbox_app_music_set_music_volume(uint32_t volume, display_t policy);
 
 bool is_dest_source_switchable(input_source_t source, switch_source_t mode);
 bool is_input_source_selected(input_source_t source, switch_source_t mode);
@@ -151,9 +153,8 @@ bool isInputSourceConnected(input_source_t source);
 bool is_input_source_automode(void);
 
 #define pbox_app_btsoc_set_input_source(a, b, c) pbox_app_music_set_input_source(a, b, c)
-#define pbox_app_btsoc_get_accom_level(a) pbox_app_music_get_accom_level(a)
-#define pbox_app_btsoc_set_accom_level(a, b) pbox_app_music_set_accomp_music_level(a, b)
-
+#define pbox_app_btsoc_get_music_volume(a) pbox_app_music_get_music_volume(a)
+#define pbox_app_btsoc_set_music_volume(a, b) pbox_app_music_set_music_volume(a, b)
 
 #ifdef __cplusplus
 }

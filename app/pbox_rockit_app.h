@@ -37,7 +37,11 @@ void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume);
 
 void pbox_app_rockit_get_player_volume(input_source_t source);
 
-void pbox_app_rockit_set_player_seperate(input_source_t source, bool enable , uint32_t hlevel, uint32_t mlevel, uint32_t rlevel);
+void pbox_app_rockit_set_music_volume(input_source_t source, uint32_t volume);
+
+void pbox_app_rockit_get_player_volume(input_source_t source);
+
+void pbox_app_rockit_set_player_seperate(input_source_t source, bool enable , uint32_t hlevel, uint32_t alevel, uint32_t rlevel);
 
 void pbox_app_rockit_set_stereo_mode(input_source_t source, stereo_mode_t mode);
 

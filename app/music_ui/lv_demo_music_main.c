@@ -76,14 +76,14 @@ static lv_timer_t  * vocal_toast_timer;
 extern lv_ft_info_t ttf_main_s;
 extern lv_ft_info_t ttf_main_m;
 extern lv_ft_info_t ttf_main_l;
-int32_t mHumanLevel=15, mMusicLevel=100, mGuitarLevel = 100;
+int32_t mHumanLevel=15, mAccomLevel=100, mGuitarLevel = 100;
 int32_t mVolumeLevel=50, mMicVolumeLevel=50;
 //bool mEchoReductionEnable = true;
 usb_state_t lv_usbstate;
 btsink_state_t lv_btstate;
 bool lv_uacstate;
 
-bool mVocalSeperateEnable = false;
+bool mVocalSplit = false;
 lv_obj_t * vocal_label = NULL;
 lv_obj_t * accomp_label = NULL;
 lv_obj_t * guitar_label = NULL;
@@ -655,9 +655,9 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
     if(code == LV_EVENT_VALUE_CHANGED) {
         printf("State: %s\n", lv_obj_has_state(obj, LV_STATE_CHECKED) ? "On" : "Off");
     }
-    mVocalSeperateEnable = lv_obj_has_state(obj, LV_STATE_CHECKED) ? true : false;
+    mVocalSplit = lv_obj_has_state(obj, LV_STATE_CHECKED) ? true : false;
 
-    if(mVocalSeperateEnable) {
+    if(mVocalSplit) {
         lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
         lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
         if (guitar_slider != NULL)
@@ -672,7 +672,7 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
             lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
     }
 
-    lcd_pbox_notifySeparateSwitch(mVocalSeperateEnable);
+    lcd_pbox_notifySeparateSwitch(mVocalSplit);
 }
 
 static void accomp_slider_event_cb(lv_event_t *e) {
@@ -684,8 +684,8 @@ static void accomp_slider_event_cb(lv_event_t *e) {
     if (code == LV_EVENT_RELEASED) {
         printf("last slider value%s\n", buf);
         lv_label_set_text(accomp_label, buf);
-        mMusicLevel = (int)lv_slider_get_value(slider);
-        lcd_pbox_notifyAccompMusicLevel(mMusicLevel);
+        mAccomLevel = (int)lv_slider_get_value(slider);
+        lcd_pbox_notifyAccompMusicLevel(mAccomLevel);
     }
 }
 
@@ -888,7 +888,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_add_event_cb(accomp_slider, accomp_slider_event_cb, LV_EVENT_RELEASED, NULL);
     lv_slider_set_mode(accomp_slider, LV_SLIDER_MODE_NORMAL);
     lv_slider_set_range(accomp_slider, 0, 100);
-    //mMusicLevel = 100;
+    //mAccomLevel = 100;
     lv_slider_set_value(accomp_slider, 100, LV_ANIM_OFF);
     lv_style_init(&accomp_style_disabled);
     lv_style_set_bg_color(&accomp_style_disabled, lv_color_hex(0xCCCCCC));

@@ -14,15 +14,16 @@ pbox_data_t pbox_data = {
         .pcmChannel = 2,
     },
     .ui = {
-        .mVolumeLevel = 50,
-        .mMusicLevel = 100,
+        .mainVolumeLevel = 50,
+        .musicVolumeLevel = 100,
+        .accomLevel = 100,
         #if ENABLE_LCD_DISPLAY
-        .mHumanLevel = 15,
+        .humanLevel = 15,
         #else
-        .mHumanLevel = 5,
+        .humanLevel = 5,
         #endif
-        .mReservLevel = 100,
-        .mVocalSeperateEnable = false,
+        .reservLevel = 100,
+        .vocalSplit = false,
         .play_status = IDLE,
         .play_status_prev = IDLE,
         .autoSource = true,
@@ -467,9 +468,16 @@ void pbox_app_music_stop(display_t policy)
 
 void pbox_app_music_set_volume(uint32_t volume, display_t policy) {
     printf("%s main volume: %d\n", __func__, volume);
-    pboxUIdata->mVolumeLevel = volume;
+    pboxUIdata->mainVolumeLevel = volume;
     pbox_app_rockit_set_player_volume(pboxData->inputDevice, volume);
     pbox_multi_displayMainVolumeLevel(volume, policy);
+}
+
+void pbox_app_music_set_music_volume(uint32_t volume, display_t policy) {
+    printf("%s music volume: %d\n", __func__, volume);
+    pboxUIdata->musicVolumeLevel = volume;
+    pbox_app_rockit_set_music_volume(pboxData->inputDevice, volume);
+    pbox_multi_displayMusicVolumeLevel(volume, policy);
 }
 
 void pbox_app_music_album_next(bool next, display_t policy)
@@ -537,13 +545,13 @@ int nomal_mode_volume = 0;
 void pbox_app_music_original_singer_open(bool orignal, display_t policy)
 {
     bool seperate = !orignal;
-    uint32_t hlevel = pboxUIdata->mHumanLevel;
-    uint32_t mlevel = pboxUIdata->mMusicLevel;
-    uint32_t rlevel = pboxUIdata->mReservLevel;
+    uint32_t hlevel = pboxUIdata->humanLevel;
+    uint32_t alevel = pboxUIdata->accomLevel;
+    uint32_t rlevel = pboxUIdata->reservLevel;
 
-    pboxUIdata->mVocalSeperateEnable = !orignal;
-    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate , hlevel, mlevel, rlevel);
-    pbox_multi_displayMusicSeparateSwitch(seperate , hlevel, mlevel, rlevel, policy);
+    pboxUIdata->vocalSplit = !orignal;
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate , hlevel, alevel, rlevel);
+    pbox_multi_displayMusicSeparateSwitch(seperate , hlevel, alevel, rlevel, policy);
 }
 
 //album mode: shuffle, sequence, repeat, repeat one.....
@@ -616,39 +624,39 @@ void pbox_app_music_set_mic_reverb(uint8_t index, uint32_t reverb, display_t pol
 }
 
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
-    //uint32_t mlevel = pboxUIdata->mMusicLevel;
-    uint32_t hlevel = pboxUIdata->mHumanLevel;
-    uint32_t rlevel = pboxUIdata->mReservLevel;
-    bool seperate = pboxUIdata->mVocalSeperateEnable;
+    //uint32_t alevel = pboxUIdata->accomLevel;
+    uint32_t hlevel = pboxUIdata->humanLevel;
+    uint32_t rlevel = pboxUIdata->reservLevel;
+    bool seperate = pboxUIdata->vocalSplit;
 
-    printf("%s hlevel: %d, mlevel: %d, seperate:%d\n", __func__, hlevel, volume, seperate);
-    pboxUIdata->mMusicLevel = volume;
+    printf("%s hlevel: %d, alevel: %d, seperate:%d\n", __func__, hlevel, volume, seperate);
+    pboxUIdata->accomLevel = volume;
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, volume, rlevel);
     pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, volume, rlevel, policy);
 }
 
 void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy) {
-    uint32_t mlevel = pboxUIdata->mMusicLevel;
-    //uint32_t hlevel = pboxUIdata->mHumanLevel;
-    uint32_t rlevel = pboxUIdata->mReservLevel;
-    bool seperate = pboxUIdata->mVocalSeperateEnable;
+    uint32_t alevel = pboxUIdata->accomLevel;
+    //uint32_t hlevel = pboxUIdata->humanLevel;
+    uint32_t rlevel = pboxUIdata->reservLevel;
+    bool seperate = pboxUIdata->vocalSplit;
 
-    printf("%s hlevel: %d, mlevel: %d, seperate:%d\n", __func__, volume, mlevel, seperate);
-    pboxUIdata->mHumanLevel = volume;
-    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, volume, mlevel, rlevel);
-    pbox_multi_displayMusicSeparateSwitch(seperate, volume, mlevel, rlevel, policy);
+    printf("%s hlevel: %d, alevel: %d, seperate:%d\n", __func__, volume, alevel, seperate);
+    pboxUIdata->humanLevel = volume;
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, volume, alevel, rlevel);
+    pbox_multi_displayMusicSeparateSwitch(seperate, volume, alevel, rlevel, policy);
 }
 
 void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
-    uint32_t mlevel = pboxUIdata->mMusicLevel;
-    uint32_t hlevel = pboxUIdata->mHumanLevel;
-    //uint32_t rlevel = pboxUIdata->mReservLevel;
-    bool seperate = pboxUIdata->mVocalSeperateEnable;
+    uint32_t alevel = pboxUIdata->accomLevel;
+    uint32_t hlevel = pboxUIdata->humanLevel;
+    //uint32_t rlevel = pboxUIdata->reservLevel;
+    bool seperate = pboxUIdata->vocalSplit;
 
-    printf("%s hlevel: %d, mlevel: %d, rlevel:%d, seperate:%d\n", __func__, hlevel, mlevel, volume, seperate);
-    pboxUIdata->mReservLevel = volume;
-    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, mlevel, volume);
-    pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, mlevel, volume, policy);
+    printf("%s hlevel: %d, alevel: %d, rlevel:%d, seperate:%d\n", __func__, hlevel, alevel, volume, seperate);
+    pboxUIdata->reservLevel = volume;
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, alevel, volume);
+    pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, alevel, volume, policy);
 }
 
 void pbox_app_music_set_echo_3a(bool enable, display_t policy) {
@@ -685,7 +693,7 @@ void pbox_app_music_set_placement(placement_t place, display_t policy) {
 }
 
 void pbox_app_music_volume_up(display_t policy) {
-    uint32_t *const volume = &pboxUIdata->mVolumeLevel;
+    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
 
     if (*volume <= 5)
         *volume += 5;
@@ -704,7 +712,7 @@ void pbox_app_music_volume_up(display_t policy) {
 }
 
 void pbox_app_music_volume_down(display_t policy) {
-    uint32_t *const volume = &pboxUIdata->mVolumeLevel;
+    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
 
     if (*volume >= 50)
         *volume -= 25;
@@ -835,7 +843,7 @@ void pbox_app_btsoc_get_dsp_version(display_t policy) {
 }
 
 void pbox_app_btsoc_get_volume(display_t policy) {
-    pbox_app_btsoc_reply_main_volume(pboxUIdata->mVolumeLevel);
+    pbox_app_btsoc_reply_main_volume(pboxUIdata->mainVolumeLevel);
     //nothing to notify rockit
     //nothing to do with ui
 }
@@ -893,6 +901,6 @@ void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status
     pbox_app_drive_passive_player(source, status, policy);
 }
 
-void pbox_app_music_get_accom_level(display_t policy) {
-    pbox_app_btsoc_reply_accom_level(pboxUIdata->mMusicLevel);
+void pbox_app_music_get_music_volume(display_t policy) {
+    pbox_app_btsoc_reply_music_volume(pboxUIdata->musicVolumeLevel);
 }

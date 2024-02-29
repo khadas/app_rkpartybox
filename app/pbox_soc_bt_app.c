@@ -29,7 +29,7 @@ static void handlePowerOnEvent(const pbox_socbt_msg_t *msg);
 static void handleStereoModeEvent(const pbox_socbt_msg_t *msg);
 static void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg);
 static void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg);
-static void handleMusicGroundEvent(const pbox_socbt_msg_t *msg);
+static void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg);
 
 int unix_socket_socbt_send(void *info, int length)
 {
@@ -114,25 +114,24 @@ void pbox_app_btsoc_reply_input_source_with_playing_status(input_source_t source
     };
 
     msg.input_source.input = source;
-    msg.input_source.status = status;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
+    msg.input_source.status = status;
 }
 
-void pbox_app_btsoc_reply_accom_level(uint32_t level) {
+void pbox_app_btsoc_reply_music_volume(uint32_t level) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_SOCBT_DSP_MUSIC_GROUND_CMD,
+        .msgId = PBOX_SOCBT_DSP_MUSIC_VOLUME_CMD,
     };
 
-    msg.accomLevel = level;
+    msg.musicVolLevel = level;
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
 void pbox_app_btsoc_init(void) {
-
     pbox_app_btsoc_reply_poweron(true);
-//    pbox_app_btsoc_reply_main_volume(pboxUIdata->mVolumeLevel);
-    pbox_app_btsoc_reply_accom_level(pboxUIdata->mMusicLevel);
+//    pbox_app_btsoc_reply_main_volume(pboxUIdata->mainVolumeLevel);
+    pbox_app_btsoc_reply_music_volume(pboxUIdata->musicVolumeLevel);
 }
 
 void handleDspVersionEvent(const pbox_socbt_msg_t *msg) {
@@ -244,14 +243,14 @@ void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_btsoc_set_input_source(msg->input_source.input, msg->input_source.status, DISP_All);
 }
 
-void handleMusicGroundEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Music Ground Volume: %u\n", __func__, msg->accomLevel);
+void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg) {
+    printf("%s Music Volume Volume: %u\n", __func__, msg->musicVolLevel);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_accom_level(DISP_All);
+        pbox_app_btsoc_get_music_volume(DISP_All);
         return;
     }
 
-    pbox_app_btsoc_set_accom_level(msg->accomLevel, DISP_All);
+    pbox_app_btsoc_set_music_volume(msg->musicVolLevel, DISP_All);
 }
 
 // Define a struct to associate opcodes with handles
@@ -272,7 +271,7 @@ const socbt_event_handle_t socbtEventTable[] = {
     { PBOX_SOCBT_DSP_STEREO_MODE_EVT,   handleStereoModeEvent   },
     { PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,   handleHumanVoiceFadeoutEvent   },
     { PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT, handleSwitchSourceEvent },
-    { PBOX_SOCBT_DSP_MUSIC_GROUND_EVT,  handleMusicGroundEvent  },
+    { PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,  handleMusicVolumeEvent  },
 };
 
 void btsoc_main_data_recv(const pbox_socbt_msg_t* msg) {

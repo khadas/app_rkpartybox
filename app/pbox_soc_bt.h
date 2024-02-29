@@ -19,7 +19,7 @@ typedef enum {
     PBOX_SOCBT_DSP_STEREO_MODE_CMD,
     PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_CMD,
     PBOX_SOCBT_DSP_SWITCH_SOURCE_CMD,
-    PBOX_SOCBT_DSP_MUSIC_GROUND_CMD,
+    PBOX_SOCBT_DSP_MUSIC_VOLUME_CMD,
 
     //event
     PBOX_SOCBT_DSP_VERSION_EVT = 0x100,
@@ -32,7 +32,7 @@ typedef enum {
     PBOX_SOCBT_DSP_STEREO_MODE_EVT,
     PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,
     PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT,
-    PBOX_SOCBT_DSP_MUSIC_GROUND_EVT,
+    PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,
 } pbox_socbt_opcode_t;
 
 typedef struct {
@@ -43,13 +43,13 @@ typedef struct {
         char fw_ver[MAX_SHORT_NAME_LENGTH+1];
         //char stat[32];
         uint32_t volume;
+        uint32_t musicVolLevel;
         uint32_t poweron;
         mic_mux_t micMux;
         placement_t placement;
         inout_door_t outdoor;
         stereo_mode_t stereo;
         bool fadeout;
-        uint32_t accomLevel;
         struct socbt_input_source {
             play_status_t status;
             input_source_t input;
