@@ -31,24 +31,24 @@ void *mpi_hdl = NULL;
 
 rc_s32 (*rc_pb_create)(rc_pb_ctx *ctx, struct rc_pb_attr *attr);
 rc_s32 (*rc_pb_destroy)(rc_pb_ctx ctx);
-rc_s32 (*rc_pb_set_volume)(rc_pb_ctx ctx, rc_u32 volume);
-rc_s32 (*rc_pb_get_volume)(rc_pb_ctx ctx, rc_u32 *volume);
+rc_s32 (*rc_pb_set_volume)(rc_pb_ctx ctx, rc_float volume_db);
+rc_s32 (*rc_pb_get_volume)(rc_pb_ctx ctx, rc_float *volume_db);
 
 rc_s32 (*rc_pb_player_start)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_player_attr *attr);
 rc_s32 (*rc_pb_player_stop)(rc_pb_ctx ctx, enum rc_pb_play_src src);
 rc_s32 (*rc_pb_player_pause)(rc_pb_ctx ctx, enum rc_pb_play_src src);
 rc_s32 (*rc_pb_player_resume)(rc_pb_ctx ctx, enum rc_pb_play_src src);
 rc_s32 (*rc_pb_player_dequeue_frame)(rc_pb_ctx ctx, enum rc_pb_play_src src,
-                                     struct rc_pb_frame_info *frame_info, rc_s32 s32MilliSec);
+                                     struct rc_pb_frame_info *frame_info, rc_s32 ms);
 rc_s32 (*rc_pb_player_queue_frame)(rc_pb_ctx ctx, enum rc_pb_play_src src,
-                                   struct rc_pb_frame_info *frame_info, rc_s32 s32MilliSec);
+                                   struct rc_pb_frame_info *frame_info, rc_s32 ms);
 
 rc_s32 (*rc_pb_player_get_position)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec);
 rc_s32 (*rc_pb_player_get_duration)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec);
 rc_s32 (*rc_pb_player_set_loop)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_bool loop);
 rc_s32 (*rc_pb_player_seek)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 usec);
-rc_s32 (*rc_pb_player_set_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 volume);
-rc_s32 (*rc_pb_player_get_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 *volume);
+rc_s32 (*rc_pb_player_set_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float volume_db);
+rc_s32 (*rc_pb_player_get_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float *volume);
 rc_s32 (*rc_pb_player_set_param)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param);
 rc_s32 (*rc_pb_player_get_param)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param);
 rc_s32 (*rc_pb_player_get_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy);
@@ -56,11 +56,11 @@ rc_s32 (*rc_pb_player_release_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, st
 
 rc_s32 (*rc_pb_recorder_start)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_recorder_stop)(rc_pb_ctx ctx);
-rc_s32 (*rc_pb_recorder_mute)(rc_pb_ctx ctx, rc_bool mute);
-rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, rc_u32 volume);
-rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, rc_u32 *volume);
-rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, struct rc_pb_param *param);
-rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_recorder_mute)(rc_pb_ctx ctx, rc_s32 idx, rc_bool mute);
+rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db);
+rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db);
+rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 
 
 
@@ -87,13 +87,13 @@ int rk_demo_music_create() {
             return -1;
         }
 
-        rc_pb_set_volume = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_set_volume");
+        rc_pb_set_volume = (rc_s32 (*)(rc_pb_ctx ctx, rc_float volume_db))dlsym(mpi_hdl, "rc_pb_set_volume");
         if (NULL == rc_pb_set_volume) {
             printf("failed to dlsym rc_pb_set_volume, err=%s\n", dlerror());
             return -1;
         }
 
-        rc_pb_get_volume = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_get_volume");
+        rc_pb_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, rc_float volume_db))dlsym(mpi_hdl, "rc_pb_get_volume");
         if (NULL == rc_pb_get_volume) {
                 printf("failed to dlsym rc_pb_get_volume, err=%s\n", dlerror());
                 return -1;
@@ -149,14 +149,14 @@ int rk_demo_music_create() {
             return -1;
         }
 
-        rc_pb_player_set_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 volume))dlsym(mpi_hdl, 
+        rc_pb_player_set_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float volume_db))dlsym(mpi_hdl, 
                                                 "rc_pb_player_set_volume");
         if (NULL == rc_pb_player_set_volume) {
             printf("failed to open  func, err=%s\n", dlerror());
             return -1;
         }
 
-        rc_pb_player_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_u32 *volume))dlsym(mpi_hdl, 
+        rc_pb_player_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float *volume_db))dlsym(mpi_hdl, 
                                                 "rc_pb_player_get_volume");
         if (NULL == rc_pb_player_get_volume) {
             printf("failed to open  func, err=%s\n", dlerror());
@@ -203,35 +203,35 @@ int rk_demo_music_create() {
             return -1;
         }
 
-        rc_pb_recorder_mute =  (rc_s32 (*)(rc_pb_ctx ctx, rc_bool mute))dlsym(mpi_hdl,
+        rc_pb_recorder_mute =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_bool mute))dlsym(mpi_hdl,
                                                     "rc_pb_recorder_mute");
         if (NULL == rc_pb_recorder_mute) {
             printf("failed to open func, err=%s", dlerror());
             return -1;
         }
 
-        rc_pb_recorder_set_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_u32 volume))dlsym(mpi_hdl,
+        rc_pb_recorder_set_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db))dlsym(mpi_hdl,
                                                 "rc_pb_recorder_set_volume");
         if (NULL == rc_pb_recorder_set_volume) {
             printf("failed to open func, err=%s",dlerror());
             return -1;
         }
 
-        rc_pb_recorder_get_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_u32 *volume))dlsym(mpi_hdl,
+        rc_pb_recorder_get_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db))dlsym(mpi_hdl,
                                             "rc_pb_recorder_get_volume");
         if (NULL == rc_pb_recorder_get_volume) {
             printf("failed to open func, err=%s", dlerror());
             return -1;
         }
 
-        rc_pb_recorder_set_param = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_param *param))dlsym(mpi_hdl, 
+        rc_pb_recorder_set_param = (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                             "rc_pb_recorder_set_param");
         if (NULL == rc_pb_recorder_set_param) {
             printf("failed to open  func, err=%s\n", dlerror());
             return -1;
         }
 
-        rc_pb_recorder_get_param = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_param *param))dlsym(mpi_hdl, 
+        rc_pb_recorder_get_param = (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                             "rc_pb_recorder_get_param");
         if (NULL == rc_pb_recorder_get_param) {
             printf("failed to open  func, err=%s\n", dlerror());
@@ -250,7 +250,7 @@ int rk_demo_music_create() {
     attr.notify                 = pb_rockit_notify;
     attr.opaque                 = NULL;
     attr.record_attr            = &recorder_attr;
-    attr.volume                 = 50;//main volume
+    attr.volume_db                 = -50;//main volume
 
     recorder_attr.card_name = "hw:0,0";
     recorder_attr.sample_rate = 48000;
@@ -327,7 +327,7 @@ static void rockit_pbbox_notify_current_postion(uint32_t current)
     #endif
 }
 
-static void rockit_pbbox_notify_volume(uint32_t volume)
+static void rockit_pbbox_notify_volume(float volume)
 {
     #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
@@ -339,7 +339,7 @@ static void rockit_pbbox_notify_volume(uint32_t volume)
     #endif
 }
 
-static void rockit_pbbox_notify_music_volume(uint32_t volume)
+static void rockit_pbbox_notify_music_volume(float volume)
 {
     #if ENABLE_RK_ROCKIT
     pbox_rockit_msg_t msg = {0};
@@ -568,7 +568,10 @@ static void pbox_rockit_music_echo_reduction(const pbox_rockit_msg_t* msg) {
 
     param.type = RC_PB_PARAM_TYPE_3A;
     param.howling.bypass = !on;
-    ret = rc_pb_recorder_set_param(partyboxCtx, &param);
+    ret = rc_pb_recorder_set_param(partyboxCtx, 0, &param);
+    #if MIC_NUM==2
+    ret = rc_pb_recorder_set_param(partyboxCtx, 1, &param);
+    #endif
     printf("%s rc_pb_recorder_set_param 3a:%s res:%d\n" ,__func__, on?"on":"off", ret);
 }
 
@@ -604,11 +607,11 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
     printf("%s rc_pb_player_set_param res:%d\n" ,__func__, ret);
 }
 
-uint32_t pbox_rockit_music_master_volume_get(input_source_t source) {
+float pbox_rockit_music_master_volume_get(input_source_t source) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
-    rc_u32 volume = 0;
+    float volume = 0;
     assert(partyboxCtx);
     assert(rc_pb_get_volume);
     rc_pb_get_volume(partyboxCtx, &volume);
@@ -616,7 +619,7 @@ uint32_t pbox_rockit_music_master_volume_get(input_source_t source) {
     return volume;
 }
 
-static uint32_t pbox_rockit_music_master_volume_adjust(input_source_t source, int Level) {
+static float pbox_rockit_music_master_volume_adjust(input_source_t source, float Level) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
@@ -624,15 +627,15 @@ static uint32_t pbox_rockit_music_master_volume_adjust(input_source_t source, in
     assert(rc_pb_set_volume);
     rc_pb_set_volume(partyboxCtx, Level);
 
-    printf("%s source%d vol:%d\n" ,__func__, source, Level);
+    printf("%s source%d vol:%f\n" ,__func__, source, Level);
     return pbox_rockit_music_master_volume_get(source);
 }
 
-uint32_t pbox_rockit_music_channel_volume_get(input_source_t source) {
+float pbox_rockit_music_channel_volume_get(input_source_t source) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
-    rc_u32 volume = 0;
+    float volume = 0;
     assert(partyboxCtx);
     assert(rc_pb_player_get_volume);
     rc_pb_player_get_volume(partyboxCtx, dest, &volume);
@@ -640,7 +643,7 @@ uint32_t pbox_rockit_music_channel_volume_get(input_source_t source) {
     return volume;
 }
 
-static uint32_t pbox_rockit_music_channel_volume_adjust(input_source_t source, int Level) {
+static float pbox_rockit_music_channel_volume_adjust(input_source_t source, float Level) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
@@ -648,7 +651,7 @@ static uint32_t pbox_rockit_music_channel_volume_adjust(input_source_t source, i
     assert(rc_pb_player_set_volume);
     rc_pb_player_set_volume(partyboxCtx, dest, Level);
 
-    printf("%s source%d vol:%d\n" ,__func__, source, Level);
+    printf("%s source%d vol:%f\n" ,__func__, source, Level);
     return pbox_rockit_music_channel_volume_get(source);
 }
 
@@ -816,50 +819,88 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
     printf("%s:%d\n", __func__, place);
 }
 
-static void pbox_rockit_music_mic_volume_adjust(int micLevel) {
+static void pbox_rockit_music_mic_volume_adjust(uint8_t index, float micLevel) {
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_volume);
-    rc_pb_recorder_set_volume(partyboxCtx, micLevel);
+    rc_pb_recorder_set_volume(partyboxCtx, index, micLevel);
 }
 
-static void pbox_rockit_music_mic_mute(bool mute) {
+static void pbox_rockit_music_mic_mute(uint8_t index, bool mute) {
     assert(partyboxCtx);
     assert(rc_pb_recorder_mute);
-    rc_pb_recorder_mute(partyboxCtx, mute);
+    rc_pb_recorder_mute(partyboxCtx, index, mute);
     printf("%s: %s\n", __func__, mute?"on":"off");
 }
 
-static void pbox_rockit_set_mic_treble(uint32_t treble) {
-    assert(partyboxCtx);
+static void pbox_rockit_set_mic_treble(uint8_t index, float treble) {
+    struct rc_pb_param param;
+    param.type = RC_PB_PARAM_TYPE_EQDRC;
+    param.eqdrc.bypass = false;
+    param.eqdrc.eq = NULL;
 
+    assert(partyboxCtx);
+    assert(rc_pb_recorder_set_param);
+    printf("%s index:%d, value:%f", __func__, index, treble);
+
+    if (true) {
+        struct rc_pb_param_eq eq;
+        eq.ch = 0;
+        eq.filter = 0;
+        eq.enable = 1;
+        eq.type = 1;
+        eq.fc = 1000;
+        eq.q = 1;
+        eq.boost = treble; // tunning
+        param.eqdrc.eq = &eq;
+    }
+    rc_pb_recorder_set_param(partyboxCtx, index, &param);
 }
 
-static void pbox_rockit_set_mic_bass(uint32_t bass) {
-    assert(partyboxCtx);
+static void pbox_rockit_set_mic_bass(uint8_t index, float bass) {
+    struct rc_pb_param param;
+    param.type = RC_PB_PARAM_TYPE_EQDRC;
+    param.eqdrc.bypass = false;
+    param.eqdrc.eq = NULL;
 
+    assert(partyboxCtx);
+    assert(rc_pb_recorder_set_param);
+    printf("%s index:%d, value:%f", __func__, index, bass);
+
+    if (true) {
+        struct rc_pb_param_eq eq;
+        eq.ch = 0;
+        eq.filter = 0;
+        eq.enable = 1;
+        eq.type = 1;
+        eq.fc = 500;
+        eq.q = 1;
+        eq.boost = bass; // tunning
+        param.eqdrc.eq = &eq;
+    }
+    rc_pb_recorder_set_param(partyboxCtx, index, &param);
 }
 
-static void pbox_rockit_set_mic_reverb(uint32_t reverb) {
+static void pbox_rockit_set_mic_reverb(uint8_t index, float reverb) {
     assert(partyboxCtx);
-
+    printf("%s index:%d, value:%f", __func__, index, reverb);
 }
 
 static void pbox_rockit_music_mic_set_parameter(mic_data_t micState) {
     uint8_t index = micState.index;
     mic_mux_t micMux = micState.micMux;
-    uint32_t micVolume = micState.micVolume;
-    uint32_t micTreble = micState.micTreble;
-    uint32_t micBass = micState.micBass;
-    uint32_t micReverb = micState.micReverb;
+    float micVolume = micState.micVolume;
+    float micTreble = micState.micTreble;
+    float micBass = micState.micBass;
+    float micReverb = micState.micReverb;
 
-    printf("%s: index:%d, micMux:%d, volume: %d, treble:%d, bass:%d, reverb:%d\n",
+    printf("%s: index:%d, micMux:%d, volume: %f, treble:%f, bass:%f, reverb:%f\n",
         __func__, index, micMux, micVolume, micTreble, micBass, micReverb);
 
-    pbox_rockit_music_mic_mute(micMux == MIC_OFF? true: false);
-    pbox_rockit_music_mic_volume_adjust(micVolume);
-    pbox_rockit_set_mic_treble(micTreble);
-    pbox_rockit_set_mic_bass(micBass);
-    pbox_rockit_set_mic_reverb(micReverb);
+    pbox_rockit_music_mic_mute(index, micMux == MIC_OFF? true: false);
+    pbox_rockit_music_mic_volume_adjust(index, micVolume);
+    pbox_rockit_set_mic_treble(index, micTreble);
+    pbox_rockit_set_mic_bass(index, micBass);
+    pbox_rockit_set_mic_reverb(index, micReverb);
 }
 
 static void pbox_rockit_music_destroy(void) {
@@ -892,7 +933,7 @@ static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {
 #endif
     }
     else if(role == UAC_ROLE_RECORDER) {
-        pbox_rockit_music_mic_volume_adjust(volume);
+        pbox_rockit_music_mic_volume_adjust(0, volume);
     }
 }
 
@@ -1024,8 +1065,9 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SET_MAINVOLUME: {
-                uint32_t volume = msg->volume;
-                uint32_t vol_old = pbox_rockit_music_master_volume_adjust(msg->source, volume);
+                float volume = msg->volume;
+                printf("%s PBOX_ROCKIT_SET_MAINVOLUME volume:%f\n" ,__func__, volume);
+                float vol_old = pbox_rockit_music_master_volume_adjust(msg->source, volume);
                 if (volume != vol_old) {
                     rockit_pbbox_notify_volume(volume);
                 }
@@ -1042,8 +1084,8 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SET_MUSICVOLUME: {
-                uint32_t volume = msg->volume;
-                uint32_t vol_old = pbox_rockit_music_channel_volume_adjust(msg->source, volume);
+                float volume = msg->volume;
+                float vol_old = pbox_rockit_music_channel_volume_adjust(msg->source, volume);
                 if (volume != vol_old) {
                     rockit_pbbox_notify_music_volume(volume);
                 }
@@ -1066,7 +1108,10 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SET_RECORDERVOLUME: {
-                pbox_rockit_music_mic_volume_adjust(msg->volume);
+                pbox_rockit_music_mic_volume_adjust(0, msg->volume);
+                #if MIC_NUM==2
+                pbox_rockit_music_mic_volume_adjust(0, msg->volume);
+                #endif
             } break;
 
             case PBOX_ROCKIT_SET_MIC_STATE: {
@@ -1086,7 +1131,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SET_RECORDERMUTE: {
-                pbox_rockit_music_mic_mute(msg->micmute);
+                pbox_rockit_music_mic_mute(0, msg->micmute);
             } break;
 
             case PBOX_ROCKIT_SET_RECORDER_3A: {

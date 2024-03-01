@@ -12,25 +12,27 @@
 
 #if ENABLE_SARAADC
 void keyscan_knob_data_recv(struct _keyinfo keyinfo) {
-    uint32_t value = keyinfo.value;
+    float value = keyinfo.value;//*32/100;
+    float f_value = (float)(value - 50)/2;
+    printf("%s f_value:%f\n", __func__, f_value);
     switch(keyinfo.keycode) {
         case MIC1_BUTTON_BASS: {
-            pbox_app_music_set_mic_bass(0, value, DISP_All);
+            pbox_app_music_set_mic_bass(0, f_value, DISP_All);
         } break;
         case MIC1_BUTTON_TREBLE: {
-            pbox_app_music_set_mic_treble(0, value, DISP_All);
+            pbox_app_music_set_mic_treble(0, f_value, DISP_All);
         } break;
         case MIC1_BUTTON_REVERB: {
-            pbox_app_music_set_mic_reverb(0, value, DISP_All);
+            pbox_app_music_set_mic_reverb(0, f_value, DISP_All);
         } break;
         case MIC2_BUTTON_BASS: {
-            pbox_app_music_set_mic_bass(1, value, DISP_All);
+            pbox_app_music_set_mic_bass(1, f_value, DISP_All);
         } break;
         case MIC2_BUTTON_TREBLE: {
-            pbox_app_music_set_mic_treble(1, value, DISP_All);
+            pbox_app_music_set_mic_treble(1, f_value, DISP_All);
         } break;
         case MIC2_BUTTON_REVERB: {
-            pbox_app_music_set_mic_reverb(1, value, DISP_All);
+            pbox_app_music_set_mic_reverb(1, f_value, DISP_All);
         } break;
     }
 }

@@ -35,6 +35,8 @@ typedef signed char           rc_s8;
 typedef signed short          rc_s16;      // NOLINT
 typedef signed int            rc_s32;
 typedef long long             rc_s64;      // NOLINT
+typedef float                 rc_float;
+typedef double                rc_double;
 typedef void*                 rc_pb_ctx;
 typedef void*                 rc_pb_frame;
 
@@ -92,11 +94,22 @@ struct rc_pb_param_howling {
     rc_bool bypass;
 };
 
-struct rc_pb_param_eq_drc{
-    rc_bool bypass;
+struct rc_pb_param_eq {
+    rc_s32   ch;
+    rc_s32   filter;
+    rc_s32   enable;
+    rc_s32   type;
+    rc_float fc;
+    rc_float q;
+    rc_float boost;
 };
 
-struct rc_pb_param_reverb{
+struct rc_pb_param_eq_drc {
+    rc_bool bypass;
+    struct rc_pb_param_eq *eq;
+};
+
+struct rc_pb_param_reverb {
     rc_bool bypass;
     enum rc_pb_reverb_mode mode;
 };
@@ -171,7 +184,7 @@ struct rc_pb_attr {
     rc_u32                      bit_width;
     notifyfun_t                 notify;
     void                       *opaque;
-    rc_u32                      volume;
+    rc_float                    volume_db;
     struct rc_pb_recorder_attr *record_attr;
 };
 

@@ -466,15 +466,15 @@ void pbox_app_music_stop(display_t policy)
     pboxUIdata->play_status = _STOP;
 }
 
-void pbox_app_music_set_volume(uint32_t volume, display_t policy) {
-    printf("%s main volume: %d\n", __func__, volume);
+void pbox_app_music_set_volume(float volume, display_t policy) {
+    printf("%s main volume: %f\n", __func__, volume);
     pboxUIdata->mainVolumeLevel = volume;
     pbox_app_rockit_set_player_volume(pboxData->inputDevice, volume);
     pbox_multi_displayMainVolumeLevel(volume, policy);
 }
 
-void pbox_app_music_set_music_volume(uint32_t volume, display_t policy) {
-    printf("%s music volume: %d\n", __func__, volume);
+void pbox_app_music_set_music_volume(float volume, display_t policy) {
+    printf("%s music volume: %f\n", __func__, volume);
     pboxUIdata->musicVolumeLevel = volume;
     pbox_app_rockit_set_music_volume(pboxData->inputDevice, volume);
     pbox_multi_displayMusicVolumeLevel(volume, policy);
@@ -571,7 +571,7 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
     pbox_multi_displayTrackPosition(false, dest, duration, policy);
 }
 
-void pbox_app_music_set_mic_volume(uint32_t micNum, uint32_t volume, display_t policy) {
+void pbox_app_music_set_mic_volume(uint32_t micNum, float volume, display_t policy) {
     pboxUIdata->micData[micNum].micVolume = volume;
     pbox_app_rockit_set_recoder_volume(volume);
     pbox_multi_displayMicVolumeLevel(volume, policy);
@@ -587,10 +587,10 @@ void pbox_app_music_mics_init(display_t policy) {
     for (int i = 0; i < MIC_NUM; i++) {
         pboxUIdata->micData[i].index = i;
         pboxUIdata->micData[i].micMux = MIC_IN;
-        pboxUIdata->micData[i].micVolume = 100;
-        pboxUIdata->micData[i].micTreble = 50;
-        pboxUIdata->micData[i].micBass = 50;
-        pboxUIdata->micData[i].micReverb = 50;
+        pboxUIdata->micData[i].micVolume = 0;
+        pboxUIdata->micData[i].micTreble = 0;
+        pboxUIdata->micData[i].micBass = 0;
+        pboxUIdata->micData[i].micReverb = 0;
         pbox_app_rockit_set_mic_data(pboxUIdata->micData[i]);
     }
 }
@@ -602,21 +602,21 @@ void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy) 
     pbox_multi_displayMicMux(index, mux, policy);
 }
 
-void pbox_app_music_set_mic_treble(uint8_t index, uint32_t treble, display_t policy) {
+void pbox_app_music_set_mic_treble(uint8_t index, float treble, display_t policy) {
     pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micTreble = treble;
     pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
     pbox_multi_displayMicTreble(index, treble, policy);
 }
 
-void pbox_app_music_set_mic_bass(uint8_t index, uint32_t bass, display_t policy) {
+void pbox_app_music_set_mic_bass(uint8_t index, float bass, display_t policy) {
     pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micBass = bass;
     pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
     pbox_multi_displayMicBass(index, bass, policy);
 }
 
-void pbox_app_music_set_mic_reverb(uint8_t index, uint32_t reverb, display_t policy) {
+void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy) {
     pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micReverb = reverb;
     pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
@@ -693,8 +693,11 @@ void pbox_app_music_set_placement(placement_t place, display_t policy) {
 }
 
 void pbox_app_music_volume_up(display_t policy) {
-    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
-
+    float *const volume = &pboxUIdata->mainVolumeLevel;
+    *volume += 3;
+    *volume = *volume> 0?0:*volume;
+    *volume = *volume< -100?-100:0;
+/*
     if (*volume <= 5)
         *volume += 5;
     else if (*volume <= 10)
@@ -703,8 +706,8 @@ void pbox_app_music_volume_up(display_t policy) {
         *volume += 25;
     else
         *volume = 100;
-
-    printf("%s volume up:%d\n", __func__, *volume);
+*/
+    printf("%s volume up:%f\n", __func__, *volume);
     pbox_app_music_set_volume(*volume, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
@@ -712,8 +715,11 @@ void pbox_app_music_volume_up(display_t policy) {
 }
 
 void pbox_app_music_volume_down(display_t policy) {
-    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
-
+    float *const volume = &pboxUIdata->mainVolumeLevel;
+    *volume -= 3;
+    *volume = *volume> 0?0:*volume;
+    *volume = *volume< -100?-100:0;
+/*
     if (*volume >= 50)
         *volume -= 25;
     else if (*volume >= 25) 
@@ -722,8 +728,8 @@ void pbox_app_music_volume_down(display_t policy) {
         *volume -= 5;
     else
         *volume = 0;
-
-    printf("%s volume down:%d\n", __func__, *volume);
+*/
+    printf("%s volume down:%f\n", __func__, *volume);
     pbox_app_music_set_volume(*volume, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 

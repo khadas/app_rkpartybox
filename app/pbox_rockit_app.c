@@ -161,7 +161,7 @@ void pbox_app_rockit_set_player_seek(input_source_t source, uint32_t mPosition) 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume) {
+void pbox_app_rockit_set_player_volume(input_source_t source, float volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_MAINVOLUME,
@@ -169,6 +169,7 @@ void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume) {
     };
 
     msg.volume = volume;
+    printf("%s msg.vol:%f volume:%f\n", __func__, msg.volume, volume);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -182,7 +183,7 @@ void pbox_app_rockit_get_player_volume(input_source_t source) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_music_volume(input_source_t source, uint32_t volume) {
+void pbox_app_rockit_set_music_volume(input_source_t source, float volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_MUSICVOLUME,
@@ -190,6 +191,7 @@ void pbox_app_rockit_set_music_volume(input_source_t source, uint32_t volume) {
     };
 
     msg.volume = volume;
+    printf("%s music vol:%f\n", __func__, msg.volume);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -278,7 +280,7 @@ void pbox_app_rockit_stop_recorder(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_recoder_volume(uint32_t volume) {
+void pbox_app_rockit_set_recoder_volume(float volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_RECORDERVOLUME,
@@ -293,8 +295,10 @@ void pbox_app_rockit_set_mic_data(mic_data_t micState) {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_MIC_STATE,
     };
-
+    printf("1v:%f, t:%f, b:%f, r:%f\n", __func__, micState.micVolume, micState.micTreble, micState.micBass, micState.micReverb);
     msg.micState = micState;
+    printf("2v:%f, t:%f, b:%f, r:%f\n", __func__, msg.micState.micVolume, msg.micState.micTreble, msg.micState.micBass, msg.micState.micReverb);
+    printf("3v:%d, t:%d, b:%d, r:%d\n", __func__, msg.micState.micVolume, msg.micState.micTreble, msg.micState.micBass, msg.micState.micReverb);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 

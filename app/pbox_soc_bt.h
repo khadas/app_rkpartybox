@@ -42,8 +42,8 @@ typedef struct {
     union {
         char fw_ver[MAX_SHORT_NAME_LENGTH+1];
         //char stat[32];
-        uint32_t volume;
-        uint32_t musicVolLevel;
+        float volume;
+        float musicVolLevel;
         uint32_t poweron;
         mic_mux_t micMux;
         placement_t placement;

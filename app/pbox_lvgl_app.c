@@ -267,11 +267,13 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
                 pbox_app_music_seek_position(msecSeekTo, msecDuration, DISP_LED);
         } break;
         case PBOX_LCD_MAIN_VOL_LEVEL_EVT: {
-            int32_t volume = msg->mainVolume;
+            float volume = msg->mainVolume;
+            volume -= 100;
             pbox_app_music_set_volume(volume, DISP_LED);
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
-            int32_t mic_volume = msg->micVolume;
+            float mic_volume = msg->micVolume;
+            mic_volume -= 100;
             pbox_app_music_set_mic_volume(0, mic_volume, DISP_LED);
         } break;
         case PBOX_LCD_ACCOMP_MUSIC_LEVEL_EVT: {

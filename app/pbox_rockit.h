@@ -67,7 +67,7 @@ typedef struct {
         } dataSource;
         bool            loop;
         uint32_t        mPosition;
-        uint32_t        volume;
+        float        volume;
         pbox_revertb_t  reverbMode;
         pbox_vocal_t    vocalSeperate;
         bool            echo3A_On;
@@ -80,7 +80,7 @@ typedef struct {
         struct _wake_up {
             enum rc_pb_wake_up_cmd wakeCmd;
             union {
-                uint32_t volume;
+                float volume;
             };
         } wake_up;
         uint32_t duration;

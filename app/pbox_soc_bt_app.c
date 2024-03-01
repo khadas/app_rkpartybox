@@ -143,7 +143,7 @@ void handleDspVersionEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMainVolumeEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Main Volume: %u\n", __func__, msg->volume);
+    printf("%s Main Volume: %f\n", __func__, msg->volume);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_volume(DISP_All);
         return;
@@ -244,7 +244,7 @@ void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Music Volume Volume: %u\n", __func__, msg->musicVolLevel);
+    printf("%s Music Volume Volume: %f\n", __func__, msg->musicVolLevel);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_music_volume(DISP_All);
         return;

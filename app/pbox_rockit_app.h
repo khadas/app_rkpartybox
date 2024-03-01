@@ -33,11 +33,11 @@ void pbox_app_rockit_set_player_loop(input_source_t source, bool loop);
 
 void pbox_app_rockit_set_player_seek(input_source_t source, uint32_t mPosition);
 
-void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume);
+void pbox_app_rockit_set_player_volume(input_source_t source, float volume);
 
 void pbox_app_rockit_get_player_volume(input_source_t source);
 
-void pbox_app_rockit_set_music_volume(input_source_t source, uint32_t volume);
+void pbox_app_rockit_set_music_volume(input_source_t source, float volume);
 
 void pbox_app_rockit_get_player_volume(input_source_t source);
 
