@@ -164,7 +164,7 @@ void pbox_app_rockit_set_player_seek(input_source_t source, uint32_t mPosition) 
 void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SET_PLAYERVOLUME,
+        .msgId = PBOX_ROCKIT_SET_MAINVOLUME,
         .source = source,
     };
 
@@ -175,7 +175,7 @@ void pbox_app_rockit_set_player_volume(input_source_t source, uint32_t volume) {
 void pbox_app_rockit_get_player_volume(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_GET_PLAYERVOLUME,
+        .msgId = PBOX_ROCKIT_GET_MAINVOLUME,
         .source = source,
     };
 

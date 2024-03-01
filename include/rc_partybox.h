@@ -27,6 +27,8 @@ extern "C" {
 #if 0
 rc_s32 rc_pb_create(rc_pb_ctx *ctx, struct rc_pb_attr *attr);
 rc_s32 rc_pb_destroy(rc_pb_ctx ctx);
+rc_s32 rc_pb_set_volume(rc_pb_ctx ctx, rc_u32 volume);
+rc_s32 rc_pb_get_volume(rc_pb_ctx ctx, rc_u32 *volume);
 
 rc_s32 rc_pb_player_start(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_player_attr *attr);
 rc_s32 rc_pb_player_stop(rc_pb_ctx ctx, enum rc_pb_play_src src);

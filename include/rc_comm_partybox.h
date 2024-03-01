@@ -171,6 +171,7 @@ struct rc_pb_attr {
     rc_u32                      bit_width;
     notifyfun_t                 notify;
     void                       *opaque;
+    rc_u32                      volume;
     struct rc_pb_recorder_attr *record_attr;
 };
 

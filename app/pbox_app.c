@@ -14,8 +14,8 @@ pbox_data_t pbox_data = {
         .pcmChannel = 2,
     },
     .ui = {
-        .mainVolumeLevel = 50,
-        .musicVolumeLevel = 100,
+        .mainVolumeLevel = DEFAULT_MAIN_VOLUME,
+        .musicVolumeLevel = 0,
         .accomLevel = 100,
         #if ENABLE_LCD_DISPLAY
         .humanLevel = 15,

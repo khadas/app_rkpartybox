@@ -21,6 +21,7 @@ extern "C" {
 #define MIC_NUM             2
 #define ENABLE_RAW_PCM      0
 #define ENABLE_SARAADC   1
+#define DEFAULT_MAIN_VOLUME (-5)
 #else
 #define ENABLE_LCD_DISPLAY 1
 #define ENABLE_USE_SOCBT 0
@@ -36,6 +37,7 @@ extern "C" {
 #define MIC_NUM             1
 #define ENABLE_RAW_PCM      0
 #define ENABLE_SARAADC   0
+#define DEFAULT_MAIN_VOLUME (-1)
 #endif
 
 #ifdef __cplusplus
