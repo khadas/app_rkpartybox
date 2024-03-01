@@ -15,22 +15,22 @@ void keyscan_knob_data_recv(struct _keyinfo keyinfo) {
     uint32_t value = keyinfo.value;
     switch(keyinfo.keycode) {
         case MIC1_BUTTON_BASS: {
-            pbox_app_music_set_mic_bass(1, value, DISP_All);
+            pbox_app_music_set_mic_bass(0, value, DISP_All);
         } break;
         case MIC1_BUTTON_TREBLE: {
-            pbox_app_music_set_mic_treble(1, value, DISP_All);
+            pbox_app_music_set_mic_treble(0, value, DISP_All);
         } break;
         case MIC1_BUTTON_REVERB: {
-            pbox_app_music_set_mic_reverb(1, value, DISP_All);
+            pbox_app_music_set_mic_reverb(0, value, DISP_All);
         } break;
         case MIC2_BUTTON_BASS: {
-            pbox_app_music_set_mic_bass(2, value, DISP_All);
+            pbox_app_music_set_mic_bass(1, value, DISP_All);
         } break;
         case MIC2_BUTTON_TREBLE: {
-            pbox_app_music_set_mic_treble(2, value, DISP_All);
+            pbox_app_music_set_mic_treble(1, value, DISP_All);
         } break;
         case MIC2_BUTTON_REVERB: {
-            pbox_app_music_set_mic_reverb(2, value, DISP_All);
+            pbox_app_music_set_mic_reverb(1, value, DISP_All);
         } break;
     }
 }

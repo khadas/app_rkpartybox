@@ -486,9 +486,9 @@ static int64_t pbox_rockit_music_get_position(input_source_t source) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     assert(partyboxCtx);
-    assert(rc_pb_player_get_duration);
+    assert(rc_pb_player_get_position);
 
-    rc_pb_player_get_duration(partyboxCtx, dest, &position);
+    rc_pb_player_get_position(partyboxCtx, dest, &position);
     //printf("%s poststion: %lld\n", __func__, position);
 
     return position;

@@ -148,6 +148,7 @@ void pbox_app_music_get_accom_level(display_t policy);
 bool is_dest_source_switchable(input_source_t source, switch_source_t mode);
 bool is_input_source_selected(input_source_t source, switch_source_t mode);
 bool isInputSourceConnected(input_source_t source);
+bool is_input_source_automode(void);
 
 #define pbox_app_btsoc_set_input_source(a, b, c) pbox_app_music_set_input_source(a, b, c)
 #define pbox_app_btsoc_get_accom_level(a) pbox_app_music_get_accom_level(a)

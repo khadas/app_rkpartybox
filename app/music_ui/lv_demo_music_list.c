@@ -318,7 +318,7 @@ static void btn_click_event_cb(lv_event_t * e)
 
     uint32_t idx = lv_obj_get_child_id(btn);
 
-    if (getBtSinkState() == BT_CONNECTED) {
+    if ((getBtSinkState() == BT_CONNECTED) && is_input_source_automode()) {
         char text[MAX_NAME_LENGTH];
         lv_snprintf(text, sizeof(text), "%s %s device first.", TOAST_TEXT, getBtRemoteName());
         create_list_toast(btn, text, 1000);

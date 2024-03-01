@@ -202,6 +202,7 @@ void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
     pbox_app_btsoc_set_outdoor_mode(msg->outdoor, DISP_All);
+    pbox_app_btsoc_set_human_voice_fadeout(msg->outdoor?false:true, DISP_All);
 }
 
 void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {

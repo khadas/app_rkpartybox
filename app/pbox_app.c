@@ -164,6 +164,9 @@ void pbox_app_start_uac_poll(display_t policy) {
     //no ui display now
 }
 
+bool is_input_source_automode(void) {
+    return pboxUIdata->autoSource;
+}
 bool is_input_source_selected(input_source_t source, switch_source_t mode) {
     if (mode == MANUAL) {
         return (pboxUIdata->autoSource==false) && (pboxData->inputDevice == source);
