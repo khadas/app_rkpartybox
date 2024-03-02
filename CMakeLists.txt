@@ -26,6 +26,7 @@ aux_source_directory(./app/uac SRCS)
 aux_source_directory(./driver/userial SRCS)
 aux_source_directory(./sys SRCS)
 aux_source_directory(./utils SRCS)
+aux_source_directory(./hal SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")

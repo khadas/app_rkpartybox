@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <sys/select.h>
 #include "pbox_soc_bt.h"
+
 #include "board.h"
 #include "hal_hw.h"
 
@@ -48,94 +49,6 @@ static void handleSocbtDspStereoModeCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspHumanVoiceFadeoutCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg);
 static void handleSocbtDspMusicVolumeCmd(const pbox_socbt_msg_t* msg);
-
-#define DSP_MAIN_MAX_VOL        32
-#define DSP_MUSIC_MAX_VOL       32
-#define DSP_MIC_REVERB_MAX_VOL  32
-#define DSP_MIC_TREBLE_MAX_VOL  32
-#define DSP_MIC_BASS_MAX_VOL    32
-#define DSP_MIC_MAX_VOL         32
-
-static float HW_MAIN_GAIN(uint8_t index);
-static float HW_MUSIC_GAIN(uint8_t index);
-static float HW_MIC_REVERB(uint8_t index);
-static float HW_MIC_TREBLE(uint8_t index);
-static float HW_MIC_BASS(uint8_t index);
-static float HW_GT_REVERB(uint8_t index);
-static float HW_GT_TREBLE(uint8_t index);
-static float HW_GT_BASS(uint8_t index);
-
-//总音量参数数组***
-static const float main_gain[DSP_MAIN_MAX_VOL+1] = \
-{-800,-400,-380,-360,-340,-320,-300,-280,-260,-240,-220,-200,-180,-160,-140,\
--120,-110,-100,-90,-80,-70,-60,-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0};
-//话筒音量参数数组***
-//static const float mic_gain[DSP_MIC_MAX_VOL+1] = {-800,-400,-380,-360,-340,-320,-300,\
--280,-260,-240,-220,-200,-180,-160,-140,-120,-110,-100,-90,-80,-70,-60,-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0};
-//GT音量参数数组***
-//static const float gt_gain[DSP_MIC_MAX_VOL+1] = {-800,-400,-380,-360,-340,-320,-300,\
--280,-260,-240,-220,-200,-180,-160,-140,-120,-110,-100,-90,-80,-70,-60,-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0};
-//音乐音量参数数组***
-static const float music_gain[DSP_MUSIC_MAX_VOL+1] = {-800,-400,-380,-360,-340,-320,-300,\
--280,-260,-240,-220,-200,-180,-160,-140,-120,-110,-100,-90,-80,-70,-60,-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0};
-
-//话筒混响高低音音量参数数组***
-static const float mic_reverb[DSP_MIC_REVERB_MAX_VOL+1] = {0,3,6,9,12,15,18,21,24,27,30,33,\
-34,37,40,43,47,50,53,56,59,62,65,68,71,75,79,83,87,91,95,98,100};
-static const float mic_treble[DSP_MIC_TREBLE_MAX_VOL+1] = {-120,-115,-110,-105,-100,-95,-90,\
--85,-80,-70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60,70,80,85,90,95,100,105,110,115,120};
-static const float mic_bass[DSP_MIC_BASS_MAX_VOL+1] = {-120,-115,-110,-105,-100,-95,-90,-85,\
--80,-70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60,70,80,85,90,95,100,105,110,115,120};
-
-//GT混响高低音音量参数数组***
-static const float gt_reverb[DSP_MIC_REVERB_MAX_VOL+1] = {0,3,6,9,12,15,18,21,24,27,30,33,34,\
-37,40,43,47,50,53,56,59,62,65,68,71,75,79,83,87,91,95,98,100};
-
-static const float gt_treble[DSP_MIC_TREBLE_MAX_VOL+1] = {-120,-115,-110,-105,-100,-95,-90,\
--85,-80,-70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60,70,80,85,90,95,100,105,110,115,120};
-
-static const float gt_bass[DSP_MIC_BASS_MAX_VOL+1] = {-120,-115,-110,-105,-100,-95,-90,-85,\
--80,-70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60,70,80,85,90,95,100,105,110,115,120};
-
-float HW_MAIN_GAIN(uint8_t index) {
-    assert(index<=DSP_MAIN_MAX_VOL);
-    return main_gain[index];
-}
-
-float HW_MUSIC_GAIN(uint8_t index) {
-    assert(index<=DSP_MUSIC_MAX_VOL);
-    return music_gain[index];
-}
-
-float HW_MIC_REVERB(uint8_t index) {
-    assert(index<=DSP_MIC_REVERB_MAX_VOL);
-    return mic_reverb[index];
-}
-
-float HW_MIC_TREBLE(uint8_t index) {
-    assert(index<=DSP_MIC_TREBLE_MAX_VOL);
-    return mic_treble[index];
-}
-
-float HW_MIC_BASS(uint8_t index) {
-    assert(index<=DSP_MIC_BASS_MAX_VOL);
-    return mic_bass[index];
-}
-
-float HW_GT_REVERB(uint8_t index) {
-    assert(index<=DSP_MIC_TREBLE_MAX_VOL);
-    return gt_reverb[index];
-}
-
-float HW_GT_TREBLE(uint8_t index) {
-    assert(index<=DSP_MIC_TREBLE_MAX_VOL);
-    return gt_treble[index];
-}
-
-float HW_GT_BASS(uint8_t index) {
-    assert(index<=DSP_MIC_BASS_MAX_VOL);
-    return gt_bass[index];
-}
 
 int unix_socket_socbt_notify(void *info, int length) {
     return unix_socket_notify_msg(PBOX_MAIN_BT, info, length);
