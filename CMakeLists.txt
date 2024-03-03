@@ -58,6 +58,13 @@ if (LV_USE_DEMO_MUSIC)
 target_link_libraries(${PROJECT_NAME} lvgl lv_drivers drm)
 endif()
 
+if(RK3308_PBOX_CORE_BOARD)
+	add_definitions(-DENABLE_EXT_BT_MCU)
+	install(FILES ./lib64/librkaudio_effect_howling.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
+else()
+	install(FILES ./lib64/librkaudio_effect_howling_evb.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
+endif()
+
 set(ROCKIT_FILE_LIBS
        ./lib64/librockit.so
        ./lib64/libaec_bf_process.so
@@ -72,7 +79,6 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkaudio_howling_suppression.so
        ./lib64/librkstudio.so
        ./lib64/libdrm.so.2
-       ./lib64/librkaudio_effect_howling.so
        ./lib64/libgmp.so.10
        )
 
