@@ -11,10 +11,14 @@
 #include <dirent.h>
 #include <ctype.h>
 #include <sys/wait.h>
+#include <sys/prctl.h>
+#include <sys/syscall.h>
+#include <sys/resource.h>
 
 #include "rk_utils.h"
 
 #define DEBUG 1
+#define PRIORITY_BASE(x)                       (sched_get_priority_min(x))
 
 static int system_fd_closexec(const char* command)
 {
@@ -385,3 +389,41 @@ void set_vocal_separate_thread_cpu(void) {
         printf("vocal_separate_cpu_set fail\n");
     }
 }
+
+ void rk_schedparam_show(pid_t pid)
+ {
+	 int policy, ret;
+	 struct sched_param param;
+
+	if(pid == 0) {pid = syscall(SYS_getpid);}
+	printf("%s pid=%d\n", __func__, pid);
+
+	ret = sched_getparam(pid, &param);
+	policy = sched_getscheduler(pid);
+	printf("%s pid:%d(%d) ret:(%d) priority(%d) policy:%s\n",
+		__func__, pid, getpriority(PRIO_PROCESS, pid), ret, param.sched_priority,
+		(policy==SCHED_OTHER)?"OTHER":(policy==SCHED_FIFO)?"FIFO":"RR");
+}
+
+ int rk_setRtPrority(pid_t pid, int policy, int priority)
+ {
+	 char cThreadName[32] = {0};
+
+	 struct sched_param param;
+	 struct timespec tp;
+
+	 if(pid == 0) pid = syscall(SYS_getpid);
+
+	 param.sched_priority = PRIORITY_BASE(policy) + priority;
+
+	 int a = sched_setscheduler(pid, policy, &param);
+	 perror("sched_setscheduler");
+
+	 int b = sched_rr_get_interval(pid,&tp);
+	 printf("pid:%d sched_priority:%d-[%d-%d], time:%u(s).%u(us), policy:%d,%d\n",\
+		 pid, priority, sched_get_priority_min(policy), sched_get_priority_max(policy),
+		 tp.tv_sec,tp.tv_nsec/1000,policy,a|b);
+
+	 rk_schedparam_show(pid);
+	 return a|b;
+ }

@@ -15,6 +15,8 @@ int test_pthread(pthread_t tid); /*pthread_kill的返回值：成功（0） 线�
 int get_psgrep_pid(const char Name[]);
 void set_vocal_separate_thread_cpu(void);
 int get_ps_pid_new(const char Name[]);
+int rk_setRtPrority(pid_t pid, int policy, int priority);
+void rk_schedparam_show(pid_t pid);
 
 #define msleep(x) usleep(x * 1000)
 

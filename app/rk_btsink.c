@@ -520,8 +520,10 @@ static bool bt_test_vendor_cb(bool enable)
 static void bt_restart_bluealsa_only(void) {
 	printf("%s\n", __func__);
 	kill_task("pulseaudio");
-	if(!get_ps_pid("bluealsa"))
+	if(!get_ps_pid("bluealsa")) {
 		run_task("bluealsa", "bluealsa --profile=a2dp-sink &");
+		rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
+	}
 }
 
 static int bt_restart_a2dp_sink(bool onlyAplay)
@@ -544,12 +546,16 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 			exec_command_system("hcidump -i hci0 -w /data/btsnoop.log &");
 		}
 
-		if(!get_ps_pid("bluealsa"))
+		if(!get_ps_pid("bluealsa")) {
 			run_task("bluealsa", "bluealsa --profile=a2dp-sink &");
+			rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
+		}
 	}
 
 	if(!get_ps_pid("bluealsa-aplay")) {
 		run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+		//run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
+		rk_setRtPrority(get_ps_pid("bluealsa-aplay"), SCHED_RR, 9);
 	}
 	return 0;
 }
