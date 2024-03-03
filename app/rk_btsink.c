@@ -521,7 +521,7 @@ static void bt_restart_bluealsa_only(void) {
 	printf("%s\n", __func__);
 	kill_task("pulseaudio");
 	if(!get_ps_pid("bluealsa"))
-		run_task("bluealsa", "bluealsa --profile=a2dp-sink --a2dp-volume --initial-volume=70 --a2dp-force-audio-cd &");
+		run_task("bluealsa", "bluealsa --profile=a2dp-sink &");
 }
 
 static int bt_restart_a2dp_sink(bool onlyAplay)
@@ -545,11 +545,12 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 		}
 
 		if(!get_ps_pid("bluealsa"))
-			run_task("bluealsa", "bluealsa --profile=a2dp-sink --a2dp-volume --initial-volume=70 --a2dp-force-audio-cd &");
-    }
+			run_task("bluealsa", "bluealsa --profile=a2dp-sink &");
+	}
 
-	if(!get_ps_pid("bluealsa-aplay"))
+	if(!get_ps_pid("bluealsa-aplay")) {
 		run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+	}
 	return 0;
 }
 
