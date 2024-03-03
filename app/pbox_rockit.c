@@ -15,11 +15,11 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include "rc_partybox.h"
+#include "rc_rkstudio_vendor.h"
 #include "pbox_common.h"
 #include "pbox_rockit.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
-
 
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
@@ -786,13 +786,53 @@ static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info
     return 0;
 }
 
+
+
 static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode_t stereo) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
+    struct rc_pb_param param;
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     assert(partyboxCtx);
+    printf("%s dest:%d, stereo:%f\n", __func__, index, stereo);
 
-    printf("%s:%d\n", __func__, stereo);
+    static rc_float sudioStereo;
+    param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
+    param.rkstudio.data = (rc_float *)(&sudioStereo);
+    switch (stereo) {
+        case MODE_WIDEN: {
+            param.rkstudio.addr = MUXES_SWITCH_STEREO_0_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 0;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+
+            param.rkstudio.addr = MUXES_SWITCH_STEREO_1_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 0;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+
+        } break;
+
+        case MODE_STEREO: {
+            param.rkstudio.addr = MUXES_SWITCH_STEREO_0_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 1;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+
+            param.rkstudio.addr = MUXES_SWITCH_STEREO_1_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 0;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+        } break;
+
+        case MODE_MONO: {
+            param.rkstudio.addr = MUXES_SWITCH_STEREO_1_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 1;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+        } break;
+        default: break;
+    }
 }
 
 static void pbox_rockit_music_set_inout_door(input_source_t source, inout_door_t outdoor) {
@@ -807,10 +847,42 @@ static void pbox_rockit_music_set_inout_door(input_source_t source, inout_door_t
 
 static void pbox_rockit_music_set_placement(input_source_t source, placement_t place) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
+    struct rc_pb_param param;
+
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     assert(partyboxCtx);
+    printf("%s dest:%d, place:%f\n", __func__, index, place);
 
-    printf("%s:%d\n", __func__, place);
+    static rc_float sudioPlace;
+    param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
+    param.rkstudio.data = (rc_float *)(&sudioPlace);
+    switch (place) {
+        case PLACE_AUTO:
+        case PLACE_HORI: {
+            param.rkstudio.addr = MUXES_SWITCH_MONO_0_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 0;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+
+            param.rkstudio.addr = MUXES_SWITCH_MONO_1_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 0;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+        } break;
+
+        case PLACE_VERT: {
+            param.rkstudio.addr = MUXES_SWITCH_MONO_0_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 1;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+
+            param.rkstudio.addr = MUXES_SWITCH_MONO_1_IDX_ADDR;
+            param.rkstudio.cnt = 1;
+            param.rkstudio.data[0] = 1;
+            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+        } break;
+        default: break;
+    }
 }
 
 static void pbox_rockit_music_mic_volume_adjust(uint8_t index, float micLevel) {

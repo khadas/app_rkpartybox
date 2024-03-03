@@ -61,6 +61,7 @@ enum rc_pb_param_type {
     RC_PB_PARAM_TYPE_REVERB,
     RC_PB_PARAM_TYPE_VOLCAL_SEPARATE,
     RC_PB_PARAM_TYPE_AMIX,
+    RC_PB_PARAM_TYPE_RKSTUDIO,
     RC_PB_PARAM_TYPE_BUTT
 };
 
@@ -129,6 +130,12 @@ struct rc_pb_param_amix {
     const char *values;
 };
 
+struct rc_pb_param_rkstudio {
+    rc_u32    addr;
+    rc_float *data;
+    rc_u32    cnt;
+};
+
 struct rc_pb_param {
     enum rc_pb_param_type type;
     union {
@@ -137,6 +144,7 @@ struct rc_pb_param {
         struct rc_pb_param_reverb         reverb;
         struct rc_pb_param_vocal_separate vocal;
         struct rc_pb_param_amix           amix;
+        struct rc_pb_param_rkstudio       rkstudio;
     };
 };
 
