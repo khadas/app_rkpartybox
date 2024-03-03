@@ -93,12 +93,12 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
 #endif
 #if ENABLE_EXT_MCU_USB
         case SRC_USB: {
-            pbox_app_rockit_start_audiocard_player(SRC_USB, 48000, 2, AUDIO_CARD_USB);
+            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_USB);
         }
 #endif
 #if ENABLE_AUX
         case SRC_AUX: {
-            pbox_app_rockit_start_audiocard_player(SRC_AUX, 48000, 2, AUDIO_CARD_AUX);
+            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_AUX);
         }
 #endif
     }
@@ -443,12 +443,12 @@ void pbox_app_music_stop(display_t policy)
         } break;
 #if ENABLE_AUX
         case SRC_AUX: {
-            pbox_app_rockit_stop_player(SRC_AUX);
+            pbox_app_rockit_stop_player(SRC_BT);
         } break;
 #endif
         case SRC_USB: {
 #if ENABLE_EXT_MCU_USB
-            pbox_app_rockit_stop_player(SRC_USB);
+            pbox_app_rockit_stop_player(SRC_BT);
 #else
             pbox_app_rockit_stop_player(SRC_USB);
 #endif
@@ -582,6 +582,18 @@ void pbox_app_music_set_mic_mute(uint8_t index, bool mute, display_t policy){
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUTE, pboxUIdata->micData[index]);
     pbox_multi_displayMicMute(mute, policy);
 }
+
+void pbox_app_music_init(void) {
+    pbox_app_music_set_volume(DEFAULT_MAIN_VOLUME, DISP_All);
+    pbox_app_music_set_music_volume(0, DISP_All);
+    #if ENABLE_USE_SOCBT
+        pbox_app_btsoc_set_placement(PLACE_HORI, DISP_All);
+        pbox_app_btsoc_set_human_voice_fadeout(false, DISP_All);
+        pbox_app_btsoc_set_stereo_mode(MODE_STEREO, DISP_All);
+        pbox_app_switch_to_input_source(SRC_BT, DISP_All);
+    #endif
+}
+
 
 void pbox_app_music_mics_init(display_t policy) {
     for (int index = 0; index < MIC_NUM; index++) {
@@ -853,6 +865,7 @@ void pbox_app_btsoc_get_volume(display_t policy) {
 }
 
 void pbox_app_btsoc_set_placement(placement_t placement, display_t policy) {
+    if(pboxUIdata->placement != placement)
     pbox_app_music_set_placement(placement, policy);
 }
 
@@ -869,6 +882,7 @@ void pbox_app_btsoc_get_mic2_state(display_t policy) {
 }
 
 void pbox_app_btsoc_set_outdoor_mode(inout_door_t inout, display_t policy) {
+    if(pboxUIdata->outdoor != inout)
     pbox_app_music_set_outdoor_mode(inout, policy);
 }
 
@@ -881,6 +895,7 @@ void pbox_app_btsoc_get_poweron(display_t policy) {
 }
 
 void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy) {
+    if(pboxUIdata->stereo != mode)
     pbox_app_music_set_stereo_mode(mode, policy);
 }
 
@@ -893,6 +908,7 @@ void pbox_app_btsoc_get_human_voice_fadeout(display_t policy) {
 }
 
 void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy) {
+    if(pboxUIdata->vocalSplit != fadeout)
     pbox_app_music_original_singer_open(fadeout? false: true, policy);
 }
 

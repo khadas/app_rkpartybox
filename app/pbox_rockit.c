@@ -62,8 +62,7 @@ rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_
 rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 
-
-
+bool started_player[RC_PB_PLAY_SRC_BUTT];
 int rk_demo_music_create() {
     //create karaoke recorder && player
     struct rc_pb_attr attr;
@@ -274,6 +273,7 @@ int rk_demo_music_create() {
         return -1;
     }
     printf("rockit media player created successfully, partyboxCtx=%p\n", partyboxCtx);
+    memset(started_player, 0 , sizeof(started_player));
 }
 
 static void rockit_pbbox_notify_awaken(uint32_t wakeCmd)
@@ -397,7 +397,6 @@ static enum rc_pb_play_src covert2rockitSource(input_source_t source) {
     return destSource;
 }
 
-bool started_player[RC_PB_PLAY_SRC_BUTT] = {false};
 static void pbox_rockit_music_stop(input_source_t source)
 {
     enum rc_pb_play_src dest = covert2rockitSource(source);
@@ -407,7 +406,7 @@ static void pbox_rockit_music_stop(input_source_t source)
 
     printf("%s source:%d, started_player[%d]= %d, \n", __func__, source, dest, started_player[dest]);
 
-    if(started_player[dest]) {
+    if(true == started_player[dest]) {
         started_player[dest] = false;
         rc_pb_player_stop(partyboxCtx, dest);
     }
@@ -431,7 +430,7 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
 
     started_player[dest] = true;
 }
-
+static bool vendor_started = false;
 static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioFormat_t audioFormat)
 {
     struct rc_pb_player_attr playerAttr;
@@ -466,8 +465,15 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     assert(rc_pb_player_start);
 
     printf("%s freq:%d, channel: %d, card:%s source:%d\n", __func__, sampleFreq, channel, cardName, source);
+    #if 0//ENABLE_USE_SOCBT
+    if(false == vendor_started) {
+        vendor_started = true;
+        rc_pb_player_start(partyboxCtx, dest, &playerAttr);
+    }
+    #else
     pbox_rockit_music_stop(source);
     rc_pb_player_start(partyboxCtx, dest, &playerAttr);
+    #endif
     started_player[dest] = true;
     //set_vocal_separate_thread_cpu();
 }
@@ -547,6 +553,10 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
         } break;
         default: break;
     }
+
+    #if ENABLE_USE_SOCBT
+        param.reverb.mode = RC_PB_REVERB_MODE_KTV;
+    #endif
 
     if (mode == RC_PB_REVERB_MODE_USER) 
         param.reverb.bypass = true;
@@ -794,7 +804,7 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     assert(partyboxCtx);
-    printf("%s dest:%d, stereo:%f\n", __func__, index, stereo);
+    printf("%s dest:%d, stereo:%d\n", __func__, dest, stereo);
 
     static rc_float sudioStereo;
     param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
@@ -851,7 +861,7 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     assert(partyboxCtx);
-    printf("%s dest:%d, place:%f\n", __func__, index, place);
+    printf("%s dest:%d, place:%d\n", __func__, dest, place);
 
     static rc_float sudioPlace;
     param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
@@ -906,7 +916,7 @@ static void pbox_rockit_set_mic_treble(uint8_t index, float treble) {
 
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
-    printf("%s index:%d, value:%f\n", __func__, index, treble);
+    printf("%s index:%d, treble:%f\n", __func__, index, treble);
 
     if (true) {
         static struct rc_pb_param_eq eq;
@@ -930,7 +940,7 @@ static void pbox_rockit_set_mic_bass(uint8_t index, float bass) {
 
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
-    printf("%s index:%d, value:%f\n", __func__, index, bass);
+    printf("%s index:%d, bass:%f\n", __func__, index, bass);
 
     if (true) {
         static struct rc_pb_param_eq eq;
@@ -954,7 +964,8 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, float reverb) {
     assert(rc_pb_player_set_param);
     assert(rc_pb_recorder_get_param);
 
-    printf("%s index:%d, value:%f\n", __func__, index, reverb);
+    memset(&param, 0, sizeof(struct rc_pb_param));
+    printf("%s index:%d, reverb:%f\n", __func__, index, reverb);
     rc_pb_recorder_get_param(partyboxCtx, index, &param);
     printf("%s got type:%d, bypass:%d, dry:%d, wet:%d\n", \
                 __func__, param.type, param.reverb.bypass, param.reverb.dry_level, param.reverb.wet_level);
@@ -964,6 +975,10 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, float reverb) {
         param.reverb.mode != RC_PB_REVERB_MODE_CONCERT) {
         param.reverb.mode = RC_PB_REVERB_MODE_KTV;
     }
+
+    #if ENABLE_USE_SOCBT
+        param.reverb.mode = RC_PB_REVERB_MODE_KTV;
+    #endif
 
     param.type = RC_PB_PARAM_TYPE_REVERB;
     param.reverb.bypass = false;
@@ -1167,7 +1182,9 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_STOP_PLAYER: {
+                #if 1//ENABLE_USE_SOCBT == 0
                 pbox_rockit_music_stop(msg->source);
+                #endif
             } break;
 
             case PBOX_ROCKIT_GET_PLAYERCURRENTPOSITION: {
@@ -1234,7 +1251,7 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_SET_MIC_STATE: {
                 pbox_rockit_music_mic_set_parameter(msg);
-            }
+            } break;
 
             case PBOX_ROCKIT_SET_STEREO_MODE: {
                 pbox_rockit_music_set_stereo_mode(msg->source, msg->stereo);
