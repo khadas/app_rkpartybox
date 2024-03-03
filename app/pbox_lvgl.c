@@ -159,12 +159,12 @@ void lcd_pbox_notifySeparateSwitch(bool enable) {
 }
 
 // Notify function for the echo 3A event
-void lcd_pbox_notifyEcho3A(bool echo3A_On) {
+void lcd_pbox_notifyEcho3A(bool echo3a) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_EVT,
         .msgId = PBOX_LCD_ECHO_3A_EVT,
     };
-    msg.echo3A_On = echo3A_On;
+    msg.echo3a = echo3a;
 
     unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
 }
@@ -320,8 +320,8 @@ void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
 
 // Function to handle the echo 3A switch command
 void handleLcdEcho3ASwitchCmd(const pbox_lcd_msg_t* msg) {
-    bool echo3A_On = msg->echo3A_On;
-    printf("Echo 3A Switch Command: %s\n", echo3A_On ? "On" : "Off");
+    bool echo3a = msg->echo3a;
+    printf("Echo 3A Switch Command: %s\n", echo3a ? "On" : "Off");
     _lv_demo_music_update_ui_info(UI_WIDGET_3A_SWITCH, msg);
 }
 

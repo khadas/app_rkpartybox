@@ -387,8 +387,8 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                     }
         } break;
         case UI_WIDGET_3A_SWITCH: {
-            bool echo3A_On = msg->echo3A_On;
-            if(echo3A_On) {
+            bool echo3a = msg->echo3a;
+            if(echo3a) {
                 lv_obj_add_state(echo_3a_switch, LV_STATE_CHECKED);
             }
             else {

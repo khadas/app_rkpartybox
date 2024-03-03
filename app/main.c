@@ -241,9 +241,6 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_usb_pollState();
         pbox_app_music_set_volume(DEFAULT_MAIN_VOLUME, DISP_All);
         pbox_app_music_set_music_volume(0, DISP_All);
-        pbox_app_music_set_recoder_revert(PBOX_REVERT_KTV, DISP_All);
-        pbox_app_music_set_echo_3a(DEFAULT_MIC_3A, DISP_All);
-        pbox_app_music_set_mic_mute(false, DISP_All);
         pbox_app_music_mics_init(DISP_All);
         #if ENABLE_USE_SOCBT
         pbox_app_btsoc_init();

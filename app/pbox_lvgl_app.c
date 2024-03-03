@@ -158,7 +158,7 @@ void pbox_app_lcd_displayEcho3A(bool on) {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_ECHO_3A_SWITCH,
     };
-    msg.echo3A_On = on;
+    msg.echo3a = on;
 
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
@@ -294,11 +294,11 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         } break;
         case PBOX_LCD_ECHO_3A_EVT: {
             bool enable = msg->enable;
-            pbox_app_music_set_echo_3a(enable, DISP_LED);
+            pbox_app_music_set_echo_3a(0, enable, DISP_LED);
         } break;
         case PBOX_LCD_REVERT_MODE_EVT: {
             pbox_revertb_t revertb = msg->reverbMode;
-            pbox_app_music_set_recoder_revert(revertb, DISP_LED);
+            pbox_app_music_set_recoder_revert(0, revertb, DISP_LED);
         } break;
         default: break;
     } //end switch (msg->msgId)

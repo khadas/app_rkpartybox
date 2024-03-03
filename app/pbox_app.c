@@ -571,55 +571,53 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
     pbox_multi_displayTrackPosition(false, dest, duration, policy);
 }
 
-void pbox_app_music_set_mic_volume(uint32_t micNum, float volume, display_t policy) {
-    pboxUIdata->micData[micNum].micVolume = volume;
-    pbox_app_rockit_set_recoder_volume(volume);
+void pbox_app_music_set_mic_volume(uint32_t index, float volume, display_t policy) {
+    pboxUIdata->micData[index].micVolume = volume;
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_VOLUME, pboxUIdata->micData[index]);
     pbox_multi_displayMicVolumeLevel(volume, policy);
 }
 
-void pbox_app_music_set_mic_mute(bool mute, display_t policy){
-    pboxUIdata->mMute = mute;
-    pbox_app_rockit_set_recoder_mute(mute);
+void pbox_app_music_set_mic_mute(uint8_t index, bool mute, display_t policy){
+    pboxUIdata->micData[index].micmute = mute;
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUTE, pboxUIdata->micData[index]);
     pbox_multi_displayMicMute(mute, policy);
 }
 
 void pbox_app_music_mics_init(display_t policy) {
-    for (int i = 0; i < MIC_NUM; i++) {
-        pboxUIdata->micData[i].index = i;
-        pboxUIdata->micData[i].micMux = MIC_IN;
-        pboxUIdata->micData[i].micVolume = 0;
-        pboxUIdata->micData[i].micTreble = 0;
-        pboxUIdata->micData[i].micBass = 0;
-        pboxUIdata->micData[i].micReverb = 0;
-        pbox_app_rockit_set_mic_data(pboxUIdata->micData[i]);
+    for (int index = 0; index < MIC_NUM; index++) {
+        pboxUIdata->micData[index].micmute = false;
+        pboxUIdata->micData[index].micMux = MIC_IN;
+        pboxUIdata->micData[index].micVolume = 0;
+        pboxUIdata->micData[index].micTreble = 0;
+        pboxUIdata->micData[index].micBass = 0;
+        pboxUIdata->micData[index].micReverb = 50;
+        pboxUIdata->micData[index].echo3a = DEFAULT_MIC_3A;
+        pboxUIdata->micData[index].reverbMode = PBOX_REVERT_KTV;
+        pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_ALL, pboxUIdata->micData[index]);
     }
 }
 
 void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy) {
-    pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micMux = mux;
-    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUX, pboxUIdata->micData[index]);
     pbox_multi_displayMicMux(index, mux, policy);
 }
 
 void pbox_app_music_set_mic_treble(uint8_t index, float treble, display_t policy) {
-    pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micTreble = treble;
-    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_TREBLE, pboxUIdata->micData[index]);
     pbox_multi_displayMicTreble(index, treble, policy);
 }
 
 void pbox_app_music_set_mic_bass(uint8_t index, float bass, display_t policy) {
-    pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micBass = bass;
-    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_BASS, pboxUIdata->micData[index]);
     pbox_multi_displayMicBass(index, bass, policy);
 }
 
 void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy) {
-    pboxUIdata->micData[index].index = index;
     pboxUIdata->micData[index].micReverb = reverb;
-    pbox_app_rockit_set_mic_data(pboxUIdata->micData[index]);
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_REVERB, pboxUIdata->micData[index]);
     pbox_multi_displayMicBass(index, reverb, policy);
 }
 
@@ -659,15 +657,15 @@ void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
     pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, alevel, volume, policy);
 }
 
-void pbox_app_music_set_echo_3a(bool enable, display_t policy) {
-    pboxUIdata->echo3A = enable;
-    pbox_app_rockit_set_recoder_3A(enable);
+void pbox_app_music_set_echo_3a(uint8_t index, bool enable, display_t policy) {
+    pboxUIdata->micData[index].echo3a = enable;
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_ECHO_3A, pboxUIdata->micData[index]);
     pbox_multi_displayEcho3A(enable, policy);
 }
 
-void pbox_app_music_set_recoder_revert(pbox_revertb_t reverbMode, display_t policy) {
-    pboxUIdata->reverbMode = reverbMode;
-    pbox_app_rockit_set_recoder_revert(reverbMode);
+void pbox_app_music_set_recoder_revert(uint8_t index, pbox_revertb_t reverbMode, display_t policy) {
+    pboxUIdata->micData[index].reverbMode = reverbMode;
+    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_REVERB_MODE, pboxUIdata->micData[index]);
     pbox_multi_displayRevertMode(reverbMode, policy);
 }
 

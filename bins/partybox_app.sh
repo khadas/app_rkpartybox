@@ -45,6 +45,7 @@ export ai_period=128
 export ao_period=128
 export play_start_threshold=1
 export ai_buf=1
-export ai_eqdrc_bypass=1
+export recorder_eqdrc_bypass=0
+export player_eqdrc_bypass=1
 export ai_count=3
 rkpartybox

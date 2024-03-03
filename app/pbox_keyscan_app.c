@@ -124,19 +124,19 @@ int pbox_app_key_set_volume_down()
 int pbox_app_key_set_mic()
 {
     printf("pbox_app_key_set_mic =====!\n");
-    if (pboxUIdata->mMute)
-        pbox_app_music_set_mic_mute(false, DISP_All);
+    if (pboxUIdata->micData[0].micmute)
+        pbox_app_music_set_mic_mute(0, false, DISP_All);
     else
-        pbox_app_music_set_mic_mute(true, DISP_All);
+        pbox_app_music_set_mic_mute(0, true, DISP_All);
     return 0;
 }
 
 int pbox_app_key_set_echo_3a() {
     printf("pbox_app_key_set_echo_3a =====!\n");
-    if (pboxUIdata->echo3A)
-        pbox_app_music_set_echo_3a(false, DISP_All);
+    if (pboxUIdata->micData[0].echo3a)
+        pbox_app_music_set_echo_3a(0, false, DISP_All);
     else
-        pbox_app_music_set_echo_3a(true, DISP_All);
+        pbox_app_music_set_echo_3a(0, true, DISP_All);
     return 0;
 }
 

@@ -112,6 +112,8 @@ struct rc_pb_param_eq_drc {
 struct rc_pb_param_reverb {
     rc_bool bypass;
     enum rc_pb_reverb_mode mode;
+    rc_s32 dry_level;
+    rc_s32 wet_level;
 };
 
 struct rc_pb_param_vocal_separate {

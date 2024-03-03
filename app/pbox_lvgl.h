@@ -68,7 +68,7 @@ typedef struct {
         uint32_t        reserv_music_level;
         pbox_revertb_t      reverbMode;
         pbox_vocal_t        vocalSeparate;
-        bool                echo3A_On;
+        bool                echo3a;
         bool                enable;
         bool                micmute;
         struct {
@@ -95,7 +95,7 @@ void lcd_pbox_notifyMicVolLevel(uint32_t micVolume);
 void lcd_pbox_notifyAccompMusicLevel(uint32_t accomp_music_level);
 void lcd_pbox_notifyHumanMusicLevel(uint32_t human_music_level);
 void lcd_pbox_notifySeparateSwitch(bool enable);
-void lcd_pbox_notifyEcho3A(bool echo3A_On);
+void lcd_pbox_notifyEcho3A(bool echo3a);
 void lcd_pbox_notifyReverbMode(pbox_revertb_t reverbMode);
 void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level);
 #ifdef __cplusplus

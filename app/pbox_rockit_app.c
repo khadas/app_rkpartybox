@@ -280,25 +280,15 @@ void pbox_app_rockit_stop_recorder(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_recoder_volume(float volume) {
-    pbox_rockit_msg_t msg = {
-        .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SET_RECORDERVOLUME,
-    };
-
-    msg.volume = volume;
-    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
-}
-
-void pbox_app_rockit_set_mic_data(mic_data_t micState) {
+void pbox_app_rockit_set_mic_data(uint8_t index, mic_set_kind_t kind, mic_state_t micState) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_MIC_STATE,
     };
-    printf("1v:%f, t:%f, b:%f, r:%f\n", __func__, micState.micVolume, micState.micTreble, micState.micBass, micState.micReverb);
-    msg.micState = micState;
-    printf("2v:%f, t:%f, b:%f, r:%f\n", __func__, msg.micState.micVolume, msg.micState.micTreble, msg.micState.micBass, msg.micState.micReverb);
-    printf("3v:%d, t:%d, b:%d, r:%d\n", __func__, msg.micState.micVolume, msg.micState.micTreble, msg.micState.micBass, msg.micState.micReverb);
+
+    msg.micdata.index = index;
+    msg.micdata.kind = kind;
+    msg.micdata.micState = micState;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -308,36 +298,6 @@ void pbox_app_rockit_get_recoder_volume(void) {
         .msgId = PBOX_ROCKIT_GET_RECORDERVOLUME,
     };
 
-    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
-}
-
-void pbox_app_rockit_set_recoder_mute(bool mute) {
-    pbox_rockit_msg_t msg = {
-        .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SET_RECORDERMUTE,
-    };
-
-    msg.micmute = mute;
-    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
-}
-
-void pbox_app_rockit_set_recoder_revert(pbox_revertb_t reverbMode) {
-    pbox_rockit_msg_t msg = {
-        .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SET_RECORDER_REVERT,
-    };
-
-    msg.reverbMode = reverbMode;
-    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
-}
-
-void pbox_app_rockit_set_recoder_3A(bool echo3A_On) {
-    pbox_rockit_msg_t msg = {
-        .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_SET_RECORDER_3A,
-    };
-
-    msg.echo3A_On = echo3A_On;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 

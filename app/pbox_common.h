@@ -190,14 +190,29 @@ typedef enum {
     MIC_GT = 3,
 }mic_mux_t;
 
+typedef enum {
+    MIC_SET_DEST_ECHO_3A,
+    MIC_SET_DEST_MUTE,
+    MIC_SET_DEST_MUX,
+    MIC_SET_DEST_REVERB_MODE,
+    MIC_SET_DEST_VOLUME,
+    MIC_SET_DEST_TREBLE,
+    MIC_SET_DEST_BASS,
+    MIC_SET_DEST_REVERB,
+    MIC_SET_DEST_ALL,
+    MIC_SET_DEST_NUM
+} mic_set_kind_t;
+
 typedef struct {
-    uint8_t index;
+    bool echo3a;
+    bool micmute;
     mic_mux_t micMux;
+    pbox_revertb_t  reverbMode;
     float micVolume;
     float micTreble;
     float micBass;
     float micReverb;
-} mic_data_t;
+} mic_state_t;
 
 typedef enum {
     INDOOR = 0,

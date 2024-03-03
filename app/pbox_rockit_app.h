@@ -55,17 +55,9 @@ void pbox_app_rockit_start_recorder(void);
 
 void pbox_app_rockit_stop_recorder(void);
 
-void pbox_app_rockit_set_recoder_volume(uint32_t volume);
-
-void pbox_app_rockit_set_mic_data(mic_data_t micState);
+void pbox_app_rockit_set_mic_data(uint8_t index, mic_set_kind_t kind, mic_state_t micState);
 
 void pbox_app_rockit_get_recoder_volume(void);
-
-void pbox_app_rockit_set_recoder_revert(pbox_revertb_t reverbMode);
-
-void pbox_app_rockit_set_recoder_mute(bool mute);
-
-void pbox_app_rockit_set_recoder_3A(uint32_t echo3A_On);
 
 void pbox_app_rockit_set_uac_state(uac_role_t role, bool start);
 

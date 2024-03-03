@@ -215,7 +215,7 @@ void socbt_pbox_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
         socbt_pbox_notify_adjust_mic1_state(opcode, &buff[3], 1);
         socbt_pbox_notify_adjust_mic2_state(opcode, &buff[4], 1);
         socbt_pbox_notify_adjust_placement(opcode, &buff[5], 1);
-        socbt_pbox_notify_dsp_human_voice_fadeout(opcode, &buff[6], 1);
+        //socbt_pbox_notify_dsp_human_voice_fadeout(opcode, &buff[6], 1);
         socbt_pbox_notify_dsp_switch_source(opcode, &buff[7], 1);
     }
 }

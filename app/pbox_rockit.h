@@ -30,11 +30,7 @@ typedef enum {
     PBOX_ROCKIT_RELEASE_PLAYERENERGYLEVEL,
     PBOX_ROCKIT_START_RECORDER,//20
     PBOX_ROCKIT_STOP_RECORDER,
-    PBOX_ROCKIT_SET_RECORDERVOLUME,
     PBOX_ROCKIT_GET_RECORDERVOLUME,
-    PBOX_ROCKIT_SET_RECORDERMUTE,
-    PBOX_ROCKIT_SET_RECORDER_REVERT,
-    PBOX_ROCKIT_SET_RECORDER_3A,
     PBOX_ROCKIT_SET_MIC_STATE,
     PBOX_ROCKIT_SET_STEREO_MODE,
     PBOX_ROCKIT_SET_OUTDOOR_MODE,
@@ -68,11 +64,12 @@ typedef struct {
         bool            loop;
         uint32_t        mPosition;
         float        volume;
-        pbox_revertb_t  reverbMode;
         pbox_vocal_t    vocalSeperate;
-        bool            echo3A_On;
-        mic_data_t      micState;
-        bool            micmute;
+        struct {
+            uint8_t         index;
+            mic_set_kind_t  kind;
+            mic_state_t     micState;
+        } micdata;
         pbox_audioFormat_t  audioFormat;
         stereo_mode_t   stereo;
         inout_door_t    outdoor;

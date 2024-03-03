@@ -56,14 +56,11 @@ typedef struct {
         inout_door_t outdoor;
         float mainVolumeLevel;//main volume
         float musicVolumeLevel;//music volume
-        mic_data_t micData[MIC_NUM];//mMicVolumeLevel
+        mic_state_t micData[MIC_NUM];//mMicVolumeLevel
         uint32_t accomLevel;
         uint32_t humanLevel;
         uint32_t reservLevel;
         bool vocalSplit;
-        bool echo3A;
-        bool mMute;
-        pbox_revertb_t reverbMode;
         play_status_t play_status;
         play_status_t play_status_prev;
         bool autoSource;
@@ -104,15 +101,15 @@ void pbox_app_music_original_singer_open(bool original, display_t policy);
 void pbox_app_music_album_loop(uint32_t mode, display_t policy);
 void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t policy);
 char* pbox_app_usb_get_title(uint32_t trackId);
-void pbox_app_music_set_mic_volume(uint32_t micNum, float volume, display_t policy);
-void pbox_app_music_set_mic_mute(bool mute, display_t policy);
+void pbox_app_music_set_mic_volume(uint32_t index, float volume, display_t policy);
+void pbox_app_music_set_mic_mute(uint8_t index, bool mute, display_t policy);
 void pbox_app_music_mics_init(display_t policy);
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy);
 void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy);
-void pbox_app_music_set_echo_3a(bool enable, display_t policy);
-void pbox_app_music_set_recoder_revert(pbox_revertb_t reverbMode, display_t policy);
+void pbox_app_music_set_echo_3a(uint8_t index, bool enable, display_t policy);
+void pbox_app_music_set_recoder_revert(uint8_t index, pbox_revertb_t reverbMode, display_t policy);
 void pbox_app_music_set_mic_treble(uint8_t index, float treble, display_t policy);
 void pbox_app_music_set_mic_bass(uint8_t index, float bass, display_t policy);
 void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy);
