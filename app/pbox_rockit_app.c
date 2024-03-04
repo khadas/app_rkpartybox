@@ -399,13 +399,13 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
             }
         } break;
         case PBOX_ROCKIT_MUSIC_MAIN_VOLUME_EVT: {
-            uint32_t volume = msg->volume;
+            int32_t volume = msg->volume;
             printf("volume: %d", volume);
             pboxUIdata->mainVolumeLevel = volume;
             pbox_multi_displayMainVolumeLevel(volume, DISP_All);
         } break;
         case PBOX_ROCKIT_MUSIC_CHANNEL_VOLUME_EVT: {
-            uint32_t volume = msg->volume;
+            int32_t volume = msg->volume;
             printf("volume: %d", volume);
             pboxUIdata->musicVolumeLevel = volume;
             pbox_multi_displayMusicVolumeLevel(volume, DISP_All);

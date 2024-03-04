@@ -703,10 +703,10 @@ void pbox_app_music_set_placement(placement_t place, display_t policy) {
 }
 
 void pbox_app_music_volume_up(display_t policy) {
-    float *const volume = &pboxUIdata->mainVolumeLevel;
-    *volume += 3;
-    *volume = *volume> 0?0:*volume;
-    *volume = *volume< -100?-100:0;
+    float *volume = &pboxUIdata->mainVolumeLevel;
+    *volume += (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
+    *volume = *volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:*volume;
+    *volume = *volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:*volume;
 /*
     if (*volume <= 5)
         *volume += 5;
@@ -725,10 +725,10 @@ void pbox_app_music_volume_up(display_t policy) {
 }
 
 void pbox_app_music_volume_down(display_t policy) {
-    float *const volume = &pboxUIdata->mainVolumeLevel;
-    *volume -= 3;
-    *volume = *volume> 0?0:*volume;
-    *volume = *volume< -100?-100:0;
+    float *volume = &pboxUIdata->mainVolumeLevel;
+    *volume -= (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
+    *volume = *volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:*volume;
+    *volume = *volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:*volume;
 /*
     if (*volume >= 50)
         *volume -= 25;

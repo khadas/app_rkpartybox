@@ -54,8 +54,8 @@ void pbox_multi_displayTrackPosition(bool durationOnly, uint32_t mCurrent, uint3
         pbox_app_led_TrackPosition(mCurrent, mDuration);
 }
 
-void pbox_multi_displayMainVolumeLevel(uint32_t mainVolume, display_t policy) {
-    int32_t volume = mainVolume + 100;
+void pbox_multi_displayMainVolumeLevel(float mainVolume, display_t policy) {
+    int32_t volume = 100*(mainVolume - MIN_MAIN_VOLUME)/(MAX_MAIN_VOLUME-MIN_MAIN_VOLUME);
     volume = volume> 100?100:volume;
     volume = volume< 0?0:volume;
 
@@ -67,7 +67,7 @@ void pbox_multi_displayMainVolumeLevel(uint32_t mainVolume, display_t policy) {
 }
 
 void pbox_multi_displayMicVolumeLevel(float micVolume, display_t policy) {
-    int32_t volume = micVolume + 100;
+    int32_t volume = 100*(micVolume - MAX_MIC_PHONE_VOLUME)/(MAX_MIC_PHONE_VOLUME-MIN_MIC_PHONE_VOLUME);
     volume = volume> 100?100:volume;
     volume = volume< 0?0:volume;
 

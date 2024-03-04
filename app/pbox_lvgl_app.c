@@ -268,12 +268,12 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         } break;
         case PBOX_LCD_MAIN_VOL_LEVEL_EVT: {
             float volume = msg->mainVolume;
-            volume -= 100;
+            volume = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volume/100 + MIN_MAIN_VOLUME; //covert to real db volume.
             pbox_app_music_set_volume(volume, DISP_LED);
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             float mic_volume = msg->micVolume;
-            mic_volume -= 100;
+            mic_volume = (MAX_MIC_PHONE_VOLUME-MIN_MIC_PHONE_VOLUME)*mic_volume/100 + MIN_MIC_PHONE_VOLUME; //covert to real db volume.
             pbox_app_music_set_mic_volume(0, mic_volume, DISP_LED);
         } break;
         case PBOX_LCD_ACCOMP_MUSIC_LEVEL_EVT: {
