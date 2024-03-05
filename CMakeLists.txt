@@ -61,12 +61,13 @@ endif()
 if(RK3308_PBOX_CORE_BOARD)
 	add_definitions(-DENABLE_EXT_BT_MCU)
 	install(FILES ./lib64/librkaudio_effect_howling.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
+	install(FILES ./lib64/librockit.so DESTINATION "lib" RENAME "librockit.so")
 else()
 	install(FILES ./lib64/librkaudio_effect_howling_evb.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
+	install(FILES ./lib64/librockit_evb.so DESTINATION "lib" RENAME "librockit.so")
 endif()
 
 set(ROCKIT_FILE_LIBS
-       ./lib64/librockit.so
        ./lib64/libaec_bf_process.so
        ./lib64/libavutil.so.56
        ./lib64/librkaudio_effect_eqdrc.so
