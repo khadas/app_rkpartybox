@@ -258,9 +258,11 @@ int rk_demo_music_create() {
 #if ENABLE_USE_SOCBT
     recorder_attr.ref_layout = 0x0c;
     recorder_attr.rec_layout = 0x03;
+    recorder_attr.ref_mode = RC_PB_HOWLING_REF_MODE_SOFT;
 #else
     recorder_attr.ref_layout = 0x03;
     recorder_attr.rec_layout = 0x04;
+    recorder_attr.ref_mode = RC_PB_HOWLING_REF_MODE_HARD;
 #endif
     recorder_attr.chn_layout  = 0x0f;
     if (rc_pb_create(&partyboxCtx, &attr) != 0) {

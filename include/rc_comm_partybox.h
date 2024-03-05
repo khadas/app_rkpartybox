@@ -74,6 +74,12 @@ enum rc_pb_reverb_mode {
     RC_PB_REVERB_MODE_BUTT
 };
 
+enum rc_pb_howling_ref_mode {
+    RC_PB_HOWLING_REF_MODE_NONE = 0,
+    RC_PB_HOWLING_REF_MODE_SOFT,
+    RC_PB_HOWLING_REF_MODE_HARD
+};
+
 enum rc_pb_wake_up_cmd {
     RC_PB_WAKE_UP_CMD_START_PLAYER = 1,
     RC_PB_WAKE_UP_CMD_PAUSE_PLARER,
@@ -184,6 +190,7 @@ struct rc_pb_recorder_attr {
     rc_u32  chn_layout;
     rc_u32  ref_layout;
     rc_u32  rec_layout;
+    enum rc_pb_howling_ref_mode ref_mode;
 };
 
 typedef void (*notifyfun_t)(enum rc_pb_event event, rc_s32 cmd, void *opaque);
