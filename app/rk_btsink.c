@@ -521,7 +521,7 @@ static void bt_restart_bluealsa_only(void) {
 	printf("%s\n", __func__);
 	kill_task("pulseaudio");
 	if(!get_ps_pid("bluealsa")) {
-		run_task("bluealsa", "bluealsa --profile=a2dp-sink &");
+		run_task("bluealsa", "bluealsa -S --profile=a2dp-sink &");
 		rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
 	}
 }
@@ -533,7 +533,7 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 	printf("%s onlyAplay:%d\n", __func__, onlyAplay);
 	kill_task("pulseaudio");
 
-    if(!onlyAplay) {
+	if(!onlyAplay) {
 		bool btsnoop = false;
         if (!access("/userdata/cfg/rkwifibt_stack.conf", F_OK)) {
                 exec_command("cat /userdata/cfg/rkwifibt_stack.conf | grep BtSnoopLogOutput", ret_buff, 1024);
@@ -547,14 +547,14 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 		}
 
 		if(!get_ps_pid("bluealsa")) {
-			run_task("bluealsa", "bluealsa --profile=a2dp-sink &");
+			run_task("bluealsa", "bluealsa -S --profile=a2dp-sink &");
 			rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
 		}
 	}
 
 	if(!get_ps_pid("bluealsa-aplay")) {
-		run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
-		//run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
+		run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+		//run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
 		rk_setRtPrority(get_ps_pid("bluealsa-aplay"), SCHED_RR, 9);
 	}
 	return 0;
