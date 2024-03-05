@@ -205,7 +205,7 @@ void update_music_positions(uint32_t current, uint32_t total) {
 
 void update_bt_music_volume(int volumeLevel ,display_t policy)
 {
-	int volumeLevelMapp = 0;
+	float volumeLevelMapp = 0;
 
 	if (volumeLevel > 127)
 		volumeLevel = 127;
@@ -214,9 +214,11 @@ void update_bt_music_volume(int volumeLevel ,display_t policy)
 
 	volumeLevelMapp = volumeLevel * 100 / 127;
 
-	printf("%s bt volume :%d (0-127)mapping to %d (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
-
-	pbox_app_music_set_volume(volumeLevelMapp, policy);
+	printf("%s bt volume :%d (0-127)mapping to %f (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
+    volumeLevelMapp = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volumeLevelMapp/100 + MIN_MAIN_VOLUME; //covert to real db volume.
+    volumeLevelMapp = volumeLevelMapp> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volumeLevelMapp;
+    volumeLevelMapp = volumeLevelMapp< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volumeLevelMapp;
+	pbox_app_music_set_volume((float)volumeLevelMapp, policy);
 
 	if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
 		pbox_app_music_resume(policy);

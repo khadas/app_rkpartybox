@@ -602,7 +602,7 @@ void pbox_app_music_mics_init(display_t policy) {
         pboxUIdata->micData[index].micVolume = 0;
         pboxUIdata->micData[index].micTreble = 0;
         pboxUIdata->micData[index].micBass = 0;
-        pboxUIdata->micData[index].micReverb = 50;
+        pboxUIdata->micData[index].micReverb = 20;
         pboxUIdata->micData[index].echo3a = DEFAULT_MIC_3A;
         pboxUIdata->micData[index].reverbMode = PBOX_REVERT_KTV;
         pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_ALL, pboxUIdata->micData[index]);

@@ -168,6 +168,9 @@ void pbox_app_rockit_set_player_volume(input_source_t source, float volume) {
         .source = source,
     };
 
+    if(volume == MIN_MAIN_VOLUME) {
+        volume = MIN_MAIN_VOLUME_MUTE;
+    }
     msg.volume = volume;
     printf("%s msg.vol:%f volume:%f\n", __func__, msg.volume, volume);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
@@ -401,6 +404,8 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
         case PBOX_ROCKIT_MUSIC_MAIN_VOLUME_EVT: {
             int32_t volume = msg->volume;
             printf("volume: %d", volume);
+            if(volume < MIN_MAIN_VOLUME)
+                volume = MIN_MAIN_VOLUME;
             pboxUIdata->mainVolumeLevel = volume;
             pbox_multi_displayMainVolumeLevel(volume, DISP_All);
         } break;
