@@ -6,12 +6,10 @@
 extern "C" {
 #endif
 
-#define ENABLE_EXT_BT_MCU
-
 #ifdef ENABLE_EXT_BT_MCU
 #define ENABLE_LCD_DISPLAY  0
 #define ENABLE_USE_SOCBT    1
-#define ENABLE_RK_LED_EFFECT    1
+#define ENABLE_RK_LED_EFFECT    0
 #define MAX_APP_NAME_LENGTH     127
 #define MAX_MUSIC_NAME_LENGTH   (MAX_APP_NAME_LENGTH*2)
 #define ENABLE_RK_ROCKIT    1

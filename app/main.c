@@ -141,7 +141,9 @@ void main(int argc, char **argv) {
     #else
     pbox_create_bttask();
     #endif
+#if ENABLE_RK_LED_EFFECT
     pbox_app_led_startup_effect();
+#endif
 
     fd_set read_fds;
     FD_ZERO(&read_fds);
@@ -216,7 +218,7 @@ void maintask_timer_fd_process(int timer_fd) {
     msTimePassed += PBOX_TIMER_INTERVAL;
     //printf("working time:%llu\n", msTimePassed);
 
-    if (0 == msTimePassed%10) {
+    if (0 == msTimePassed%20) {
         //every 10ms send command to reflash lvgl ui.
         pbox_app_lcd_dispplayReflash();
     }
