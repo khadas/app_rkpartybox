@@ -9,17 +9,22 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/timerfd.h>
-#include <sys/select.h>
 #include <sys/time.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
+
 #include "rc_partybox.h"
 #include "rc_rkstudio_vendor.h"
 #include "pbox_common.h"
 #include "pbox_rockit.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
+#include "rk_utils.h"
 
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
@@ -56,13 +61,154 @@ rc_s32 (*rc_pb_player_release_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, st
 
 rc_s32 (*rc_pb_recorder_start)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_recorder_stop)(rc_pb_ctx ctx);
+
 rc_s32 (*rc_pb_recorder_mute)(rc_pb_ctx ctx, rc_s32 idx, rc_bool mute);
 rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db);
 rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db);
 rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 
-bool started_player[RC_PB_PLAY_SRC_BUTT];
+static struct rockit_pbx_t {
+    rc_pb_ctx *pboxCtx;
+    int signfd[2];
+    pthread_t aux_player_tid;
+    bool quit;
+    sem_t      sem;
+} rockCtx;
+
+typedef enum {
+    PROMPT_STEREO,
+    PROMPT_MONO,
+    PROMPT_WIDEN,
+    PROMPT_FADE_ON,
+    PROMPT_FADE_OFF,
+    PROMPT_NUM
+} prompt_audio_t;
+
+//this is auxiliary rockit player.
+// it used to play ring, notification etc...
+#define READ_SIZE 1024
+const char* prompt_file[PROMPT_NUM] = {
+    "/oem/Stereo.pcm",
+    "/oem/Mono.pcm",
+    "/oem/Widen.pcm",
+    "/oem/Split_on.pcm",
+    "/oem/Split_off.pcm"
+};
+
+static bool started_player[RC_PB_PLAY_SRC_BUTT];
+
+void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
+    int32_t size = 0;
+    FILE *file = NULL;
+    struct rc_pb_player_attr attr;
+    struct rc_pb_frame_info frame_info;
+
+    memset(&attr, 0, sizeof(attr));
+    attr.bit_width = 16;
+    attr.channels = 2;
+    attr.sample_rate = 48000;
+    attr.pool_size = READ_SIZE;
+    attr.pool_cnt = 1;
+    attr.energy_band_cnt = 10;
+
+    static int old = -1;
+
+    if(old == (int)index) {
+        return;
+    }
+    old = index;
+    if(index >= PROMPT_NUM) {
+        return;
+    }
+
+    file = fopen(prompt_file[index], "rb");
+    if (file == NULL) {
+        printf("%s open prompt file: %s failed: %s.\n", __func__, prompt_file[index], strerror(errno));
+        return NULL;
+    }
+
+    //printf("%s file:%s\n", __func__, prompt_file[index]);
+    rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
+
+    while (true) {
+        rc_pb_player_dequeue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
+                                    &frame_info, -1);
+        memset(frame_info.data, 0, READ_SIZE);
+        size = fread(frame_info.data, 1, READ_SIZE, file);
+        if (size <= 0) {
+            printf("eof\n");
+            frame_info.size = 0;
+            rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
+                                        &frame_info, -1);
+            //fseek(file, 0, SEEK_SET);
+            fclose(file);
+            //loop = false;
+            break;
+        };
+        frame_info.sample_rate = 48000;
+        frame_info.channels = 2;
+        frame_info.bit_width = 16;
+        frame_info.size = size;
+        rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
+                                    &frame_info, -1);
+    }
+
+    rc_pb_player_stop(*ptrboxCtx, RC_PB_PLAY_SRC_PCM);
+}
+
+static void* rockitAuxPlayer(void *param) {
+    struct rockit_pbx_t *ctx = (struct rockit_pbx_t *)param;
+    rc_pb_ctx *ptrboxCtx;
+    int table[5];
+    bool loop = true;
+    int fd = rockCtx.signfd[0];
+
+    printf("hello %s\n", __func__);
+    assert(ctx != NULL);
+    assert(ctx->pboxCtx != NULL);
+    ptrboxCtx = ctx->pboxCtx;
+    printf("%s Ctx:%p\n", __func__, ptrboxCtx);
+
+    while (loop) {
+        fd_set read_fds;
+        FD_ZERO(&read_fds);
+        FD_SET(fd, &read_fds);
+
+        int result = select(fd + 1, &read_fds, NULL, NULL, NULL);
+        if (result < 0) {
+            if (errno != EINTR) {
+                perror("select failed");
+                break;
+            } else {
+                continue;
+            }
+        }
+
+        int stashCount;
+        if (ioctl(fd, FIONREAD, &stashCount) < 0) {
+            continue;
+        }
+        stashCount = stashCount / sizeof(int);
+        if (stashCount <= 0) {
+            continue;
+        }
+        if (stashCount > sizeof(table) / sizeof(table[0])) {
+            stashCount = sizeof(table) / sizeof(table[0]);
+        }
+
+        OSI_NO_INTR(stashCount = read(fd, (char*)&table[0], stashCount * sizeof(int)));
+        if (stashCount <= 0) {
+            break;
+        }
+        stashCount = stashCount / sizeof(int);
+        assert(stashCount > 0);
+
+        printf("%s total:%d, last = %d\n", __func__, stashCount, (prompt_audio_t)table[stashCount - 1]);
+        audio_sound_prompt(ptrboxCtx, (prompt_audio_t)table[stashCount - 1]);
+    }
+}
+
 int rk_demo_music_create() {
     //create karaoke recorder && player
     struct rc_pb_attr attr;
@@ -118,6 +264,18 @@ int rk_demo_music_create() {
 
         rc_pb_player_resume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src))dlsym(mpi_hdl, "rc_pb_player_resume");
         if (NULL == rc_pb_player_resume) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_dequeue_frame = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, "rc_pb_player_dequeue_frame");
+        if (NULL == rc_pb_player_dequeue_frame) {
+            printf("failed to open  func, err=%s\n", dlerror());
+            return -1;
+        }
+
+        rc_pb_player_queue_frame = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, "rc_pb_player_queue_frame");
+        if (NULL == rc_pb_player_queue_frame) {
             printf("failed to open  func, err=%s\n", dlerror());
             return -1;
         }
@@ -270,12 +428,25 @@ int rk_demo_music_create() {
         return -1;
     }
 
+    memset(started_player, 0 , sizeof(started_player));
+    int ret = pipe(rockCtx.signfd);
+    rockCtx.pboxCtx = &partyboxCtx;
+    sem_init(&rockCtx.sem, 0, 0);
+    printf("%s %d partyboxCtx:%p\n", __func__, __LINE__, &partyboxCtx);
+    //rockitAuxPlayer();
+    pthread_create(&rockCtx.aux_player_tid, NULL, rockitAuxPlayer, &rockCtx);
+
     if (rc_pb_recorder_start(partyboxCtx) != 0) {
         printf("rc_pb_recorder_start failed, err!!!\n");
         return -1;
     }
     printf("rockit media player created successfully, partyboxCtx=%p\n", partyboxCtx);
-    memset(started_player, 0 , sizeof(started_player));
+}
+
+int audio_prompt_send(prompt_audio_t prompt) {
+    int id = prompt;
+    int ret = write(rockCtx.signfd[1], &id, sizeof(int));
+    return ret;
 }
 
 static void rockit_pbbox_notify_awaken(uint32_t wakeCmd)
@@ -531,6 +702,8 @@ static int64_t pbox_rockit_music_get_position(input_source_t source) {
 
 static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
     struct rc_pb_param param;
+    static bool powered_reverb = false;
+
     param.type = RC_PB_PARAM_TYPE_REVERB;
 
     assert(partyboxCtx);
@@ -565,6 +738,11 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
     else 
         param.reverb.bypass = false;
     rc_pb_recorder_set_param(partyboxCtx, index, &param);
+
+    if (powered_reverb) {
+        //audio_prompt_send(mode);
+    }
+    powered_reverb = true;
 }
 
 static void pbox_rockit_music_echo_reduction(uint8_t index, bool echo3a) {
@@ -588,6 +766,8 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
     uint32_t rLevel = vocal.reservLevel;
     struct rc_pb_param param;
     enum rc_pb_play_src dest = covert2rockitSource(source);
+    static bool powered_seperate = false;
+    prompt_audio_t dest_audio;
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     assert(partyboxCtx);
@@ -602,15 +782,24 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
 
     int ret = rc_pb_player_get_param(partyboxCtx, dest, &param);
 
-    if (enable)
+    if (enable) {
         param.vocal.bypass = false;
-    else
+        }
+    else {
         param.vocal.bypass = true;
+    }
+
     param.vocal.human_level = hLevel;
     param.vocal.other_level = aLevel;
     param.vocal.reserve_level[0] = rLevel;
     ret = rc_pb_player_set_param(partyboxCtx, dest, &param);
     printf("%s rc_pb_player_set_param res:%d\n" ,__func__, ret);
+
+    if (powered_seperate) {
+        dest_audio = enable? PROMPT_FADE_ON:PROMPT_FADE_OFF;
+        audio_prompt_send(dest_audio);
+    }
+    powered_seperate = true;
 }
 
 float pbox_rockit_music_master_volume_get(input_source_t source) {
@@ -803,6 +992,8 @@ static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info
 static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode_t stereo) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
     struct rc_pb_param param;
+    static bool powered_stereo = false;
+    prompt_audio_t dest_audio;
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     assert(partyboxCtx);
@@ -822,7 +1013,7 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
             rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
-
+            dest_audio = PROMPT_WIDEN;
         } break;
 
         case MODE_STEREO: {
@@ -835,6 +1026,7 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
             rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            dest_audio = PROMPT_STEREO;
         } break;
 
         case MODE_MONO: {
@@ -842,9 +1034,15 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
             rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            dest_audio = PROMPT_MONO;
         } break;
         default: break;
     }
+
+    if (powered_stereo) {
+        audio_prompt_send(dest_audio);
+    }
+    powered_stereo = true;
 }
 
 static void pbox_rockit_music_set_inout_door(input_source_t source, inout_door_t outdoor) {

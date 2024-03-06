@@ -1,9 +1,12 @@
 #ifndef _RK_UTILS_H_
 #define _RK_UTILS_H_
 
+#include <pthread.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define OSI_NO_INTR(fn)  do {} while ((fn) == -1 && errno == EINTR)
 
 //int test_pthread(pthread_t tid);
 void exec_command(char cmdline[], char recv_buff[], int len);

@@ -256,7 +256,6 @@ do											\
 } while (0);
 
 extern pbox_pipe_t pbox_pipe_fds[PBOX_SOCKPAIR_NUM];
-
 void start_fd_timer(int timer_fd, int start, int interval, bool loop);
 int create_fd_timer (void);
 void pause_fd_timer(int timer_fd);

@@ -39,7 +39,7 @@
 
 #include "slog.h"
 #include "userial_vendor.h"
-
+#include "rk_utils.h"
 /******************************************************************************
 **  Constants & Macros
 ******************************************************************************/
@@ -315,8 +315,6 @@ int userial_set_port(char *p_conf_name, char *p_conf_value, int param)
 
     return 0;
 }
-
-#define OSI_NO_INTR(fn)  do {} while ((fn) == -1 && errno == EINTR)
 
 void dump_data(uint8_t *data, uint16_t total) {
     printf("data[%d]= {", total);

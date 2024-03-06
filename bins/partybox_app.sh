@@ -19,6 +19,21 @@ fi
 if [ ! -e /oem/config_3a.json ]; then
 	ln -s /etc/config_3a.json /oem/config_3a.json
 fi
+if [ ! -e /oem/Split_off.pcm ]; then
+	ln -s /etc/Split_off.pcm /oem/Split_off.pcm
+fi
+if [ ! -e /oem/Split_on.pcm ]; then
+	ln -s /etc/Split_on.pcm /oem/Split_on.pcm
+fi
+if [ ! -e /oem/Stereo.pcm ]; then
+	ln -s /etc/Stereo.pcm /oem/Stereo.pcm
+fi
+if [ ! -e /oem/Widen.pcm ]; then
+	ln -s /etc/Widen.pcm /oem/Widen.pcm
+fi
+if [ ! -e /oem/Mono.pcm ]; then
+	ln -s /etc/Mono.pcm /oem/Mono.pcm
+fi
 
 if [ ! -e /oem/rkstudio.bin ]; then
     if [[ $(cat /proc/device-tree/acodec@ff560000/status 2>/dev/null) != "okay" ]]; then
@@ -47,5 +62,4 @@ export play_start_threshold=1
 export ai_buf=1
 export recorder_eqdrc_bypass=0
 export player_eqdrc_bypass=1
-export ai_count=3
 rkpartybox
