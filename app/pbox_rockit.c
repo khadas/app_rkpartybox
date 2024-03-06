@@ -65,7 +65,7 @@ rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, struct rc_pb_param *param);
 int rk_demo_music_create() {
     //create karaoke recorder && player
     struct rc_pb_attr attr;
-    struct rc_pb_recorder_attr recorder_attr;
+    static struct rc_pb_recorder_attr recorder_attr;
 
     mpi_hdl = dlopen("librockit.so", RTLD_LAZY);
     if (NULL == mpi_hdl) {
