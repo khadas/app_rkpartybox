@@ -11,27 +11,40 @@
 #include "pbox_keyadcSara_app.h"
 
 #if ENABLE_SARAADC
+#define MAX_BASS_VALUE      12
+#define MIN_BASS_VALUE      (-12)
+#define MAX_TREBLE_VALUE    (12)
+#define MIN_TREBLE_VALUE    (-12)
+#define MAX_REVERB_VALUE    100
+#define MIN_REVERB_VALUE    0
+
+#define PERCENT2TARGET(value, MIN_TARGET, MAX_TARGET) ((MAX_TARGET - MIN_TARGET)*value/100 + MIN_TARGET)
 void keyscan_knob_data_recv(struct _keyinfo keyinfo) {
-    float value = keyinfo.value;//*32/100;
-    float f_value = (float)(value - 50)/2;
-    printf("%s f_value:%f\n", __func__, f_value);
+    float value = keyinfo.value;
+    //printf("%s value:%d\n", __func__, keyinfo.value);
     switch(keyinfo.keycode) {
         case MIC1_BUTTON_BASS: {
-            pbox_app_music_set_mic_bass(0, f_value, DISP_All);
+            value = PERCENT2TARGET(value, MIN_BASS_VALUE, MAX_BASS_VALUE);
+            pbox_app_music_set_mic_bass(0, value, DISP_All);
         } break;
         case MIC1_BUTTON_TREBLE: {
-            pbox_app_music_set_mic_treble(0, f_value, DISP_All);
+            value = PERCENT2TARGET(value, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE);
+            pbox_app_music_set_mic_treble(0, value, DISP_All);
         } break;
         case MIC1_BUTTON_REVERB: {
+            value = PERCENT2TARGET(value, MIN_REVERB_VALUE, MAX_REVERB_VALUE);
             pbox_app_music_set_mic_reverb(0, value, DISP_All);
         } break;
         case MIC2_BUTTON_BASS: {
-            pbox_app_music_set_mic_bass(1, f_value, DISP_All);
+            value = PERCENT2TARGET(value, MIN_BASS_VALUE, MAX_BASS_VALUE);
+            pbox_app_music_set_mic_bass(1, value, DISP_All);
         } break;
         case MIC2_BUTTON_TREBLE: {
-            pbox_app_music_set_mic_treble(1, f_value, DISP_All);
+            value = PERCENT2TARGET(value, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE);
+            pbox_app_music_set_mic_treble(1, value, DISP_All);
         } break;
         case MIC2_BUTTON_REVERB: {
+            value = PERCENT2TARGET(value, MIN_REVERB_VALUE, MAX_REVERB_VALUE);
             pbox_app_music_set_mic_reverb(1, value, DISP_All);
         } break;
     }
