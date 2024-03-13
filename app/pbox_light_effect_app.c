@@ -10,7 +10,7 @@
 #include "pbox_app.h"
 
 void pbox_app_led_PlayPause(bool play) {
-	printf("%s PlayPause: %d\n", __func__, play);
+	ALOGD("%s PlayPause: %d\n", __func__, play);
 	soundreactive_mute_set(!play);
 	if (play) {
 		pbox_light_effect_send_cmd(RK_ECHO_PLAY_EVT, NULL, NULL);
@@ -20,7 +20,7 @@ void pbox_app_led_PlayPause(bool play) {
 }
 
 void pbox_app_led_PrevNext(bool next) {
-	printf("%s next: %d\n", __func__, next);
+	ALOGD("%s next: %d\n", __func__, next);
 
 	soundreactive_mute_set(true);
 	if (next) {
@@ -31,27 +31,27 @@ void pbox_app_led_PrevNext(bool next) {
 }
 
 void pbox_app_led_MainVolumeLevel(uint32_t mainVolume) {
-	printf("%s mainVolumeLevel: %d\n", __func__, mainVolume);
+	ALOGD("%s mainVolumeLevel: %d\n", __func__, mainVolume);
 
 	pbox_light_effect_send_cmd(RK_ECHO_VOLUME_LED_EVT, (void*)&mainVolume, sizeof(uint32_t));
 }
 
 void pbox_app_led_MicVolumeLevel(uint32_t micVolume) {
-	printf("%s volume: %d\n", __func__, micVolume);
+	ALOGD("%s volume: %d\n", __func__, micVolume);
 	pbox_light_effect_send_cmd(RK_ECHO_MIC_MUTE_EVT, (void*)&micVolume, sizeof(uint32_t));
 
 }
 
 void pbox_app_led_AccompMusicLevel(uint32_t accomp_music_level) {
-	printf("%s accompMusicLevel: %d\n", __func__, accomp_music_level);
+	ALOGD("%s accompMusicLevel: %d\n", __func__, accomp_music_level);
 }
 
 void pbox_app_led_HumanMusicLevel(uint32_t human_music_level) {
-	printf("%s humanMusicLevel: %d\n", __func__, human_music_level);
+	ALOGD("%s humanMusicLevel: %d\n", __func__, human_music_level);
 }
 
 void pbox_app_led_ReservLevel(uint32_t Reserv_music_level) {
-	printf("%s ReservLevel: %d\n", __func__, Reserv_music_level);
+	ALOGD("%s ReservLevel: %d\n", __func__, Reserv_music_level);
 }
 
 void pbox_app_led_energyInfo(energy_info_t energy) {
@@ -61,7 +61,7 @@ void pbox_app_led_energyInfo(energy_info_t energy) {
 
 void pbox_app_led_btState(btsink_state_t mode) {
 
-	printf("%s btsink_state_t: %d\n", __func__, mode);
+	ALOGD("%s btsink_state_t: %d\n", __func__, mode);
 	switch (mode)
 	{
 		case BT_DISCONNECT:

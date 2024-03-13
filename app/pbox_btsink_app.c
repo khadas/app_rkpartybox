@@ -181,20 +181,20 @@ bool isBtA2dpStreaming(void)
 
 void update_bt_karaoke_playing_status(bool playing)
 {
-    printf("%s :%d\n", __func__, playing);
+    ALOGD("%s :%d\n", __func__, playing);
     pboxUIdata->play_status = playing ? PLAYING:_PAUSE;
     pbox_app_show_playingStatus(playing, DISP_All);
 }
 
 void update_music_track_info(char *title, char *artist) {
-    printf("%s track:[%s]-[%s]\n", __func__, title, artist);
+    ALOGD("%s track:[%s]-[%s]\n", __func__, title, artist);
     pbox_app_show_tack_info(title, artist, DISP_All);
 }
 
 
 void update_music_positions(uint32_t current, uint32_t total) {
     static uint32_t  prev_total = 0;
-    printf("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
+    ALOGD("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
     pbox_app_show_track_position(false, current, total, DISP_All);
 
     if(prev_total != total) {
@@ -214,7 +214,7 @@ void update_bt_music_volume(int volumeLevel ,display_t policy)
 
 	volumeLevelMapp = volumeLevel * 100 / 127;
 
-	printf("%s bt volume :%d (0-127)mapping to %f (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
+	ALOGD("%s bt volume :%d (0-127)mapping to %f (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
     volumeLevelMapp = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volumeLevelMapp/100 + MIN_MAIN_VOLUME; //covert to real db volume.
     volumeLevelMapp = volumeLevelMapp> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volumeLevelMapp;
     volumeLevelMapp = volumeLevelMapp< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volumeLevelMapp;
@@ -227,12 +227,12 @@ void update_bt_music_volume(int volumeLevel ,display_t policy)
 void bt_sink_data_recv(pbox_bt_msg_t *msg) {
     switch (msg-> msgId) {
         case BT_SINK_STATE: {
-            printf("%s btState:[%d -> %d]\n", __func__, pboxBtSinkdata->btState, msg->btinfo.state);
+            ALOGD("%s btState:[%d -> %d]\n", __func__, pboxBtSinkdata->btState, msg->btinfo.state);
             if(pboxBtSinkdata->btState == msg->btinfo.state) {
                 break;
             }
             setBtSinkState(msg->btinfo.state);
-            printf("%s pboxBtSinkdata->btState:[%d]\n", __func__, pboxBtSinkdata->btState);
+            ALOGD("%s pboxBtSinkdata->btState:[%d]\n", __func__, pboxBtSinkdata->btState);
             switch (pboxBtSinkdata->btState) {
                 case BT_INIT_ON: {
                     pbox_app_restart_btsink(false, DISP_All);
@@ -256,7 +256,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                     }
                 } break;
                 case BT_NONE: {
-                    printf("%s recv msg: btsink state: OFF\n", __func__);
+                    ALOGD("%s recv msg: btsink state: OFF\n", __func__);
                 } break;
             }
 
@@ -265,12 +265,12 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         } break;
 
         case BT_SINK_NAME: {
-            printf("%s remote name: %s\n", __func__, msg->btinfo.remote_name);
+            ALOGD("%s remote name: %s\n", __func__, msg->btinfo.remote_name);
             setBtRemoteName(msg->btinfo.remote_name);
         } break;
         case BT_SINK_A2DP_STATE: {
             btsink_ad2p_state_t a2dpState = msg->btinfo.a2dpState;
-            printf("%s recv msg: a2dpsink state: %d -> [%d]\n", __func__, pboxBtSinkdata->a2dpState, a2dpState);
+            ALOGD("%s recv msg: a2dpsink state: %d -> [%d]\n", __func__, pboxBtSinkdata->a2dpState, a2dpState);
             if(pboxBtSinkdata->a2dpState != a2dpState) {
                 pboxBtSinkdata->a2dpState = a2dpState;
                 if(!is_input_source_selected(SRC_BT, ANY))
@@ -289,7 +289,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         case BT_SINK_MUSIC_FORMAT: {
             int freq = msg->btinfo.audioFormat.sampingFreq;
             int channel = msg->btinfo.audioFormat.channel;
-            printf("%s recv msg: a2dpmusic format: freq:%d channel: %d\n", __func__, freq, channel);
+            ALOGD("%s recv msg: a2dpmusic format: freq:%d channel: %d\n", __func__, freq, channel);
             if ((freq != pboxBtSinkdata->pcmSampeFreq) || (channel != pboxBtSinkdata->pcmChannel)) {
                 pboxBtSinkdata->pcmSampeFreq = freq;
                 pboxBtSinkdata->pcmChannel = channel;
@@ -297,13 +297,13 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                     pbox_app_restart_passive_player(SRC_BT, false, DISP_All);
                 }
             }
-            printf("%s update: pbox_data.btsink: freq:%d channel: %d\n", __func__, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
+            ALOGD("%s update: pbox_data.btsink: freq:%d channel: %d\n", __func__, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
         } break;
 
         case BT_SINK_MUSIC_TRACK: {
             char *title = msg->btinfo.track.title;
             char *artist = msg->btinfo.track.artist;
-            printf("%s recv msg rack: %s %s\n", __func__, title, artist);
+            ALOGD("%s recv msg rack: %s %s\n", __func__, title, artist);
             if(is_input_source_selected(SRC_BT, ANY))
                 update_music_track_info(title, artist);
         } break;
@@ -341,7 +341,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         }
 
         default:
-        printf("%s recv msg: msId: %02x not handled\n", __func__, msg->msgId);
+        ALOGD("%s recv msg: msId: %02x not handled\n", __func__, msg->msgId);
         break;
     }
 }
@@ -350,11 +350,11 @@ void maintask_bt_fd_process(int fd) {
     char buff[sizeof(pbox_bt_msg_t)] = {0};
     int ret = recv(fd, buff, sizeof(buff), 0);
     if ((ret == 0) || (ret < 0 && (errno != EINTR))) {
-        printf("%s ret:%d , error:%d\n", __func__, ret, errno);
+        ALOGD("%s ret:%d , error:%d\n", __func__, ret, errno);
         return;
     }
     pbox_bt_msg_t *msg = (pbox_bt_msg_t *)buff;
-    printf("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+    ALOGD("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
     if (msg->type != (bt_msg_t)PBOX_EVT)
         return;
@@ -366,9 +366,9 @@ void maintask_bt_fd_process(int fd) {
 
 void *btsink_watcher(void *arg) {
 	pthread_setname_np(pthread_self(), "pbox_btwatch");
-    printf("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
+    ALOGD("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
 
-    printf("%s \n", __func__);
+    ALOGD("%s \n", __func__);
     bool btsinkWatcher_track = false;
     pbox_bt_opcode_t btCmd_prev = 0;
     while (1) {

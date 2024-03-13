@@ -49,7 +49,7 @@ void uac_pbox_notify_role_change(uint32_t role, bool start) {
     };
     msg.uac.uac_role = role;
     msg.uac.state = start;
-    printf("%s uac_role=%d, state=%d\n", __func__, role, start);
+    ALOGD("%s uac_role=%d, state=%d\n", __func__, role, start);
     unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
 }
 
@@ -113,14 +113,14 @@ void usb_pbox_notify_audio_file_added(music_format_t format, char *fileName) {
     };
 
     if(strlen(fileName) > MAX_MUSIC_NAME_LENGTH) {
-        printf("%s filename too long:%d, skipping!!!!!!!!!!!!!!!!!!!!:%s\n", __func__, strlen(fileName), fileName);
+        ALOGW("%s filename too long:%d, skipping!!!!!!!!!!!!!!!!!!!!:%s\n", __func__, strlen(fileName), fileName);
         return;
     }
 
     msg.usbMusicFile.format = format;
     strncpy(msg.usbMusicFile.fileName, fileName, MAX_MUSIC_NAME_LENGTH);
     msg.usbMusicFile.fileName[MAX_MUSIC_NAME_LENGTH] = 0;
-    printf("%s format:%d, name:%s\n", __func__, format, fileName);
+    ALOGD("%s format:%d, name:%s\n", __func__, format, fileName);
     unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
 }
 
@@ -185,7 +185,7 @@ bool is_usb_drive_connected() {
     udev_enumerate_unref(enumerate);
     udev_unref(udev);
 
-    printf("%s time:%u, is_connected:%d\n", __func__, time(NULL), is_connected);
+    ALOGD("%s time:%u, is_connected:%d\n", __func__, time(NULL), is_connected);
     return is_connected;
 }
 
@@ -202,8 +202,8 @@ void handleUacStartScanCmd(const pbox_usb_msg_t* msg) {
 }
 
 void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {
-    printf("%s\n", __func__);
-    printf("%s: connected:%d\n", __func__, is_usb_drive_connected());
+    ALOGW("%s\n", __func__);
+    ALOGW("%s: connected:%d\n", __func__, is_usb_drive_connected());
     if(!is_usb_drive_connected()) {
         usb_pbox_notify_state_changed(USB_DISCONNECTED, NULL);
         return;
@@ -214,11 +214,11 @@ void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {
     scan_dir(MUSIC_PATH, 3, usb_pbox_notify_audio_file_added);
     usb_pbox_notify_state_changed(USB_SCANNED, MUSIC_PATH);
     time = time_get_os_boot_ms() - time;
-    printf("%s scan finish, used time:%d\n", __func__, time/1000);
+    ALOGW("%s scan finish, used time:%d\n", __func__, time/1000);
 }
 
 void handleUsbPollStateCmd(const pbox_usb_msg_t* msg) {
-    printf("%s: connected:%d\n", __func__, is_usb_drive_connected());
+    ALOGW("%s: connected:%d\n", __func__, is_usb_drive_connected());
     if(!is_usb_drive_connected()) {
         usb_pbox_notify_state_changed(USB_DISCONNECTED, NULL);
         return;
@@ -229,7 +229,7 @@ void handleUsbPollStateCmd(const pbox_usb_msg_t* msg) {
 // Function to process an incoming pbox_usb_msg_t event
 void process_pbox_usb_cmd(const pbox_usb_msg_t* msg) {
     if (msg == NULL) {
-        printf("Error: Null event message received.\n");
+        ALOGW("Error: Null event message received.\n");
         return;
     }
 
@@ -243,7 +243,7 @@ void process_pbox_usb_cmd(const pbox_usb_msg_t* msg) {
         }
     }
 
-    printf("Warning: No handler found for event ID %d.\n", msg->msgId);
+    ALOGW("Warning: No handler found for event ID %d.\n", msg->msgId);
 }
 
 #define USB_UDP_SOCKET 0
@@ -317,11 +317,11 @@ static void *pbox_usb_server(void *arg)
                     isConnectReported = true;
                 }
             }
-            //printf("select timeout or no data\n");
+            //ALOGW("select timeout or no data\n");
             continue;
         }
 
-        //printf("%s result:%d\n", __func__, result);
+        //ALOGD("%s result:%d\n", __func__, result);
         for (int i = 0, ret =-1; i < USB_FD_NUM; i++) {
             if((ret = FD_ISSET(usb_fds[i], &read_set)) == 0)
                 continue;
@@ -330,7 +330,7 @@ static void *pbox_usb_server(void *arg)
                     int ret = recv(usb_fds[i], buff, sizeof(buff), 0);
                     if (ret <= 0) {
                         if (ret == 0) {
-                            printf("Socket closed\n");
+                            ALOGW("Socket closed\n");
                             break;
                         } else {
                             perror("recvfrom failed");
@@ -348,13 +348,13 @@ static void *pbox_usb_server(void *arg)
                     struct udev_device *dev = udev_monitor_receive_device(mon);
                     const char *action = udev_device_get_action(dev);
                     const char *devnode = udev_device_get_devnode(dev);
-                    printf("%s dev found: %s, action： %s\n", __func__, devnode, action);
+                    ALOGW("%s dev found: %s, action： %s\n", __func__, devnode, action);
 
                     if(!action) {
                         break;
                     }
                     if (strcmp(action, "remove") == 0) {
-                        printf("Device removed：%s\n", devnode);
+                        ALOGW("Device removed：%s\n", devnode);
                         isConnectReported = false;
                         isUsbInsert = false;
                         pollRetry = 0;
@@ -364,7 +364,7 @@ static void *pbox_usb_server(void *arg)
                         isConnectReported = false;
                         pollRetry = 0;
                         //usb_pbox_notify_state_changed(USB_CONNECTED, MUSIC_PATH);
-                        printf("Device added：%s\n", devnode);
+                        ALOGW("Device added：%s\n", devnode);
                     }
                     udev_device_unref(dev);
                 } break;
@@ -377,7 +377,7 @@ static void *pbox_usb_server(void *arg)
                     int len = recv(usb_fds[i], buffer, sizeof(buffer), 0);
                     if (len <= 0) {
                         if (len == 0) {
-                            printf("Socket closed\n");
+                            ALOGW("Socket closed\n");
                             break;
                         } else {
                             perror("recvfrom failed");
@@ -386,7 +386,7 @@ static void *pbox_usb_server(void *arg)
                     }
 
                     if(len < 32 || len > sizeof(buffer)) {
-                        printf("invalid message!!!!!!!!!!!!!!!!!\n");
+                        ALOGW("invalid message!!!!!!!!!!!!!!!!!\n");
                     }
 
                     for (int m = 0, n =0; m < len; m++) {
@@ -415,7 +415,7 @@ int pbox_create_usb_task(void) {
     ret = pthread_create(&usb_server_task_id, NULL, pbox_usb_server, NULL);
     if (ret < 0)
     {
-        printf("usb server start failed\n");
+        ALOGE("usb server start failed\n");
     }
 
     return ret;

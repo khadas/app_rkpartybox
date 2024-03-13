@@ -219,7 +219,7 @@ void pbox_light_effect_soundreactive_analysis(energy_data_t energy_data)
 
 	variance = calculateVariance(ctrl->energy_total_data_record, ARRAY_SIZE(ctrl->energy_total_data_record));
 
-	//printf("==========variance:%lf standarddeviation:%lf energy_total:%d energy_total_average:%d============\n",variance,sqrt(variance),ctrl->energy_total, ctrl->energy_total_average);
+	//ALOGI("==========variance:%lf standarddeviation:%lf energy_total:%d energy_total_average:%d============\n",variance,sqrt(variance),ctrl->energy_total, ctrl->energy_total_average);
 
 
 	if ((ctrl->energy_total  > ctrl->energy_total_average))
@@ -327,22 +327,22 @@ int led_effect_volume_analysis(int type, int volume)
 			foreground_leffect->num = 0;
 		}
 		foreground_leffect->period = 500;
-		//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
+		//ALOGD("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
 	} else if (type == 2){
 		foreground_leffect->led_effect_type =  2;
 		foreground_leffect->start = 1;
 		if (volume) {
 			foreground_leffect->num = (volume + ctrl->unit_num - 1) * ctrl->unit_num / 100;
 			foreground_leffect->fore_color = 0x00ff00;
-			//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
+			//ALOGD("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
 		}else {
 			foreground_leffect->fore_color = 0xff0000;
 			foreground_leffect->num = ctrl->unit_num;
-			//printf("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
+			//ALOGD("===%s:volume:%d num:%d color%d====\n", __func__, volume, foreground_leffect.num, foreground_leffect.fore_color);
 		}
 
 		foreground_leffect->period = 1000;
-		//printf("===%s:volume:%d num:%d====\n", __func__, volume, foreground_leffect.num);
+		//ALOGD("===%s:volume:%d num:%d====\n", __func__, volume, foreground_leffect.num);
 	}
 		foreground_leffect_job = 1;
 }
@@ -481,14 +481,14 @@ static void led_effect_breath(struct led_effect* effect)
 static void led_effect_fade(struct led_effect* effect)
 {
 	int i;
-	 //printf("cal_data->data_valid=%d\n",cal_data->data_valid);
+	 //ALOGD("cal_data->data_valid=%d\n",cal_data->data_valid);
 	if(cal_data->data_valid == 0) {
 		led_effect_init_bright(effect,FG_COLOR);
 		cal_data->data_valid = 1;
 	}
 
 	for (i = effect->start*3; i < effect->num*3; i++) {
-		//printf("red[%d]=%d\n",i,cal_data->bright[i]);
+		//ALOGD("red[%d]=%d\n",i,cal_data->bright[i]);
 		if(cal_data->data_valid == 1 ) {
 			led_forcebright_to_back(i,effect);
 		}
@@ -520,7 +520,7 @@ static int led_effect_blink(struct led_effect* effect)
 			cal_data->data_valid = 0;
 			break;
 		default:
-			printf("led data_valid not used");
+			ALOGW("led data_valid not used");
 			break;
 	}
 
@@ -543,7 +543,7 @@ static void led_effect_exchange(struct led_effect* effect)
 			cal_data->data_valid = 0;
 			break;
 		default:
-			printf("led data_valid not used");
+			ALOGW("led data_valid not used");
 			break;
 	}
 }
@@ -678,17 +678,17 @@ int led_effect_handle(struct led_effect *effect)
 	total_num = get_led_total_num(ctrl);
 
 	if(effect->start*3 > effect->num*3 || effect->start*3 > (total_num -1)) {
-		printf("ERROR: %s(%d): led start %d > end %d\n", __func__, __LINE__, effect->start*3, effect->num*3);
+		ALOGE("ERROR: %s(%d): led start %d > end %d\n", __func__, __LINE__, effect->start*3, effect->num*3);
 		return -EINVAL;
 	}
 
 	if((effect->num*3-1) > (total_num-1)) {
-		printf("ERROR: %s(%d): led end %d > led pins %d\n", __func__, __LINE__, effect->num*3, total_num);
+		ALOGE("ERROR: %s(%d): led end %d > led pins %d\n", __func__, __LINE__, effect->num*3, total_num);
 		return -EINVAL;
 	}
 
 	if((effect->scroll_num*3 -1) > (total_num-1)) {
-		printf("ERROR: %s(%d): led scroll_num %d > led pins %d\n", __func__, __LINE__, effect->scroll_num*3, total_num);
+		ALOGE("ERROR: %s(%d): led scroll_num %d > led pins %d\n", __func__, __LINE__, effect->scroll_num*3, total_num);
 		return -EINVAL;
 	}
 
@@ -711,7 +711,7 @@ int led_effect_handle(struct led_effect *effect)
 		}
 	} else {
 		cal_data->steps_time = (leffect->period / 2)/ leffect->actions_per_period ;
-		printf("steps_time = %d",cal_data->steps_time);
+		ALOGD("steps_time = %d",cal_data->steps_time);
 	}
 
 	return ret;
@@ -739,7 +739,7 @@ int led_effect_volume(struct led_effect* effect)
 void *pbox_light_effect_drew(void)
 {
 	while (true) {
-		//printf("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
+		//ALOGD("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
 		if (foreground_leffect_job) {
 			if(foreground_leffect->led_effect_type == 1 || foreground_leffect->led_effect_type == 2)
 				led_effect_volume(foreground_leffect);
@@ -785,7 +785,7 @@ void soundreactive_mute_set(bool mute){
 void pbox_light_effect_soundreactive(energy_data_t energy_data)
 {
 	if (ctrl->soundreactive_mute) {
-		//printf("%s:%d return\n", __func__, __LINE__);
+		//ALOGD("%s:%d return\n", __func__, __LINE__);
 		return;
 	}
 	//userspace_set_led_effect(RK_ECHO_LED_OFF);
@@ -835,7 +835,7 @@ static void *pbox_light_effect_server(void *arg)
 			}
 			continue; // Interrupted by signal, restart select
 		} else if (result == 0) {
-			printf("select timeout or no data\n");
+			ALOGW("select timeout or no data\n");
 			continue;
 		}
 		int ret = recv(sock_fd, buff, sizeof(buff), 0);
@@ -843,7 +843,7 @@ static void *pbox_light_effect_server(void *arg)
 			continue;
 
 		pbox_light_effect_msg_t *msg = (pbox_light_effect_msg_t *)buff;
-		//printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+		//ALOGD("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
 		if(msg->type == PBOX_EVT)
 			continue;
@@ -954,7 +954,7 @@ int effect_calcule_data_init(void)
 	int total_num;
 	cal_data = malloc(sizeof(struct effect_calcule_data));
 	if (!cal_data) {
-		printf("%s:effect_calcule_data alloc failed\n", __func__);
+		ALOGE("%s:effect_calcule_data alloc failed\n", __func__);
 		goto exit5;
 	}
 	memset(cal_data, 0x00, sizeof(struct effect_calcule_data));
@@ -963,28 +963,28 @@ int effect_calcule_data_init(void)
 
 	cal_data->force_bright = malloc(sizeof(int) * total_num);
 	if (!cal_data->force_bright) {
-		printf("%s:cal_data->force_bright alloc failed\n", __func__);
+		ALOGE("%s:cal_data->force_bright alloc failed\n", __func__);
 		goto exit4;
 	}
 	memset(cal_data->force_bright, 0x00, sizeof(int) * total_num);
 
 	cal_data->back_bright = malloc(sizeof(int) * total_num);
 	if (!cal_data->back_bright) {
-		printf("%s:cal_data->back_bright alloc failed\n", __func__);
+		ALOGE("%s:cal_data->back_bright alloc failed\n", __func__);
 		goto exit3;
 	}
 	memset(cal_data->back_bright, 0x00, sizeof(int) * total_num);
 
 	cal_data->bright = malloc(sizeof(int) * total_num);
 	if (!cal_data->bright) {
-		printf("%s:cal_data->bright alloc failed\n", __func__);
+		ALOGE("%s:cal_data->bright alloc failed\n", __func__);
 		goto exit2;
 	}
 	memset(cal_data->bright, 0x00, sizeof(int) * total_num);
 	
 	cal_data->step_bright = malloc(sizeof(int) * total_num);
 	if (!cal_data->step_bright) {
-		printf("%s:cal_data->step_bright alloc failed\n", __func__);
+		ALOGE("%s:cal_data->step_bright alloc failed\n", __func__);
 		goto exit1;
 	}
 	memset(cal_data->step_bright, 0x00, sizeof(int) * total_num);
@@ -1024,13 +1024,13 @@ int pbox_light_effect_init(void)
 	int total_num;
 
 	if (ctrl) {
-		printf("%s:already inited,direct reutrn\n", __func__);
+		ALOGE("%s:already inited,direct reutrn\n", __func__);
 		return 0;
 	}
 
 	ctrl = malloc(sizeof(struct light_effect_ctrl));
 	if (!ctrl) {
-		printf("%s:light_effect_ctrl alloc failed\n", __func__);
+		ALOGE("%s:light_effect_ctrl alloc failed\n", __func__);
 		goto exit4;
 	}
 	memset(ctrl, 0x00, sizeof(struct light_effect_ctrl));
@@ -1042,14 +1042,14 @@ int pbox_light_effect_init(void)
 
 	leffect = malloc(sizeof(struct led_effect));
 	if (!leffect) {
-		printf("%s:led_effect alloc failed\n", __func__);
+		ALOGE("%s:led_effect alloc failed\n", __func__);
 		goto exit3;
 	}
 	memset(leffect, 0x00, sizeof(struct led_effect));
 
 	foreground_leffect = malloc(sizeof(struct led_effect));
 	if (!foreground_leffect) {
-		printf("%s:led_effect alloc failed\n", __func__);
+		ALOGE("%s:led_effect alloc failed\n", __func__);
 		goto exit2;
 	}
 	memset(foreground_leffect, 0x00, sizeof(struct led_effect));
@@ -1073,7 +1073,7 @@ exit4:
 int pbox_light_effect_deinit(struct light_effect_ctrl * ctrl)
 {
 	if (!ctrl) {
-		printf("%s:already deinited,direct reutrn\n", __func__);
+		ALOGE("%s:already deinited,direct reutrn\n", __func__);
 		return 0;
 	}
 
@@ -1096,17 +1096,17 @@ int pbox_create_lightEffectTask(void)
 
 	ret = pbox_light_effect_init();
 	if (ret < 0) {
-		printf("pbox light effect init failed\n");
+		ALOGE("pbox light effect init failed\n");
 		return ret;
 	}
 
 	ret = pthread_create(&light_effect_task_id, NULL, pbox_light_effect_server, NULL);
 	if (ret < 0)
-		printf("light effect server start failed\n");
+		ALOGE("light effect server start failed\n");
 
 	ret = pthread_create(&light_effect_drew_id, NULL, pbox_light_effect_drew, NULL);
 	if (ret < 0)
-		printf("light effect drew start failed\n");
+		ALOGE("light effect drew start failed\n");
 
 	return ret;
 }

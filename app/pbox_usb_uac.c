@@ -55,13 +55,13 @@ void parse_event(const struct _uevent *event) {
         return;
 
 #if 0
-    printf("uac event start++++++++++++++++++++:\n");
+    ALOGI("uac event start++++++++++++++++++++:\n");
     for (int i = 0 ; i < 10; i++) {
         if (event->strs[i] != NULL) {
-            printf("strs[%d] = %s\n", i, event->strs[i]);
+            ALOGI("strs[%d] = %s\n", i, event->strs[i]);
         }
     }
-    printf("uac event -------------------------\n");
+    ALOGI("uac event -------------------------\n");
 #endif
 
     {
@@ -116,12 +116,12 @@ int uac_monitor_get_fd(void) {
     int sockfd = socket(AF_NETLINK, SOCK_RAW, NETLINK_KOBJECT_UEVENT);
 
     if (sockfd == -1) {
-        printf(("%s socket creating failed:%s\n", __func__, strerror(errno)));
+        ALOGE("%s socket creating failed:%s\n", __func__, strerror(errno));
         return sockfd;
     }
 
     if (bind(sockfd, (struct sockaddr *)&sa, sizeof(sa)) == -1) {
-        printf("bind error:%s\n", strerror(errno));
+        ALOGE("bind error:%s\n", strerror(errno));
         return sockfd;
     }
 

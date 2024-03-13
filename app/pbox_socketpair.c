@@ -54,7 +54,7 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
         } break;
 
         default: {
-        printf("%s module:%d", __func__, module);
+        ALOGW("%s module:%d", __func__, module);
         return -1;
         }
     }
@@ -88,7 +88,7 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
             #endif
                 break;
         }
-        printf("%s: Socket send failed!  source = %d, id:%d, ret = %d, errno: %d\n", __func__, module, id, ret, errno);
+        ALOGW("%s: Socket send failed!  source = %d, id:%d, ret = %d, errno: %d\n", __func__, module, id, ret, errno);
         return -1;
     }
 
@@ -123,7 +123,7 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
         } break;
 
         default: {
-        printf("%s module:%d", __func__, module);
+        ALOGW("%s module:%d", __func__, module);
         return -1;
         }
     }
@@ -155,7 +155,7 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
                 id = ((pbox_usb_msg_t*)info)->msgId;
                 break;
         }
-        printf("%s: module:%d, id:%d, Socket send %s!\n", __func__, module, id, (ret<0)? "fail":"success");
+        ALOGW("%s: module:%d, id:%d, Socket send %s!\n", __func__, module, id, (ret<0)? "fail":"success");
     }
     return ret;
 }

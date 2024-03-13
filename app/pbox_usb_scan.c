@@ -57,7 +57,7 @@ bool file_is_supported(char *filepath, music_format_t* file_type)
         }
     }
 
-    printf("%s is %ssupported, [%s]\n", filepath, result ? "" : "not ", suffix);
+    ALOGW("%s is %ssupported, [%s]\n", filepath, result ? "" : "not ", suffix);
     free(suffix);
     return result;
 }
@@ -70,10 +70,10 @@ int scan_dir(const char *path, int depth, void (*call_back)(music_format_t, char
     dir = opendir(path);
     if (!dir)
     {
-        printf("Error opening directory /oem\n");
+        ALOGE("Error opening directory /oem\n");
         return -1;
     }
-    printf("open dir %s ok!", path);
+    ALOGW("open dir %s ok!", path);
     while ((entry = readdir(dir)) != NULL)
     {
         if (entry->d_type == DT_REG) {

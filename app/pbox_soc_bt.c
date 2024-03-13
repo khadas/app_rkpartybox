@@ -61,7 +61,7 @@ void socbt_pbox_notify_dspver_query(uint32_t opcode, char *buff, int32_t len) {
     };
 
     msg.op = opcode;
-    printf("%s \n", __func__);
+    ALOGD("%s \n", __func__);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -74,7 +74,7 @@ void socbt_pbox_notify_adjust_master_volume(uint32_t opcode, uint8_t *buff, int3
     assert(buff[0]<=DSP_MAIN_MAX_VOL);
     msg.op = opcode;
     msg.volume = HW_MAIN_GAIN(buff[0])/10;//buff[0]*100/32;
-    printf("%s opcode:%d, volume[%d]:%f\n", __func__, opcode, buff[0], msg.volume);
+    ALOGD("%s opcode:%d, volume[%d]:%f\n", __func__, opcode, buff[0], msg.volume);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -86,7 +86,7 @@ void socbt_pbox_notify_adjust_placement(uint32_t opcode, char *buff, int32_t len
     assert(len>0);
     msg.op = opcode;
     msg.placement = buff[0];
-    printf("%s :%d\n", __func__, msg.placement);
+    ALOGD("%s :%d\n", __func__, msg.placement);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -98,7 +98,7 @@ void socbt_pbox_notify_adjust_mic1_state(uint32_t opcode, char *buff, int32_t le
     assert(len>0);
     msg.op = opcode;
     msg.micMux = buff[0];
-    printf("%s :%d\n", __func__, msg.micMux);
+    ALOGD("%s :%d\n", __func__, msg.micMux);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -110,7 +110,7 @@ void socbt_pbox_notify_adjust_mic2_state(uint32_t opcode, char *buff, int32_t le
     assert(len>0);
     msg.op = opcode;
     msg.micMux = buff[0];
-    printf("%s :%d\n", __func__, msg.micMux);
+    ALOGD("%s :%d\n", __func__, msg.micMux);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -122,7 +122,7 @@ void socbt_pbox_notify_adjust_inout_door(uint32_t opcode, char *buff, int32_t le
     assert(len>0);
     msg.op = opcode;
     msg.outdoor = buff[0];
-    printf("%s :%d\n", __func__, msg.outdoor);
+    ALOGD("%s :%d\n", __func__, msg.outdoor);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -133,7 +133,7 @@ void socbt_pbox_notify_dsp_power_state(uint32_t opcode) {
     };
     msg.op = opcode;
     msg.poweron = true;
-    printf("%s opcode:%d\n", __func__, opcode);
+    ALOGD("%s opcode:%d\n", __func__, opcode);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -145,7 +145,7 @@ void socbt_pbox_notify_dsp_stereo_mode(uint32_t opcode, char *buff, int32_t len)
     assert(len>0);
     msg.op = opcode;
     msg.stereo = buff[0];
-    printf("%s opcode:%d stereo:%d\n", __func__, opcode, msg.stereo);
+    ALOGD("%s opcode:%d stereo:%d\n", __func__, opcode, msg.stereo);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -157,7 +157,7 @@ void socbt_pbox_notify_dsp_human_voice_fadeout(uint32_t opcode, char *buff, int3
     assert(len>0);
     msg.op = opcode;
     msg.fadeout = buff[0];
-    printf("%s opcode:%d fadeout:%s\n", __func__, opcode, msg.fadeout? "fade":"org");
+    ALOGD("%s opcode:%d fadeout:%s\n", __func__, opcode, msg.fadeout? "fade":"org");
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -184,7 +184,7 @@ void socbt_pbox_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t le
             msg.input_source.input = SRC_USB;
         } break;
     }
-    printf("%s opcode:%d play_status:%d, source:%d\n", __func__, opcode, msg.input_source.status, msg.input_source.input);
+    ALOGD("%s opcode:%d play_status:%d, source:%d\n", __func__, opcode, msg.input_source.status, msg.input_source.input);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -197,7 +197,7 @@ void socbt_pbox_notify_adjust_music_volume_level(uint32_t opcode, uint8_t *buff,
     assert(buff[0]<=DSP_MUSIC_MAX_VOL);
     msg.op = opcode;
     msg.musicVolLevel = HW_MUSIC_GAIN(buff[0])/10;//main_gain[buff[0]]/10;//buff[0]*100/32;
-    printf("%s opcode:%d musicVolLevel:%f\n", __func__, opcode, msg.musicVolLevel);
+    ALOGD("%s opcode:%d musicVolLevel:%f\n", __func__, opcode, msg.musicVolLevel);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -246,9 +246,9 @@ void process_data(unsigned char *buff, int len) {
     opcode = buff[2];
     command = buff[3];
 
-    printf("%s recv ", __func__);
+    ALOGD("%s recv ", __func__);
     dump_data(buff, len);
-    printf("%s opcode:%d, command:[%d]\n", __func__, opcode, command);
+    ALOGD("%s opcode:%d, command:[%d]\n", __func__, opcode, command);
 
     switch((soc_dsp_cmd_t)command) {
         case DSP_VERSION: {
@@ -304,7 +304,7 @@ void uart_data_recv_handler(int fd) {
     static enum State current_state = READ_INIT;
     static uint32_t index, bytes_to_read = 0;
 
-    //printf("%s current state= %d\n", __func__, current_state);
+    //ALOGD("%s current state= %d\n", __func__, current_state);
     switch (current_state) {
         case READ_INIT:
             index = 0;
@@ -323,7 +323,7 @@ void uart_data_recv_handler(int fd) {
         case READ_LENGTH:
             if (read(fd, &buf[index], 1) > 0) {
                 bytes_to_read = buf[index]; // include checksum value.
-                printf("buf[%d]=[%02x], bytes_to_read:%d\n", index, buf[index], buf[index]);
+                ALOGD("buf[%d]=[%02x], bytes_to_read:%d\n", index, buf[index], buf[index]);
 
                 index++;
                 current_state = READ_DATA;
@@ -333,7 +333,7 @@ void uart_data_recv_handler(int fd) {
         case READ_DATA:
             {
                 int nread = read(fd, &buf[index], bytes_to_read);
-                //printf("index=%d, bytes_to_read=%d, nread=%d\n", index, bytes_to_read, nread);
+                //ALOGD("index=%d, bytes_to_read=%d, nread=%d\n", index, bytes_to_read, nread);
 
                 if (nread > 0) {
                     index += nread;
@@ -385,7 +385,7 @@ uint8_t calculate_checksum(char buf[], int len) {
     for(int i=0; i<len; i++) {
         sum = sum+buf[i];
     }
-    printf("len=%d, checksum:0x%02x\n", len, sum);
+    ALOGD("len=%d, checksum:0x%02x\n", len, sum);
     return sum&0x7F;
 }
 
@@ -436,62 +436,62 @@ int sendDspVersionCmd(char *version) {
 
 void handleSocbtDspVersionCmd(const pbox_socbt_msg_t* msg) {
     char *fw = msg->fw_ver;
-    printf("%s fw:%s\n", __func__, fw);
+    ALOGD("%s fw:%s\n", __func__, fw);
     sendDspVersionCmd(fw);
 }
 
 void handleSocbtDspMainVolumeCmd(const pbox_socbt_msg_t* msg) {
     uint32_t volume = msg->volume;
-    printf("%s main volume:%d\n", __func__, volume);
+    ALOGD("%s main volume:%d\n", __func__, volume);
 
 }
 
 void handleSocbtDspMic1StateCmd(const pbox_socbt_msg_t* msg) {
     mic_mux_t mic = msg->micMux;
-    printf("%s mic:%d\n", __func__, mic);
+    ALOGD("%s mic:%d\n", __func__, mic);
 }
 
 void handleSocbtDspMic2StateCmd(const pbox_socbt_msg_t* msg) {
     mic_mux_t mic = msg->micMux;
-    printf("%s mic:%d\n", __func__, mic);
+    ALOGD("%s mic:%d\n", __func__, mic);
 
 }
 
 void handleSocbtDspInoutDoorCmd(const pbox_socbt_msg_t* msg) {
     inout_door_t inout = msg->outdoor;
-    printf("%s inout:%d\n", __func__, inout);
+    ALOGD("%s inout:%d\n", __func__, inout);
 }
 
 void handleSocbtDspPoweronCmd(const pbox_socbt_msg_t* msg) {
-    printf("%s \n", __func__);
+    ALOGD("%s \n", __func__);
     sendPowerOnCmd();
 }
 
 void handleSocbtDspStereoModeCmd(const pbox_socbt_msg_t* msg) {
     stereo_mode_t mode = msg->stereo;
-    printf("%s dsp stereo mode:%d\n", __func__, mode);
+    ALOGD("%s dsp stereo mode:%d\n", __func__, mode);
 }
 
 void handleSocbtDspHumanVoiceFadeoutCmd(const pbox_socbt_msg_t* msg) {
     bool fadeout = msg->fadeout;
-    printf("%s fadeout :%d\n", __func__, fadeout);
+    ALOGD("%s fadeout :%d\n", __func__, fadeout);
 }
 
 void handleSocbtDspSwitchSourceCmd(const pbox_socbt_msg_t* msg) {
     struct socbt_input_source source = msg->input_source;
-    printf("%s inputsource:%d, status:%d\n", __func__, source.input, source.status);
+    ALOGD("%s inputsource:%d, status:%d\n", __func__, source.input, source.status);
 }
 
 void handleSocbtDspMusicVolumeCmd(const pbox_socbt_msg_t* msg) {
     uint32_t musicVolLevel = msg->musicVolLevel;
-    printf("%s musicVolLevel:%d\n", __func__, musicVolLevel);
+    ALOGD("%s musicVolLevel:%d\n", __func__, musicVolLevel);
     sendMusicVolume(musicVolLevel);
 }
 
 // Function to process an incoming pbox_socbt_msg_t event
 void process_pbox_socbt_cmd(const pbox_socbt_msg_t* msg) {
     if (msg == NULL) {
-        printf("Error: Null event message received.\n");
+        ALOGD("Error: Null event message received.\n");
         return;
     }
 
@@ -504,7 +504,7 @@ void process_pbox_socbt_cmd(const pbox_socbt_msg_t* msg) {
         }
     }
 
-    printf("Warning: No handle found for event ID %d.\n", msg->msgId);
+    ALOGW("Warning: No handle found for event ID %d.\n", msg->msgId);
 }
 
 void soc_bt_recv_data(int fd) {
@@ -512,7 +512,7 @@ void soc_bt_recv_data(int fd) {
     int ret = recv(fd, buff, sizeof(buff), 0);
     if (ret <= 0) {
         if (ret == 0) {
-            printf("Socket closed\n");
+            ALOGW("Socket closed\n");
         } else {
             perror("recvfrom failed");
         }
@@ -556,7 +556,7 @@ static void *btsoc_sink_server(void *arg) {
             //current_state = READ_INIT;
             continue;
         } else if (retval == 0) {
-            printf("select timeout \n");
+            ALOGW("select timeout \n");
             continue;
         }
 
@@ -587,7 +587,7 @@ int pbox_create_btsoc_task(void)
     ret = pthread_create(&tid_server, NULL, btsoc_sink_server, NULL);
     if (ret < 0)
     {
-        printf("btsink server start failed\n");
+        ALOGE("btsink server start failed\n");
     }
 
     return ret;

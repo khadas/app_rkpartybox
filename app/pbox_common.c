@@ -26,7 +26,7 @@ void pause_fd_timer(int timer_fd) {
     its.it_interval.tv_nsec = 0;
 
     if (timerfd_settime(timer_fd, 0, &its, NULL) == -1) {
-        printf("%s error", __func__);
+        ALOGE("%s error", __func__);
         return;
     }
 }
@@ -39,7 +39,7 @@ void start_fd_timer(int timer_fd, int start, int interval, bool loop) {
     its.it_interval.tv_nsec = (interval%1000)*1000*1000;;
 
     if (timerfd_settime(timer_fd, 0, &its, NULL) == -1) {
-        printf("%s error", __func__);
+        ALOGE("%s error", __func__);
         return;
     }
 }
@@ -58,7 +58,7 @@ uint64_t time_get_os_boot_us(void) {
 
 int findMax(int array[], int size) {
     if (size <= 0) {
-        printf("%s size=%d error", __func__, size);
+        ALOGE("%s size=%d error", __func__, size);
         return 0;
     }
 
@@ -83,6 +83,6 @@ void pbox_init_background(void) {
     int ret = pthread_create(&vocal_cpuset, NULL, set_background_setting, NULL);
     if (ret < 0)
     {
-        printf("pbox_init_background fail\n");
+        ALOGE("pbox_init_background fail\n");
     }
 }

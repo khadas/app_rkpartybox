@@ -21,7 +21,7 @@
 #define PERCENT2TARGET(value, MIN_TARGET, MAX_TARGET) ((MAX_TARGET - MIN_TARGET)*value/100 + MIN_TARGET)
 void keyscan_knob_data_recv(struct _keyinfo keyinfo) {
     float value = keyinfo.value;
-    //printf("%s value:%d\n", __func__, keyinfo.value);
+    //ALOGD("%s value:%d\n", __func__, keyinfo.value);
     switch(keyinfo.keycode) {
         case MIC1_BUTTON_BASS: {
             value = PERCENT2TARGET(value, MIN_BASS_VALUE, MAX_BASS_VALUE);
@@ -56,7 +56,7 @@ void maintask_keyscan_fd_process(int fd) {
     int i = 0;
     if (ret <= 0) {
         if (ret == 0) {
-            printf("%s: fd closed or EOF\n", __func__, fd);
+            ALOGW("%s: fd closed or EOF\n", __func__, fd);
         } else if (errno != EINTR) {
             perror("recvfrom");
         }
@@ -64,7 +64,7 @@ void maintask_keyscan_fd_process(int fd) {
     }
 
     pbox_keyscan_msg_t *msg = (pbox_keyscan_msg_t *)buff;
-    printf("%s recv: msgId:%d, keycode: %d\n", __func__, msg->msgId, msg->keyinfo.keycode);
+    ALOGD("%s recv: msgId:%d, keycode: %d\n", __func__, msg->msgId, msg->keyinfo.keycode);
 
     if (msg->type != PBOX_EVT)
         return;

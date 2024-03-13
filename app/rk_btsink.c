@@ -84,7 +84,7 @@ int bt_sink_notify_avrcp_track(char *tile, char *artist)
 		strncpy(&msg.btinfo.track.artist[0], artist, MIN(strlen(artist), MAX_NAME_LENGTH));
 		msg.btinfo.track.artist[MAX_NAME_LENGTH] = 0;
 	}
-	//printf("%s recv msg rack: %s[%p] %s[%p]\n", __func__, msg.btinfo.track.title, msg.btinfo.track.title, msg.btinfo.track.artist, msg.btinfo.track.artist);
+	//ALOGD("%s recv msg rack: %s[%p] %s[%p]\n", __func__, msg.btinfo.track.title, msg.btinfo.track.title, msg.btinfo.track.artist, msg.btinfo.track.artist);
 
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
 }
@@ -118,7 +118,7 @@ int bt_sink_notify_pcm_format(int sampleFreq, int channel)
 	msg.msgId = BT_SINK_MUSIC_FORMAT;
 	msg.btinfo.audioFormat.sampingFreq = sampleFreq;
     msg.btinfo.audioFormat.channel = channel;
-    printf("FUNC:%s sampleFreq:%d, channel=%d!\n", __func__, sampleFreq, channel);
+    ALOGD("FUNC:%s sampleFreq:%d, channel=%d!\n", __func__, sampleFreq, channel);
 	unix_socket_bt_notify_msg(&msg, sizeof(rk_bt_msg_t));
 }
 
@@ -180,14 +180,14 @@ static void bt_sink_notify_volume(uint32_t volume)
 static RkBtContent bt_content;
 static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 {
-	printf("%s state:%d\n", __func__, state);
+	ALOGD("%s state:%d\n", __func__, state);
 	switch (state) {
 	//BASE STATE
 	case RK_BT_STATE_TURNING_ON:
-		printf("++ RK_BT_STATE_TURNING_ON\n");
+		ALOGI("++ RK_BT_STATE_TURNING_ON\n");
 		break;
 	case RK_BT_STATE_INIT_ON:
-		printf("++ RK_BT_STATE_INIT_ON=%d\n", rk_bt_is_powered_on());
+		ALOGI("++ RK_BT_STATE_INIT_ON=%d\n", rk_bt_is_powered_on());
 		bt_content.init = true;
 		//rk_bt_set_power(true);
 		if(rk_bt_is_powered_on()) {
@@ -196,7 +196,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		}
 		break;
 	case RK_BT_STATE_INIT_OFF:
-		printf("++ RK_BT_STATE_INIT_OFF\n");
+		ALOGI("++ RK_BT_STATE_INIT_OFF\n");
 		bt_content.init = false;
 		bt_sink_notify_btstate(BT_NONE, NULL);
 		break;
@@ -204,38 +204,38 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 	//SCAN STATE
 	case RK_BT_STATE_SCAN_NEW_REMOTE_DEV:
 		if (rdev->paired)
-			printf("+ PAIRED_DEV: [%s|%d]:%s:%s\n", rdev->remote_address, rdev->rssi,
+			ALOGI("+ PAIRED_DEV: [%s|%d]:%s:%s\n", rdev->remote_address, rdev->rssi,
 					rdev->remote_address_type, rdev->remote_alias);
 		else
-			printf("+ SCAN_NEW_DEV: [%s|%d]:%s:%s\n", rdev->remote_address, rdev->connected,
+			ALOGI("+ SCAN_NEW_DEV: [%s|%d]:%s:%s\n", rdev->remote_address, rdev->connected,
 					rdev->remote_address_type, rdev->remote_alias);
 		break;
 	case RK_BT_STATE_SCAN_CHG_REMOTE_DEV:
-		printf("+ SCAN_CHG_DEV: [%s|%d]:%s:%s|%s\n", rdev->remote_address, rdev->rssi,
+		ALOGI("+ SCAN_CHG_DEV: [%s|%d]:%s:%s|%s\n", rdev->remote_address, rdev->rssi,
 				rdev->remote_address_type, rdev->remote_alias, rdev->change_name);
 		if (!strcmp(rdev->change_name, "UUIDs")) {
 			for (int index = 0; index < 36; index++) {
 				if (!strcmp(rdev->remote_uuids[index], "NULL"))
 					break;
-				printf("\tUUIDs: %s\n", rdev->remote_uuids[index]);
+				ALOGI("\tUUIDs: %s\n", rdev->remote_uuids[index]);
 			}
 		} else if (!strcmp(rdev->change_name, "Icon")) {
-			printf("\tIcon: %s\n", rdev->icon);
+			ALOGI("\tIcon: %s\n", rdev->icon);
 		} else if (!strcmp(rdev->change_name, "Class")) {
-			printf("\tClass: 0x%x\n", rdev->cod);
+			ALOGI("\tClass: 0x%x\n", rdev->cod);
 		} else if (!strcmp(rdev->change_name, "Modalias")) {
-			printf("\tModalias: %s\n", rdev->modalias);
+			ALOGI("\tModalias: %s\n", rdev->modalias);
 		}
 		break;
 	case RK_BT_STATE_SCAN_DEL_REMOTE_DEV:
-		printf("+ SCAN_DEL_DEV: [%s]:%s:%s\n", rdev->remote_address,
+		ALOGI("+ SCAN_DEL_DEV: [%s]:%s:%s\n", rdev->remote_address,
 				rdev->remote_address_type, rdev->remote_alias);
 		break;
 
 	//LINK STATE
 	case RK_BT_STATE_CONNECTED:
 	case RK_BT_STATE_DISCONN:
-		printf("+ %s [%s|%d]:%s:%s\n", rdev->connected ? "STATE_CONNECT" : "STATE_DISCONN",
+		ALOGI("+ %s [%s|%d]:%s:%s\n", rdev->connected ? "STATE_CONNECT" : "STATE_DISCONN",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -245,7 +245,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		break;
 	case RK_BT_STATE_PAIRED:
 	case RK_BT_STATE_PAIR_NONE:
-		printf("+ %s [%s|%d]:%s:%s\n", rdev->paired ? "STATE_PAIRED" : "STATE_PAIR_NONE",
+		ALOGI("+ %s [%s|%d]:%s:%s\n", rdev->paired ? "STATE_PAIRED" : "STATE_PAIR_NONE",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -253,7 +253,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		break;
 	case RK_BT_STATE_BONDED:
 	case RK_BT_STATE_BOND_NONE:
-		printf("+ %s [%s|%d]:%s:%s\n", rdev->bonded ? "STATE_BONDED" : "STATE_BOND_NONE",
+		ALOGI("+ %s [%s|%d]:%s:%s\n", rdev->bonded ? "STATE_BONDED" : "STATE_BOND_NONE",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -264,7 +264,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 	case RK_BT_STATE_DISCONN_FAILED:
 	case RK_BT_STATE_CONNECT_FAILED:
 	case RK_BT_STATE_DEL_DEV_FAILED:
-		printf("+ STATE_FAILED [%s|%d]:%s:%s reason: %s\n",
+		ALOGI("+ STATE_FAILED [%s|%d]:%s:%s reason: %s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -275,13 +275,13 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 	//MEDIA A2DP SOURCE
 	case RK_BT_STATE_SRC_ADD:
 	case RK_BT_STATE_SRC_DEL:
-		printf("+ STATE SRC MEDIA %s [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE SRC MEDIA %s [%s|%d]:%s:%s\n",
 				(state == RK_BT_STATE_SRC_ADD) ? "ADD" : "DEL",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
-		printf("+ codec: %s, freq: %s, chn: %s\n",
+		ALOGI("+ codec: %s, freq: %s, chn: %s\n",
 					rdev->media.codec == 0 ? "SBC" : "UNKNOW",
 					rdev->media.sbc.frequency == 1 ? "48K" : "44.1K",
 					rdev->media.sbc.channel_mode == 1 ? "JOINT_STEREO" : "STEREO");
@@ -289,7 +289,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 
 	//MEDIA AVDTP TRANSPORT
 	case RK_BT_STATE_TRANSPORT_VOLUME:
-		printf("+ STATE AVDTP TRASNPORT VOLUME[%d] [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE AVDTP TRASNPORT VOLUME[%d] [%s|%d]:%s:%s\n",
 				rdev->media.volume,
 				rdev->remote_address,
 				rdev->rssi,
@@ -298,21 +298,21 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		bt_sink_notify_volume(rdev->media.volume);
 		break;
 	case RK_BT_STATE_TRANSPORT_IDLE:
-		printf("+ STATE AVDTP TRASNPORT IDLE [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE AVDTP TRASNPORT IDLE [%s|%d]:%s:%s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
 		break;
 	case RK_BT_STATE_TRANSPORT_PENDING:
-		printf("+ STATE AVDTP TRASNPORT PENDING [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE AVDTP TRASNPORT PENDING [%s|%d]:%s:%s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
 		break;
 	case RK_BT_STATE_TRANSPORT_ACTIVE:
-		printf("+ STATE AVDTP TRASNPORT ACTIVE [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE AVDTP TRASNPORT ACTIVE [%s|%d]:%s:%s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -320,7 +320,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		bt_sink_notify_a2dpstate(A2DP_STREAMING);
 		break;
 	case RK_BT_STATE_TRANSPORT_SUSPENDING:
-		printf("+ STATE AVDTP TRASNPORT SUSPEND [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE AVDTP TRASNPORT SUSPEND [%s|%d]:%s:%s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -332,13 +332,13 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 	case RK_BT_STATE_SINK_DEL:
 		unsigned int freq = a2dp_codec_lookup_frequency(rdev->media.sbc.frequency);
 		unsigned int channel = a2dp_codec_lookup_channels(rdev->media.sbc.channel_mode);
-		printf("+ STATE SINK MEDIA %s [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE SINK MEDIA %s [%s|%d]:%s:%s\n",
 				(state == RK_BT_STATE_SINK_ADD) ? "ADD" : "DEL",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
-		printf("+ codec: %s, freq: %d, chn: %d\n",
+		ALOGI("+ codec: %s, freq: %d, chn: %d\n",
 					rdev->media.codec == 0 ? "SBC" : "UNKNOW",
 					freq,
 					channel);
@@ -351,7 +351,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		}
 		break;
 	case RK_BT_STATE_SINK_PLAY:
-		printf("+ STATE SINK PLAYER PLAYING [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE SINK PLAYER PLAYING [%s|%d]:%s:%s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -359,7 +359,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		bt_sink_notify_a2dpstate(A2DP_STREAMING);
 		break;
 	case RK_BT_STATE_SINK_STOP:
-		printf("+ STATE SINK PLAYER STOP [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE SINK PLAYER STOP [%s|%d]:%s:%s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -367,7 +367,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		bt_sink_notify_a2dpstate(A2DP_CONNECTED);
 		break;
 	case RK_BT_STATE_SINK_PAUSE:
-		printf("+ STATE SINK PLAYER PAUSE [%s|%d]:%s:%s\n",
+		ALOGI("+ STATE SINK PLAYER PAUSE [%s|%d]:%s:%s\n",
 				rdev->remote_address,
 				rdev->rssi,
 				rdev->remote_address_type,
@@ -376,7 +376,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		bt_sink_notify_a2dpstate(A2DP_CONNECTED);
 		break;
     case RK_BT_STATE_SINK_TRACK:
-        printf("+ STATE SINK TRACK INFO [%s|%d]:%s:%s track[%s]-[%s]\n",
+        ALOGI("+ STATE SINK TRACK INFO [%s|%d]:%s:%s track[%s]-[%s]\n",
             rdev->remote_address,
             rdev->rssi,
             rdev->remote_address_type,
@@ -386,7 +386,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
         bt_sink_notify_avrcp_track(rdev->title, rdev->artist);
     break;
     case RK_BT_STATE_SINK_POSITION:
-        printf("+ STATE SINK TRACK POSITION:[%s|%d]:%s:%s [%u-%u]\n",
+        ALOGI("+ STATE SINK TRACK POSITION:[%s|%d]:%s:%s [%u-%u]\n",
                 rdev->remote_address,
                 rdev->rssi,
                 rdev->remote_address_type,
@@ -399,63 +399,63 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 	//ADV
 	case RK_BT_STATE_ADAPTER_BLE_ADV_START:
 		bt_content.ble_content.ble_advertised = true;
-		printf("RK_BT_STATE_ADAPTER_BLE_ADV_START successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_BLE_ADV_START successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_BLE_ADV_STOP:
 		bt_content.ble_content.ble_advertised = false;
-		printf("RK_BT_STATE_ADAPTER_BLE_ADV_STOP successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_BLE_ADV_STOP successful\n");
 		break;
 
 	//ADAPTER STATE
 	case RK_BT_STATE_ADAPTER_NO_DISCOVERYABLED:
 		bt_content.discoverable = false;
         bt_sink_notify_adapter_discoverable(false);
-		printf("RK_BT_STATE_ADAPTER_NO_DISCOVERYABLED successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_NO_DISCOVERYABLED successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_DISCOVERYABLED:
 		bt_content.discoverable = true;
         bt_sink_notify_adapter_discoverable(true);
-		printf("RK_BT_STATE_ADAPTER_DISCOVERYABLED successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_DISCOVERYABLED successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_NO_PAIRABLED:
 		bt_content.pairable = false;
-		printf("RK_BT_STATE_ADAPTER_NO_PAIRABLED successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_NO_PAIRABLED successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_PAIRABLED:
 		bt_content.pairable = true;
-		printf("RK_BT_STATE_ADAPTER_PAIRABLED successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_PAIRABLED successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_NO_SCANNING:
 		bt_content.scanning = false;
-		printf("RK_BT_STATE_ADAPTER_NO_SCANNING successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_NO_SCANNING successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_SCANNING:
 		bt_content.scanning = true;
-		printf("RK_BT_STATE_ADAPTER_SCANNING successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_SCANNING successful\n");
 		break;
 	case RK_BT_STATE_ADAPTER_POWER_ON:
-		printf("RK_BT_STATE_ADAPTER_POWER_ON successful power=%d\n", bt_content.power);
+		ALOGI("RK_BT_STATE_ADAPTER_POWER_ON successful power=%d\n", bt_content.power);
 		if(!bt_content.power) {
 			bt_content.power = true;
 			bt_sink_notify_btstate(BT_INIT_ON, NULL);
 		} break;
 	case RK_BT_STATE_ADAPTER_POWER_OFF:
 		bt_content.power = false;
-		printf("RK_BT_STATE_ADAPTER_POWER_OFF successful\n");
+		ALOGI("RK_BT_STATE_ADAPTER_POWER_OFF successful\n");
 		break;
 	case RK_BT_STATE_COMMAND_RESP_ERR:
-		printf("RK_BT_STATE CMD ERR!!!\n");
+		ALOGI("RK_BT_STATE CMD ERR!!!\n");
 		break;
 	case RK_BT_STATE_DEL_DEV_OK:
 		if (rdev != NULL)
-			printf("+ RK_BT_STATE_DEL_DEV_OK: %s:%s:%s\n",
+			ALOGI("+ RK_BT_STATE_DEL_DEV_OK: %s:%s:%s\n",
 				rdev->remote_address,
 				rdev->remote_address_type,
 				rdev->remote_alias);
 		break;
 	default:
 		if (rdev != NULL)
-			printf("+ DEFAULT STATE %d: %s:%s:%s RSSI: %d [CBP: %d:%d:%d]\n", state,
+			ALOGI("+ DEFAULT STATE %d: %s:%s:%s RSSI: %d [CBP: %d:%d:%d]\n", state,
 				rdev->remote_address,
 				rdev->remote_address_type,
 				rdev->remote_alias,
@@ -473,12 +473,12 @@ void bt_test_version(char *data)
 	char month[4];
 	const char *dateString = __DATE__;
 	sscanf(dateString, "%s %d %d", month, &day, &year);
-	printf("RK BT VERSION: %s-[%d-%s-%d:%s]\n", rk_bt_version(), year, month, day, __TIME__);
+	ALOGW("RK BT VERSION: %s-[%d-%s-%d:%s]\n", rk_bt_version(), year, month, day, __TIME__);
 }
 
 static bool bt_test_audio_server_cb(void)
 {
-	printf("%s\n", __func__);
+	ALOGD("%s\n", __func__);
 	return true;
 }
 
@@ -495,7 +495,7 @@ static void btsink_config_name(void) {
 		}
 	}
 
-	printf("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
+	ALOGD("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
 	memset(&bt_content, 0, sizeof(RkBtContent));
 
 	//BREDR CLASS BT NAME
@@ -506,19 +506,19 @@ static void btsink_config_name(void) {
 	else {
 		bt_content.bt_name = "partybox";
 	}
-	printf("%s name:%s\n", __func__, bt_content.bt_name);
+	ALOGW("%s name:%s\n", __func__, bt_content.bt_name);
 }
 
 static bool bt_test_vendor_cb(bool enable)
 {
-	printf("%s enable:%d\n", __func__, enable);
+	ALOGD("%s enable:%d\n", __func__, enable);
 	bt_sink_notify_vendor_state(enable);
 
 	return true;
 }
 
 static void bt_restart_bluealsa_only(void) {
-	printf("%s\n", __func__);
+	ALOGD("%s\n", __func__);
 	kill_task("pulseaudio");
 	if(!get_ps_pid("bluealsa")) {
 		run_task("bluealsa", "bluealsa -S --profile=a2dp-sink &");
@@ -530,7 +530,7 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 {
 	char ret_buff[1024];
 
-	printf("%s onlyAplay:%d\n", __func__, onlyAplay);
+	ALOGD("%s onlyAplay:%d\n", __func__, onlyAplay);
 	kill_task("pulseaudio");
 
 	if(!onlyAplay) {
@@ -553,8 +553,9 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 	}
 
 	if(!get_ps_pid("bluealsa-aplay")) {
-		run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
-		//run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
+		//run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+		//run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm-buffer-time 800000 --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+		run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
 		rk_setRtPrority(get_ps_pid("bluealsa-aplay"), SCHED_RR, 9);
 	}
 	return 0;
@@ -562,7 +563,7 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 
 static void bt_vendor_set_enable(bool enable) {
 	int times = 100;
-	printf("%s enable:%d\n", __func__, enable);
+	ALOGD("%s enable:%d\n", __func__, enable);
 }
 
 static void *btsink_server(void *arg)
@@ -571,7 +572,7 @@ static void *btsink_server(void *arg)
 	int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
 
 	pthread_setname_np(pthread_self(), "pbox_btserver");
-    printf("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
+    ALOGW("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
 	memset(&bt_content, 0, sizeof(RkBtContent));
 	btsink_config_name();
 	//BLE NAME
@@ -602,7 +603,7 @@ static void *btsink_server(void *arg)
 			continue;
 
 		rk_bt_msg_t *msg = (rk_bt_msg_t *)buff;
-		printf("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+		ALOGD("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
 		if (msg->type == RK_BT_CMD)
 		{
@@ -675,13 +676,13 @@ int pbox_create_bttask(void)
     ret = pthread_create(&tid_server, NULL, btsink_server, NULL);
     if (ret < 0)
     {
-        printf("btsink server start failed\n");
+        ALOGE("btsink server start failed\n");
     }
 
     //ret = pthread_create(&tid_watch, NULL, btsink_watcher, NULL);
     if (ret < 0)
     {
-        printf("btsink watcher start failed\n");
+        ALOGE("btsink watcher start failed\n");
     }
 
     return ret;

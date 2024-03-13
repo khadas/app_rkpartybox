@@ -1,4 +1,5 @@
 #include "pbox_led_cjson.h"
+#include "slog.h"
 //获取json文本的数据
 
 const char *jsonfile = "/etc/led_effect.json";
@@ -29,14 +30,14 @@ char *get_json_data(const char *jsonfile)
 	long json_size;
 
 	char *json_data = NULL;
-	printf("open %s\n", jsonfile);
+	ALOGD("open %s\n", jsonfile);
 	f_json = fopen(jsonfile, "r");
 	if (f_json == NULL) {
-		printf("open %s  failed\n", jsonfile);
-		printf("open %s\n", jsonfile1);
+		ALOGE("open %s  failed\n", jsonfile);
+		ALOGE("open %s\n", jsonfile1);
 		f_json = fopen(jsonfile1, "r");
 		if (f_json == NULL){
-			printf("try open %s  failed, return\n", jsonfile1);
+			ALOGE("try open %s  failed, return\n", jsonfile1);
 			return NULL;
 		}
 	}
@@ -59,30 +60,30 @@ char *get_json_data(const char *jsonfile)
 
 static void dump_led_effect(struct led_effect* effect)
 {
-	printf("----------led effect json dump start------------\n");
-	printf("back_color 0x%06x\n", effect->back_color);
-	printf("fore_color 0x%06x\n", effect->fore_color);
-	printf("period %d\n", effect->period);
-	printf("start %d\n", effect->start);
-	printf("num %d\n", effect->num);
-	printf("type %d\n", effect->led_effect_type);
-	printf("actions_per_period %d\n", effect->actions_per_period);
+	ALOGI("----------led effect json dump start------------\n");
+	ALOGI("back_color 0x%06x\n", effect->back_color);
+	ALOGI("fore_color 0x%06x\n", effect->fore_color);
+	ALOGI("period %d\n", effect->period);
+	ALOGI("start %d\n", effect->start);
+	ALOGI("num %d\n", effect->num);
+	ALOGI("type %d\n", effect->led_effect_type);
+	ALOGI("actions_per_period %d\n", effect->actions_per_period);
 	// 	for (int i = 0; i < LED_NUM; i++)
-	//  printf("0x%06x ", effect->leds_color[i]);
-	printf("--------------------end----------------------\n\n");
+	//  ALOGI("0x%06x ", effect->leds_color[i]);
+	ALOGI("--------------------end----------------------\n\n");
 }
 
 int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effect, char *led_effect_name)
 {
-	printf("get_led_effect_data: %s\n", led_effect_name);
+	ALOGD("get_led_effect_data: %s\n", led_effect_name);
 	char *p = get_json_data(jsonfile);
 	if (NULL == p){
-		printf("get_json_data failed, return\n");
+		ALOGE("get_json_data failed, return\n");
 		return -1;
 	}
 	cJSON * pJson = cJSON_Parse(p);
 	if (NULL == pJson) {
-		printf("parse %s led_effect failed, return\n", led_effect_name);
+		ALOGE("parse %s led_effect failed, return\n", led_effect_name);
 		free(p);
 		return -1;
 	}
@@ -123,12 +124,12 @@ int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effe
 			effect->led_effect_type = ptype->valueint;
 		}	
 	} else {
-		printf("cJSON_GetObjectItem led_effect %s failed, return\n",led_effect_name);
+		ALOGE("cJSON_GetObjectItem led_effect %s failed, return\n",led_effect_name);
 		cJSON_Delete(pJson);
 		free(p);
 		return -1;
 	}
-	printf("parse %s led_effect success\n", led_effect_name);
+	ALOGD("parse %s led_effect success\n", led_effect_name);
 	dump_led_effect(effect);
 	cJSON_Delete(pJson);
 	free(p);
@@ -137,14 +138,14 @@ int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effe
 
 static void dump_config(struct light_effect_ctrl *ctrl)
 {
-	printf("----------base config dump start------------\n");
-	printf("light_unit_type %d\n", ctrl->unit_type);
-	printf("light_unit_num %d\n", ctrl->unit_num);
-	printf("rgb_order %d\n", ctrl->rgb_order);
+	ALOGE("----------base config dump start------------\n");
+	ALOGE("light_unit_type %d\n", ctrl->unit_type);
+	ALOGE("light_unit_num %d\n", ctrl->unit_num);
+	ALOGE("rgb_order %d\n", ctrl->rgb_order);
 	for(int i = 0; i < get_led_total_num(ctrl); i++) {
-		printf("==position_mapp[%d]:%d==\n", i, ctrl->position_mapp[i]);
+		ALOGE("==position_mapp[%d]:%d==\n", i, ctrl->position_mapp[i]);
 	}
-	printf("--------------------end----------------------\n\n");
+	ALOGE("--------------------end----------------------\n\n");
 }
 
 pbox_light_unit_type_t get_light_unit_type(char* str)
@@ -188,15 +189,15 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 	int total_num;
 	char str[16];
 
-	printf("get_config_data: %s\n", config_name);
+	ALOGD("get_config_data: %s\n", config_name);
 	char *p = get_json_data(jsonfile);
 	if (NULL == p){
-		printf("get_json_data failed, return\n");
+		ALOGE("get_json_data failed, return\n");
 		return -1;
 	}
 	cJSON * pJson = cJSON_Parse(p);
 	if (NULL == pJson) {
-		printf("parse %s led_effect failed, return\n", config_name);
+		ALOGE("parse %s led_effect failed, return\n", config_name);
 		free(p);
 		return -1;
 	}
@@ -224,7 +225,7 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 
 		ctrl->position_mapp = (int *)malloc(sizeof(int) * total_num);
 		if (ctrl->position_mapp == NULL) {
-			printf("position_mapp malloc fail\n");
+			ALOGE("position_mapp malloc fail\n");
 			goto failed;
 		}
 		memset(ctrl->position_mapp, 0, total_num * sizeof(int));
@@ -236,7 +237,7 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 			if(pposition_mapp){
 				ctrl->position_mapp[i] = pposition_mapp->valueint;
 			} else {
-				printf("could not find logic mapp %d\n", i + 1);
+				ALOGE("could not find logic mapp %d\n", i + 1);
 				free(ctrl->position_mapp);
 				goto failed;
 			}
@@ -244,19 +245,19 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 
 		ctrl->unit_fd = (int *)malloc(sizeof(int) * total_num);
 		if (ctrl->unit_fd == NULL) {
-			printf("unit fd malloc fail\n");
+			ALOGE("unit fd malloc fail\n");
 			return -1;
 		}
 		memset(ctrl->unit_fd, 0, total_num *sizeof(int));
 
 	} else {
-		printf("cJSON_GetObjectItem led_effect %s failed, return\n",config_name);
+		ALOGE("cJSON_GetObjectItem led_effect %s failed, return\n",config_name);
 failed:
 		cJSON_Delete(pJson);
 		free(p);
 		return -1;
 	}
-	printf("parse %s led_effect success\n", config_name);
+	ALOGD("parse %s led_effect success\n", config_name);
 	dump_config(ctrl);
 	cJSON_Delete(pJson);
 	free(p);

@@ -310,7 +310,7 @@ void maintask_lvgl_fd_process(int fd) {
 	int ret = recv(fd, buff, sizeof(buff), 0);
     if (ret <= 0) {
         if (ret == 0) {
-            printf("%s: Connection closed\n", __func__);
+            ALOGW("%s: Connection closed\n", __func__);
         } else if (errno != EINTR) {
             perror("recvfrom");
         }
@@ -318,10 +318,10 @@ void maintask_lvgl_fd_process(int fd) {
     }
 
     pbox_lcd_msg_t *msg = (pbox_lcd_msg_t *)buff;
-    printf("%s: Socket received - type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+    ALOGD("%s: Socket received - type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
     if (msg->type != PBOX_EVT) {
-        printf("%s: Invalid message type\n", __func__);
+        ALOGW("%s: Invalid message type\n", __func__);
         return;
     }
 

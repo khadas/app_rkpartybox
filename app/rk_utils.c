@@ -16,6 +16,7 @@
 #include <sys/resource.h>
 
 #include "rk_utils.h"
+#include "slog.h"
 
 #define DEBUG 1
 #define PRIORITY_BASE(x)                       (sched_get_priority_min(x))
@@ -65,23 +66,23 @@ int exec_command_system(const char *cmd)
 {
 	pid_t status;
 
-	printf("[EXEC_DEBUG_SYS]: %s\n", cmd);
+	ALOGW("[EXEC_DEBUG_SYS]: %s\n", cmd);
 
 	status = system_fd_closexec(cmd);
 
 	if (-1 == status) {
-		printf("[system_exec_err] -1\n");
+		ALOGE("[system_exec_err] -1\n");
 		return -1;
 	} else {
 		if (WIFEXITED(status)) {
 			if (0 == WEXITSTATUS(status)) {
 				return 0;
 			} else {
-				printf("[system_exec_err %s] -2\n", cmd);
+				ALOGE("[system_exec_err %s] -2\n", cmd);
 				return -2;
 			}
 		} else {
-			printf("[system_exec_err] -3\n");
+			ALOGE("[system_exec_err] -3\n");
 			return -3;
 		}
 	}
@@ -91,7 +92,7 @@ int exec_command_system(const char *cmd)
 
 void exec_command(char cmdline[], char recv_buff[], int len)
 {
-	printf("[EXEC_DEBUG]: %s\n", cmdline);
+	ALOGW("[EXEC_DEBUG]: %s\n", cmdline);
 
 	FILE *stream = NULL;
 	char *tmp_buff = recv_buff;
@@ -107,10 +108,10 @@ void exec_command(char cmdline[], char recv_buff[], int len)
 				break;
 		}
 
-		printf("[EXEC_DEBUG] execute_r: %s \n", recv_buff);
+		ALOGE("[EXEC_DEBUG] execute_r: %s \n", recv_buff);
 		pclose(stream);
 	} else
-		printf("[popen] error: %s\n", cmdline);
+		ALOGE("[popen] error: %s\n", cmdline);
 }
 
 int test_pthread(pthread_t tid) /*pthread_kill的返回值：成功（0） 线程不存在（ESRCH） 信号不合法（EINVAL）*/
@@ -119,11 +120,11 @@ int test_pthread(pthread_t tid) /*pthread_kill的返回值：成功（0） 线�
 	pthread_kill_err = pthread_kill(tid, 0);
 
 	if(pthread_kill_err == ESRCH)
-		printf("ID 0x%x NOT EXIST OR EXIT\n", (unsigned int)tid);
+		ALOGW("ID 0x%x NOT EXIST OR EXIT\n", (unsigned int)tid);
 	else if(pthread_kill_err == EINVAL)
-		printf("SIGNAL ILL\n");
+		ALOGW("SIGNAL ILL\n");
 	else
-		printf("ID 0x%x ALIVE\n", (unsigned int)tid);
+		ALOGW("ID 0x%x ALIVE\n", (unsigned int)tid);
 
 	return pthread_kill_err;
 }
@@ -137,7 +138,7 @@ int get_ps_pid_new(const char Name[]) {
     // Open the /proc directory
     dir = opendir("/proc");
     if (dir == NULL) {
-        printf("Unable to open /proc directory");
+        ALOGE("Unable to open /proc directory");
         return 0;
     }
 
@@ -176,7 +177,7 @@ int get_ps_pid_new(const char Name[]) {
     closedir(dir);
 
     // No matching process name found, indicating the process is not running
-    printf("%s Can't find %s process running\n", __func__, Name);
+    ALOGE("%s Can't find %s process running\n", __func__, Name);
     return 0;
 }
 
@@ -213,7 +214,7 @@ retry:
 	if ((pid == 0) && (retry_cnt--))
 		goto retry;
 
-    printf("%s tid=%d\n", Name, pid);
+    ALOGW("%s tid=%d\n", Name, pid);
 	return pid;
 }
 
@@ -286,7 +287,7 @@ retry:
 	if ((pid == 0) && (retry_cnt--))
 		goto retry;
 
-	printf("%s [%s]=%d\n", __func__, Name, pid);
+	ALOGW("%s [%s]=%d\n", __func__, Name, pid);
 	return pid;
 }
 
@@ -314,10 +315,10 @@ int kill_task(char *name)
 	}
 
 	if (get_ps_pid(name)) {
-		printf("%s: kill %s failure [%d]\n", __func__, name, get_ps_pid(name));
+		ALOGE("%s: kill %s failure [%d]\n", __func__, name, get_ps_pid(name));
 		return -1;
 	} else {
-		printf("%s: kill %s successful\n", __func__, name);
+		ALOGE("%s: kill %s successful\n", __func__, name);
 		return 0;
 	}
 }
@@ -333,7 +334,7 @@ int run_task(char *name, char *cmd)
 	}
 
 	if(exec_cnt <= 0) {
-		printf("%s: run %s failed\n", __func__, name);
+		ALOGE("%s: run %s failed\n", __func__, name);
 		return -1;
 	}
 	msleep(100);
@@ -359,7 +360,7 @@ static void *vocal_separate_cpu(void *arg)
     for (int i = 0; i < 3; i ++) {
         if (((pid = get_thread_pid("vocal_neet")) > 0)&&(old_vocal_neet != pid)) {
             char cmdline[512];
-            printf("%s %d roud:%d\n", __func__, pid, i);
+            ALOGW("%s %d roud:%d\n", __func__, pid, i);
             sprintf(cmdline, "taskset -p 08 %d", pid);
             exec_command_system(cmdline);
             old_vocal_neet = pid;
@@ -371,7 +372,7 @@ static void *vocal_separate_cpu(void *arg)
     for (int i = 0; i < 3; i ++) {
         if (((pid = get_thread_pid("vocal_separate-")) > 0)&&(old_vocal_separate != pid)) {
             char cmdline[512];
-            printf("%s %d roud:%d\n", __func__, pid, i);
+            ALOGW("%s %d roud:%d\n", __func__, pid, i);
             sprintf(cmdline, "taskset -p 08 %d", pid);
             exec_command_system(cmdline);
             old_vocal_separate= pid;
@@ -386,7 +387,7 @@ void set_vocal_separate_thread_cpu(void) {
     int ret = pthread_create(&vocal_cpuset, NULL, vocal_separate_cpu, NULL);
     if (ret < 0)
     {
-        printf("vocal_separate_cpu_set fail\n");
+        ALOGE("vocal_separate_cpu_set fail\n");
     }
 }
 
@@ -396,11 +397,11 @@ void set_vocal_separate_thread_cpu(void) {
 	 struct sched_param param;
 
 	if(pid == 0) {pid = syscall(SYS_getpid);}
-	printf("%s pid=%d\n", __func__, pid);
+	ALOGI("%s pid=%d\n", __func__, pid);
 
 	ret = sched_getparam(pid, &param);
 	policy = sched_getscheduler(pid);
-	printf("%s pid:%d(%d) ret:(%d) priority(%d) policy:%s\n",
+	ALOGI("%s pid:%d(%d) ret:(%d) priority(%d) policy:%s\n",
 		__func__, pid, getpriority(PRIO_PROCESS, pid), ret, param.sched_priority,
 		(policy==SCHED_OTHER)?"OTHER":(policy==SCHED_FIFO)?"FIFO":"RR");
 }
@@ -420,7 +421,7 @@ void set_vocal_separate_thread_cpu(void) {
 	 perror("sched_setscheduler");
 
 	 int b = sched_rr_get_interval(pid,&tp);
-	 printf("pid:%d sched_priority:%d-[%d-%d], time:%u(s).%u(us), policy:%d,%d\n",\
+	 ALOGI("pid:%d sched_priority:%d-[%d-%d], time:%u(s).%u(us), policy:%d,%d\n",\
 		 pid, priority, sched_get_priority_min(policy), sched_get_priority_max(policy),
 		 tp.tv_sec,tp.tv_nsec/1000,policy,a|b);
 

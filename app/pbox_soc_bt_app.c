@@ -135,7 +135,7 @@ void pbox_app_btsoc_init(void) {
 }
 
 void handleDspVersionEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s DSP Version: %s\n", __func__, msg->fw_ver);
+    ALOGD("%s DSP Version: %s\n", __func__, msg->fw_ver);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_dsp_version(DISP_All);
         return;
@@ -143,7 +143,7 @@ void handleDspVersionEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMainVolumeEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Main Volume: %f\n", __func__, msg->volume);
+    ALOGD("%s Main Volume: %f\n", __func__, msg->volume);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_volume(DISP_All);
         return;
@@ -154,7 +154,7 @@ void handleMainVolumeEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Placement: %u\n", __func__, msg->placement);
+    ALOGD("%s Placement: %u\n", __func__, msg->placement);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_placement(DISP_All);
         return;
@@ -163,7 +163,7 @@ void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMic1MuxEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Mic State: %d\n", __func__, msg->micMux);
+    ALOGD("%s Mic State: %d\n", __func__, msg->micMux);
     if(msg->op == OP_READ) {
         //add implement
         return;
@@ -174,7 +174,7 @@ void handleMic1MuxEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Mic State: %d\n", __func__, msg->micMux);
+    ALOGD("%s Mic State: %d\n", __func__, msg->micMux);
     if(msg->op == OP_READ) {
         //add implement
         return;
@@ -185,7 +185,7 @@ void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s In/Out Door: %d\n", __func__, msg->outdoor);
+    ALOGD("%s In/Out Door: %d\n", __func__, msg->outdoor);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_inout_door(DISP_All);
         return;
@@ -195,7 +195,7 @@ void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s\n", __func__);
+    ALOGD("%s\n", __func__);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_poweron(DISP_All);
         return;
@@ -203,7 +203,7 @@ void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleStereoModeEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Sound Mode: %d\n", __func__, msg->stereo);
+    ALOGD("%s Sound Mode: %d\n", __func__, msg->stereo);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_stereo_mode(DISP_All);
         return;
@@ -213,7 +213,7 @@ void handleStereoModeEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Human VoiceFadeout: %u\n", __func__, msg->fadeout);
+    ALOGD("%s Human VoiceFadeout: %u\n", __func__, msg->fadeout);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_human_voice_fadeout(DISP_All);
         return;
@@ -223,7 +223,7 @@ void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Switch Source: Play Status = %d, Input Source = %d\n", 
+    ALOGD("%s Switch Source: Play Status = %d, Input Source = %d\n", 
                 __func__, msg->input_source.status, msg->input_source.input);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_input_source(DISP_All);
@@ -234,7 +234,7 @@ void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
 }
 
 void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg) {
-    printf("%s Music Volume Volume: %f\n", __func__, msg->musicVolLevel);
+    ALOGD("%s Music Volume Volume: %f\n", __func__, msg->musicVolLevel);
     if(msg->op == OP_READ) {
         pbox_app_btsoc_get_music_volume(DISP_All);
         return;
@@ -267,7 +267,7 @@ const socbt_event_handle_t socbtEventTable[] = {
 
 void btsoc_main_data_recv(const pbox_socbt_msg_t* msg) {
     if (msg == NULL) {
-        printf("Error: Null event message received.\n");
+        ALOGD("Error: Null event message received.\n");
         return;
     }
 
@@ -281,7 +281,7 @@ void btsoc_main_data_recv(const pbox_socbt_msg_t* msg) {
         }
     }
 
-    printf("Warning: No handle found for event ID %d.\n", msg->msgId);
+    ALOGD("Warning: No handle found for event ID %d.\n", msg->msgId);
 }
 
 void maintask_btsoc_fd_process(int fd) {
@@ -291,7 +291,7 @@ void maintask_btsoc_fd_process(int fd) {
 
     if (ret <= 0) {
         if (ret == 0) {
-            printf("%s: Connection closed\n", __func__);
+            ALOGW("%s: Connection closed\n", __func__);
         } else if (errno != EINTR) {
             perror("recvfrom");
         }
@@ -299,7 +299,7 @@ void maintask_btsoc_fd_process(int fd) {
     }
 
     pbox_socbt_msg_t *msg = (pbox_socbt_msg_t *)buff;
-    printf("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+    ALOGD("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
     if (msg->type != PBOX_EVT)
         return;

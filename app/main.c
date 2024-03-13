@@ -44,7 +44,7 @@ pbox_pipe_t pbox_pipe_fds[PBOX_SOCKPAIR_NUM];
 int maintask_read_event(int source, int fd) {
     int result = 0;
 
-    //printf("%s source:%d fd:%d\n", __func__, source, fd);
+    //ALOGD("%s source:%d fd:%d\n", __func__, source, fd);
     switch (source) {
         #if ENABLE_LCD_DISPLAY
         case PBOX_MAIN_LVGL: {
@@ -103,10 +103,10 @@ void main(int argc, char **argv) {
         timeout.tv_usec = 100*1000;
 
         if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0 , pbox_pipe_fds[i].fd) == -1) {
-            printf("Couldn't create pbox_fds[%d]: %s", i, strerror(errno));
+            ALOGE("Couldn't create pbox_fds[%d]: %s", i, strerror(errno));
             goto pbox_main_exit;
         }
-        printf("main: pbox_pipe_fds[%d]={%d, %d}\n", i, pbox_pipe_fds[i].fd[0], pbox_pipe_fds[i].fd[1]);
+        ALOGD("main: pbox_pipe_fds[%d]={%d, %d}\n", i, pbox_pipe_fds[i].fd[0], pbox_pipe_fds[i].fd[1]);
     }
 
 #if ENABLE_LCD_DISPLAY
@@ -151,7 +151,7 @@ void main(int argc, char **argv) {
         FD_SET(pbox_fds[i], &read_fds);
         if (max_fd < pbox_fds[i])
             max_fd = pbox_fds[i];
-        printf("pbox_fds[%i]=%d, maxfd=%d\n", i, pbox_fds[i], max_fd);
+        ALOGD("pbox_fds[%i]=%d, maxfd=%d\n", i, pbox_fds[i], max_fd);
     }
 
     start_fd_timer(pbox_fds[PBOX_MAIN_FD_TIMER], 2, PBOX_TIMER_INTERVAL, true); //every 10ms a timer.
@@ -161,7 +161,7 @@ void main(int argc, char **argv) {
 
         int result = select(max_fd+1, &read_set, NULL, NULL, NULL);
         if ((result == 0) || (result < 0 && (errno != EINTR))) {
-            printf("select timeout");
+            ALOGW("select timeout");
             continue;
         }
 
@@ -169,7 +169,7 @@ void main(int argc, char **argv) {
             break;
         }
 
-        //printf("%s result:%d\n", __func__, result);
+        //ALOGD("%s result:%d\n", __func__, result);
         for (int i = 0; i < ARRAYSIZE(pbox_fds); i++) {
             if((ret = FD_ISSET(pbox_fds[i], &read_set)) == 0)
                 continue;
@@ -208,7 +208,7 @@ void maintask_timer_fd_process(int timer_fd) {
     int ret = read(timer_fd, &expirations, sizeof(expirations));
     if (ret <= 0) {
         if (ret == 0) {
-            printf("%s: Connection closed\n", __func__);
+            ALOGW("%s: Connection closed\n", __func__);
         } else if (errno != EINTR) {
             perror("recvfrom");
         }
@@ -216,7 +216,7 @@ void maintask_timer_fd_process(int timer_fd) {
     }
 
     msTimePassed += PBOX_TIMER_INTERVAL;
-    //printf("working time:%llu\n", msTimePassed);
+    //ALOGD("working time:%llu\n", msTimePassed);
 
     if (0 == msTimePassed%20) {
         //every 10ms send command to reflash lvgl ui.

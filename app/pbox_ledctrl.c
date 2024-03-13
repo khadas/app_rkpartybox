@@ -16,6 +16,7 @@
 
 #include "pbox_ledctrl.h"
 #include "pbox_led_cjson.h"
+#include "slog.h"
 
 int led_userspace_ctrl_init(struct light_effect_ctrl * ctrl)
 {
@@ -29,25 +30,25 @@ int led_userspace_ctrl_init(struct light_effect_ctrl * ctrl)
 	total_num = get_led_total_num(ctrl);
 
 	for(int i = 0; i < total_num; i++) {
-		printf("==unit_fd[%d]:%d==\n", i, ctrl->unit_fd[i]);
+		ALOGD("==unit_fd[%d]:%d==\n", i, ctrl->unit_fd[i]);
 	}
 	for (i = 0; i < total_num; i++) {
 		memset(str, 0x00, sizeof(str));
 
 		snprintf(str, sizeof(str), "%sled%d/brightness",PATH_LED, ctrl->position_mapp[i]);//leds节点从1开始
-		printf("=========%s=========\n", str);
+		ALOGD("=========%s=========\n", str);
 		ctrl->unit_fd[i] = open(str, O_WRONLY | O_CREAT, 0644);
 
 		if (ctrl->unit_fd[i] < 0) {
-			printf("Error opening file %s\n", str);
+			ALOGW("Error opening file %s\n", str);
 			return led_userspace_ctrl_deinit(ctrl);
 		}
 	}
 
 	for(int i = 0; i < total_num; i++) {
-		printf("==unit_fd[%d]:%d==\n", i, ctrl->unit_fd[i]);
+		ALOGI("==unit_fd[%d]:%d==\n", i, ctrl->unit_fd[i]);
 	}
-	printf("user space led ctrl init OK !!!\n");
+	ALOGD("user space led ctrl init OK !!!\n");
 	ctrl->userspace_ctrl_init = 1;
 	return 0;
 }
@@ -66,7 +67,7 @@ int led_userspace_ctrl_deinit(struct light_effect_ctrl * ctrl)
 
 	ctrl->userspace_ctrl_init = 0;
 
-	printf("led userspace ctrl deinit ok\n");
+	ALOGW("led userspace ctrl deinit ok\n");
 	return 0;
 }
 
@@ -87,7 +88,7 @@ int userspace_set_rgb_color(struct light_effect_ctrl * ctrl, uint32_t rgb_index,
 	snprintf(str, sizeof(str), "%d", g);
 	// green
 	if (write(ctrl->unit_fd[led_index], str, strlen(str)) != strlen(str)) {
-		printf("Error writing to file\n");
+		ALOGW("Error writing to file\n");
 		close(ctrl->unit_fd[led_index]);
 		return -1;
 	}
@@ -96,7 +97,7 @@ int userspace_set_rgb_color(struct light_effect_ctrl * ctrl, uint32_t rgb_index,
 	snprintf(str, sizeof(str), "%d", r);
 	// red
 	if (write(ctrl->unit_fd[led_index + 1], str, strlen(str)) != strlen(str)) {
-		printf("Error writing to file\n");
+		ALOGW("Error writing to file\n");
 		close(ctrl->unit_fd[led_index + 1]);
 		return -1;
 	}
@@ -105,7 +106,7 @@ int userspace_set_rgb_color(struct light_effect_ctrl * ctrl, uint32_t rgb_index,
 	snprintf(str, sizeof(str), "%d", b);
 	// blue
 	if (write(ctrl->unit_fd[led_index + 2], str, strlen(str)) != strlen(str)) {
-		printf("Error writing to file\n");
+		ALOGW("Error writing to file\n");
 		close(ctrl->unit_fd[led_index+ 2]);
 		return -1;
 	}
@@ -124,7 +125,7 @@ int userspace_set_led_brightness(struct light_effect_ctrl * ctrl, uint32_t led_i
 	snprintf(str, sizeof(str), "%d", brightness);
 
 	if (write(ctrl->unit_fd[led_index], str, strlen(str)) != strlen(str)) {
-		printf("Error writing to file\n");
+		ALOGW("Error writing to file\n");
 		close(ctrl->unit_fd[led_index]);
 		return 1;
 	}

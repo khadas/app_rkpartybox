@@ -46,7 +46,7 @@ void keyscan_pbox_notify_knob_event(keycode_t keycode, uint32_t value) {
     };
     msg.keyinfo.keycode = keycode;
     msg.keyinfo.value = value;
-    printf("%s keycode:%d, value:%d\n", __func__, keycode, value);
+    ALOGD("%s keycode:%d, value:%d\n", __func__, keycode, value);
     unix_socket_keyscan_notify_msg(&msg, sizeof(pbox_keyscan_msg_t));
 }
 
@@ -55,7 +55,7 @@ static int adckey_init_fd(int fd[], int num) {
         keycode_t index = adcKeyTable[i].index;
         fd[index] = open(adcKeyTable[index].dev, O_RDONLY);
         if(fd[index] <= 0) {
-            printf("%s index:%d\n", __func__, index, fd[index]);
+            ALOGE("%s index:%d\n", __func__, index, fd[index]);
             return -1;
         }
     }
@@ -81,7 +81,7 @@ int adckey_read(int fd) {
         value = value + (MAX_SARA_ADC-MIN_SARA_ADC)/100;
     }
 
-    //printf("%s fd:%d buff:%s keyValue=%d\n", __func__, fd, buff, value);
+    //ALOGD("%s fd:%d buff:%s keyValue=%d\n", __func__, fd, buff, value);
     return value;
 }
 
@@ -93,10 +93,10 @@ static void *adckey_sara_detect_server(void *arg)
     uint32_t saraSample[KNOB_BUTTON_NUM];
     int adckey_fd[KNOB_BUTTON_NUM];
     pthread_setname_np(pthread_self(), "pbox_sarakey");
-    printf("%s hello\n", __func__);
+    ALOGD("%s hello\n", __func__);
     PBOX_ARRAY_SET(adckey_fd, -1, sizeof(adckey_fd)/sizeof(adckey_fd[0]));
     if(adckey_init_fd(adckey_fd, KNOB_BUTTON_NUM) < 0) {
-        printf("%s fail\n", __func__);
+        ALOGE("%s fail\n", __func__);
         return (void*) 0;
     }
 
@@ -117,7 +117,7 @@ static void *adckey_sara_detect_server(void *arg)
 
                 saraSample[index] = new;
                 keyscan_pbox_notify_knob_event(index, SARA_RANGE_100(new));
-                printf("i=%d,adckey button[%d] changing: %d->%d upstream:%d------------>\n"
+                ALOGD("i=%d,adckey button[%d] changing: %d->%d upstream:%d------------>\n"
                             , i, index, saraSample[index], new, SARA_RANGE_100(new));
             }
         }
@@ -135,7 +135,7 @@ int pbox_create_KeyadcSaraTask(void)
 
     err = pthread_create(&keyadcSara_tid, NULL, &adckey_sara_detect_server, NULL);
     if (err != 0)
-        printf("cant create keyadc_sara_detect_server thread!");
+        ALOGE("cant create keyadc_sara_detect_server thread!");
     return err;
 }
 #endif

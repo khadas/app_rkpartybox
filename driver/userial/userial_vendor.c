@@ -317,11 +317,11 @@ int userial_set_port(char *p_conf_name, char *p_conf_value, int param)
 }
 
 void dump_data(uint8_t *data, uint16_t total) {
-    printf("data[%d]= {", total);
+    ALOGW("data[%d]= {", total);
     for(int i= 0; i< total; i++) {
-        printf("%02x ", data[i]);
+        ALOGW("%02x ", data[i]);
     }
-    printf("}\n");
+    ALOGW("}\n");
 }
 
 uint16_t userial_send(uint8_t *data, uint16_t total) {

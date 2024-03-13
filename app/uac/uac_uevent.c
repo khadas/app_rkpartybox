@@ -6,6 +6,7 @@
 #include "uac_common_def.h"
 #include "uac_uevent.h"
 #include "uac_control.h"
+#include "slog.h"
 /*
  * case 1:
  * the UAC1 uevent when pc/remote close(play sound of usb close)
@@ -110,11 +111,11 @@ void audio_play(const struct _uevent *uevent) {
         if (compare(device, UAC_REMOTE_PLAY)) {
             if (compare(UAC_STREAM_START, state)) {
                 // stream start, we need to open usb card to record datas
-                printf("remote device/pc start to play data to us, we need to open usb to capture datas\n");
+                ALOGD("remote device/pc start to play data to us, we need to open usb to capture datas\n");
                 uac_role_change(UAC_STREAM_RECORD, true);
                 //uac_pbox_notify_host_play_state(true);
             } else if (compare(UAC_STREAM_STOP, state)) {
-                printf("remote device/pc stop to play data to us, we need to stop capture datas\n");
+                ALOGD("remote device/pc stop to play data to us, we need to stop capture datas\n");
                 uac_role_change(UAC_STREAM_RECORD, false);
                 //uac_pbox_notify_host_play_state(false);
             }
@@ -122,11 +123,11 @@ void audio_play(const struct _uevent *uevent) {
             // our device->remote device/pc
             if (compare(UAC_STREAM_START, state)) {
                 // stream start, we need to open usb card to record datas
-                printf("remote device/pc start to record from us, we need to open usb to send datas\n");
+                ALOGD("remote device/pc start to record from us, we need to open usb to send datas\n");
                 uac_role_change(UAC_STREAM_PLAYBACK, true);
                 //uac_pbox_notify_host_record_state(true);
             } else if (compare(UAC_STREAM_STOP, state)) {
-                printf("remote device/pc stop to record from us, we need to stop write datas to usb\n");
+                ALOGD("remote device/pc stop to record from us, we need to stop write datas to usb\n");
                 uac_role_change(UAC_STREAM_PLAYBACK, false);
                 //uac_pbox_notify_host_record_state(false);
             }
@@ -137,17 +138,17 @@ void audio_play(const struct _uevent *uevent) {
 void audio_set_samplerate(const struct _uevent *uevent) {
     char *direct = uevent->strs[UAC_KEY_DIRECTION];
     char *samplerate = uevent->strs[UAC_KEY_SAMPLE_RATE];
-    printf("%s: %s\n", __FUNCTION__, direct);
-    printf("%s: %s\n", __FUNCTION__, samplerate);
+    ALOGD("%s: %s\n", __FUNCTION__, direct);
+    ALOGD("%s: %s\n", __FUNCTION__, samplerate);
     if (compare(direct, UAC_STREAM_DIRECT)) {
         char* device = &direct[strlen(UAC_STREAM_DIRECT)];
         char* rate  = &samplerate[strlen(UAC_SAMPLE_RATE)];
         int sampleRate = atoi(rate);
         if (compare(device, UAC_REMOTE_PLAY)) {
-            printf("set samplerate %d to usb record\n", sampleRate);
+            ALOGD("set samplerate %d to usb record\n", sampleRate);
             uac_set_sample_rate(UAC_STREAM_RECORD, sampleRate);
         } else if (compare(device, UAC_REMOTE_CAPTURE)) {
-            printf("set samplerate %d to usb playback\n", sampleRate);
+            ALOGD("set samplerate %d to usb playback\n", sampleRate);
             uac_set_sample_rate(UAC_STREAM_PLAYBACK, sampleRate);
         }
     }
@@ -181,7 +182,7 @@ void audio_set_volume(const struct _uevent *uevent) {
     char *direct = uevent->strs[UAC_KEY_DIRECTION];
     char *volumeStr = uevent->strs[UAC_KEY_VOLUME];
     int   unit  = 0x100;
-    printf("direct = %s volume = %s\n", direct, volumeStr);
+    ALOGD("direct = %s volume = %s\n", direct, volumeStr);
     if (compare(direct, UAC_STREAM_DIRECT)) {
         char* device = &direct[strlen(UAC_STREAM_DIRECT)];
         short volume = 0;
@@ -192,12 +193,12 @@ void audio_set_volume(const struct _uevent *uevent) {
         db = volume/(float)unit;
         double precent = pow(10, db/10);
         int  precentInt = (int)(precent*100);
-        printf("set db = %f, precent = %lf, precentInt = %d\n", db, precent, precentInt);
+        ALOGD("set db = %f, precent = %lf, precentInt = %d\n", db, precent, precentInt);
         if (compare(device, UAC_REMOTE_PLAY)) {
-            printf("set volume %d  to usb record\n", precentInt);
+            ALOGD("set volume %d  to usb record\n", precentInt);
             uac_set_volume(UAC_STREAM_RECORD, precentInt);
         } else if (compare(device, UAC_REMOTE_CAPTURE)) {
-            printf("set volume %d  to usb playback\n", precentInt);
+            ALOGD("set volume %d  to usb playback\n", precentInt);
             uac_set_volume(UAC_STREAM_PLAYBACK, precentInt);
         }
     }
@@ -214,17 +215,17 @@ void audio_set_volume(const struct _uevent *uevent) {
 void audio_set_mute(const struct _uevent *uevent) {
     char *direct = uevent->strs[UAC_KEY_DIRECTION];
     char *muteStr = uevent->strs[UAC_KEY_MUTE];
-    printf("direct = %s mute = %s\n", direct, muteStr);
+    ALOGD("direct = %s mute = %s\n", direct, muteStr);
 
     if (compare(direct, UAC_STREAM_DIRECT)) {
         char* device = &direct[strlen(UAC_STREAM_DIRECT)];
         int mute = 0;
         sscanf(muteStr, "MUTE=%d", &mute);
         if (compare(device, UAC_REMOTE_PLAY)) {
-            printf("set mute = %d to usb record\n", mute);
+            ALOGD("set mute = %d to usb record\n", mute);
             uac_set_mute(UAC_STREAM_RECORD, mute);
         } else if (compare(device, UAC_REMOTE_CAPTURE)) {
-            printf("set mute = %d to usb playback\n", mute);
+            ALOGD("set mute = %d to usb playback\n", mute);
             uac_set_mute(UAC_STREAM_PLAYBACK, mute);
         }
     }
@@ -257,11 +258,11 @@ void audio_event(const struct _uevent *uevent) {
         event = uevent->strs[UAC_KEY_USB_STATE];
         direct = uevent->strs[UAC_KEY_DIRECTION];
         status = uevent->strs[UAC_KEY_STREAM_STATE];
-        printf("+++++++++++++++++++++++++\n");
-        printf("keys = %s\n", keys);
-        printf("event = %s\n", event);
-        printf("direct = %s\n", direct);
-        printf("status = %s\n", status);
+        ALOGD("+++++++++++++++++++++++++\n");
+        ALOGD("keys = %s\n", keys);
+        ALOGD("event = %s\n", event);
+        ALOGD("direct = %s\n", direct);
+        ALOGD("status = %s\n", status);
         return;
     }
 
@@ -272,11 +273,11 @@ void audio_event(const struct _uevent *uevent) {
     event = uevent->strs[UAC_KEY_USB_STATE];
     direct = uevent->strs[UAC_KEY_DIRECTION];
     status = uevent->strs[UAC_KEY_STREAM_STATE];
-    printf("+++++++++++++++++++++++++\n");
-    printf("keys = %s\n", keys);
-    printf("event = %s\n", event);
-    printf("direct = %s\n", direct);
-    printf("status = %s\n", status);
+    ALOGD("+++++++++++++++++++++++++\n");
+    ALOGD("keys = %s\n", keys);
+    ALOGD("event = %s\n", event);
+    ALOGD("direct = %s\n", direct);
+    ALOGD("status = %s\n", status);
     if ((event == NULL) || (direct == NULL) || (status == NULL)) {
         return;
     }
@@ -291,19 +292,19 @@ void audio_event(const struct _uevent *uevent) {
     }
 
     if (setInterface) {
-        printf("uevent---------------audio_play\n");
+        ALOGD("uevent---------------audio_play\n");
         audio_play(uevent);
     } else if(setSampleRate) {
-        printf("uevent---------------audio_set_samplerate\n");
+        ALOGD("uevent---------------audio_set_samplerate\n");
         audio_set_samplerate(uevent);
     } else if(setVolume) {
-        printf("uevent---------------setVolume\n");
+        ALOGD("uevent---------------setVolume\n");
         audio_set_volume(uevent);
     } else if(setMute) {
-        printf("uevent---------------setMute\n");
+        ALOGD("uevent---------------setMute\n");
         audio_set_mute(uevent);
     }  else if(setClk) {
-        printf("uevent---------------setClk\n");
+        ALOGD("uevent---------------setClk\n");
         audio_set_ppm(uevent);
     }
 }

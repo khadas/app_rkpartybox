@@ -86,7 +86,7 @@ void pbox_app_rockit_start_audiocard_player(input_source_t source, int sampleFre
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
     strncpy(msg.audioFormat.cardName, cardName, 30);
-    printf("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s \n", __func__, source, sampleFreq, channel, cardName);
+    ALOGD("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s \n", __func__, source, sampleFreq, channel, cardName);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -172,7 +172,7 @@ void pbox_app_rockit_set_player_volume(input_source_t source, float volume) {
         volume = MIN_MAIN_VOLUME_MUTE;
     }
     msg.volume = volume;
-    printf("%s msg.vol:%f volume:%f\n", __func__, msg.volume, volume);
+    ALOGD("%s msg.vol:%f volume:%f\n", __func__, msg.volume, volume);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -194,7 +194,7 @@ void pbox_app_rockit_set_music_volume(input_source_t source, float volume) {
     };
 
     msg.volume = volume;
-    printf("%s music vol:%f\n", __func__, msg.volume);
+    ALOGD("%s music vol:%f\n", __func__, msg.volume);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
@@ -380,7 +380,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
             int size = energy_data.size;
             /*
             for(int i = 0; i< energy_data.size; i++) {
-                printf("%s freq[%05d]HZ energyData[%05d]db\n",
+                ALOGD("%s freq[%05d]HZ energyData[%05d]db\n",
                                 __func__, energy_data.energykeep[i].freq,
                                 energy_data.energykeep[i].energy);
             }*/
@@ -388,7 +388,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
 
         } break;
         case PBOX_ROCKIT_MUSIC_POSITION_EVT: {
-            //printf("duration: %d", music_duration);
+            //ALOGD("duration: %d", music_duration);
             music_position = msg->mPosition;
             if ((music_duration != 0) && (music_position !=0)) {
                 pbox_multi_displayTrackPosition(false, music_position, music_duration, DISP_All);
@@ -396,14 +396,14 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
         } break;
         case PBOX_ROCKIT_MUSIC_DURATION_EVT: {
             music_duration = msg->duration;
-            printf("duration: %d", music_duration);
+            ALOGD("duration: %d", music_duration);
             if (music_duration != 0) {
                 pbox_multi_displayTrackPosition(true, music_position, music_duration, DISP_All);
             }
         } break;
         case PBOX_ROCKIT_MUSIC_MAIN_VOLUME_EVT: {
             int32_t volume = msg->volume;
-            printf("volume: %d", volume);
+            ALOGD("volume: %d", volume);
             if(volume < MIN_MAIN_VOLUME)
                 volume = MIN_MAIN_VOLUME;
             pboxUIdata->mainVolumeLevel = volume;
@@ -411,7 +411,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
         } break;
         case PBOX_ROCKIT_MUSIC_CHANNEL_VOLUME_EVT: {
             int32_t volume = msg->volume;
-            printf("volume: %d", volume);
+            ALOGD("volume: %d", volume);
             pboxUIdata->musicVolumeLevel = volume;
             pbox_multi_displayMusicVolumeLevel(volume, DISP_All);
         } break;
@@ -430,15 +430,15 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
             struct _wake_up mWakeUp = msg->wake_up;
             uint32_t mWakeCmd = mWakeUp.wakeCmd;
 
-            printf("%s WakeCmd:%d\n",__func__, mWakeUp);
+            ALOGD("%s WakeCmd:%d\n",__func__, mWakeUp);
             switch (mWakeCmd) {
                 case RC_PB_WAKE_UP_CMD_RECIEVE: {
-                    printf("wakeup command receive\n");
+                    ALOGD("wakeup command receive\n");
                     pboxUIdata->play_status_prev= pboxUIdata->play_status;
                     pbox_app_music_pause(DISP_All);
                 } break;
                 case RC_PB_WAKE_UP_CMD_RECIEVE_BUT_NO_TASK: {
-                        printf("wakeup command receive but no task\n");
+                        ALOGD("wakeup command receive but no task\n");
                         if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
                             pbox_app_music_resume(DISP_All);
                         }
@@ -453,7 +453,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                         *volume += 15;
                     else if (*volume <= 75)
                         *volume += 25;
-                    printf("%s volume up:%d\n", __func__, *volume);
+                    ALOGD("%s volume up:%d\n", __func__, *volume);
 
                     pbox_app_music_set_volume(*volume, DISP_All);
                     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
@@ -464,7 +464,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                 case RC_PB_WAKE_UP_CMD_VOLUME_DOWN: {
                     uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
 
-                    printf("%s volume down:%d\n", __func__, *volume);
+                    ALOGD("%s volume down:%d\n", __func__, *volume);
 
                     if (true) {
                         if (*volume >= 50)
@@ -535,7 +535,7 @@ void maintask_rockit_fd_process(int fd)
         return;
 
     pbox_rockit_msg_t *msg = (pbox_rockit_msg_t *)buff;
-    //printf("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+    //ALOGD("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
     if (msg->type != PBOX_EVT)
         return;

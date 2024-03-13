@@ -17,7 +17,15 @@ extern "C" {
 #ifndef LOG_TAG
 #define LOG_TAG "pbox_app"
 #endif
-static int pbox_app_log_level = LOG_LEVEL_DEBUG;
+static int pbox_app_log_level = LOG_LEVEL_WARN;
+
+#define ALOGD(format, ...)                                                      \
+  do {                                                                          \
+    if (pbox_app_log_level < LOG_LEVEL_DEBUG)                                   \
+      break;                                                                    \
+      fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
+              ##__VA_ARGS__);                                                   \
+  } while (0)
 
 #define ALOGI(format, ...)                                                  \
   do {                                                                         \
@@ -41,14 +49,6 @@ static int pbox_app_log_level = LOG_LEVEL_DEBUG;
       break;                                                                   \
       fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
               ##__VA_ARGS__);                                                  \
-  } while (0)
-
-#define ALOGD(format, ...)                                                      \
-  do {                                                                          \
-    if (pbox_app_log_level < LOG_LEVEL_DEBUG)                                   \
-      break;                                                                    \
-      fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
-              ##__VA_ARGS__);                                                   \
   } while (0)
 
 #ifdef __cplusplus

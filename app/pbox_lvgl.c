@@ -201,14 +201,14 @@ void pbox_lvgl_init(void) {
 // Function to handle the play/pause command
 void handleLcdPlayPauseCmd(const pbox_lcd_msg_t* msg) {
     bool play = msg->play;
-    printf("Play/Pause Command: %s\n", play ? "Play" : "Pause");
+    ALOGD("Play/Pause Command: %s\n", play ? "Play" : "Pause");
     _lv_demo_music_update_ui_info(UI_WIDGET_PLAY_PAUSE, msg);
 }
 
 // Function to handle the previous/next track command
 void handleLcdPrevNextCmd(const pbox_lcd_msg_t* msg) {
     bool next = msg->next;
-    printf("Prev/Next Command: %s\n", next ? "Next" : "Previous");
+    ALOGD("Prev/Next Command: %s\n", next ? "Next" : "Previous");
 }
 
 // Function to handle the track info command
@@ -219,7 +219,7 @@ void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
         strncpy(title, msg->track.title, MAX_MUSIC_NAME_LENGTH);
     if(msg->track.artist)
         strncpy(artist, msg->track.artist, MAX_APP_NAME_LENGTH);
-    printf("Track Info Command: Title - %s, Artist - %s\n", title, artist);
+    ALOGD("Track Info Command: Title - %s, Artist - %s\n", title, artist);
     _lv_demo_music_update_ui_info(UI_WIDGET_TRACK_INFO, msg);
 }
 
@@ -227,44 +227,44 @@ void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdTrackPositionCmd(const pbox_lcd_msg_t* msg) {
     uint32_t mCurrent = msg->positions.mCurrent;
     uint32_t mDuration = msg->positions.mDuration;
-    //printf("Track Position Command: Current - %u, Duration - %u\n", mCurrent, mDuration);
+    //ALOGD("Track Position Command: Current - %u, Duration - %u\n", mCurrent, mDuration);
     _lv_demo_music_update_ui_info(UI_WIDGET_POSITION_INFO, msg);
 }
 
 //Function to handle the track list update commmand
 void handleLcdUsbStateUpdateCmd(const pbox_lcd_msg_t *msg) {
-    printf("%s \n", __func__);
+    ALOGD("%s \n", __func__);
     switch (msg->usbState) {
         case USB_SCANNED:
         case USB_CONNECTED: {
-            printf("USB connected\n");
+            ALOGW("USB connected\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
         } break;
         case USB_DISCONNECTED: {
-            printf("USB Disk Removed\n");
+            ALOGW("USB Disk Removed\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
         } break;
     }
 }
 
 void handleLcdUsbListUpdateCmd(const pbox_lcd_msg_t *msg) {
-    printf("%s trackId:%d\n", __func__, msg->trackId);
+    ALOGD("%s trackId:%d\n", __func__, msg->trackId);
     _lv_demo_music_update_list(msg->trackId);
 }
 
 void handleLcdBtStateUpdateCmd(const pbox_lcd_msg_t *msg) {
-    printf("%s \n", __func__);
+    ALOGD("%s \n", __func__);
     switch (msg->btState) {
         case BT_NONE:
         case BT_TURNING_TRUNNING_OFF:
         case BT_INIT_ON:
         case BT_CONNECTING:
         case BT_DISCONNECT: {
-            printf("BT DISCONNECT\n");
+            ALOGD("BT DISCONNECT\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
         } break;
         case BT_CONNECTED: {
-            printf("BT CONNECTED\n");
+            ALOGD("BT CONNECTED\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
             //_lv_demo_music_update_list();
         } break;
@@ -272,45 +272,45 @@ void handleLcdBtStateUpdateCmd(const pbox_lcd_msg_t *msg) {
 }
 
 void handleLcdUacStateUpdateCmd(const pbox_lcd_msg_t *msg) {
-    printf("%s uac started:%d\n", __func__, msg->uac_start);
+    ALOGD("%s uac started:%d\n", __func__, msg->uac_start);
     _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
 }
 // Function to handle the main volume level command
 void handleLcdMainVolLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t mainVolume = msg->mainVolume;
-    printf("Main Volume Level Command: Level - %u\n", mainVolume);
+    ALOGD("Main Volume Level Command: Level - %u\n", mainVolume);
     _lv_demo_music_update_ui_info(UI_WIDGET_MAIN_VOLUME, msg);
 }
 
 // Function to handle the mic volume level command
 void handleLcdMicVolLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t micVolume = msg->micVolume;
-    printf("Mic Volume Level Command: Level - %u\n", micVolume);
+    ALOGD("Mic Volume Level Command: Level - %u\n", micVolume);
 }
 
 // Function to handle the mic mute command
 void handleLcdMicmuteCmd(const pbox_lcd_msg_t* msg) {
     bool mute = msg->micmute;
-    printf("Mic mute Command State - %s\n", mute? "on":"off");
+    ALOGD("Mic mute Command State - %s\n", mute? "on":"off");
     _lv_demo_music_update_ui_info(UI_WIDGET_MIC_MUTE, msg);
 }
 
 // Function to handle the accompaniment music level command
 void handleLcdAccompMusicLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t accomp_music_level = msg->accomp_music_level;
-    printf("Accompaniment Music Level Command: Level - %u\n", accomp_music_level);
+    ALOGD("Accompaniment Music Level Command: Level - %u\n", accomp_music_level);
 }
 
 // Function to handle the human music level command
 void handleLcdHumanMusicLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t human_music_level = msg->human_music_level;
-    printf("Human Music Level Command: Level - %u\n", human_music_level);
+    ALOGD("Human Music Level Command: Level - %u\n", human_music_level);
 }
 
 // Function to handle the music separate switch command
 void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
     pbox_vocal_t vocalSeparate = msg->vocalSeparate;
-    printf("Music Separate Switch Command: Enable - %s, Human Level - %u, Music Level - %u, Reserv Level - %u\n",
+    ALOGD("Music Separate Switch Command: Enable - %s, Human Level - %u, Music Level - %u, Reserv Level - %u\n",
            vocalSeparate.enable ? "Enabled" : "Disabled", 
            vocalSeparate.humanLevel,
             vocalSeparate.accomLevel,
@@ -321,39 +321,39 @@ void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
 // Function to handle the echo 3A switch command
 void handleLcdEcho3ASwitchCmd(const pbox_lcd_msg_t* msg) {
     bool echo3a = msg->echo3a;
-    printf("Echo 3A Switch Command: %s\n", echo3a ? "On" : "Off");
+    ALOGD("Echo 3A Switch Command: %s\n", echo3a ? "On" : "Off");
     _lv_demo_music_update_ui_info(UI_WIDGET_3A_SWITCH, msg);
 }
 
 // Function to handle the reverb mode command
 void handleLcdReverbModeCmd(const pbox_lcd_msg_t* msg) {
     pbox_revertb_t reverbMode = msg->reverbMode;
-    printf("Reverb Mode Command: Mode - %d\n", reverbMode);
+    ALOGD("Reverb Mode Command: Mode - %d\n", reverbMode);
     _lv_demo_music_update_ui_info(UI_WIDGET_REVERTB_MODE, msg);
 }
 
 // Function to handle the loop mode command
 void handleLcdLoopModeCmd(const pbox_lcd_msg_t* msg) {
     bool loop = msg->loop;
-    printf("Loop Mode Command: %s\n", loop ? "Looping" : "Not Looping");
+    ALOGD("Loop Mode Command: %s\n", loop ? "Looping" : "Not Looping");
 }
 
 // Function to handle the energy info command
 void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
     energy_info_t energyData = msg->energy_data;
-    //printf("Energy Info Command, Size: %d\n", energyData.size);
+    //ALOGD("Energy Info Command, Size: %d\n", energyData.size);
     // For each energy data, print its value
     #if 0
     for (int i = 0; i < energyData.size; i++) {
-        if(i==0) printf("freq  :\t");
-        printf("%05d%c", energyData.energykeep[i].freq, i<(energyData.size-1)?'\t':' ');
+        if(i==0) ALOGD("freq  :\t");
+        ALOGD("%05d%c", energyData.energykeep[i].freq, i<(energyData.size-1)?'\t':' ');
     }
-    printf("\n");
+    ALOGD("\n");
     for (int i = 0; i < energyData.size; i++) {
-        if(i==0) printf("energy:\t");
-        printf("%02d%c", energyData.energykeep[i].energy, i<(energyData.size-1)?'\t':' ');
+        if(i==0) ALOGD("energy:\t");
+        ALOGD("%02d%c", energyData.energykeep[i].energy, i<(energyData.size-1)?'\t':' ');
     }
-    printf("\n");
+    ALOGD("\n");
     #endif
     _lv_demo_music_update_ui_info(UI_WIDGET_SPECTRUM_CHART, msg);
 }
@@ -361,13 +361,13 @@ void handleLcdEnergyInfoCmd(const pbox_lcd_msg_t* msg) {
 // Function to handle the reserv level command
 void handleLcdReservLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t reserv_music_level = msg->reserv_music_level;
-    printf("Reserv Level Command: Level - %u\n", reserv_music_level);
+    ALOGD("Reserv Level Command: Level - %u\n", reserv_music_level);
 }
 
 // Function to handle the gui reflash command //exec lv_task_handler
 void handleLcdGuiReflushCmd(const pbox_lcd_msg_t* msg) {
     (void*)(msg);
-    //printf("GUI reflash Command\n");
+    //ALOGD("GUI reflash Command\n");
 #if LV_USE_DEMO_MUSIC
     lv_task_handler();
 #endif
@@ -402,7 +402,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
 // Function to process an incoming pbox_lcd_msg_t event
 void process_pbox_lcd_cmd(const pbox_lcd_msg_t* msg) {
     if (msg == NULL) {
-        printf("Error: Null event message received.\n");
+        ALOGD("Error: Null event message received.\n");
         return;
     }
 
@@ -417,7 +417,7 @@ void process_pbox_lcd_cmd(const pbox_lcd_msg_t* msg) {
         }
     }
 
-    printf("Warning: No handler found for event ID %d.\n", msg->msgId);
+    ALOGD("Warning: No handler found for event ID %d.\n", msg->msgId);
 }
 
 static void *pbox_touchLCD_server(void *arg)
@@ -452,13 +452,13 @@ static void *pbox_touchLCD_server(void *arg)
             }
             continue; // Interrupted by signal, restart select
         } else if (result == 0) {
-            printf("select timeout or no data\n");
+            ALOGW("select timeout or no data\n");
             continue;
         }
         int ret = recv(sock_fd, buff, sizeof(buff), 0);
         if (ret <= 0) {
             if (ret == 0) {
-                printf("Socket closed\n");
+                ALOGW("Socket closed\n");
                 break;
             } else {
                 perror("recvfrom failed");
@@ -467,7 +467,7 @@ static void *pbox_touchLCD_server(void *arg)
         }
 
         pbox_lcd_msg_t *msg = (pbox_lcd_msg_t *)buff;
-        //printf("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+        //ALOGD("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
         if(msg->type == PBOX_EVT)
             continue;
@@ -485,7 +485,7 @@ int pbox_create_lvglTask(void)
     ret = pthread_create(&touchLcd_server_task_id, NULL, pbox_touchLCD_server, NULL);
     if (ret < 0)
     {
-        printf("touchLCD server start failed\n");
+        ALOGE("touchLCD server start failed\n");
     }
 
     return ret;

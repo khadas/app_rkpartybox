@@ -36,7 +36,7 @@ void pbox_app_usb_startScan(void) {
         .type = PBOX_CMD,
         .msgId = PBOX_USB_START_SCAN,
     };
-    printf("%s\n", __func__);
+    ALOGD("%s\n", __func__);
     unix_socket_usb_send(&msg, sizeof(pbox_usb_msg_t));
 }
 
@@ -45,7 +45,7 @@ void pbox_app_usb_pollState(void) {
         .type = PBOX_CMD,
         .msgId = PBOX_USB_POLL_STATE,
     };
-    printf("%s\n", __func__);
+    ALOGD("%s\n", __func__);
     unix_socket_usb_send(&msg, sizeof(pbox_usb_msg_t));
 }
 
@@ -54,7 +54,7 @@ void pbox_app_uac_restart(void) {
         .type = PBOX_CMD,
         .msgId = PBOX_UAC_RESTART,
     };
-    printf("%s\n", __func__);
+    ALOGD("%s\n", __func__);
     unix_socket_usb_send(&msg, sizeof(pbox_usb_msg_t));
 }
 
@@ -150,7 +150,7 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
             pbox_app_usb_start_scan(DISP_All);
             strncpy(&pboxUsbdata->usbDiskName[0], msg->usbDiskInfo.usbDiskName, MAX_APP_NAME_LENGTH);
             pboxUsbdata->usbDiskName[MAX_APP_NAME_LENGTH] = 0;
-            printf("%s usbState: %d, usb name[%s]\n", __func__, usbDiskState, pboxUsbdata->usbDiskName);
+            ALOGD("%s usbState: %d, usb name[%s]\n", __func__, usbDiskState, pboxUsbdata->usbDiskName);
             if(is_dest_source_switchable(SRC_USB, AUTO))
                 pbox_app_switch_to_input_source(SRC_USB, DISP_All);
             if(is_input_source_selected(SRC_USB, ANY))
@@ -162,7 +162,7 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
         } break;
 
         case USB_SCANNING: {
-            printf("%s USB_SCANNING\n", __func__);
+            ALOGD("%s USB_SCANNING\n", __func__);
             for (int i = 0; i < pboxTrackdata->track_num; i++) {
                 pbox_free(pboxTrackdata->track_list[i].title);
                 pbox_free(pboxTrackdata->track_list[i].artist);
@@ -183,7 +183,7 @@ void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
     if(*pTitle) {
         strncpy(*pTitle, msg->usbMusicFile.fileName, len);
         (*pTitle)[len] = 0;
-        printf("adding[%d]:%s, len=%d\n", 
+        ALOGW("adding[%d]:%s, len=%d\n", 
                 pboxTrackdata->track_num, pboxTrackdata->track_list[pboxTrackdata->track_num].title, len);
     }
 
@@ -194,7 +194,7 @@ void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
 // Function to process an incoming pbox_usb_msg_t event
 void maintask_usb_data_recv(const pbox_usb_msg_t* msg) {
     if (msg == NULL) {
-        printf("Error: Null event message received.\n");
+        ALOGW("Error: Null event message received.\n");
         return;
     }
 
@@ -209,7 +209,7 @@ void maintask_usb_data_recv(const pbox_usb_msg_t* msg) {
         }
     }
 
-    printf("Warning: No handle found for event ID %d.\n", msg->msgId);
+    ALOGW("Warning: No handle found for event ID %d.\n", msg->msgId);
 }
 
 void maintask_usb_fd_process(int fd) {
@@ -218,7 +218,7 @@ void maintask_usb_fd_process(int fd) {
 
     if (ret <= 0) {
         if (ret == 0) {
-            printf("%s: Connection closed\n", __func__);
+            ALOGE("%s: Connection closed\n", __func__);
         } else if (errno != EINTR) {
             perror("recvfrom");
         }
@@ -226,10 +226,10 @@ void maintask_usb_fd_process(int fd) {
     }
 
     pbox_usb_msg_t *msg = (pbox_usb_msg_t *)buff;
-    printf("%s: Socket received - type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+    ALOGD("%s: Socket received - type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
     if (msg->type != PBOX_EVT) {
-        printf("%s: Invalid message type\n", __func__);
+        ALOGW("%s: Invalid message type\n", __func__);
         return;
     }
 

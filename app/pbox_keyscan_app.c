@@ -70,11 +70,11 @@ void maintask_keyscan_fd_process(int fd) {
     int ret = recv(fd, buff, sizeof(buff), 0);
     int i = 0;
     if ((ret == 0) || (ret < 0 && (errno != EINTR))) {
-        printf("%s ret:%d , error:%d\n", __func__, ret, errno);
+        ALOGE("%s ret:%d , error:%d\n", __func__, ret, errno);
         return;
     }
     pbox_keyevent_msg_t *msg = (pbox_keyevent_msg_t *)buff;
-    printf("%s sock recv: key code: %d, press ? %d\n", __func__, msg->key_code, msg->is_key_valid);
+    ALOGI("%s sock recv: key code: %d, press ? %d\n", __func__, msg->key_code, msg->is_key_valid);
 
     pthread_mutex_lock(&key_mutex);
     if (msg->is_key_valid) {
@@ -90,7 +90,7 @@ void maintask_keyscan_fd_process(int fd) {
     }
 
     if (i == MAX_KEY_BUFFERED -1)
-        printf("Can't find valid buffer, you should increase the value of MAX_KEY_BUFFERED\n");
+        ALOGD("Can't find valid buffer, you should increase the value of MAX_KEY_BUFFERED\n");
     pthread_mutex_unlock(&key_mutex);
     //if (msg->is_key_valid)
         //init_time(0, keyscan_data_recv);
@@ -99,7 +99,7 @@ void maintask_keyscan_fd_process(int fd) {
 
 int pbox_app_key_set_playpause()
 {
-    printf("pbox_app_key_set_playpause =====!\n");
+    ALOGD("pbox_app_key_set_playpause =====!\n");
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP || pboxUIdata->play_status == _PAUSE)
         pbox_app_music_resume(DISP_All);
     else
@@ -109,21 +109,21 @@ int pbox_app_key_set_playpause()
 
 int pbox_app_key_set_volume_up()
 {
-    printf("---pbox_app_key_set_volume_up =====!\n");
+    ALOGD("---pbox_app_key_set_volume_up =====!\n");
     pbox_app_music_volume_up(DISP_All);
     return 1;
 }
 
 int pbox_app_key_set_volume_down()
 {
-    printf("---pbox_app_key_set_volume_down =====!\n");
+    ALOGD("---pbox_app_key_set_volume_down =====!\n");
     pbox_app_music_volume_down(DISP_All);
     return 1;
 }
 
 int pbox_app_key_set_mic()
 {
-    printf("pbox_app_key_set_mic =====!\n");
+    ALOGD("pbox_app_key_set_mic =====!\n");
     if (pboxUIdata->micData[0].micmute)
         pbox_app_music_set_mic_mute(0, false, DISP_All);
     else
@@ -132,7 +132,7 @@ int pbox_app_key_set_mic()
 }
 
 int pbox_app_key_set_echo_3a() {
-    printf("pbox_app_key_set_echo_3a =====!\n");
+    ALOGD("pbox_app_key_set_echo_3a =====!\n");
     if (pboxUIdata->micData[0].echo3a)
         pbox_app_music_set_echo_3a(0, false, DISP_All);
     else
@@ -151,7 +151,7 @@ int pbox_app_key_switch_input_source(void) {
         }
     }
 
-    printf("%s change [%d->%d]=====!\n", __func__, pboxData->inputDevice, dest);
+    ALOGI("%s change [%d->%d]=====!\n", __func__, pboxData->inputDevice, dest);
     if(dest != pboxData->inputDevice) {
         pbox_app_switch_to_input_source(dest, DISP_All);
         return 0;
@@ -161,63 +161,63 @@ int pbox_app_key_switch_input_source(void) {
 
 int enter_long_playpause_mode()
 {
-    printf("enter_long_playpause_mode\n");
+    ALOGD("enter_long_playpause_mode\n");
     return 1;
 }
 
 int long_volume_step_up()
 {
-    printf("---long_volume_step_up--\n");
+    ALOGD("---long_volume_step_up--\n");
     return 1;
 }
 
 int long_volume_step_down()
 {
 
-    printf("---long_volume_step_down\n");
+    ALOGD("---long_volume_step_down\n");
     return 1;
 }
 
 
 int enter_long_key_mode() {
-    printf("enter_long_key_mode =====!\n");
+    ALOGD("enter_long_key_mode =====!\n");
     return 0;
 }
 
 /*recovery*/
 int enter_recovery_mode() {
-    printf("enter_recovery_mode\n");
+    ALOGD("enter_recovery_mode\n");
 	return 0;
 }
 
 int enter_combain_mode() {
-    printf("enter_combain_mode\n");
+    ALOGD("enter_combain_mode\n");
 	return 0;
 }
 
 int pbox_key_music_album_next() {
-    printf("pbox_key_music_album_next =====!\n");
+    ALOGD("pbox_key_music_album_next =====!\n");
     pbox_app_music_album_next(true, DISP_All);
     return 0;
 }
 
 int enter_double_voldown_mode() {
-    printf("enter_double_voldown_mode =====!\n");
+    ALOGD("enter_double_voldown_mode =====!\n");
     return 0;
 }
 
 int enter_double_volup_mode() {
-    printf("enter_double_volup_mode =====!\n");
+    ALOGD("enter_double_volup_mode =====!\n");
     return 0;
 }
 
 int enter_double_key_mode() {
-    printf("enter_double_key_mode =====!\n");
+    ALOGD("enter_double_key_mode =====!\n");
     return 0;
 }
 
 int enter_double_mic_mode() {
-    printf("enter_double_mic_mode =====!\n");
+    ALOGD("enter_double_mic_mode =====!\n");
     return 0;
 }
 
@@ -241,15 +241,15 @@ void *event_process_thread_ex(void * arg)
                             usleep(KEY_DOUBLE_CLICK_PERIOD);
                             int hit_count =0;
                             for(m = 0; m < MAX_KEY_BUFFERED; m++) {
-                            //printf("key_event[%d],key_code=%d,key_code_b=%d,is_key_valid=%d,is_long_press=%d\n",m,key_event[m].key_code, key_event[m].key_code_b,key_event[m].is_key_valid, key_event[m].is_long_press);
+                            //ALOGD("key_event[%d],key_code=%d,key_code_b=%d,is_key_valid=%d,is_long_press=%d\n",m,key_event[m].key_code, key_event[m].key_code_b,key_event[m].is_key_valid, key_event[m].is_long_press);
                                 if(key_event[m].key_code == double_click_tmp){
-                                    printf("-----get pressed key %d,key=%d--\n",m,key_event[m].key_code);
+                                    ALOGD("-----get pressed key %d,key=%d--\n",m,key_event[m].key_code);
                                     memset(&key_event[m], 0, sizeof(pbox_keyevent_msg_t));//清除按键
                                     hit_count++;
                                 }
                             }
                             if(hit_count >= 2){//double hit
-                                printf("------get double click----\n");
+                                ALOGI("------get double click----\n");
                                 if(support_keys[k].key_process){
                                     support_keys[k].key_process();
                                     break;
@@ -259,14 +259,14 @@ void *event_process_thread_ex(void * arg)
                     }
                     if(support_keys[j].key_process){
                         support_keys[j].key_process();
-                        //printf("clear keyevent %d\n", i);
+                        //ALOGD("clear keyevent %d\n", i);
                         memset(&key_event[i], 0, sizeof(pbox_keyevent_msg_t));//清除按键
                         break;
                     } else {
-                        printf("key_process NULL \n");
+                        ALOGI("key_process NULL \n");
                     }
                     if(j == support_keys_size){
-                        printf("Unhandled key values\n");
+                        ALOGD("Unhandled key values\n");
                     }
                 }
             }
@@ -284,7 +284,7 @@ int pbox_create_KeyProcessTask(void)
     pthread_mutex_init(&key_mutex, NULL);
     err = pthread_create(&evt_process, NULL, &event_process_thread_ex, NULL);
     if (err != 0)
-        printf("cant creat thread event_read_thread_ex");
+        ALOGE("cant creat thread event_read_thread_ex");
     return err;
 }
 #endif
