@@ -428,3 +428,41 @@ void set_vocal_separate_thread_cpu(void) {
 	 rk_schedparam_show(pid);
 	 return a|b;
  }
+
+#define ENV_BUF_SIZE_LINUX 1023
+ int32_t os_env_get_u32(const char *name, uint32_t *value, uint32_t default_value) {
+    char *ptr = getenv(name);
+
+    if (NULL == ptr) {
+        *value = default_value;
+    } else {
+        char *endptr;
+        int base = (ptr[0] == '0' && ptr[1] == 'x') ? (16) : (10);
+        errno = 0;
+        *value = strtoul(ptr, &endptr, base);
+        if (errno || (ptr == endptr)) {
+            errno = 0;
+            *value = default_value;
+        }
+    }
+    return 0;
+}
+
+int32_t os_env_get_str(const char *name, const char **value, const char *default_value) {
+    *value = getenv(name);
+
+    if (NULL == *value) {
+        *value = default_value;
+    }
+    return 0;
+}
+
+int32_t os_env_set_u32(const char *name, uint32_t value) {
+    char buf[ENV_BUF_SIZE_LINUX];
+    snprintf(buf, sizeof(buf), "%u", value);
+    return setenv(name, buf, 1);
+}
+
+int32_t os_env_set_str(const char *name, char *value) {
+    return setenv(name, value, 1);
+}

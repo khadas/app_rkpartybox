@@ -4,6 +4,8 @@
 
 #ifndef SRC_PBOX_LOGGER_H_
 #define SRC_PBOX_LOGGER_H_
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,15 +15,19 @@ extern "C" {
 #define LOG_LEVEL_WARN  1
 #define LOG_LEVEL_INFO  2
 #define LOG_LEVEL_DEBUG 3
+#define LOG_LEVEL_NUM (LOG_LEVEL_DEBUG+1)
 
 #ifndef LOG_TAG
 #define LOG_TAG "pbox_app"
 #endif
-static int pbox_app_log_level = LOG_LEVEL_WARN;
+
+uint32_t get_pbox_log_level(void);
+void set_pbox_log_level(uint32_t level);
+uint32_t covert2debugLevel(char *str);
 
 #define ALOGD(format, ...)                                                      \
   do {                                                                          \
-    if (pbox_app_log_level < LOG_LEVEL_DEBUG)                                   \
+    if (get_pbox_log_level() < LOG_LEVEL_DEBUG)                                   \
       break;                                                                    \
       fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
               ##__VA_ARGS__);                                                   \
@@ -29,7 +35,7 @@ static int pbox_app_log_level = LOG_LEVEL_WARN;
 
 #define ALOGI(format, ...)                                                  \
   do {                                                                         \
-    if (pbox_app_log_level < LOG_LEVEL_INFO)                                    \
+    if (get_pbox_log_level() < LOG_LEVEL_INFO)                                    \
       break;                                                                   \
       fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
               ##__VA_ARGS__);                                                  \
@@ -37,7 +43,7 @@ static int pbox_app_log_level = LOG_LEVEL_WARN;
 
 #define ALOGW(format, ...)                                                  \
   do {                                                                         \
-    if (pbox_app_log_level < LOG_LEVEL_WARN)                                \
+    if (get_pbox_log_level() < LOG_LEVEL_WARN)                                \
       break;                                                                   \
       fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
               ##__VA_ARGS__);                                                  \
@@ -45,7 +51,7 @@ static int pbox_app_log_level = LOG_LEVEL_WARN;
 
 #define ALOGE(format, ...)                                                 \
   do {                                                                         \
-    if (pbox_app_log_level < LOG_LEVEL_ERROR)                               \
+    if (get_pbox_log_level() < LOG_LEVEL_ERROR)                               \
       break;                                                                   \
       fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
               ##__VA_ARGS__);                                                  \

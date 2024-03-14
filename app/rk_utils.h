@@ -1,7 +1,9 @@
 #ifndef _RK_UTILS_H_
 #define _RK_UTILS_H_
-
+#include <stdbool.h>
+#include <stdint.h>
 #include <pthread.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,6 +22,8 @@ void set_vocal_separate_thread_cpu(void);
 int get_ps_pid_new(const char Name[]);
 int rk_setRtPrority(pid_t pid, int policy, int priority);
 void rk_schedparam_show(pid_t pid);
+int32_t os_env_get_u32(const char *name, uint32_t *value, uint32_t default_value);
+int32_t os_env_get_str(const char *name, const char **value, const char *default_value);
 
 #define msleep(x) usleep(x * 1000)
 

@@ -33,10 +33,11 @@
 #include "pbox_usb_app.h"
 #include "pbox_light_effect_app.h"
 #include "pbox_soc_bt_app.h"
+#include "slog.h"
 
 void maintask_timer_fd_process(int timer_fd);
 
-static int quit = 0;
+static int main_loop = 1;
 #define PBOX_TIMER_INTERVAL 10
 
 pbox_pipe_t pbox_pipe_fds[PBOX_SOCKPAIR_NUM];
@@ -84,7 +85,24 @@ int maintask_read_event(int source, int fd) {
 static void sigterm_handler(int sig)
 {
     fprintf(stderr, "signal %d\n", sig);
-    quit = 1;
+    main_loop = 0;
+}
+
+static void pbox_debug_init(void) {
+    char buffer[MAX_APP_NAME_LENGTH + 1];
+    char *envStr;
+    uint32_t debug_level =0;
+    FILE *file = fopen("/oem/debug.conf", "r");
+    if (file != NULL) {
+        size_t bytesRead = fread(buffer, 1, MAX_APP_NAME_LENGTH, file);
+        fclose(file);
+
+        debug_level = covert2debugLevel(buffer);
+    }
+
+    os_env_get_str("debug_level", &envStr, "warn");
+    //ALOGW("%s buffer:%s level:%d\n", __func__, envStr, debug_level);
+    set_pbox_log_level(MAX(debug_level, covert2debugLevel(envStr)));
 }
 
 void main(int argc, char **argv) {
@@ -93,6 +111,9 @@ void main(int argc, char **argv) {
     pthread_setname_np(pthread_self(), "party_main");
     signal(SIGINT, sigterm_handler);
     pbox_version_print();
+
+    pbox_debug_init();
+
 #if !ENABLE_USE_SOCBT
     pbox_init_background();
 #endif
@@ -155,7 +176,7 @@ void main(int argc, char **argv) {
     }
 
     start_fd_timer(pbox_fds[PBOX_MAIN_FD_TIMER], 2, PBOX_TIMER_INTERVAL, true); //every 10ms a timer.
-    while (!quit) {
+    while (main_loop) {
         int ret;
         fd_set read_set = read_fds;
 
