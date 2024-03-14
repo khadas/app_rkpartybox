@@ -255,15 +255,15 @@ void handleLcdUsbListUpdateCmd(const pbox_lcd_msg_t *msg) {
 void handleLcdBtStateUpdateCmd(const pbox_lcd_msg_t *msg) {
     ALOGD("%s \n", __func__);
     switch (msg->btState) {
-        case BT_NONE:
-        case BT_TURNING_TRUNNING_OFF:
-        case BT_INIT_ON:
-        case BT_CONNECTING:
-        case BT_DISCONNECT: {
+        case APP_BT_NONE:
+        case APP_BT_TURNING_TRUNNING_OFF:
+        case APP_BT_INIT_ON:
+        case APP_BT_CONNECTING:
+        case APP_BT_DISCONNECT: {
             ALOGD("BT DISCONNECT\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
         } break;
-        case BT_CONNECTED: {
+        case APP_BT_CONNECTED: {
             ALOGD("BT CONNECTED\n");
             _lv_demo_music_update_ui_info(UI_WIDGET_DEVICE_STATE, msg);
             //_lv_demo_music_update_list();

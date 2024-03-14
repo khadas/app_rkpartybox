@@ -47,13 +47,13 @@ typedef enum _rk_cmd_msg_t{
 } rk_bt_opcode_t;
 
 typedef enum {
-	BT_NONE,
-    BT_TURNING_TRUNNING_OFF,
-	BT_INIT_ON,
-	BT_DISCONNECT,
-	BT_IDLE = BT_DISCONNECT,
-	BT_CONNECTING,
-	BT_CONNECTED,
+	APP_BT_NONE,
+    APP_BT_TURNING_TRUNNING_OFF,
+	APP_BT_INIT_ON,
+	APP_BT_DISCONNECT,
+	APP_BT_IDLE = APP_BT_DISCONNECT,
+	APP_BT_CONNECTING,
+	APP_BT_CONNECTED,
 } btsink_state_t;
 
 typedef enum {

@@ -13,9 +13,26 @@
 #include "rk_utils.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
+//vendor code for broadcom
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
+#include <sys/ioctl.h>
+#include <errno.h>
+
+static int vendor_set_high_priority(char *ba, uint8_t priority, uint8_t direction);
 
 #define PRINT_FLAG_ERR "[RK_BT_ERROR]"
 #define PRINT_FLAG_SUCESS "[RK_BT_SUCESS]"
+enum{
+	A2DP_SOURCE,
+	A2DP_SINK
+};
+
+enum{
+	ACL_NORMAL_PRIORITY,
+	ACL_HIGH_PRIORITY
+};
 
 int unix_socket_bt_notify_msg(void *info, int length)
 {
@@ -192,13 +209,13 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		//rk_bt_set_power(true);
 		if(rk_bt_is_powered_on()) {
 			bt_content.power = true;
-			bt_sink_notify_btstate(BT_INIT_ON, NULL);
+			bt_sink_notify_btstate(APP_BT_INIT_ON, NULL);
 		}
 		break;
 	case RK_BT_STATE_INIT_OFF:
 		ALOGI("++ RK_BT_STATE_INIT_OFF\n");
 		bt_content.init = false;
-		bt_sink_notify_btstate(BT_NONE, NULL);
+		bt_sink_notify_btstate(APP_BT_NONE, NULL);
 		break;
 
 	//SCAN STATE
@@ -241,7 +258,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 				rdev->remote_address_type,
 				rdev->remote_alias);
 		//bt_sink_notify_btname(rdev->remote_alias);
-		bt_sink_notify_btstate((state == RK_BT_STATE_CONNECTED) ? BT_CONNECTED:BT_DISCONNECT, rdev->remote_alias);
+		bt_sink_notify_btstate((state == RK_BT_STATE_CONNECTED) ? APP_BT_CONNECTED:APP_BT_DISCONNECT, rdev->remote_alias);
 		break;
 	case RK_BT_STATE_PAIRED:
 	case RK_BT_STATE_PAIR_NONE:
@@ -303,6 +320,8 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
+			//low priority for broadcom
+			vendor_set_high_priority(rdev->remote_address, ACL_NORMAL_PRIORITY, A2DP_SINK);
 		break;
 	case RK_BT_STATE_TRANSPORT_PENDING:
 		ALOGI("+ STATE AVDTP TRASNPORT PENDING [%s|%d]:%s:%s\n",
@@ -317,6 +336,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 				rdev->rssi,
 				rdev->remote_address_type,
 				rdev->remote_alias);
+			vendor_set_high_priority(rdev->remote_address, ACL_HIGH_PRIORITY, A2DP_SINK);
 		bt_sink_notify_a2dpstate(A2DP_STREAMING);
 		break;
 	case RK_BT_STATE_TRANSPORT_SUSPENDING:
@@ -343,7 +363,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 					freq,
 					channel);
 		if(state == RK_BT_STATE_SINK_ADD) {
-			bt_sink_notify_btstate(BT_CONNECTED, rdev->remote_alias);
+			bt_sink_notify_btstate(APP_BT_CONNECTED, rdev->remote_alias);
 			bt_sink_notify_pcm_format(freq, channel);
 			bt_sink_notify_a2dpstate(A2DP_CONNECTED);
 		} else {
@@ -437,7 +457,7 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 		ALOGI("RK_BT_STATE_ADAPTER_POWER_ON successful power=%d\n", bt_content.power);
 		if(!bt_content.power) {
 			bt_content.power = true;
-			bt_sink_notify_btstate(BT_INIT_ON, NULL);
+			bt_sink_notify_btstate(APP_BT_INIT_ON, NULL);
 		} break;
 	case RK_BT_STATE_ADAPTER_POWER_OFF:
 		bt_content.power = false;
@@ -465,6 +485,173 @@ static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 				rdev->bonded);
 		break;
 	}
+}
+
+/**
+ * VENDOR CODE
+ */
+static int write_flush_timeout(int fd, uint16_t handle,
+		unsigned int timeout_ms)
+{
+	uint16_t timeout = (timeout_ms * 1000) / 625;  // timeout units of 0.625ms
+	unsigned char hci_write_flush_cmd[] = {
+		0x01,               // HCI command packet
+		0x28, 0x0C,         // HCI_Write_Automatic_Flush_Timeout
+		0x04,               // Length
+		0x00, 0x00,         // Handle
+		0x00, 0x00,         // Timeout
+	};
+
+	hci_write_flush_cmd[4] = (uint8_t)handle;
+	hci_write_flush_cmd[5] = (uint8_t)(handle >> 8);
+	hci_write_flush_cmd[6] = (uint8_t)timeout;
+	hci_write_flush_cmd[7] = (uint8_t)(timeout >> 8);
+
+	int ret = write(fd, hci_write_flush_cmd, sizeof(hci_write_flush_cmd));
+	if (ret < 0) {
+		ALOGE("write(): %s (%d)]", strerror(errno), errno);
+		return -1;
+	} else if (ret != sizeof(hci_write_flush_cmd)) {
+		ALOGE("write(): unexpected length %d", ret);
+		return -1;
+	}
+	return 0;
+}
+
+static int vendor_high_priority(int fd, uint16_t handle,uint8_t priority, uint8_t direction)
+{
+	unsigned char hci_high_priority_cmd[] = {
+		0x01,               // HCI command packet
+		0x1a, 0xfd,         // Write_A2DP_Connection
+		0x04,               // Length
+		0x00, 0x00,         // Handle
+		0x00, 0x00          // Priority, Direction
+	};
+
+	ALOGE("%s handle:%04x, pri:%d, dir:%d\n", __func__, handle, priority, direction);
+	hci_high_priority_cmd[4] = (uint8_t)handle;
+	hci_high_priority_cmd[5] = (uint8_t)(handle >> 8);
+	hci_high_priority_cmd[6] = (uint8_t)priority;
+	hci_high_priority_cmd[7] = (uint8_t)direction;
+
+	int ret = write(fd, hci_high_priority_cmd, sizeof(hci_high_priority_cmd));
+	if (ret < 0) {
+		ALOGE("write(): %s (%d)]", strerror(errno), errno);
+		return -1;
+	} else if (ret != sizeof(hci_high_priority_cmd)) {
+		ALOGE("write(): unexpected length %d", ret);
+		return -1;
+	}
+	return 0;
+}
+
+static int get_hci_sock(void)
+{
+	int sock = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+	struct sockaddr_hci addr;
+	int opt;
+
+	if (sock < 0) {
+		ALOGE("Can't create raw HCI socket!");
+		return -1;
+	}
+
+	opt = 1;
+	if (setsockopt(sock, SOL_HCI, HCI_DATA_DIR, &opt, sizeof(opt)) < 0) {
+		ALOGE("Error setting data direction\n");
+		return -1;
+	}
+
+	/* Bind socket to the HCI device */
+	memset(&addr, 0, sizeof(addr));
+	addr.hci_family = AF_BLUETOOTH;
+	addr.hci_dev = 0;  // hci0
+	if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+		ALOGE("Can't attach to device hci0. %s(%d)\n",
+				strerror(errno),
+				errno);
+		return -1;
+	}
+	return sock;
+}
+
+static int get_acl_handle(int fd, char *bdaddr) {
+	int i;
+	int ret = -1;
+	struct hci_conn_list_req *conn_list;
+	struct hci_conn_info *conn_info;
+	int max_conn = 10;
+	char addr[18];
+
+	conn_list = malloc(max_conn * (
+		sizeof(struct hci_conn_list_req) + sizeof(struct hci_conn_info)));
+	if (!conn_list) {
+		ALOGE("Out of memory in %s\n", __FUNCTION__);
+		return -1;
+	}
+
+	conn_list->dev_id = 0;  /* hardcoded to HCI device 0 */
+	conn_list->conn_num = max_conn;
+
+	if (ioctl(fd, HCIGETCONNLIST, (void *)conn_list)) {
+		ALOGE("Failed to get connection list\n");
+		goto out;
+	}
+	ALOGI("XXX %d\n", conn_list->conn_num);
+
+	for (i=0; i < conn_list->conn_num; i++) {
+		conn_info = &conn_list->conn_info[i];
+		memset(addr, 0, 18);
+		sprintf(addr, "%02x:%02x:%02x:%02x:%02x:%02x",
+				conn_info->bdaddr.b[5],
+				conn_info->bdaddr.b[4],
+				conn_info->bdaddr.b[3],
+				conn_info->bdaddr.b[2],
+				conn_info->bdaddr.b[1],
+				conn_info->bdaddr.b[0]);
+		ALOGI("XXX %d %s:%s\n", conn_info->type, bdaddr, addr);
+		if (conn_info->type == ACL_LINK &&
+				!strcasecmp(addr, bdaddr)) {
+			ret = conn_info->handle;
+			goto out;
+		}
+	}
+
+	ret = 0;
+
+out:
+	free(conn_list);
+	return ret;
+}
+
+
+/* Request that the ACL link to a given Bluetooth connection be high priority,
+ * for improved coexistance support
+ */
+int vendor_set_high_priority(char *ba, uint8_t priority, uint8_t direction)
+{
+	int ret;
+	int fd = get_hci_sock();
+	int acl_handle;
+
+	if (fd < 0)
+		return fd;
+
+	acl_handle = get_acl_handle(fd, ba);
+	if (acl_handle <= 0) {
+		ret = acl_handle;
+		goto out;
+	}
+
+	ret = vendor_high_priority(fd, acl_handle, priority, direction);
+	if (ret < 0)
+		goto out;
+	ret = write_flush_timeout(fd, acl_handle, 200);
+
+out:
+	close(fd);
+
+	return ret;
 }
 
 void bt_test_version(char *data)
@@ -522,7 +709,7 @@ static void bt_restart_bluealsa_only(void) {
 	kill_task("pulseaudio");
 	if(!get_ps_pid("bluealsa")) {
 		run_task("bluealsa", "bluealsa -S --profile=a2dp-sink &");
-		rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
+		//rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
 	}
 }
 
@@ -548,7 +735,7 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 
 		if(!get_ps_pid("bluealsa")) {
 			run_task("bluealsa", "bluealsa -S --profile=a2dp-sink &");
-			rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
+			//rk_setRtPrority(get_ps_pid("bluealsa"), SCHED_RR, 9);
 		}
 	}
 
@@ -557,9 +744,9 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 		run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
 		//run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm-buffer-time 800000 --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
 		#else
-		run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
+		run_task("bluealsa-aplay", "bluealsa-aplay --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
 		#endif
-		rk_setRtPrority(get_ps_pid("bluealsa-aplay"), SCHED_RR, 9);
+		//rk_setRtPrority(get_ps_pid("bluealsa-aplay"), SCHED_RR, 9);
 	}
 	return 0;
 }

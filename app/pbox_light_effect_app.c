@@ -64,13 +64,13 @@ void pbox_app_led_btState(btsink_state_t mode) {
 	ALOGD("%s btsink_state_t: %d\n", __func__, mode);
 	switch (mode)
 	{
-		case BT_DISCONNECT:
+		case APP_BT_DISCONNECT:
 			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_FAIL_EVT, NULL, NULL);
 			break;
-		case BT_CONNECTING:
+		case APP_BT_CONNECTING:
 			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIRING_EVT, NULL, NULL);
 			break;
-		case BT_CONNECTED:
+		case APP_BT_CONNECTED:
 			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_SUCCESS_EVT, NULL, NULL);
 			break;
 	}

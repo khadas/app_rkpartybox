@@ -158,7 +158,7 @@ void setBtRemoteName(char *name) {
 
 bool isBtConnected(void)
 {
-	if(getBtSinkState()== BT_CONNECTED)
+	if(getBtSinkState()== APP_BT_CONNECTED)
 		return true;
 
 	return false;
@@ -166,7 +166,7 @@ bool isBtConnected(void)
 
 bool isBtA2dpConnected(void)
 {
-	if(pboxBtSinkdata->btState==BT_CONNECTED && (pboxBtSinkdata->a2dpState >= A2DP_CONNECTED))
+	if(pboxBtSinkdata->btState==APP_BT_CONNECTED && (pboxBtSinkdata->a2dpState >= A2DP_CONNECTED))
 		return true;
 	
 	return false;
@@ -174,7 +174,7 @@ bool isBtA2dpConnected(void)
 
 bool isBtA2dpStreaming(void)
 {
-	if(pboxBtSinkdata->btState==BT_CONNECTED && (pboxBtSinkdata->a2dpState == A2DP_STREAMING))
+	if(pboxBtSinkdata->btState==APP_BT_CONNECTED && (pboxBtSinkdata->a2dpState == A2DP_STREAMING))
 		return true;
 	return false;
 }
@@ -234,18 +234,18 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             setBtSinkState(msg->btinfo.state);
             ALOGD("%s pboxBtSinkdata->btState:[%d]\n", __func__, pboxBtSinkdata->btState);
             switch (pboxBtSinkdata->btState) {
-                case BT_INIT_ON: {
+                case APP_BT_INIT_ON: {
                     pbox_app_restart_btsink(false, DISP_All);
                     pbox_app_bt_pair_enable(true, DISP_All);
                     pbox_app_bt_local_update(DISP_All);
                 } break;
-                case BT_DISCONNECT: {
+                case APP_BT_DISCONNECT: {
                     pbox_app_bt_pair_enable(true, DISP_All);
                     if(is_input_source_selected(SRC_BT, AUTO)) {
                         pbox_app_autoswitch_next_input_source(SRC_BT, DISP_All);
                     }
                 } break;
-                case BT_CONNECTED: {
+                case APP_BT_CONNECTED: {
                     setBtRemoteName(msg->btinfo.remote_name);
                     pbox_app_bt_pair_enable(false, DISP_All);
 
@@ -255,7 +255,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                         pbox_app_restart_passive_player(SRC_BT, true, DISP_All);
                     }
                 } break;
-                case BT_NONE: {
+                case APP_BT_NONE: {
                     ALOGD("%s recv msg: btsink state: OFF\n", __func__);
                 } break;
             }
@@ -280,7 +280,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                     update_bt_karaoke_playing_status(true);
                 } else {
                     update_bt_karaoke_playing_status(false);
-                    //if (getBtSinkState() == BT_DISCONNECT)
+                    //if (getBtSinkState() == APP_BT_DISCONNECT)
                     //    pbox_app_music_stop(DISP_All);
                 }
             }
@@ -320,7 +320,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             switch (msg->btinfo.adpter.adpter_id) {
                 case BT_SINK_ADPTER_DISCOVERABLE:
                     pboxBtSinkdata->discoverable = msg->btinfo.adpter.discoverable;
-                    if (!pboxBtSinkdata->discoverable && (pboxBtSinkdata->btState != BT_CONNECTED)) {
+                    if (!pboxBtSinkdata->discoverable && (pboxBtSinkdata->btState != APP_BT_CONNECTED)) {
                         pbox_app_bt_pair_enable(true, DISP_All);
                     }
                     break;
@@ -372,14 +372,14 @@ void *btsink_watcher(void *arg) {
     bool btsinkWatcher_track = false;
     pbox_bt_opcode_t btCmd_prev = 0;
     while (1) {
-        if((getBtSinkState() == BT_NONE) && (btCmd_prev == RK_BT_OFF)) {
+        if((getBtSinkState() == APP_BT_NONE) && (btCmd_prev == RK_BT_OFF)) {
             pbox_app_bt_sink_onoff(true, DISP_All);
             btCmd_prev= RK_BT_ON;
             goto next_round;
-        } else if (getBtSinkState() == BT_NONE) {
+        } else if (getBtSinkState() == APP_BT_NONE) {
             goto next_round;
         } else if ((!pboxBtSinkdata->discoverable) && \
-                    ((getBtSinkState() == BT_INIT_ON) || (getBtSinkState() == BT_DISCONNECT)))
+                    ((getBtSinkState() == APP_BT_INIT_ON) || (getBtSinkState() == APP_BT_DISCONNECT)))
         {
             pbox_btsink_pair_enable(true);
         } else if (btsinkWatcher_track == false) {
@@ -391,7 +391,7 @@ void *btsink_watcher(void *arg) {
             btCmd_prev = RK_BT_OFF;
             btsinkWatcher_track = false;
             pbox_app_bt_sink_onoff(true, DISP_All);
-            setBtSinkState(BT_TURNING_TRUNNING_OFF);
+            setBtSinkState(APP_BT_TURNING_TRUNNING_OFF);
             goto next_round;
         }
 

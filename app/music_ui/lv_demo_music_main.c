@@ -261,7 +261,7 @@ void _lv_demo_music_update_track_info(uint32_t id) {
             _lv_demo_music_list_btn_check(id, true);
         //}
     } else {
-        if (getBtSinkState() != BT_CONNECTED) {
+        if (getBtSinkState() != APP_BT_CONNECTED) {
             lv_label_set_text(title_label, "unknow");
             lv_label_set_text(artist_label, _lv_demo_music_get_artist(id));
             lv_label_set_text(genre_label, _lv_demo_music_get_genre(id));
@@ -369,7 +369,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
                 if (guitar_slider != NULL)
                     lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
-                if (getBtSinkState() == BT_CONNECTED)
+                if (getBtSinkState() == APP_BT_CONNECTED)
                 create_toast(main_cont, TOAST_TEXT, 5000);
             }
             else {
@@ -409,7 +409,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
 
             switch (msg->msgId) {
                 case PBOX_LCD_DISP_BT_STATE: {
-                    if (lv_btstate == BT_CONNECTED) {
+                    if (lv_btstate == APP_BT_CONNECTED) {
                         char name[MAX_NAME_LENGTH];
                         lv_snprintf(name, sizeof(name), "%s", getBtRemoteName());
                         printf("%s remote name %s\n", __func__, name);
@@ -662,7 +662,7 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
         lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
         if (guitar_slider != NULL)
             lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
-	if (getBtSinkState() == BT_CONNECTED)
+	if (getBtSinkState() == APP_BT_CONNECTED)
 		create_toast(main_cont, TOAST_TEXT, 5000);
     }
     else {
