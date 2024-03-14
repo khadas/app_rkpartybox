@@ -553,9 +553,12 @@ static int bt_restart_a2dp_sink(bool onlyAplay)
 	}
 
 	if(!get_ps_pid("bluealsa-aplay")) {
-		//run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+		#if ENABLE_RK_ROCKIT
+		run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
 		//run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm-buffer-time 800000 --pcm=plughw:7,0,0 00:00:00:00:00:00 &");
+		#else
 		run_task("bluealsa-aplay", "bluealsa-aplay -S --profile-a2dp --pcm=plughw:0,0 00:00:00:00:00:00 &");
+		#endif
 		rk_setRtPrority(get_ps_pid("bluealsa-aplay"), SCHED_RR, 9);
 	}
 	return 0;

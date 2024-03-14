@@ -72,8 +72,7 @@ static struct rockit_pbx_t {
     rc_pb_ctx *pboxCtx;
     int signfd[2];
     pthread_t aux_player_tid;
-    bool quit;
-    sem_t      sem;
+    //sem_t      sem;
 } rockCtx;
 
 typedef enum {
@@ -431,7 +430,7 @@ int rk_demo_music_create() {
     memset(started_player, 0 , sizeof(started_player));
     int ret = pipe(rockCtx.signfd);
     rockCtx.pboxCtx = &partyboxCtx;
-    sem_init(&rockCtx.sem, 0, 0);
+    //sem_init(&rockCtx.sem, 0, 0);
     ALOGD("%s %d partyboxCtx:%p\n", __func__, __LINE__, &partyboxCtx);
     //rockitAuxPlayer();
     pthread_create(&rockCtx.aux_player_tid, NULL, rockitAuxPlayer, &rockCtx);
