@@ -109,7 +109,11 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
     attr.sample_rate = 48000;
     attr.pool_size = READ_SIZE;
     attr.pool_cnt = 1;
-    attr.energy_band_cnt = 10;
+    attr.detect.rms_tc = 200;
+    attr.detect.hold_time = 0;
+    attr.detect.decay_time = 200;
+    attr.detect.detect_per_frm = 10;
+    attr.detect.band_cnt = 10;
 
     static int old = -1;
 
@@ -408,20 +412,31 @@ int rk_demo_music_create() {
     attr.record_attr            = &recorder_attr;
     attr.volume_db                 = -50;//main volume
 
+
+    struct rc_pb_param_level_detect detect;
+    detect.rms_tc = 200;
+    detect.hold_time = 0;
+    detect.decay_time = 200;
+    detect.detect_per_frm = 10;
+    detect.band_cnt = 10;
     recorder_attr.card_name = "hw:0,0";
     recorder_attr.sample_rate = 48000;
-    recorder_attr.channels    = 4;
     recorder_attr.bit_width   = 16;
 #if ENABLE_USE_SOCBT
-    recorder_attr.ref_layout = 0x0c;
+    recorder_attr.channels    = 8;
+    recorder_attr.ref_layout = 0xfc;
     recorder_attr.rec_layout = 0x03;
+    recorder_attr.chn_layout  = 0xff;
     recorder_attr.ref_mode = RC_PB_HOWLING_REF_MODE_SOFT;
 #else
+    recorder_attr.channels    = 4;
     recorder_attr.ref_layout = 0x03;
     recorder_attr.rec_layout = 0x04;
+    recorder_attr.chn_layout  = 0x0f;
     recorder_attr.ref_mode = RC_PB_HOWLING_REF_MODE_HARD;
 #endif
-    recorder_attr.chn_layout  = 0x0f;
+
+    recorder_attr.detect      = detect;
     if (rc_pb_create(&partyboxCtx, &attr) != 0) {
         ALOGE("rc_pb_create failed, err!!!\n");
         return -1;
@@ -588,13 +603,19 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
 {
     struct rc_pb_player_attr playerAttr;
     enum rc_pb_play_src dest = covert2rockitSource(SRC_USB);
+    struct rc_pb_param_level_detect detect;
+    detect.rms_tc = 200;
+    detect.hold_time = 0;
+    detect.decay_time = 200;
+    detect.detect_per_frm = 10;
+    detect.band_cnt = 10;
 
     assert(partyboxCtx);
     assert(rc_pb_player_start);
     memset(&playerAttr, 0, sizeof(playerAttr));
     playerAttr.url = track_uri;
     playerAttr.headers = headers;
-    playerAttr.energy_band_cnt = 10;
+    playerAttr.detect = detect;
 
     ALOGD("%s :%s, ctx=%p\n", __func__, track_uri, partyboxCtx);
     pbox_rockit_music_stop(SRC_USB);
@@ -610,8 +631,14 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     int channel = audioFormat.channel;
     char *cardName = audioFormat.cardName;
     enum rc_pb_play_src dest = covert2rockitSource(source);
-    memset(&playerAttr, 0, sizeof(playerAttr));
+    struct rc_pb_param_level_detect detect;
+    detect.rms_tc = 200;
+    detect.hold_time = 0;
+    detect.decay_time = 200;
+    detect.detect_per_frm = 10;
+    detect.band_cnt = 10;
 
+    memset(&playerAttr, 0, sizeof(playerAttr));
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     switch (sampleFreq) {
         case 0: {
@@ -633,9 +660,10 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
 
     playerAttr.bit_width = 16;
     playerAttr.card_name = cardName;
+    playerAttr.detect = detect;
+
     assert(partyboxCtx);
     assert(rc_pb_player_start);
-
     ALOGD("%s freq:%d, channel: %d, card:%s source:%d\n", __func__, sampleFreq, channel, cardName, source);
     #if 0//ENABLE_USE_SOCBT
     if(false == vendor_started) {
@@ -953,7 +981,7 @@ static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info
             energyData[i] = energy.energy_vec[10 + i] + 90;
             energyData[i] = energyData[i] + energyData[i]/10 + 1; //map to [1, 100]
             if(energy_debug) {
-                ALOGD("freq[%05d]HZ energy[%05d]DB energyData[%05d]\n",
+                ALOGD("freq[%5.0f]HZ energy[%5.0f]DB energyData[%05d]\n",
                                 energy.energy_vec[i], energy.energy_vec[10 + i], energyData[i]);
             }
         }

@@ -57,6 +57,8 @@ rc_s32 rc_pb_recorder_set_volume(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db);
 rc_s32 rc_pb_recorder_get_volume(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db);
 rc_s32 rc_pb_recorder_set_param(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 rc_s32 rc_pb_recorder_get_param(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 rc_pb_recorder_get_energy(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_energy *energy);
+rc_s32 rc_pb_recorder_release_energy(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_energy *energy);
 #endif
 
 #ifdef __cplusplus

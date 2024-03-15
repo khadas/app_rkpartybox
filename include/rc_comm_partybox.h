@@ -125,9 +125,9 @@ struct rc_pb_param_reverb {
 
 struct rc_pb_param_vocal_separate {
     rc_bool bypass;
-    rc_u32  human_level;         /* RW; Range: [0, 100];*/
-    rc_u32  other_level;         /* RW; Range: [0, 100];*/
-    rc_u32  reserve_level[32];   /* RW; Range: [0, 100];*/
+    rc_u32  human_level;         /* RW; Range: [0, 100]; */
+    rc_u32  other_level;         /* RW; Range: [0, 100]; */
+    rc_u32  reserve_level[32];   /* RW; Range: [0, 100]; */
 };
 
 struct rc_pb_param_amix {
@@ -140,6 +140,14 @@ struct rc_pb_param_rkstudio {
     rc_u32    addr;
     rc_float *data;
     rc_u32    cnt;
+};
+
+struct rc_pb_param_level_detect {
+    rc_u32 rms_tc;
+    rc_u32 hold_time;
+    rc_u32 decay_time;
+    rc_u32 detect_per_frm;  /* RW; default 10 */
+    rc_u32 band_cnt;
 };
 
 struct rc_pb_param {
@@ -155,7 +163,7 @@ struct rc_pb_param {
 };
 
 struct rc_pb_energy {
-    rc_s16      *energy_vec;
+    rc_float    *energy_vec;
     rc_pb_frame  frame;
 };
 
@@ -177,9 +185,9 @@ struct rc_pb_player_attr {
     rc_u32      sample_rate;
     rc_u32      channels;
     rc_u32      bit_width;
-    rc_u32      energy_band_cnt;
     rc_u32      pool_size;
     rc_u32      pool_cnt;
+    struct rc_pb_param_level_detect detect;
 };
 
 struct rc_pb_recorder_attr {
@@ -190,6 +198,7 @@ struct rc_pb_recorder_attr {
     rc_u32  chn_layout;
     rc_u32  ref_layout;
     rc_u32  rec_layout;
+    struct rc_pb_param_level_detect detect;
     enum rc_pb_howling_ref_mode ref_mode;
 };
 
