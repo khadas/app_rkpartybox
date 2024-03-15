@@ -29,6 +29,7 @@ extern "C" {
 #define MUSIC_PATH "/mnt/udisk/"
 #define MAX(A, B) (A > B ? A : B)
 #define MIN(A, B) (A < B ? A : B)
+#define PERCENT2TARGET(value, MIN_TARGET, MAX_TARGET) ((MAX_TARGET - MIN_TARGET)*value/100 + MIN_TARGET)
 
 #define MAX_SHORT_NAME_LENGTH 63
 #define TRACK_MAX_NUM 100
@@ -236,7 +237,7 @@ typedef struct _uac {
     union {
         bool state;
         uint32_t sampleFreq;
-        uint32_t volume;
+        float volume;
         bool mute;
         int32_t ppm;
     };

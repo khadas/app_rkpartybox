@@ -821,7 +821,7 @@ static float pbox_rockit_music_master_volume_adjust(input_source_t source, float
     assert(rc_pb_set_volume);
     rc_pb_set_volume(partyboxCtx, Level);
 
-    ALOGD("%s source%d vol:%f\n" ,__func__, source, Level);
+    ALOGD("%s source:%d vol:%f\n" ,__func__, source, Level);
     return pbox_rockit_music_master_volume_get(source);
 }
 
@@ -1265,7 +1265,7 @@ static void pbox_rockit_uac_set_freq(pbox_rockit_msg_t *msg) {
 
 static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {
     uac_role_t role = msg->uac.uac_role;
-    uint32_t volume = msg->uac.volume;
+    float volume = msg->uac.volume;
     if(role == UAC_ROLE_SPEAKER) {
 #if ENABLE_UAC
         pbox_rockit_music_master_volume_adjust(SRC_UAC, volume);

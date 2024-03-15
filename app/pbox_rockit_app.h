@@ -63,7 +63,7 @@ void pbox_app_rockit_set_uac_state(uac_role_t role, bool start);
 
 void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq);
 
-void pbox_app_rockit_set_uac_volume(uac_role_t role, uint32_t volume);
+void pbox_app_rockit_set_uac_volume(uac_role_t role, float volume);
 
 void pbox_app_rockit_set_mute(uac_role_t role, bool mute);
 

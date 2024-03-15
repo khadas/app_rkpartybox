@@ -18,7 +18,6 @@
 #define MAX_REVERB_VALUE    100
 #define MIN_REVERB_VALUE    0
 
-#define PERCENT2TARGET(value, MIN_TARGET, MAX_TARGET) ((MAX_TARGET - MIN_TARGET)*value/100 + MIN_TARGET)
 void keyscan_knob_data_recv(struct _keyinfo keyinfo) {
     float value = keyinfo.value;
     //ALOGD("%s value:%d\n", __func__, keyinfo.value);

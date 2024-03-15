@@ -330,7 +330,7 @@ void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_uac_volume(uac_role_t role, uint32_t volume) {
+void pbox_app_rockit_set_uac_volume(uac_role_t role, float volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_VOLUME,

@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "slog.h"
 
-static int pbox_app_log_level = LOG_LEVEL_WARN;
+static int pbox_app_log_level = LOG_LEVEL_INFO;
 
 void LogMsg(const char *format, ...)
 {

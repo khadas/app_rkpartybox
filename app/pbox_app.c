@@ -102,6 +102,8 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
         }
 #endif
     }
+
+    pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
 }
 
 //like BT, uac, or Usb connected with extern MCU, these are passive input source.
@@ -390,6 +392,7 @@ void pbox_app_music_start(display_t policy) {
             sprintf(track_uri, MUSIC_PATH"%s", track_name);
             ALOGW("play track [%s]\n", track_uri);
             pbox_app_rockit_start_local_player(track_uri, NULL);
+            pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
             pbox_multi_displayTrackInfo(track_name, NULL, policy);
         } break;
 #if ENABLE_UAC
@@ -808,8 +811,10 @@ void pbox_app_uac_volume_change(uac_role_t role, uint32_t volume, display_t poli
         return;
     }
 
+    pboxUIdata->mainVolumeLevel = PERCENT2TARGET((float)volume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
+    ALOGD("%s volume:%d->%f\n", __func__, volume, pboxUIdata->mainVolumeLevel);
     if((role == UAC_ROLE_SPEAKER)) {
-        pbox_app_rockit_set_uac_volume(role, volume);
+        pbox_app_rockit_set_uac_volume(role, pboxUIdata->mainVolumeLevel);
         pbox_multi_displayUacVolume(role, volume, policy);
     }
 #endif
