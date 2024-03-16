@@ -8,6 +8,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/app/
 	${PROJECT_SOURCE_DIR}/app/uac/
 	${PROJECT_SOURCE_DIR}/driver/userial/
+	${PROJECT_SOURCE_DIR}/driver/storage/
 	${PROJECT_SOURCE_DIR}/sys/
 	${PROJECT_SOURCE_DIR}/utils/log/
 	${PROJECT_SOURCE_DIR}/cJSON/
@@ -24,6 +25,7 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/cJSON SRCS)
 aux_source_directory(./app SRCS)
 aux_source_directory(./app/uac SRCS)
 aux_source_directory(./driver/userial SRCS)
+aux_source_directory(./driver/storage SRCS)
 aux_source_directory(./sys SRCS)
 aux_source_directory(./utils/log SRCS)
 aux_source_directory(./hal SRCS)
@@ -104,5 +106,6 @@ install(FILES bins/Stereo.pcm DESTINATION /etc)
 install(FILES bins/Widen.pcm DESTINATION /etc)
 install(FILES bins/Split_off.pcm DESTINATION /etc)
 install(FILES bins/Split_on.pcm DESTINATION /etc)
+#install(FILES ./bins/pbbox-factory.ini DESTINATION /etc)
 install(PROGRAMS bins/S40-rkpartybox DESTINATION /etc/init.d)
 install(PROGRAMS bins/partybox_play.sh DESTINATION bin)
