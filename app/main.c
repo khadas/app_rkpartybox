@@ -12,6 +12,7 @@
 #include <sys/timerfd.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <getopt.h>
 #include "pbox_app.h"
 #include "rc_partybox.h"
 #include "rk_btsink.h"
@@ -88,21 +89,70 @@ static void sigterm_handler(int sig)
     main_loop = 0;
 }
 
-static void pbox_debug_init(void) {
+static const char *log_level_str = "warn";
+static void pbox_debug_init(const char *debugStr) {
     char buffer[MAX_APP_NAME_LENGTH + 1];
     char *envStr;
-    uint32_t debug_level =0;
-    FILE *file = fopen("/oem/debug.conf", "r");
+    uint32_t loglevel =0;
+
+    loglevel = covert2debugLevel(debugStr);
+    FILE *file = fopen("/oem/debug_conf", "r");
     if (file != NULL) {
         size_t bytesRead = fread(buffer, 1, MAX_APP_NAME_LENGTH, file);
         fclose(file);
 
-        debug_level = covert2debugLevel(buffer);
+        loglevel = MAX(loglevel, covert2debugLevel(buffer));
     }
 
-    os_env_get_str("debug_level", &envStr, "warn");
-    //ALOGW("%s buffer:%s level:%d\n", __func__, envStr, debug_level);
-    set_pbox_log_level(MAX(debug_level, covert2debugLevel(envStr)));
+    os_env_get_str("loglevel", &envStr, "warn");
+    //ALOGW("%s buffer:%s level:%d\n", __func__, envStr, loglevel);
+    set_pbox_log_level(MAX(loglevel, covert2debugLevel(envStr)));
+}
+
+static const char short_options[] = "c:l:";
+static const struct option long_options[] = {{"config", required_argument, NULL, 'c'},
+                                             {"loglevel", required_argument, NULL, 'l'},
+                                             {"help", no_argument, NULL, 'h'},
+                                             {0, 0, 0, 0}};
+
+static void usage_tip(FILE *fp, int argc, char **argv) {
+    fprintf(fp,
+            "Usage: %s [options]\n"
+            "Version %s\n"
+            "Options:\n"
+//            "-c | --config      partybox ini file, default is "
+//            "/userdata/rkpartybox.ini, need to be writable\n"
+            "-l | --loglevel   loglevel [error/warn/info/debug], default is debug\n"
+            "-h | --help        for help \n\n"
+            "\n",
+            argv[0], "v1.0");
+    pbox_version_print();
+}
+
+void pbox_get_opt(int argc, char *argv[]) {
+	for (;;) {
+		int idx;
+		int c;
+		c = getopt_long(argc, argv, short_options, long_options, &idx);
+		if (-1 == c)
+			break;
+		switch (c) {
+		case 0: /* getopt_long() flag */
+			break;
+		case 'c':
+			//pbox_ini_path = optarg;
+			break;
+		case 'l':
+			log_level_str = optarg;
+			break;
+		case 'h':
+			usage_tip(stdout, argc, argv);
+			exit(EXIT_SUCCESS);
+		default:
+			usage_tip(stderr, argc, argv);
+			exit(EXIT_FAILURE);
+		}
+	}
 }
 
 void main(int argc, char **argv) {
@@ -112,7 +162,8 @@ void main(int argc, char **argv) {
     signal(SIGINT, sigterm_handler);
     pbox_version_print();
 
-    pbox_debug_init();
+    pbox_get_opt(argc, argv);
+    pbox_debug_init(log_level_str);
 
 #if !ENABLE_USE_SOCBT
     pbox_init_background();

@@ -69,19 +69,16 @@ void set_pbox_log_level(uint32_t level) {
 }
 
 uint32_t covert2debugLevel(char *str) {
-    uint32_t debug_level;
+    if(!str) return LOG_LEVEL_WARN;
 
     if(strncasecmp(str, "error", strlen("error"))==0)
-        debug_level = LOG_LEVEL_ERROR;
+        return LOG_LEVEL_ERROR;
     else if(strncasecmp(str, "warn", strlen("warn"))==0)
-        debug_level = LOG_LEVEL_WARN;
+        return LOG_LEVEL_WARN;
     else if(strncasecmp(str, "info", strlen("info"))==0)
-        debug_level = LOG_LEVEL_INFO;
+        return LOG_LEVEL_INFO;
     else if(strncasecmp(str, "debug", strlen("debug"))==0)
-        debug_level = LOG_LEVEL_DEBUG;
-    else
-        debug_level = LOG_LEVEL_WARN;
+        return LOG_LEVEL_DEBUG;
 
-    //ALOGW("%s buffer:%s level:%d\n", __func__, str, debug_level);
-    return debug_level;
+    return LOG_LEVEL_WARN;
 }

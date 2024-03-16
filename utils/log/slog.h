@@ -57,6 +57,11 @@ uint32_t covert2debugLevel(char *str);
               ##__VA_ARGS__);                                                  \
   } while (0)
 
+#define LOG_DEBUG(format, ...) ALOGD(format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...) ALOGI(format, ##__VA_ARGS__)
+#define LOG_WARN(format, ...) ALOGW(format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...) ALOGE(format, ##__VA_ARGS__)
+
 #ifdef __cplusplus
 }
 #endif

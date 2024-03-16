@@ -9,10 +9,10 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/app/uac/
 	${PROJECT_SOURCE_DIR}/driver/userial/
 	${PROJECT_SOURCE_DIR}/sys/
-	${PROJECT_SOURCE_DIR}/utils/
+	${PROJECT_SOURCE_DIR}/utils/log/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
-       ${PROJECT_SOURCE_DIR}/hal/
+    ${PROJECT_SOURCE_DIR}/hal/
 	${CMAKE_SYSROOT}/usr/include/rockchip/
 	)
 
@@ -25,7 +25,7 @@ aux_source_directory(./app SRCS)
 aux_source_directory(./app/uac SRCS)
 aux_source_directory(./driver/userial SRCS)
 aux_source_directory(./sys SRCS)
-aux_source_directory(./utils SRCS)
+aux_source_directory(./utils/log SRCS)
 aux_source_directory(./hal SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
