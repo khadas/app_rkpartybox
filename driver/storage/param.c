@@ -90,6 +90,7 @@ float rk_param_get_float(const char *entry, float default_val) {
 	ret = (float)iniparser_getdouble(g_ini_d_, entry, (double)default_val);
 	pthread_mutex_unlock(&g_param_mutex);
 
+	ALOGD("%s: %s=%f", __func__, entry, ret);
 	return ret;
 }
 

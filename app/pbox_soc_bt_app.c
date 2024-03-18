@@ -149,8 +149,7 @@ void handleMainVolumeEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    if(pboxUIdata->mainVolumeLevel != msg->volume)
-    pbox_app_music_set_volume(msg->volume, DISP_All);
+    pbox_app_btsoc_set_volume(msg->volume, DISP_All|DISP_FS);
 }
 
 void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
@@ -159,6 +158,7 @@ void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
         pbox_app_btsoc_get_placement(DISP_All);
         return;
     }
+
     pbox_app_btsoc_set_placement(msg->placement, DISP_All);
 }
 
@@ -169,8 +169,7 @@ void handleMic1MuxEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    if(pboxUIdata->micData[0].micMux != msg->micMux)
-    pbox_app_music_set_mic_mux(0, msg->micMux, DISP_All);
+    pbox_app_btsoc_set_mic_mux(0, msg->micMux, DISP_All);
 }
 
 void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
@@ -180,8 +179,7 @@ void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    if(pboxUIdata->micData[1].micMux != msg->micMux)
-    pbox_app_music_set_mic_mux(1, msg->micMux, DISP_All);
+    pbox_app_btsoc_set_mic_mux(1, msg->micMux, DISP_All);
 }
 
 void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
@@ -191,6 +189,7 @@ void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
     //pbox_app_btsoc_set_outdoor_mode(msg->outdoor, DISP_All);
+
     pbox_app_btsoc_set_human_voice_fadeout(msg->outdoor?false:true, DISP_All);
 }
 
@@ -240,8 +239,7 @@ void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    if(pboxUIdata->musicVolumeLevel != msg->musicVolLevel)
-    pbox_app_btsoc_set_music_volume(msg->musicVolLevel, DISP_All);
+    pbox_app_btsoc_set_music_volume(msg->musicVolLevel, DISP_All|DISP_FS);
 }
 
 // Define a struct to associate opcodes with handles

@@ -11,6 +11,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/driver/storage/
 	${PROJECT_SOURCE_DIR}/sys/
 	${PROJECT_SOURCE_DIR}/utils/log/
+	${PROJECT_SOURCE_DIR}/utils/os/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/hal/
@@ -28,6 +29,7 @@ aux_source_directory(./driver/userial SRCS)
 aux_source_directory(./driver/storage SRCS)
 aux_source_directory(./sys SRCS)
 aux_source_directory(./utils/log SRCS)
+aux_source_directory(./utils/os SRCS)
 aux_source_directory(./hal SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
@@ -106,6 +108,6 @@ install(FILES bins/Stereo.pcm DESTINATION /etc)
 install(FILES bins/Widen.pcm DESTINATION /etc)
 install(FILES bins/Split_off.pcm DESTINATION /etc)
 install(FILES bins/Split_on.pcm DESTINATION /etc)
-#install(FILES ./bins/pbbox-factory.ini DESTINATION /etc)
+install(FILES bins/pbox-factory.ini DESTINATION /etc)
 install(PROGRAMS bins/S40-rkpartybox DESTINATION /etc/init.d)
 install(PROGRAMS bins/partybox_play.sh DESTINATION bin)

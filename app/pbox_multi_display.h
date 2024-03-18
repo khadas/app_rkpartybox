@@ -20,16 +20,17 @@ void pbox_multi_displayIsPlaying(bool play, display_t policy);
 void pbox_multi_displayPrevNext(bool next, display_t policy);
 void pbox_multi_displayTrackInfo(const char* title, const char* artist, display_t policy);
 void pbox_multi_displayTrackPosition(bool durationOnly, unsigned int mCurrent, unsigned int mDuration, display_t policy);
+void pbox_multi_displayMusicVolumeLevel(float volume, display_t policy);
 void pbox_multi_displayMainVolumeLevel(float mainVolume, display_t policy);
-void pbox_multi_displayMicVolumeLevel(float micVolume, display_t policy);
-void pbox_multi_displayMicMute(bool mute, display_t policy);
+void pbox_multi_displayMicVolumeLevel(uint8_t index, float micVolume, display_t policy);
+void pbox_multi_displayMicMute(uint8_t index, bool mute, display_t policy);
 void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy);
 void pbox_multi_displayHumanMusicLevel(uint32_t human_music_level, display_t policy);
 void pbox_multi_displayReservLevel(uint32_t reserv_music_level, display_t policy);
 void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel, display_t policy);
 void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy);
-void pbox_multi_displayEcho3A(bool enable, display_t policy);
-void pbox_multi_displayRevertMode(pbox_revertb_t mode, display_t policy);
+void pbox_multi_displayEcho3A(uint8_t index, bool enable, display_t policy);
+void pbox_multi_displayRevertMode(uint8_t index, pbox_revertb_t mode, display_t policy);
 
 void pbox_multi_displayUsbState(usb_state_t state, display_t policy);
 void pbox_multi_displayUsbListupdate(uint32_t trackId, display_t policy);
@@ -46,7 +47,6 @@ void pbox_multi_displayMusicStereoMode(stereo_mode_t stereo, display_t policy);
 void pbox_multi_displayMusicPlaceMode(placement_t place, display_t policy);
 void pbox_multi_displayMusicOutdoorMode(inout_door_t outdoor, display_t policy);
 
-#define pbox_multi_displayMusicVolumeLevel(...)    ((void) 0)
 #ifdef __cplusplus
 }
 #endif

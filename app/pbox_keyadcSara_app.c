@@ -11,13 +11,6 @@
 #include "pbox_keyadcSara_app.h"
 
 #if ENABLE_SARAADC
-#define MAX_BASS_VALUE      12
-#define MIN_BASS_VALUE      (-12)
-#define MAX_TREBLE_VALUE    (12)
-#define MIN_TREBLE_VALUE    (-12)
-#define MAX_REVERB_VALUE    100
-#define MIN_REVERB_VALUE    0
-
 void keyscan_knob_data_recv(struct _keyinfo keyinfo) {
     float value = keyinfo.value;
     //ALOGD("%s value:%d\n", __func__, keyinfo.value);

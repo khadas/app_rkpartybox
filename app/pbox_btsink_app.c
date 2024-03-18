@@ -215,13 +215,16 @@ void update_bt_music_volume(int volumeLevel ,display_t policy)
 	volumeLevelMapp = volumeLevel * 100 / 127;
 
 	ALOGD("%s bt volume :%d (0-127)mapping to %f (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
-    volumeLevelMapp = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volumeLevelMapp/100 + MIN_MAIN_VOLUME; //covert to real db volume.
+    //covert to real db volume.
+    volumeLevelMapp = PERCENT2TARGET(volumeLevelMapp, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
     volumeLevelMapp = volumeLevelMapp> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volumeLevelMapp;
     volumeLevelMapp = volumeLevelMapp< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volumeLevelMapp;
-	pbox_app_music_set_volume((float)volumeLevelMapp, policy);
 
-	if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
-		pbox_app_music_resume(policy);
+    if(volumeLevelMapp != pboxUIdata->mainVolumeLevel)
+    pbox_app_music_set_volume((float)volumeLevelMapp, policy);
+
+    if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
+        pbox_app_music_resume(policy);
 }
 
 void bt_sink_data_recv(pbox_bt_msg_t *msg) {
@@ -331,9 +334,9 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         } break;
 
         case RK_BT_ABS_VOL: {
-		//when seperate function is enable, don't set bt volume to mainVolume.
-		if ((!pboxUIdata->vocalSplit) && is_input_source_selected(SRC_BT, ANY))
-			update_bt_music_volume(msg->media_volume, DISP_All);
+            //when seperate function is enable, don't set bt volume to mainVolume.
+            if ((!pboxUIdata->vocalSplit) && is_input_source_selected(SRC_BT, ANY))
+                update_bt_music_volume(msg->media_volume, DISP_All|DISP_FS);
         } break;
 
         case BT_SINK_VENDOR_EVT: {

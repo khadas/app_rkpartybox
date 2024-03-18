@@ -34,6 +34,7 @@
 #include "pbox_usb_app.h"
 #include "pbox_light_effect_app.h"
 #include "pbox_soc_bt_app.h"
+#include "pbox_store_app.h"
 #include "slog.h"
 
 void maintask_timer_fd_process(int timer_fd);
@@ -90,6 +91,7 @@ static void sigterm_handler(int sig)
 }
 
 static const char *log_level_str = "warn";
+static const char *pbox_ini_path = "/data/rkpartybox.ini";
 static void pbox_debug_init(const char *debugStr) {
     char buffer[MAX_APP_NAME_LENGTH + 1];
     char *envStr;
@@ -120,8 +122,8 @@ static void usage_tip(FILE *fp, int argc, char **argv) {
             "Usage: %s [options]\n"
             "Version %s\n"
             "Options:\n"
-//            "-c | --config      partybox ini file, default is "
-//            "/userdata/rkpartybox.ini, need to be writable\n"
+            "-c | --config      partybox ini file, default is "
+            "/userdata/rkpartybox.ini, need to be writable\n"
             "-l | --loglevel   loglevel [error/warn/info/debug], default is debug\n"
             "-h | --help        for help \n\n"
             "\n",
@@ -140,7 +142,7 @@ void pbox_get_opt(int argc, char *argv[]) {
 		case 0: /* getopt_long() flag */
 			break;
 		case 'c':
-			//pbox_ini_path = optarg;
+			pbox_ini_path = optarg;
 			break;
 		case 'l':
 			log_level_str = optarg;
@@ -161,9 +163,11 @@ void main(int argc, char **argv) {
     pthread_setname_np(pthread_self(), "party_main");
     signal(SIGINT, sigterm_handler);
     pbox_version_print();
-
     pbox_get_opt(argc, argv);
     pbox_debug_init(log_level_str);
+
+    pbox_app_ui_init(pbox_ini_path);
+    pbox_app_ui_load();
 
 #if !ENABLE_USE_SOCBT
     pbox_init_background();
@@ -250,6 +254,7 @@ void main(int argc, char **argv) {
     }
 
 pbox_main_exit:
+    pbox_app_data_deinit();
     for(i =0; i< ARRAYSIZE(pbox_fds); i++) {
         if(i == PBOX_MAIN_FD_TIMER) {
             close(pbox_fds[i]);
@@ -293,6 +298,10 @@ void maintask_timer_fd_process(int timer_fd) {
     if (0 == msTimePassed%20) {
         //every 10ms send command to reflash lvgl ui.
         pbox_app_lcd_dispplayReflash();
+    }
+
+    if (0 == msTimePassed%100) {
+        pbox_app_data_save();
     }
 
     if((0 == msTimePassed%50) && (pboxUIdata->play_status == PLAYING)) {

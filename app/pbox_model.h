@@ -27,6 +27,7 @@ extern "C" {
 #define DEFAULT_MAIN_VOLUME ((MAX_MAIN_VOLUME+MIN_MAIN_VOLUME)/2)
 #define MAX_MIC_PHONE_VOLUME   0
 #define MIN_MIC_PHONE_VOLUME   (-100)
+#define DEFAULT_HUMAN_LEVEL 5
 #else
 #define ENABLE_LCD_DISPLAY 1
 #define ENABLE_USE_SOCBT 0
@@ -48,6 +49,7 @@ extern "C" {
 #define DEFAULT_MAIN_VOLUME ((MAX_MAIN_VOLUME+MIN_MAIN_VOLUME)/2)
 #define MAX_MIC_PHONE_VOLUME   0
 #define MIN_MIC_PHONE_VOLUME   (-100)
+#define DEFAULT_HUMAN_LEVEL 15
 #endif
 
 #ifdef __cplusplus

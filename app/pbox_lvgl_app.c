@@ -269,36 +269,44 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         case PBOX_LCD_MAIN_VOL_LEVEL_EVT: {
             float volume = msg->mainVolume;
             volume = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volume/100 + MIN_MAIN_VOLUME; //covert to real db volume.
-            pbox_app_music_set_volume(volume, DISP_LED);
+            if(volume == pboxUIdata->mainVolumeLevel) break;
+            pbox_app_music_set_volume(volume, DISP_LED|DISP_FS);
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             float mic_volume = msg->micVolume;
             mic_volume = (MAX_MIC_PHONE_VOLUME-MIN_MIC_PHONE_VOLUME)*mic_volume/100 + MIN_MIC_PHONE_VOLUME; //covert to real db volume.
-            pbox_app_music_set_mic_volume(0, mic_volume, DISP_LED);
+            if(mic_volume == pboxUIdata->micData[0].micVolume) break;
+            pbox_app_music_set_mic_volume(0, mic_volume, DISP_LED|DISP_FS);
         } break;
         case PBOX_LCD_ACCOMP_MUSIC_LEVEL_EVT: {
             int32_t accomp_level = msg->accomp_music_level;
+            if(accomp_level == pboxUIdata->accomLevel) break;
             pbox_app_music_set_accomp_music_level(accomp_level, DISP_LED);
         } break;
         case PBOX_LCD_HUMAN_MUSIC_LEVEL_EVT: {
             int32_t humanLevel = msg->human_music_level;
+            if(humanLevel == pboxUIdata->humanLevel) break;
             pbox_app_music_set_human_music_level(humanLevel, DISP_LED);
         } break;
         case PBOX_LCD_RESERV_MUSIC_LEVEL_EVT: {
             int32_t reserv_level = msg->reserv_music_level;
+            if(reserv_level == pboxUIdata->reservLevel) break;
             pbox_app_music_set_reserv_music_level(reserv_level, DISP_LED);
         } break;
         case PBOX_LCD_SEPERATE_SWITCH_EVT: {
             bool enable = msg->enable;
+            if(enable == pboxUIdata->vocalSplit) break;
             pbox_app_music_original_singer_open(!enable, DISP_LED);
         } break;
         case PBOX_LCD_ECHO_3A_EVT: {
             bool enable = msg->enable;
+            if(enable == pboxUIdata->micData[0].echo3a) break;
             pbox_app_music_set_echo_3a(0, enable, DISP_LED);
         } break;
         case PBOX_LCD_REVERT_MODE_EVT: {
             pbox_revertb_t revertb = msg->reverbMode;
-            pbox_app_music_set_recoder_revert(0, revertb, DISP_LED);
+            if(revertb == pboxUIdata->micData[0].reverbMode) break;
+            pbox_app_music_set_recoder_revert(0, revertb, DISP_LED|DISP_FS);
         } break;
         default: break;
     } //end switch (msg->msgId)

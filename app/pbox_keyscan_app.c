@@ -110,14 +110,14 @@ int pbox_app_key_set_playpause()
 int pbox_app_key_set_volume_up()
 {
     ALOGD("---pbox_app_key_set_volume_up =====!\n");
-    pbox_app_music_volume_up(DISP_All);
+    pbox_app_music_volume_up(DISP_All|DISP_FS);
     return 1;
 }
 
 int pbox_app_key_set_volume_down()
 {
     ALOGD("---pbox_app_key_set_volume_down =====!\n");
-    pbox_app_music_volume_down(DISP_All);
+    pbox_app_music_volume_down(DISP_All|DISP_FS);
     return 1;
 }
 

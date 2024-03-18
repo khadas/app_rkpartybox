@@ -1226,7 +1226,7 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
     bool micmute = msg->micdata.micState.micmute;
     pbox_revertb_t  reverbMode = msg->micdata.micState.reverbMode;;
 
-    ALOGD("%s: index:%d, kind:%d, micMux:%d, volume: %f, treble:%f, bass:%f, reverb:%f\n",
+    ALOGD("%s: index:%d, kind:%d, micMux:%d, volume: %f, treble:%f, bass:%f, reverb:%f \n",
         __func__, index, kind, micMux, micVolume, micTreble, micBass, micReverb);
 
     if (MIC_SET_DEST_ALL == kind) {
