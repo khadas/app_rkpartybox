@@ -69,7 +69,7 @@ else()
 	install(FILES ./lib64/librkaudio_effect_howling_evb.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
 	install(FILES ./lib64/librockit.so DESTINATION "lib" RENAME "librockit.so")
 	install(FILES ./bins/eq_drc_recorder_evb_1chn.bin DESTINATION /etc RENAME "eq_drc_recorder.bin")
-	install(PROGRAMS bins/partybox_app_evb.sh DESTINATION bin RENAME "partybox_play.sh")
+	install(PROGRAMS bins/partybox_app_evb.sh DESTINATION bin RENAME "partybox_app.sh")
 endif()
 
 set(ROCKIT_FILE_LIBS
