@@ -286,6 +286,7 @@ void handleLcdMainVolLevelCmd(const pbox_lcd_msg_t* msg) {
 void handleLcdMicVolLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t micVolume = msg->micVolume;
     ALOGD("Mic Volume Level Command: Level - %u\n", micVolume);
+    _lv_demo_music_update_ui_info(UI_WIDGET_MIC_VOLUME, msg);
 }
 
 // Function to handle the mic mute command

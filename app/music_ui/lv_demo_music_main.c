@@ -316,18 +316,25 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             if (play) {
                 //lv_timer_resume(sec_counter_timer);
                 lv_obj_add_state(play_obj, LV_STATE_CHECKED);
-                        lv_obj_invalidate(play_obj);
+                lv_obj_invalidate(play_obj);
             } else {
                 lv_obj_clear_state(play_obj, LV_STATE_CHECKED);
-                        lv_obj_invalidate(play_obj);
+                lv_obj_invalidate(play_obj);
             }
         } break;
         case UI_WIDGET_MAIN_VOLUME: {
             uint32_t mainVolume = msg->mainVolume;
             char buf[16];
-                    lv_snprintf(buf, sizeof(buf), "Volume  %d", mainVolume);
+            lv_snprintf(buf, sizeof(buf), "Volume  %d", mainVolume);
             lv_label_set_text(volume_label, buf);
             lv_slider_set_value(volume_slider, mainVolume, LV_ANIM_OFF);
+        } break;
+        case UI_WIDGET_MIC_VOLUME: {
+            uint32_t micVolume = msg->micVolume;
+            char buf[16];
+            lv_snprintf(buf, sizeof(buf), "Mic  %d", micVolume);
+            lv_label_set_text(mic_volume_label, buf);
+            lv_slider_set_value(mic_volume_slider, micVolume, LV_ANIM_OFF);
         } break;
         case UI_WIDGET_TRACK_INFO: {
             uint32_t track_id = _lv_demo_music_get_track_id();
@@ -370,7 +377,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 if (guitar_slider != NULL)
                     lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
                 if (getBtSinkState() == APP_BT_CONNECTED)
-                create_toast(main_cont, TOAST_TEXT, 5000);
+                    create_toast(main_cont, TOAST_TEXT, 5000);
             }
             else {
                 lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
@@ -455,7 +462,7 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
         case UI_WIDGET_REVERTB_MODE: {
             pbox_revertb_t mode = msg->reverbMode;
             printf("%s revertb_mode:%d\n", __func__, mode);
-            lv_dropdown_set_selected(reverb_dd_obj, PBOX_REVERT_KTV);
+            lv_dropdown_set_selected(reverb_dd_obj, mode);
         } break;
         default:
             break;
