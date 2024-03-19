@@ -16,6 +16,7 @@ char *get_json_data( const char *jsonfile);
 int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effect, char *led_effect_name);
 int HextoDecimal (const char *Hexstr);
 int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name);
+int get_led_total_num(struct light_effect_ctrl *ctrl);
 
 #ifdef __cplusplus
 }

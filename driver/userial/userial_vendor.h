@@ -144,6 +144,7 @@ void userial_vendor_close(void);
 void userial_vendor_set_baud(uint8_t userial_baud);
 
 int open_uart(void);
+void dump_data(uint8_t *data, uint16_t total);
 uint16_t userial_send(uint8_t *data, uint16_t total);
 #ifdef __cplusplus
 }

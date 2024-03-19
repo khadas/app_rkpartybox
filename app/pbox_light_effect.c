@@ -23,6 +23,7 @@
 #include "pbox_common.h"
 #include "pthread.h"
 #include "pbox_ledctrl.h"
+#include "pbox_led_cjson.h"
 
 struct led_effect *leffect;
 struct led_effect *foreground_leffect;
@@ -736,7 +737,7 @@ int led_effect_volume(struct led_effect* effect)
 	foreground_leffect_job = 0;
 }
 
-void *pbox_light_effect_drew(void)
+void *pbox_light_effect_drew(void *para)
 {
 	while (true) {
 		//ALOGD("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
@@ -931,15 +932,19 @@ static void *pbox_light_effect_server(void *arg)
 				userspace_set_led_effect(ctrl, RK_ECHO_TEST);
 				break;
 			case RK_ECHO_PLAY_EVT:
+				soundreactive_mute_set(false);
 				userspace_set_led_effect(ctrl, RK_ECHO_PLAY);
 				break;
 			case RK_ECHO_PAUSE_EVT:
+				soundreactive_mute_set(true);
 				userspace_set_led_effect(ctrl, RK_ECHO_PAUSE);
 				break;
 			case RK_ECHO_PLAY_NEXT_EVT:
+				soundreactive_mute_set(true);
 				userspace_set_led_effect(ctrl, RK_ECHO_PLAY_NEXT);
 				break;
 			case RK_ECHO_PLAY_PREV_EVT:
+				soundreactive_mute_set(true);
 				userspace_set_led_effect(ctrl, RK_ECHO_PLAY_PREV);
 				break;
 			default: {
@@ -1104,7 +1109,7 @@ int pbox_create_lightEffectTask(void)
 	if (ret < 0)
 		ALOGE("light effect server start failed\n");
 
-	ret = pthread_create(&light_effect_drew_id, NULL, pbox_light_effect_drew, NULL);
+	ret = pthread_create(&light_effect_drew_id, NULL,pbox_light_effect_drew, NULL);
 	if (ret < 0)
 		ALOGE("light effect drew start failed\n");
 

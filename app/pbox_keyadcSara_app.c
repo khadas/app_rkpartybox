@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/socket.h>
 #include "pbox_app.h"
 #include "pbox_keyadcSara.h"
 #include "pbox_keyadcSara_app.h"

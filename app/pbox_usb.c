@@ -23,6 +23,7 @@
 #include "pbox_usb_uac.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
+#include "rk_utils.h"
 
 static void handleUsbStartScanCmd(const pbox_usb_msg_t* msg);
 static void handleUsbPollStateCmd(const pbox_usb_msg_t* msg);

@@ -68,7 +68,7 @@ void set_pbox_log_level(uint32_t level) {
     pbox_app_log_level = level;
 }
 
-uint32_t covert2debugLevel(char *str) {
+uint32_t covert2debugLevel(const char *str) {
     if(!str) return LOG_LEVEL_WARN;
 
     if(strncasecmp(str, "error", strlen("error"))==0)

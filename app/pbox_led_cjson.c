@@ -49,7 +49,7 @@ char *get_json_data(const char *jsonfile)
 
 	json_data = (char *) malloc(json_size + 1); //向系统申请分配指定size个字节的内存空间
 	memset(json_data, 0, json_size + 1);
-	fread((void *) json_data, json_size, 1, f_json); //将f_json中的数据读入中json_data中
+	int ret = fread((void *) json_data, json_size, 1, f_json); //将f_json中的数据读入中json_data中
 
 	fclose(f_json);
 

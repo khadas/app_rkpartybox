@@ -57,6 +57,7 @@ typedef struct {
     };
 } pbox_socbt_msg_t;
 
+int pbox_create_btsoc_task(void);
 #ifdef __cplusplus
 }
 #endif

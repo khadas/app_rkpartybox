@@ -28,7 +28,7 @@ int pbox_app_data_save(void);
 
 int pbox_app_ui_load(void);
 int pbox_app_data_deinit(void);
-int pbox_app_ui_init(char *ini_path);
+int pbox_app_ui_init(const char *ini_path);
 #ifdef __cplusplus
 }
 #endif

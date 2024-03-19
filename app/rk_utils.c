@@ -153,7 +153,7 @@ int get_ps_pid_new(const char Name[]) {
             FILE *file = fopen(buf, "r");
             if (file != NULL) {
                 // Read the process name
-                fgets(buf, sizeof(buf), file);
+                if (fgets(buf, sizeof(buf), file) == NULL) {}
 
                 // Remove the newline character
                 size_t len = strlen(buf);
@@ -354,8 +354,7 @@ retry:
 static void *vocal_separate_cpu(void *arg)
 {
     int pid;
-    static int old_vocal_neet=0 , old_vocal_separate= 0, old_reserv_neet =0;
-	(void*)old_reserv_neet;
+    static int old_vocal_neet=0 , old_vocal_separate= 0;
     //usleep(200*1000);
     for (int i = 0; i < 3; i ++) {
         if (((pid = get_thread_pid("vocal_neet")) > 0)&&(old_vocal_neet != pid)) {

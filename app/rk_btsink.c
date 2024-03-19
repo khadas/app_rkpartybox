@@ -678,7 +678,7 @@ static void btsink_config_name(void) {
 		if (sscanf(bt_name, "%2X:%2X:%2X:%2X:%2X:%2X",
 				&addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]) != 6) {
 			fprintf(stderr, "Failed to parse Bluetooth address.\n");
-			return (void*)-1;
+			return;
 		}
 	}
 

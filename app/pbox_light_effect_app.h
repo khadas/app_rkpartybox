@@ -21,6 +21,7 @@ void pbox_app_led_energyInfo(energy_info_t energy);
 void pbox_app_led_btState(btsink_state_t mode);
 void pbox_app_led_uacState(bool start);
 void pbox_app_led_uacVolume(uint32_t volume);
+void pbox_app_led_startup_effect(void);
 
 #define pbox_app_led_uacState(...)          ((void) 0)
 #define pbox_app_led_uacVolume(...)         ((void) 0)

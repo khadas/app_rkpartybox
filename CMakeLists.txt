@@ -39,6 +39,7 @@ message("CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
 if (LV_USE_DEMO_MUSIC)
 add_definitions(-DLV_USE_DEMO_MUSIC=1)
 include_directories(${PROJECT_SOURCE_DIR}/app/music_ui/)
+include_directories(${PROJECT_SOURCE_DIR}/app/music_ui/lvgl)
 include_directories(${CMAKE_SYSROOT}/usr/include/libdrm/)
 include_directories(${CMAKE_SYSROOT}/usr/include/lvgl/)
 include_directories(${CMAKE_SYSROOT}/usr/include/lvgl/lv_drivers/)
@@ -54,6 +55,7 @@ include_directories(${UDEV_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE -D_GNU_SOURCE)
 target_link_libraries(${PROJECT_NAME} ${UDEV_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}
 	pthread m freetype rkwifibt

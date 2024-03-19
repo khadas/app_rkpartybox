@@ -445,7 +445,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                     } break;
 
                 case RC_PB_WAKE_UP_CMD_VOLUME_UP: {
-                    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
+                    float *const volume = &pboxUIdata->mainVolumeLevel;
 
                     if (*volume <= 5)
                         *volume += 5;
@@ -462,7 +462,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                     } break;
 
                 case RC_PB_WAKE_UP_CMD_VOLUME_DOWN: {
-                    uint32_t *const volume = &pboxUIdata->mainVolumeLevel;
+                    float *const volume = &pboxUIdata->mainVolumeLevel;
 
                     ALOGD("%s volume down:%d\n", __func__, *volume);
 

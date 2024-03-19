@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include "pbox_app.h"
 #include "pbox_multi_display.h"
 #include "pbox_btsink_app.h"
@@ -761,7 +762,7 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
 #if ENABLE_UAC
     ALOGD("%s\n", __func__);
     if((role == UAC_ROLE_SPEAKER)) {
-        if(&pboxUacdata->state == start)
+        if(pboxUacdata->state == start)
             return;
         ALOGD("%s start=%d\n", __func__, start);
         pboxUacdata->state = start;

@@ -1,9 +1,10 @@
-#include "pbox_keyscan_app.h"
 #include <stdio.h>
 #include <errno.h>
 #include <linux/input.h>
 #include <string.h>
 #include <pthread.h>
+#include <sys/socket.h>
+#include "pbox_keyscan_app.h"
 #include "pbox_app.h"
 #include "pbox_common.h"
 #if ENABLE_SARAADC == 0

@@ -6,10 +6,14 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/select.h>
+#include <sys/socket.h>
+#include <pthread.h>
 #include "pbox_soc_bt.h"
-
+#include "rk_utils.h"
 #include "board.h"
 #include "hal_hw.h"
+#include "userial_vendor.h"
+#include "pbox_socketpair.h"
 
 #define UART_DEVICE "/dev/ttyS0"
 #define BUF_SIZE 256
@@ -435,7 +439,7 @@ int sendDspVersionCmd(char *version) {
 }
 
 void handleSocbtDspVersionCmd(const pbox_socbt_msg_t* msg) {
-    char *fw = msg->fw_ver;
+    char *fw =(char *)(msg->fw_ver);
     ALOGD("%s fw:%s\n", __func__, fw);
     sendDspVersionCmd(fw);
 }

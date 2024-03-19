@@ -37,7 +37,7 @@ extern "C" {
 
 #if USE_EVDEV || USE_BSD_EVDEV
 
-#include "lvgl.h"
+#include <lvgl/lvgl.h>
 
 /*********************
  *      DEFINES

@@ -11,6 +11,7 @@
 
 #include "lv_demo_music_main.h"
 #include "pbox_btsink_app.h"
+#include "pbox_app.h"
 
 extern lv_ft_info_t ttf_main_s;
 extern lv_ft_info_t ttf_main_m;
@@ -304,7 +305,9 @@ static lv_obj_t * remove_list_btn(lv_obj_t * parent, uint32_t track_id)
     if(btn != NULL)
        lv_obj_remove_style_all(btn);
     lv_obj_t *child = NULL;
-    while ((child = lv_obj_get_child(parent, child)) != NULL) {
+    int32_t child_id = 0;
+    while ((child = lv_obj_get_child(parent, child_id)) != NULL) {
+        child_id = lv_obj_get_child_id(child);
         lv_obj_remove_style_all(child);
         lv_obj_del(child);
     }

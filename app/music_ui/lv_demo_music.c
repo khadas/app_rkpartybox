@@ -16,15 +16,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <lvgl/lv_conf.h>
+#include "lvgl/lv_port_file.h"
+#include "lvgl/lv_port_indev.h"
+#include <lvgl/lv_conf.h>
 
 #include "lv_demo_music_main.h"
 #include "lv_demo_music_list.h"
 #include "pbox_app.h"
 #include "pbox_common.h"
-
-#include <lvgl/lv_conf.h>
-#include "lvgl/lv_port_file.h"
-#include "lvgl/lv_port_indev.h"
+#include "hal_drm.h"
 
 /*********************
  *      DEFINES
@@ -48,12 +49,12 @@ static lv_obj_t * ctrl;
 static lv_obj_t * list;
 
 //#define TRACK_MAX_NUM 10
-#define MUSIC_PATH "/data/"
+//#define MUSIC_PATH "/data/"
 #define MAIN_FONT         "/oem/SmileySans-Oblique.ttf"
 //int track_num = 0;
 //char title_list[TRACK_MAX_NUM][256] = {};
-char *artist_list[TRACK_MAX_NUM][256] = {};
-char *genre_list[TRACK_MAX_NUM][256] = {};
+char artist_list[TRACK_MAX_NUM][256] = {};
+char genre_list[TRACK_MAX_NUM][256] = {};
 uint32_t time_list[TRACK_MAX_NUM] = {};
 
 lv_ft_info_t ttf_main_s;
@@ -67,80 +68,6 @@ lv_ft_info_t ttf_main_l;
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-#if 0
-static char *strlwr(char *s)
-{
-  char *p = s;
-  for(;*s;s++) {
-    *s = tolower(*s);
-  }
-  return p;
-}
-
-static char *strrstr(const char *str, const char *token)
-{
-    int len = strlen(token);
-    const char *p = str + strlen(str);
-
-    while (str <= --p)
-        if (p[0] == token[0] && strncmp(p, token, len) == 0)
-            return (char *)p;
-    return NULL;
-}
-
-static int file_is_supported(char *filepath)
-{
-    int ret = 0;
-
-    if (strstr(filepath, ".") == NULL)
-        return 0;
-
-    char *suffix = strlwr(strdup(strrstr(filepath, ".") + 1));
-    static const char *formats[] =
-    {
-        "mp4", "mp3"
-    };
-
-    for (int i = 0; i < sizeof(formats) / sizeof(formats[0]); i++) {
-        if (strcmp(suffix, formats[i]) == 0) {
-            ret = 1;
-            break;
-        }
-    }
-
-    printf("%s is %ssupported, [%s]\n", filepath, ret ? "" : "not ", suffix);
-
-    free(suffix);
-
-    return ret;
-}
-int scan_dir(const char *path, int depth)
-{
-    DIR *dir;
-    struct dirent *entry;
-    int file_count = 0;
-    dir = opendir(path);
-    if (!dir)
-    {
-        printf("Error opening directory /oem\n");
-        return -1;
-    }
-    printf("open dir %s ok!", path);
-    while ((entry = readdir(dir)) != NULL)
-    {
-	if (entry->d_type == DT_REG) {
-	    if (file_is_supported(entry->d_name)) {
-                strcpy(title_list[file_count++], entry->d_name);
-		if (file_count > TRACK_MAX_NUM)
-		    break;
-	    }
-	}
-    }
-    track_num = file_count;
-    closedir(dir);
-    return 0;
-}
-#endif
 static void font_init(void)
 {
     lv_freetype_init(64, 1, 0);

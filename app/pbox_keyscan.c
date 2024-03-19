@@ -19,7 +19,6 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  */
-#define _GNU_SOURCE
 #include <linux/version.h>
 #include <linux/input.h>
 #include <dirent.h>

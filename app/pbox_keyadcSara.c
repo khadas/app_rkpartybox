@@ -5,6 +5,10 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <pthread.h>
+#include <sys/socket.h>
+#include "pbox_socket.h"
+#include "pbox_socketpair.h"
 
 #include "pbox_common.h"
 #include "pbox_keyadcSara.h"

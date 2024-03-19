@@ -84,6 +84,7 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
 void pbox_app_music_stop_bt_player(display_t policy);
 void pbox_app_bt_pair_enable(bool enable, display_t policy);
 void pbox_app_bt_local_update(display_t policy);
+void pbox_app_bt_sink_onoff(bool on, display_t policy);
 void pbox_app_set_vendor_state(bool enable, display_t policy);
 void pbox_app_restart_btsink(bool only, display_t policy);
 void pbox_app_switch_to_input_source(input_source_t source, display_t policy);
@@ -123,6 +124,7 @@ void pbox_app_music_set_mic_all(uint32_t index, mic_state_t micdata, display_t p
 
 void pbox_app_music_get_music_volume(display_t policy);
 void pbox_version_print(void);
+void pbox_app_music_init(void);
 
 void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy);
 void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy);

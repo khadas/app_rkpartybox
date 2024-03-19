@@ -128,7 +128,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
     file = fopen(prompt_file[index], "rb");
     if (file == NULL) {
         ALOGE("%s open prompt file: %s failed: %s.\n", __func__, prompt_file[index], strerror(errno));
-        return NULL;
+        return;
     }
 
     //ALOGD("%s file:%s\n", __func__, prompt_file[index]);
@@ -241,7 +241,7 @@ int rk_demo_music_create() {
             return -1;
         }
 
-        rc_pb_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, rc_float volume_db))dlsym(mpi_hdl, "rc_pb_get_volume");
+        rc_pb_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, rc_float *volume_db))dlsym(mpi_hdl, "rc_pb_get_volume");
         if (NULL == rc_pb_get_volume) {
                 ALOGE("failed to dlsym rc_pb_get_volume, err=%s\n", dlerror());
                 return -1;

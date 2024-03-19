@@ -21,6 +21,7 @@
 #include "pbox_socket.h"
 #include "pbox_usb_uac.h"
 #include "pbox_usb.h"
+#include "rk_utils.h"
 
 void uacPboxRoleChange(uint32_t role, bool start) {
     uac_pbox_notify_role_change(role, start);

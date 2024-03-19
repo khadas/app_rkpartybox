@@ -112,6 +112,7 @@ void* led_handle_command(void *led_effect_name);
 int led_userspace_ctrl_init(struct light_effect_ctrl * ctrl);
 int led_userspace_ctrl_deinit(struct light_effect_ctrl * ctrl);
 int userspace_set_rgb_color(struct light_effect_ctrl * ctrl, uint32_t rgb_index, uint8_t r, uint8_t g, uint8_t b);
+int userspace_set_led_brightness(struct light_effect_ctrl * ctrl, uint32_t led_index, uint8_t brightness);
 
 #ifdef __cplusplus
 }

@@ -23,7 +23,7 @@ extern "C" {
 
 uint32_t get_pbox_log_level(void);
 void set_pbox_log_level(uint32_t level);
-uint32_t covert2debugLevel(char *str);
+uint32_t covert2debugLevel(const char *str);
 
 #define ALOGD(format, ...)                                                      \
   do {                                                                          \

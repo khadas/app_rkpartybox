@@ -29,13 +29,17 @@
 #include "pbox_keyadcSara_app.h"
 #else
 #include "pbox_keyscan_app.h"
+#include "pbox_keyscan.h"
 #endif
 #include "pbox_usb.h"
 #include "pbox_usb_app.h"
 #include "pbox_light_effect_app.h"
+#include "pbox_light_effect.h"
 #include "pbox_soc_bt_app.h"
 #include "pbox_store_app.h"
 #include "slog.h"
+#include "rk_utils.h"
+#include "pbox_soc_bt.h"
 
 void maintask_timer_fd_process(int timer_fd);
 
@@ -94,7 +98,7 @@ static const char *log_level_str = "warn";
 static const char *pbox_ini_path = "/data/rkpartybox.ini";
 static void pbox_debug_init(const char *debugStr) {
     char buffer[MAX_APP_NAME_LENGTH + 1];
-    char *envStr;
+    const char *envStr;
     uint32_t loglevel =0;
 
     loglevel = covert2debugLevel(debugStr);

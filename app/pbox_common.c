@@ -13,6 +13,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include "pbox_common.h"
+#include "rk_utils.h"
 
 int create_fd_timer (void) {
     return timerfd_create(CLOCK_REALTIME, 0);
@@ -72,10 +73,11 @@ int findMax(int array[], int size) {
 }
 
 #define ACODEC_FILE_PATH "/sys/devices/platform/ff560000.acodec/rk3308-acodec-dev/dac_output"
-static void set_background_setting(void *arg) {
+static void* set_background_setting(void *arg) {
     exec_command_system("echo 1 > "ACODEC_FILE_PATH);
     exec_command_system("sleep 1");
     exec_command_system("echo 11 > "ACODEC_FILE_PATH);
+    return (void*)(0);
 }
 
 void pbox_init_background(void) {

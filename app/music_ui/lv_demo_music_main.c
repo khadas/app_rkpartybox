@@ -47,6 +47,7 @@ static void next_click_event_cb(lv_event_t * e);
 static void duration_slider_event_cb(lv_event_t * e);
 static void timer_cb(lv_timer_t * t);
 static void track_load(uint32_t id);
+static void create_toast(lv_obj_t * parent, const char * text, uint32_t duration_ms);
 
 /**********************
  *  STATIC VARIABLES

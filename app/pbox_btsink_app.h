@@ -28,6 +28,7 @@ void pbox_btsink_local_update(void);
 void pbox_btsink_set_vendor_state(bool enable);
 void pbox_btsink_onoff(bool on);
 void pbox_btsink_start_only_aplay(bool only);
+void pbox_btsink_start_only_bluealsa(void);
 void pbox_btsink_a2dp_stop(void);
 void maintask_bt_fd_process(int fd);
 

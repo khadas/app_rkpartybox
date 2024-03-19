@@ -11,22 +11,22 @@
 
 void pbox_app_led_PlayPause(bool play) {
 	ALOGD("%s PlayPause: %d\n", __func__, play);
-	soundreactive_mute_set(!play);
+	//soundreactive_mute_set(!play);// it shouldn't call another thread's func here directly...
 	if (play) {
-		pbox_light_effect_send_cmd(RK_ECHO_PLAY_EVT, NULL, NULL);
+		pbox_light_effect_send_cmd(RK_ECHO_PLAY_EVT, NULL, sizeof(NULL));
 	} else {
-		pbox_light_effect_send_cmd(RK_ECHO_PAUSE_EVT, NULL, NULL);
+		pbox_light_effect_send_cmd(RK_ECHO_PAUSE_EVT, NULL, sizeof(NULL));
 	}
 }
 
 void pbox_app_led_PrevNext(bool next) {
 	ALOGD("%s next: %d\n", __func__, next);
 
-	soundreactive_mute_set(true);
+	//soundreactive_mute_set(true);// it shouldn't call another thread's func here directly...
 	if (next) {
-		pbox_light_effect_send_cmd(RK_ECHO_PLAY_NEXT_EVT, NULL, NULL);
+		pbox_light_effect_send_cmd(RK_ECHO_PLAY_NEXT_EVT, NULL, sizeof(NULL));
 	} else {
-		pbox_light_effect_send_cmd(RK_ECHO_PLAY_PREV_EVT, NULL, NULL);
+		pbox_light_effect_send_cmd(RK_ECHO_PLAY_PREV_EVT, NULL, sizeof(NULL));
 	}
 }
 
@@ -65,18 +65,18 @@ void pbox_app_led_btState(btsink_state_t mode) {
 	switch (mode)
 	{
 		case APP_BT_DISCONNECT:
-			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_FAIL_EVT, NULL, NULL);
+			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_FAIL_EVT, NULL, sizeof(NULL));
 			break;
 		case APP_BT_CONNECTING:
-			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIRING_EVT, NULL, NULL);
+			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIRING_EVT, NULL, sizeof(NULL));
 			break;
 		case APP_BT_CONNECTED:
-			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_SUCCESS_EVT, NULL, NULL);
+			pbox_light_effect_send_cmd(RK_ECHO_BT_PAIR_SUCCESS_EVT, NULL, sizeof(NULL));
 			break;
 	}
 }
 
 void pbox_app_led_startup_effect(void) {
-	pbox_light_effect_send_cmd(RK_ECHO_LED_OFF_EVT, NULL, NULL);
-	pbox_light_effect_send_cmd(RK_ECHO_SYSTEM_BOOTING_EVT, NULL, NULL);
+	pbox_light_effect_send_cmd(RK_ECHO_LED_OFF_EVT, NULL, sizeof(NULL));
+	pbox_light_effect_send_cmd(RK_ECHO_SYSTEM_BOOTING_EVT, NULL, sizeof(NULL));
 }
