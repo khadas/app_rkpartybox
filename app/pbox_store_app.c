@@ -188,7 +188,7 @@ int pbox_app_ui_init(const char *ini_path) {
 	ret = rk_param_init((char *)ini_path);
 
     if(ret != 0) {
-        int ret = os_copy_file("/etc/pbox-factory.ini", ini_path);
+        int ret = os_copy_file("/etc/pbox/pbox-factory.ini", ini_path);
         ret = rk_param_init((char *)ini_path);
     }
 

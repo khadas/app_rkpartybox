@@ -1,9 +1,4 @@
 #! /bin/sh
-if [ ! -e /oem/uac_config ]; then
-	echo "Maybe first init, make link /oem/uac_config fisrt!"
-	ln -s /etc/uac_config /oem/uac_config
-fi
-
 if [ ! -e /oem/partybox_play.sh ]; then
 	echo "Maybe first init, make link /oem/partybox_app.sh fisrt!"
 	ln -s /usr/bin/partybox_play.sh /oem/partybox_play.sh
