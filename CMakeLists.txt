@@ -6,9 +6,9 @@ add_definitions(-g -D__EXPORTED_HEADERS__)
 
 include_directories(
 	${PROJECT_SOURCE_DIR}/app/
-	${PROJECT_SOURCE_DIR}/app/uac/
-	${PROJECT_SOURCE_DIR}/driver/userial/
-	${PROJECT_SOURCE_DIR}/driver/storage/
+	${PROJECT_SOURCE_DIR}/modules/uac/
+	${PROJECT_SOURCE_DIR}/modules/userial/
+	${PROJECT_SOURCE_DIR}/modules/storage/
 	${PROJECT_SOURCE_DIR}/sys/
 	${PROJECT_SOURCE_DIR}/utils/log/
 	${PROJECT_SOURCE_DIR}/utils/os/
@@ -24,9 +24,9 @@ include_directories(${DBUS_INCLUDE_DIRS})
 aux_source_directory(${PROJECT_SOURCE_DIR}/sys SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/cJSON SRCS)
 aux_source_directory(./app SRCS)
-aux_source_directory(./app/uac SRCS)
-aux_source_directory(./driver/userial SRCS)
-aux_source_directory(./driver/storage SRCS)
+aux_source_directory(./modules/uac SRCS)
+aux_source_directory(./modules/userial SRCS)
+aux_source_directory(./modules/storage SRCS)
 aux_source_directory(./sys SRCS)
 aux_source_directory(./utils/log SRCS)
 aux_source_directory(./utils/os SRCS)
