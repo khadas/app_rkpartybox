@@ -80,6 +80,13 @@ enum rc_pb_howling_ref_mode {
     RC_PB_HOWLING_REF_MODE_HARD
 };
 
+enum rc_pb_rkstudio_cmd {
+    RC_PB_RKSTUDIO_CMD_DOWNLOAD_GRAPH = 0,
+    RC_PB_RKSTUDIO_CMD_SET_PARAM,
+    RC_PB_RKSTUDIO_CMD_GET_PARAM,
+    RC_PB_RKSTUDIO_CMD_BUTT
+};
+
 enum rc_pb_wake_up_cmd {
     RC_PB_WAKE_UP_CMD_START_PLAYER = 1,
     RC_PB_WAKE_UP_CMD_PAUSE_PLARER,
@@ -137,6 +144,8 @@ struct rc_pb_param_amix {
 };
 
 struct rc_pb_param_rkstudio {
+    enum rc_pb_rkstudio_cmd cmd;
+    rc_u32    id;
     rc_u32    addr;
     rc_float *data;
     rc_u32    cnt;
@@ -185,6 +194,8 @@ struct rc_pb_player_attr {
     rc_u32      sample_rate;
     rc_u32      channels;
     rc_u32      bit_width;
+    rc_u32      valid_bit_width;
+    rc_u32      valid_start_bit;
     rc_u32      pool_size;
     rc_u32      pool_cnt;
     struct rc_pb_param_level_detect detect;
