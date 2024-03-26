@@ -283,6 +283,7 @@ pbox_main_exit:
 
 static uint64_t msTimePassed = 0;
 static bool isPoweron = false;
+static bool isTunningOn = false;
 void maintask_timer_fd_process(int timer_fd) {
     uint64_t expirations;
 
@@ -330,5 +331,10 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_music_mics_init(DISP_All);
         #endif
         pbox_app_music_init();
+    }
+
+    if(isTunningOn == false && (0 == msTimePassed%5000)) {
+        pbox_app_tunning_init(DISP_All);
+        isTunningOn = true;
     }
 }

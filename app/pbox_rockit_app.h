@@ -59,6 +59,8 @@ void pbox_app_rockit_set_mic_data(uint8_t index, mic_set_kind_t kind, mic_state_
 
 void pbox_app_rockit_get_recoder_volume(void);
 
+void pbox_app_rockit_init_tunning(void);
+
 void pbox_app_rockit_set_uac_state(uac_role_t role, bool start);
 
 void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq);

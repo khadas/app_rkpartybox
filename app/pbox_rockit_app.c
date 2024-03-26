@@ -304,6 +304,15 @@ void pbox_app_rockit_get_recoder_volume(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+void pbox_app_rockit_init_tunning(void) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_TUNNING_TOOL,
+    };
+
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
 void pbox_app_rockit_set_uac_state(uac_role_t role, bool start) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,

@@ -712,6 +712,10 @@ void pbox_app_music_set_placement(placement_t place, display_t policy) {
     pbox_multi_displayMusicPlaceMode(place, policy);
 }
 
+void pbox_app_tunning_init(display_t policy) {
+    pbox_app_rockit_init_tunning();
+}
+
 void pbox_app_music_volume_up(display_t policy) {
     float *volume = &pboxUIdata->mainVolumeLevel;
     *volume += (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;

@@ -102,6 +102,7 @@ void pbox_app_music_album_loop(uint32_t mode, display_t policy);
 void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t policy);
 char* pbox_app_usb_get_title(uint32_t trackId);
 void pbox_app_music_mics_init(display_t policy);
+void pbox_app_tunning_init(display_t policy);
 
 void pbox_app_music_set_volume(float volume, display_t policy);
 void pbox_app_music_set_music_volume(float volume, display_t policy);
