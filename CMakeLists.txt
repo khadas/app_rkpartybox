@@ -53,6 +53,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(UDEV libudev REQUIRED)
 include_directories(${UDEV_INCLUDE_DIRS})
 
+link_directories(${PROJECT_SOURCE_DIR}/lib64/bt)
 add_executable(${PROJECT_NAME} ${SRCS})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -D_GNU_SOURCE)
@@ -94,6 +95,7 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkstudio.so
        ./lib64/libdrm.so.2
        ./lib64/libgmp.so.10
+       ./lib64/bt/librkwifibt.so
        )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
