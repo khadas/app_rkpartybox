@@ -39,7 +39,7 @@ if [ ! -e /oem/Mono.pcm ]; then
 	ln -s /etc/pbox/Mono.pcm /oem/Mono.pcm
 fi
 
-export rt_cfg_path_3a=/oem/config_3a.json
+export rt_cfg_path_3a=/oem/config_howling.json
 export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
 export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
 export rt_cfg_path_rkstudio=/oem/rkstudio.bin
