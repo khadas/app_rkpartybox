@@ -17,8 +17,8 @@ fi
 if [ ! -e /oem/wozai-48k2ch.pcm ]; then
 	ln -s /etc/pbox/wozai-48k2ch.pcm /oem/wozai-48k2ch.pcm
 fi
-if [ ! -e /oem/config_3a.json ]; then
-	ln -s /etc/pbox/config_3a.json /oem/config_3a.json
+if [ ! -e /oem/config_howling.json ]; then
+	ln -s /etc/pbox/config_howling.json /oem/config_howling.json
 fi
 if [ ! -e /oem/Split_off.pcm ]; then
 	ln -s /etc/pbox/Split_off.pcm /oem/Split_off.pcm

@@ -5,8 +5,8 @@ export LD_LIBRARY_PATH=/data/
 echo -1 > /proc/sys/kernel/sched_rt_runtime_us
 #echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
 
-if [ ! -e /oem/config_3a.json ]; then
-	ln -s /etc/pbox/config_3a.json /oem/config_3a.json
+if [ ! -e /oem/config_howling.json ]; then
+	ln -s /etc/pbox/config_howling.json /oem/config_howling.json
 fi
 if [ ! -e /oem/eq_drc_player.bin ]; then
 	ln -s /etc/pbox/eq_drc_player.bin /oem/eq_drc_player.bin
