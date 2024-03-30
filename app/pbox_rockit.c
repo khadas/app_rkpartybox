@@ -622,6 +622,8 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
     playerAttr.url = track_uri;
     playerAttr.headers = headers;
     playerAttr.detect = detect;
+    playerAttr.valid_bit_width = 16;
+    playerAttr.valid_start_bit = 0;
 
     ALOGD("%s :%s, ctx=%p\n", __func__, track_uri, partyboxCtx);
     pbox_rockit_music_stop(SRC_USB);
@@ -667,6 +669,8 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     playerAttr.bit_width = 16;
     playerAttr.card_name = cardName;
     playerAttr.detect = detect;
+    playerAttr.valid_bit_width = 16;
+    playerAttr.valid_start_bit = 0;
 
     assert(partyboxCtx);
     assert(rc_pb_player_start);
