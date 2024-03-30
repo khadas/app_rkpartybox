@@ -1135,10 +1135,11 @@ static void pbox_rockit_music_mic_volume_adjust(uint8_t index, float micLevel) {
 }
 
 static void pbox_rockit_music_mic_mute(uint8_t index, bool mute) {
+    ALOGW("%s: ctx:%p func:%p index: %d mute:%s\n", __func__, partyboxCtx, rc_pb_recorder_mute, index, mute?"on":"off");
     assert(partyboxCtx);
     assert(rc_pb_recorder_mute);
     rc_pb_recorder_mute(partyboxCtx, index, mute);
-    ALOGD("%s: %s\n", __func__, mute?"on":"off");
+    ALOGW("%s: %s\n", __func__, mute?"on":"off");
 }
 
 static void pbox_rockit_set_mic_treble(uint8_t index, float treble) {
@@ -1337,57 +1338,61 @@ static void pbox_rockit_uac_set_ppm(pbox_rockit_msg_t *msg) {
     rc_pb_player_set_param(partyboxCtx, dest, &param);
 }
 
-static int send_core_ipc(uint32_t dst_id, core_ipc_msg_id msg_id, void *data, uint32_t len) {
+static int send_core_ipc(uint32_t dst_id, uint32_t msg_id, void *data, uint32_t len) {
+    int ret = -1;
     struct rc_pb_param param;
-    ALOGD("%s,%d, msg id:%d data:%p\n", __func__, __LINE__, msg_id, data);
+    typedef enum STUDIO_CMD_ {
+        CMD_INIT_IMG = 0,
+        CMD_SET_PARAM,
+        CMD_GET_PARAM,
+        CMD_LIB,
+    } STUDIO_CMD;
+    struct rkst_param {
+        uint32_t cmd;
+        void*    data;
+        uint32_t data_size;
+        uint32_t addr;
+        uint32_t read_type;
+    };
+
+    ALOGW("%s,%d, msg id:%d data:%p\n", __func__, __LINE__, msg_id, data);
     if(data == NULL)
         return -1;
 
+    struct rkst_param *tunning = (struct rkst_param*)data;
+    ALOGW("%s, dst_id %d,%d,cmd=%d,data=%p,data_size=%d,addr=%d, read_type=%d)\n",__func__, 
+            dst_id, msg_id, tunning->cmd, tunning->data, tunning->data_size, tunning->addr, tunning->read_type);
+
     switch (msg_id) {
-        case CORE_IPC_MSG_ID_AUDIO_PARAM_INIT: {
+        case CMD_INIT_IMG: {
             param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
             param.rkstudio.cmd = RC_PB_RKSTUDIO_CMD_DOWNLOAD_GRAPH;
             param.rkstudio.id = dst_id;
-            param.rkstudio.addr = 0;
-            param.rkstudio.cnt = len/sizeof(rc_float);
-            param.rkstudio.data = (rc_float *)data;
+            param.rkstudio.addr = tunning->addr;
+            param.rkstudio.cnt = (tunning->data_size)/sizeof(rc_float);
+            param.rkstudio.data = (rc_float *)(tunning->data);
             ALOGW("%s,%d, dst_id:%d msgId:%d addr:%08x, data size:%d\n", 
-                    __func__, __LINE__, dst_id, msg_id, 0, len);
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+                    __func__, __LINE__, dst_id, msg_id, tunning->addr, tunning->data_size);
+            ret = rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
         } break;
-        case CORE_IPC_MSG_ID_AUDIO_PARAM_SET: {
-            struct _rkst_param {
-                uint32_t addr;
-                void *pdata;
-                uint32_t data_size;
-            } *rkst_param = data;
+        case CMD_SET_PARAM: {
             param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
             param.rkstudio.cmd = RC_PB_RKSTUDIO_CMD_SET_PARAM;
             param.rkstudio.id = dst_id;
-            param.rkstudio.addr = rkst_param->addr;
-            param.rkstudio.cnt = (rkst_param->data_size)/sizeof(rc_float);
-            param.rkstudio.data = (rc_float *)(rkst_param->pdata);
+            param.rkstudio.addr = tunning->addr;
+            param.rkstudio.cnt = (tunning->data_size)/sizeof(rc_float);
+            param.rkstudio.data = (rc_float *)(tunning->data);
             ALOGW("%s,%d, dst_id:%d msgId:%d addr:%08x, data size:%d\n", 
-                    __func__, __LINE__, dst_id, msg_id, rkst_param->addr, rkst_param->data_size);
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+                    __func__, __LINE__, dst_id, msg_id, tunning->addr, tunning->data_size);
+            ret = rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
         } break;
 
-        case CORE_IPC_MSG_ID_AUDIO_PARAM_GET: {
+        case CMD_GET_PARAM: {
             ALOGW("%s,%d, msg id:%d data:%p\n", __func__, __LINE__, msg_id, data);
-            /*struct rc_pb_param param;
-            param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
-            param.rkstudio.cmd = RC_PB_RKSTUDIO_CMD_GET_PARAM;
-            param.rkstudio.id = dst_id;
-            param.rkstudio.addr = rkst_param->addr;
-            param.rkstudio.cnt = len/sizeof(rc_float);
-            param.rkstudio.data = (rc_float *)(rkst_param->pdata);
-            rc_pb_player_get_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
-            rkst_param->addr = param.rkstudio.addr;
-            rkst_param->pdata = param.rkstudio.data;
-            rkst_param->data_size = param.rkstudio.cnt*sizeof(rc_float);*/
         } break;
         default: return -1;
     }
+
     return 0;
 }
 
@@ -1412,7 +1417,8 @@ static int pbox_tunning_init(void) {
             ALOGE("%s failed to open pbox_deinit_tuning, err=%s\n", __func__, dlerror());
             return -1;
     }
-    //ret = pbox_init_tuning(send_core_ipc);
+    ret = pbox_init_tuning(send_core_ipc);
+
     ALOGW("%s init ret=%d, %s\n", __func__, ret, ret==0?"OK":"ERROR");
 
     return ret;
@@ -1611,7 +1617,7 @@ static void *pbox_rockit_server(void *arg)
             ALOGW("%s end: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
     }
 
-    //pbox_deinit_tuning();
+    pbox_deinit_tuning();
     pbox_rockit_music_destroy();
 }
 
