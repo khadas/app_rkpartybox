@@ -804,6 +804,7 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
     struct rc_pb_param param;
     enum rc_pb_play_src dest = covert2rockitSource(source);
     static bool powered_seperate = false;
+    static bool oldstate = false;
     prompt_audio_t dest_audio;
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
@@ -832,10 +833,11 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
     ret = rc_pb_player_set_param(partyboxCtx, dest, &param);
     ALOGD("%s rc_pb_player_set_param res:%d\n" ,__func__, ret);
 
-    if (powered_seperate) {
+    if (powered_seperate && oldstate!= enable) {
         dest_audio = enable? PROMPT_FADE_ON:PROMPT_FADE_OFF;
         audio_prompt_send(dest_audio);
     }
+    oldstate = enable;
     powered_seperate = true;
 }
 
@@ -1367,7 +1369,7 @@ static int send_core_ipc(uint32_t dst_id, uint32_t msg_id, void *data, uint32_t 
     ALOGW("%s, dst_id %d,%d,cmd=%d,data=%p,data_size=%d,addr=%d, read_type=%d)\n",__func__, 
             dst_id, msg_id, tunning->cmd, tunning->data, tunning->data_size, tunning->addr, tunning->read_type);
 
-    switch (msg_id) {
+    switch (tunning->cmd) {
         case CMD_INIT_IMG: {
             param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
             param.rkstudio.cmd = RC_PB_RKSTUDIO_CMD_DOWNLOAD_GRAPH;
