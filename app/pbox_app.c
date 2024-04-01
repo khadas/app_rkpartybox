@@ -717,27 +717,27 @@ void pbox_app_tunning_init(display_t policy) {
 }
 
 void pbox_app_music_volume_up(display_t policy) {
-    float *volume = &pboxUIdata->mainVolumeLevel;
-    *volume += (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
-    *volume = *volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:*volume;
-    *volume = *volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:*volume;
+    float volume = pboxUIdata->mainVolumeLevel;
+    volume += (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
+    volume = volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volume;
+    volume = volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volume;
 
-    ALOGD("%s volume up:%f\n", __func__, *volume);
-    if(pboxUIdata->mainVolumeLevel != *volume)
-    pbox_app_music_set_volume(*volume, policy);
+    ALOGD("%s volume up:%f, mainVol:%f\n", __func__, volume, pboxUIdata->mainVolumeLevel);
+    if(pboxUIdata->mainVolumeLevel != volume)
+    pbox_app_music_set_volume(volume, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
 }
 
 void pbox_app_music_volume_down(display_t policy) {
-    float *volume = &pboxUIdata->mainVolumeLevel;
-    *volume -= (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
-    *volume = *volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:*volume;
-    *volume = *volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:*volume;
+    float volume = pboxUIdata->mainVolumeLevel;
+    volume -= (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
+    volume = volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volume;
+    volume = volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volume;
 
-    ALOGD("%s volume down:%f\n", __func__, *volume);
-    pbox_app_music_set_volume(*volume, policy);
+    ALOGD("%s volume down:%f\n", __func__, volume);
+    pbox_app_music_set_volume(volume, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);

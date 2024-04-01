@@ -141,7 +141,7 @@ int pbox_app_ui_load(void) {
         pboxUIdata->micData[i].micMux = rk_param_get_int(param_name, MIC_IN);
 
         sprintf(param_name, "mic%d:micVolume", i);
-        pboxUIdata->micData[i].micVolume = rk_param_get_float(param_name, 100);
+        pboxUIdata->micData[i].micVolume = rk_param_get_float(param_name, 0);
 
         sprintf(param_name, "mic%d:micTreble", i);
         pboxUIdata->micData[i].micTreble = rk_param_get_float(param_name, 0);
