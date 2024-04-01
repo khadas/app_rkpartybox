@@ -86,7 +86,6 @@ set(ROCKIT_FILE_LIBS
        ./lib64/libavutil.so.56
        ./lib64/librkaudio_effect_eqdrc.so
        ./lib64/libavcodec.so.58
-       ./lib64/librkaudio_effect_reverb.so
        ./lib64/libswresample.so.3
        ./lib64/libavformat.so.58
        ./lib64/librkaudio_common.so
