@@ -22,12 +22,12 @@
 			"shift_freq" : -2.5
 		},
 		"vc" : {
-			"status" : "enable",
+			"status" : "disable",
 			"fs_ratio": 0.75,
 			"freq_apply" : 0
 		},
 		"af" : {
-			"status" : "enable",
+			"status" : "disable",
 			"filter_len" : 5,
 			"delay_len" : 15,
 			"af_ref_threshold" : 10,

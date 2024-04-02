@@ -92,7 +92,6 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkaudio_effect_vocal.so
        ./lib64/librkstudio_tuning.so
        ./lib64/librkstudio.so
-       ./lib64/libdrm.so.2
        ./lib64/libgmp.so.10
        ./lib64/bt/librkwifibt.so
        )
