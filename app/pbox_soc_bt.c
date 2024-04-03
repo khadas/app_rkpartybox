@@ -32,6 +32,15 @@ typedef enum {
     DSP_HUMAN_VOICE_FADEOUT = 0x0A,
     DSP_SWITCH_SOURCE = 0x0B,
     DSP_MUSIC_VOLUME = 0x10,
+
+    DSP_MIC_GT_VOLUME = 0x20,
+    DSP_MIC_GT_TREBLE = 0x21,
+    DSP_MIC_GT_BASS = 0x22,
+    DSP_MIC_GT_REVERB = 0x23,
+    DSP_MIC_GT_MUTE = 0x24,
+    DSP_MIC_GT_MUX = 0x25,
+    DSP_MIC_GT_3A = 0x26,
+    DSP_MIC_GT_ECHO_MODE = 0x27,
 } soc_dsp_cmd_t;
 
 enum State {
@@ -128,6 +137,88 @@ void socbt_pbox_notify_adjust_inout_door(uint32_t opcode, char *buff, int32_t le
     msg.outdoor = buff[0];
     ALOGD("%s :%d\n", __func__, msg.outdoor);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void socbt_pbox_notify_mic_data(uint32_t opcode, char *buff, int32_t len, mic_set_kind_t kind) {
+    uint8_t index;
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_MIC_DATA_EVT,
+    };
+    assert(len > 1);
+    msg.op = opcode;
+    msg.micdata.kind = kind;
+    msg.micdata.index = index = buff[0];
+    switch (kind) {
+        case MIC_SET_DEST_MUTE:
+            msg.micdata.micState.micmute = buff[1];
+            ALOGD("%s : kind:%d value:%d\n", __func__, kind, msg.micdata.micState.micmute);
+            break;
+        case MIC_SET_DEST_MUX:
+            msg.micdata.micState.micMux = buff[1];
+            ALOGD("%s : kind:%d value:%d\n", __func__, kind, msg.micdata.micState.micMux);
+            break;
+        case MIC_SET_DEST_ECHO_3A:
+            msg.micdata.micState.echo3a = buff[1];
+            ALOGD("%s : kind:%d value:%d\n", __func__, kind, msg.micdata.micState.echo3a);
+            break;
+        case MIC_SET_DEST_REVERB_MODE:
+            msg.micdata.micState.reverbMode = buff[1];
+            ALOGD("%s : kind:%d value:%d\n", __func__, kind, msg.micdata.micState.reverbMode);
+            break;
+        case MIC_SET_DEST_VOLUME:
+            msg.micdata.micState.micVolume = ORG2TARGET(buff[1], float, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME, 0, 32);
+            ALOGD("%s : kind:%d value:%f\n", __func__, kind, msg.micdata.micState.micVolume);
+            break;
+        case MIC_SET_DEST_BASS:
+            msg.micdata.micState.micBass = ORG2TARGET(buff[1], float, MIN_BASS_VALUE, MAX_BASS_VALUE, 0, 32);
+            ALOGD("%s : kind:%d value:%f\n", __func__, kind, msg.micdata.micState.micBass);
+            break;
+        case MIC_SET_DEST_TREBLE:
+            msg.micdata.micState.micTreble = ORG2TARGET(buff[1], float, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE, 0, 32);
+            ALOGD("%s : kind:%d value:%f\n", __func__, kind, msg.micdata.micState.micTreble);
+            break;
+        case MIC_SET_DEST_REVERB:
+            msg.micdata.micState.micReverb = ORG2TARGET(buff[1], float, MIN_REVERB_VALUE, MAX_REVERB_VALUE, 0, 32);
+            ALOGD("%s : kind:%d value:%f\n", __func__, kind, msg.micdata.micState.micReverb);
+            break;
+        default:
+            ALOGE("%s: unknown destination kind %d\n", __func__, kind);
+            return;
+    }
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void socbt_pbox_notify_mic_mute(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_MUTE);
+}
+
+void socbt_pbox_notify_mic_mux(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_MUX);
+}
+
+void socbt_pbox_notify_3a_effect(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_ECHO_3A);
+}
+
+void socbt_pbox_notify_echo_mode(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_REVERB_MODE);
+}
+
+void socbt_pbox_notify_mic_reverb(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_BASS);
+}
+
+void socbt_pbox_notify_mic_bass(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_BASS);
+}
+
+void socbt_pbox_notify_mic_treble(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_TREBLE);
+}
+
+void socbt_pbox_notify_mic_volume(uint32_t opcode, char *buff, int32_t len) {
+    socbt_pbox_notify_mic_data(opcode, buff, len, MIC_SET_DEST_VOLUME);
 }
 
 void socbt_pbox_notify_dsp_power_state(uint32_t opcode) {
@@ -287,6 +378,30 @@ void process_data(unsigned char *buff, int len) {
         } break;
         case DSP_MUSIC_VOLUME: {
             socbt_pbox_notify_adjust_music_volume_level(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_VOLUME: {
+            socbt_pbox_notify_mic_volume(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_TREBLE: {
+            socbt_pbox_notify_mic_treble(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_BASS: {
+            socbt_pbox_notify_mic_bass(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_REVERB: {
+            socbt_pbox_notify_mic_reverb(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_MUTE: {
+            socbt_pbox_notify_mic_mute(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_MUX: {
+            socbt_pbox_notify_mic_mux(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_3A: {
+            socbt_pbox_notify_3a_effect(opcode, &buff[4], para_len);
+        } break;
+        case DSP_MIC_GT_ECHO_MODE: {
+            socbt_pbox_notify_echo_mode(opcode, &buff[4], para_len);
         } break;
     }
 }

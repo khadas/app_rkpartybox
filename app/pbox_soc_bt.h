@@ -33,6 +33,7 @@ typedef enum {
     PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,
     PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT,
     PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,
+    PBOX_SOCBT_DSP_MIC_DATA_EVT,
 } pbox_socbt_opcode_t;
 
 typedef struct {
@@ -50,6 +51,7 @@ typedef struct {
         inout_door_t outdoor;
         stereo_mode_t stereo;
         bool fadeout;
+        mic_data_t micdata;
         struct socbt_input_source {
             play_status_t status;
             input_source_t input;

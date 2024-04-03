@@ -916,6 +916,46 @@ void pbox_app_btsoc_get_human_voice_fadeout(display_t policy) {
     //pbox_app_btsoc_reply_human_voice_fadeout(pboxUIdata->fadeout);
 }
 
+void pbox_app_btsoc_set_mic_data(mic_data_t data, display_t policy) {
+    uint8_t index = data.index;
+    mic_set_kind_t kind = data.kind;
+    switch (data.kind) {
+        case MIC_SET_DEST_ECHO_3A: {
+            if(pboxUIdata->micData[index].echo3a != data.micState.echo3a)
+                pbox_app_music_set_echo_3a(index, data.micState.echo3a, policy);
+        } break;
+        case MIC_SET_DEST_MUTE: {
+            if(pboxUIdata->micData[index].micmute != data.micState.micmute)
+                pbox_app_music_set_mic_mute(index, data.micState.micmute, policy);
+        } break;
+        case MIC_SET_DEST_MUX: {
+            if(pboxUIdata->micData[index].micMux != data.micState.micMux)
+                pbox_app_music_set_mic_mux(index, data.micState.micMux, policy);
+        } break;
+        case MIC_SET_DEST_REVERB_MODE: {
+            if(pboxUIdata->micData[index].reverbMode != data.micState.reverbMode)
+                pbox_app_music_set_recoder_revert(index, data.micState.reverbMode, policy);
+        } break;
+        case MIC_SET_DEST_VOLUME: {
+            if(pboxUIdata->micData[index].micVolume != data.micState.micVolume)
+                pbox_app_music_set_mic_volume(index, data.micState.micVolume, policy);
+        } break;
+        case MIC_SET_DEST_TREBLE: {
+            if(pboxUIdata->micData[index].micTreble != data.micState.micTreble)
+                pbox_app_music_set_mic_treble(index, data.micState.micTreble, policy);
+        } break;
+        case MIC_SET_DEST_BASS: {
+            if(pboxUIdata->micData[index].micBass != data.micState.micBass)
+                pbox_app_music_set_mic_bass(index, data.micState.micBass, policy);
+        } break;
+        case MIC_SET_DEST_REVERB: {
+            if(pboxUIdata->micData[index].micReverb != data.micState.micReverb)
+                pbox_app_music_set_mic_reverb(index, data.micState.micReverb, policy);
+        } break;
+        default: break;
+    }
+}
+
 void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy) {
     if(pboxUIdata->vocalSplit != fadeout)
     pbox_app_music_original_singer_open(fadeout? false: true, policy);

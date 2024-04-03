@@ -153,6 +153,7 @@ void pbox_app_btsoc_get_stereo_mode(display_t policy);
 void pbox_app_btsoc_get_human_voice_fadeout(display_t policy);
 void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy);
 void pbox_app_btsoc_set_mic_mux(uint8_t index, mic_mux_t micMux, display_t policy);
+void pbox_app_btsoc_set_mic_data(mic_data_t data, display_t policy);
 void pbox_app_btsoc_get_input_source(display_t policy);
 void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status, display_t policy);
 void pbox_app_btsoc_set_music_volume(float volume, display_t policy);

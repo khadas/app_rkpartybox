@@ -31,6 +31,8 @@ extern "C" {
 #define MIN(A, B) (A < B ? A : B)
 #define PERCENT2TARGET(value, MIN_TARGET, MAX_TARGET) ((MAX_TARGET - MIN_TARGET)*(value)/100 + MIN_TARGET)
 #define TARGET2PERCENT(value, MIN_TARGET, MAX_TARGET) (100 * (value - MIN_TARGET) / (MAX_TARGET - MIN_TARGET))
+#define ORG2TARGET(value, type, MIN_TARGET, MAX_TARGET, MIC_ORG, MAX_ORG) \
+                        ((MAX_TARGET - MIN_TARGET)*((type)(value) - MIC_ORG)/(MAX_ORG - MIC_ORG) + MIN_TARGET)
 
 #define MAX_BASS_VALUE      12
 #define MIN_BASS_VALUE      (-12)
@@ -222,6 +224,12 @@ typedef struct {
     float micBass;
     float micReverb;
 } mic_state_t;
+
+typedef struct {
+    uint8_t         index;
+    mic_set_kind_t  kind;
+    mic_state_t     micState;
+} mic_data_t;
 
 typedef enum {
     INDOOR = 0,

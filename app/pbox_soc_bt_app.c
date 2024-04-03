@@ -193,6 +193,19 @@ void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_btsoc_set_human_voice_fadeout(msg->outdoor?false:true, DISP_All);
 }
 
+void handleMicDataEvent(const pbox_socbt_msg_t *msg) {
+    uint8_t index = msg->micdata.index;
+    mic_set_kind_t kind = msg->micdata.index;
+
+    ALOGD("%s op:%d Mic[%d] kind: %d\n", __func__, msg->op, index, kind);
+    if(msg->op == OP_READ) {
+        //to do
+        return;
+    }
+
+    pbox_app_btsoc_set_mic_data(msg->micdata, DISP_All);
+}
+
 void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s\n", __func__);
     if(msg->op == OP_READ) {
@@ -256,6 +269,7 @@ const socbt_event_handle_t socbtEventTable[] = {
     { PBOX_SOCBT_DSP_MIC1_STATE_EVT,    handleMic1MuxEvent    },
     { PBOX_SOCBT_DSP_MIC2_STATE_EVT,    handleMic2MuxEvent    },
     { PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,   handleInOutDoorEvent    },
+    { PBOX_SOCBT_DSP_MIC_DATA_EVT,     handleMicDataEvent     },
     { PBOX_SOCBT_DSP_POWER_ON_EVT,      handlePowerOnEvent      },
     { PBOX_SOCBT_DSP_STEREO_MODE_EVT,   handleStereoModeEvent   },
     { PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,   handleHumanVoiceFadeoutEvent   },
