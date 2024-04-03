@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
+#include <sys/syscall.h>
 
 #include "rc_partybox.h"
 #include "rc_rkstudio_vendor.h"
@@ -74,6 +75,8 @@ int (*pbox_init_tuning)(core_ipc_callback cb);
 int (*pbox_deinit_tuning)(void);
 //********************rkstudio tunning end**************************
 
+static pid_t rockit_tid = -1;
+static volatile bool is_rkstudio_tuning = false;
 
 static struct rockit_pbx_t {
     rc_pb_ctx *pboxCtx;
@@ -1026,8 +1029,6 @@ static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info
     return 0;
 }
 
-
-
 static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode_t stereo) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
     struct rc_pb_param param;
@@ -1041,6 +1042,11 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
     static rc_float sudioStereo;
     param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
     param.rkstudio.data = (rc_float *)(&sudioStereo);
+
+    if(__atomic_load_n(&is_rkstudio_tuning, __ATOMIC_RELAXED)) {
+        ALOGW("%s sorry, rkstudio_tuning, return...\n", __func__);
+        return;
+    }
     switch (stereo) {
         case MODE_WIDEN: {
             param.rkstudio.addr = MUXES_SWITCH_STEREO_0_IDX_ADDR;
@@ -1105,6 +1111,11 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
     static rc_float sudioPlace;
     param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
     param.rkstudio.data = (rc_float *)(&sudioPlace);
+
+    if(__atomic_load_n(&is_rkstudio_tuning, __ATOMIC_RELAXED)) {
+        ALOGW("%s sorry, rkstudio_tuning, return...\n", __func__);
+        return;
+    }
     switch (place) {
         case PLACE_AUTO:
         case PLACE_HORI: {
@@ -1361,7 +1372,8 @@ static int send_core_ipc(uint32_t dst_id, uint32_t msg_id, void *data, uint32_t 
         uint32_t read_type;
     };
 
-    ALOGW("%s,%d, msg id:%d data:%p\n", __func__, __LINE__, msg_id, data);
+    ALOGW("%s,%d, msg id:%d data:%p rockit_tid =%d, cback_tid =%d\n", \
+            __func__, __LINE__, msg_id, data, rockit_tid, syscall(SYS_gettid));
     if(data == NULL)
         return -1;
 
@@ -1371,6 +1383,7 @@ static int send_core_ipc(uint32_t dst_id, uint32_t msg_id, void *data, uint32_t 
 
     switch (tunning->cmd) {
         case CMD_INIT_IMG: {
+            __atomic_store_n(&is_rkstudio_tuning, true, __ATOMIC_RELAXED);
             param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
             param.rkstudio.cmd = RC_PB_RKSTUDIO_CMD_DOWNLOAD_GRAPH;
             param.rkstudio.id = dst_id;
@@ -1444,6 +1457,7 @@ static void *pbox_rockit_server(void *arg)
     int ret;
     pbox_rockit_msg_t *msg;
     pthread_setname_np(pthread_self(), "party_rockit");
+    rockit_tid = syscall(SYS_gettid);
 
     rk_demo_music_create();
 
@@ -1642,7 +1656,7 @@ int pbox_create_rockitTask(void)
 #endif
 
 void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque) {
-    ALOGD("event: %d, cmd: %d\n", event, cmd);
+    ALOGD("event: %d, cmd: %d rockit_tid = %d, cback_tid=%d\n", event, cmd, rockit_tid, syscall(SYS_gettid));
     switch (event) {
         case RC_PB_EVENT_PLAYBACK_ERROR:
         case RC_PB_EVENT_PLAYBACK_COMPLETE: {
