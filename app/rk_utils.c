@@ -447,6 +447,24 @@ void set_vocal_separate_thread_cpu(void) {
     return 0;
 }
 
+int32_t os_env_get_float(const char *name, float *value, float default_value) {
+    char *ptr = getenv(name);
+
+    if (NULL == ptr) {
+        *value = default_value;
+    } else {
+        char *endptr;
+        errno = 0;
+        *value = strtod(ptr, &endptr);
+        if (errno || (ptr == endptr)) {
+            errno = 0;
+            *value = default_value;
+        }
+    }
+
+    return 0;
+}
+
 int32_t os_env_get_str(const char *name, const char **value, const char *default_value) {
     *value = getenv(name);
 

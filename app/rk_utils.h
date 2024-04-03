@@ -24,6 +24,9 @@ int rk_setRtPrority(pid_t pid, int policy, int priority);
 void rk_schedparam_show(pid_t pid);
 int32_t os_env_get_u32(const char *name, uint32_t *value, uint32_t default_value);
 int32_t os_env_get_str(const char *name, const char **value, const char *default_value);
+int32_t os_env_get_float(const char *name, float *value, float default_value);
+int32_t os_env_set_str(const char *name, char *value);
+int32_t os_env_set_u32(const char *name, uint32_t value);
 
 #define msleep(x) usleep(x * 1000)
 
