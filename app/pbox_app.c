@@ -38,6 +38,7 @@ pbox_data_t pbox_data = {
         .freq = 48000,
     },
     .inputDevice = SRC_USB,
+    .volume_resume_time = -1,
 };
 
 pbox_data_t *const pboxData  = &(pbox_data);
@@ -69,16 +70,22 @@ void pbox_app_show_bt_state(btsink_state_t state, display_t policy) {
     pbox_multi_displaybtState(state, policy);
 }
 
+void pbox_app_resume_volume_later(int32_t msdelay) {
+    pboxData->volume_resume_time = msdelay;
+}
+
 void pbox_app_show_playingStatus(bool play, display_t policy) {
     //nothing to notify rockit
     pbox_multi_displayIsPlaying(play, policy);
 }
 
 void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy) {
+    ALOGD("%s, source:%d, restart:%d\n", __func__, source, restart);
     if(!is_input_source_selected(source, ANY)) {
         return;
     }
 
+    pbox_app_rockit_set_player_volume(source, MIN_MAIN_VOLUME);
     if(restart) {
         pbox_app_rockit_stop_player(source);
     }
@@ -104,7 +111,8 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
 #endif
     }
 
-    pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
+    //pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
+    pbox_app_resume_volume_later(650);
 }
 
 //like BT, uac, or Usb connected with extern MCU, these are passive input source.
@@ -126,11 +134,6 @@ void pbox_app_drive_passive_player(input_source_t source, play_status_t status, 
     }
     pboxUIdata->play_status = status;
     pbox_app_show_playingStatus((status==PLAYING) ? true: false, policy);
-}
-
-void pbox_app_music_stop_bt_player(display_t policy) {
-    pbox_app_rockit_stop_player(SRC_BT);
-    //nothing to do with ui
 }
 
 void pbox_app_bt_pair_enable(bool enable, display_t policy) {
@@ -409,10 +412,9 @@ void pbox_app_music_start(display_t policy) {
 
 void pbox_app_music_resume(display_t policy) {
     //pbox_app_music_stop(policy);
-    //pbox_app_music_stop_bt_player(policy);
     switch (pboxData->inputDevice) {
         case SRC_BT: {
-            if (isBtA2dpConnected()) {
+            if (isBtA2dpConnected()&&(!isBtA2dpStreaming())) {
                 pbox_btsink_playPause(true);
             }
         } break;
@@ -436,6 +438,7 @@ void pbox_app_music_resume(display_t policy) {
 
 void pbox_app_music_stop(display_t policy)
 {
+     ALOGD("%s\n", __func__);
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP) {
         return;
     }
@@ -490,15 +493,17 @@ void pbox_app_music_album_next(bool next, display_t policy)
     switch (pboxData->inputDevice) {
         case SRC_BT: {
             if (isBtA2dpConnected()) {
+                pbox_app_rockit_set_player_volume(SRC_BT, MIN_MAIN_VOLUME);
                 if(next) {
                     pbox_btsink_music_next(true);
                 }
                 else {
                     pbox_btsink_music_next(false);;
                 }
+                //resume the volume in the pistion update...
                 if(pboxUIdata->play_status == PLAYING) {
-                    pbox_app_music_pause(policy);
-                    pbox_app_music_resume(policy);
+                    //pbox_app_music_pause(policy);
+                    //pbox_app_music_resume(policy);
                 }
             }
         } break;

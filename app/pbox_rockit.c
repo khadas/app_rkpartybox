@@ -698,7 +698,7 @@ static void pbox_rockit_music_pause(input_source_t source)
     assert(partyboxCtx);
     assert(rc_pb_player_pause);
 
-    ALOGD("%s\n", __func__);
+    ALOGD("%s, dest:%d\n", __func__, dest);
     rc_pb_player_pause(partyboxCtx, dest);
 }
 

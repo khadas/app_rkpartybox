@@ -51,6 +51,7 @@ typedef struct {
     } uac;
 
     input_source_t inputDevice;
+    int32_t volume_resume_time;//it mustbe 10 times of PBOX_TIMER_INTERVAL
     struct _pbox_ui {
         placement_t placement;
         stereo_mode_t stereo;
@@ -81,7 +82,6 @@ void pbox_app_show_tack_info(char *title, char *artist, display_t policy);
 void pbox_app_show_bt_state(btsink_state_t state, display_t policy);
 void pbox_app_show_playingStatus(bool play, display_t policy);
 void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy);
-void pbox_app_music_stop_bt_player(display_t policy);
 void pbox_app_bt_pair_enable(bool enable, display_t policy);
 void pbox_app_bt_local_update(display_t policy);
 void pbox_app_bt_sink_onoff(bool on, display_t policy);
@@ -103,6 +103,7 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
 char* pbox_app_usb_get_title(uint32_t trackId);
 void pbox_app_music_mics_init(display_t policy);
 void pbox_app_tunning_init(display_t policy);
+void pbox_app_resume_volume_later(int32_t msdelay);
 
 void pbox_app_music_set_volume(float volume, display_t policy);
 void pbox_app_music_set_music_volume(float volume, display_t policy);

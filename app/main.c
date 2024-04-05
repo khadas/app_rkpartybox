@@ -346,4 +346,12 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_tunning_init(DISP_All);
         isTunningOn = true;
     }
+
+    if(pboxData->volume_resume_time > 0) {
+        pboxData->volume_resume_time -= PBOX_TIMER_INTERVAL;
+        if(pboxData->volume_resume_time == 0) {
+            pboxData->volume_resume_time = -1;
+            pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, DISP_All);
+        }
+    }
 }

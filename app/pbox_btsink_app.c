@@ -182,6 +182,13 @@ bool isBtA2dpStreaming(void)
 void update_bt_karaoke_playing_status(bool playing)
 {
     ALOGD("%s :%d\n", __func__, playing);
+    if(playing) {
+        pbox_app_rockit_set_player_volume(pboxData->inputDevice, MIN_MAIN_VOLUME);
+        pbox_app_rockit_resume_player(pboxData->inputDevice);
+        pbox_app_resume_volume_later(350);
+    } else {
+        pbox_app_rockit_pause_player(pboxData->inputDevice);
+    }
     pboxUIdata->play_status = playing ? PLAYING:_PAUSE;
     pbox_app_show_playingStatus(playing, DISP_All);
 }
