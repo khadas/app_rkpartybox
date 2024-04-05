@@ -3,7 +3,7 @@
 #include "pbox_model.h"
 
 #ifdef ENABLE_EXT_BT_MCU
-#include "board_B2317.h"
+#include "board_audio_vendor.h"
 #else
 #include "board_audio_evb.h"
 #endif

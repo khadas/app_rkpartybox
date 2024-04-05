@@ -209,6 +209,7 @@ struct rc_pb_recorder_attr {
     rc_u32  chn_layout;
     rc_u32  ref_layout;
     rc_u32  rec_layout;
+    rc_u32  pool_cnt;  /* RW; 0 means no need get frame, can reduce cpu usage */
     struct rc_pb_param_level_detect detect;
     enum rc_pb_howling_ref_mode ref_mode;
 };

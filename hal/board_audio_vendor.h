@@ -1,5 +1,5 @@
-#ifndef _PTBOX_HARDWARE_BOARD_B2317_H_
-#define _PTBOX_HARDWARE_BOARD_B2317_H_
+#ifndef _PTBOX_HARDWARE_BOARD_AUDIO_VENDOR_H_
+#define _PTBOX_HARDWARE_BOARD_AUDIO_VENDOR_H_
 #ifdef __cplusplus
 extern "C" {
 #endif

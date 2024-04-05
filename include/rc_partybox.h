@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Rockchip Electronics Co. LTD
+ * Copyright 2024 Rockchip Electronics Co. LTD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,9 @@ rc_s32 rc_pb_recorder_set_param(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *p
 rc_s32 rc_pb_recorder_get_param(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 rc_s32 rc_pb_recorder_get_energy(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_energy *energy);
 rc_s32 rc_pb_recorder_release_energy(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_energy *energy);
+rc_s32 rc_pb_recorder_dequeue_frame(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms);
+rc_s32 rc_pb_recorder_queue_frame(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms);
+
 #endif
 
 #ifdef __cplusplus
