@@ -1,6 +1,7 @@
 #! /bin/sh
 
-export LD_LIBRARY_PATH=/data/
+export LD_LIBRARY_PATH=/data/:$LD_LIBRARY_PATH
+export PATH=/data:$PATH
 
 echo -1 > /proc/sys/kernel/sched_rt_runtime_us
 #echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor

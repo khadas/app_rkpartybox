@@ -224,6 +224,8 @@ void _lv_demo_music_list_btn_check(uint32_t track_id, bool state)
     printf("%s, track_id:%d\n", __func__, track_id);
     for(id = 0; id < track_num; id++) {
         lv_obj_t * btn = lv_obj_get_child(list, id);
+        if(btn == NULL)
+            continue;
         if (id == track_id)
             lv_obj_add_state(btn, LV_STATE_CHECKED);
         else

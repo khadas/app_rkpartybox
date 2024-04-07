@@ -337,9 +337,12 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
 #endif
 #if ENABLE_UAC
         case SRC_UAC: {
-            pbox_multi_displayUacState(UAC_ROLE_SPEAKER, false, policy);
+            pboxUIdata->play_status = pboxUacdata->state;
+            pbox_app_show_playingStatus(pboxUacdata->state, policy);
+            pbox_multi_displayUacState(UAC_ROLE_SPEAKER, pboxUacdata->state, policy);
             pbox_app_show_tack_info(" ", " ",  policy);
-            pbox_app_uac_restart();
+            //pbox_app_uac_restart();
+            pbox_app_restart_passive_player(SRC_UAC, false, policy);
         } break;
 #endif
     }
@@ -402,7 +405,7 @@ void pbox_app_music_start(display_t policy) {
 #if ENABLE_UAC
         case SRC_UAC: {
             pbox_multi_displayTrackInfo("", NULL, policy);
-            //pbox_app_rockit_stop_player(SRC_UAC);
+            pbox_app_restart_passive_player(SRC_UAC, true, policy);
         } break;
         default:
 #endif
@@ -784,6 +787,7 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
             return;
         }
 
+        pboxUIdata->play_status = start;
         pbox_app_drive_passive_player(SRC_UAC, start? PLAYING:_STOP, policy);
         pbox_multi_displayUacState(role, start, policy);
     }

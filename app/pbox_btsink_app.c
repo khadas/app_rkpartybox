@@ -198,7 +198,6 @@ void update_music_track_info(char *title, char *artist) {
     pbox_app_show_tack_info(title, artist, DISP_All);
 }
 
-
 void update_music_positions(uint32_t current, uint32_t total) {
     static uint32_t  prev_total = 0;
     ALOGD("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);

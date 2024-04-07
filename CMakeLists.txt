@@ -81,6 +81,7 @@ else()
 	install(FILES ./bins/rkstudio_evb_2in2out.bin DESTINATION /etc/pbox RENAME "rkstudio.bin")
 	install(FILES ./bins/config_howling_evb.json DESTINATION /etc/pbox RENAME "config_howling.json")
 	install(PROGRAMS bins/partybox_app_evb.sh DESTINATION bin RENAME "partybox_app.sh")
+	install(FILES ./bins/.usb_config DESTINATION /etc/init.d)
 endif()
 
 set(ROCKIT_FILE_LIBS

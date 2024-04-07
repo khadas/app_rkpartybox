@@ -23,6 +23,31 @@
 #include "pbox_usb.h"
 #include "rk_utils.h"
 
+bool isUacEnabled(void) {
+    const char *filename = "/oem/uac_config";
+    const size_t MAX_LENGTH = 100;
+
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        return false;
+    }
+
+    char buffer[MAX_LENGTH + 1];
+    size_t bytesRead = fread(buffer, 1, MAX_LENGTH, file);
+    buffer[bytesRead] = '\0';
+    fclose(file);
+
+    if (bytesRead == 0) {
+        return false;
+    }
+
+    if (strncasecmp(buffer, "enable", strlen("enable")) == 0) {
+        return true;
+    }
+
+    return false;
+}
+
 void uacPboxRoleChange(uint32_t role, bool start) {
     uac_pbox_notify_role_change(role, start);
 }
@@ -64,46 +89,21 @@ void parse_event(const struct _uevent *event) {
     }
     ALOGI("uac event -------------------------\n");
 #endif
-
+    if(isUacEnabled())
     {
         audio_event(event);
     }
 }
 
-static bool isUacEnabled(const char *filename) {
-    const size_t MAX_LENGTH = 100;
-
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        return false;
-    }
-
-    char buffer[MAX_LENGTH + 1];
-    size_t bytesRead = fread(buffer, 1, MAX_LENGTH, file);
-    buffer[bytesRead] = '\0';
-    fclose(file);
-
-    if (bytesRead == 0) {
-        return false;
-    }
-
-    if (strncasecmp(buffer, "enable", strlen("enable")) == 0) {
-        return true;
-    }
-
-    return false;
-}
-
 void uac_init(void) {
-    const char *filename = "/oem/uac_config";
     uac_control_create(&uac);
 #if ENABLE_UAC
-    if (!isUacEnabled(filename))
-        return;
-    exec_command_system("touch /tmp/.usb_config");
-    exec_command_system("echo \"usb_adb_en\" > /tmp/.usb_config");
-    exec_command_system("echo \"usb_uac1_en\" >> /tmp/.usb_config");
-    exec_command_system("/etc/init.d/S50usbdevice.sh restart");
+    //if (!isUacEnabled())
+    //    return;
+    //exec_command_system("touch /tmp/.usb_config");
+    //exec_command_system("echo \"usb_adb_en\" > /tmp/.usb_config");
+    //exec_command_system("echo \"usb_uac1_en\" >> /tmp/.usb_config");
+    //exec_command_system("/etc/init.d/S50usbdevice.sh restart");
 #endif
 }
 
