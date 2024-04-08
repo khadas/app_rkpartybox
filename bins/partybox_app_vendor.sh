@@ -65,4 +65,7 @@ export ai_buf=1
 export ai_count=8
 export recorder_eqdrc_bypass=0
 export player_eqdrc_bypass=1
+ulimit -c unlimited
+echo "/tmp/core-%p-%e" > /proc/sys/kernel/core_pattern
+
 rkpartybox

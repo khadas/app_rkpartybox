@@ -8,8 +8,6 @@ chmod 777 /oem/partybox_play.sh
 sync
 
 start() {
-	ulimit -c unlimited
-	echo "/tmp/core-%p-%e.$(date "+%Y%m%d_%H%M%S")" > /proc/sys/kernel/core_pattern
 	if [ ! -e /oem/partybox_app.sh ]; then
 		ln -s /usr/bin/partybox_app.sh /oem/partybox_app.sh
 	fi

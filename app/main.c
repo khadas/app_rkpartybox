@@ -183,7 +183,7 @@ void main(int argc, char **argv) {
     pbox_app_ui_load();
 
 #if !ENABLE_USE_SOCBT
-    pbox_init_background();
+    //pbox_init_background();
 #endif
 
     for (i = 0; i< PBOX_SOCKPAIR_NUM; i++) {
