@@ -51,10 +51,6 @@ export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
 export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
 export rt_cfg_path_rkstudio=/oem/rkstudio.bin
 export rt_response_path=/oem/wozai-48k2ch.pcm
-export player_weight=100
-export rt_level_det_up=400
-export rt_level_det_hold=400
-export rt_level_det_down=400
 export mic_gain_0=5
 export mic_gain_1=5
 export player_gain_0=0
@@ -62,12 +58,14 @@ export player_gain_1=-30
 export player_gain_2=-30
 export player_gain_3=0
 export ai_period=128
-export ao_period=128
-export play_start_threshold=1
+export ai_count=2
 export ai_buf=1
-export recorder_eqdrc_bypass=0
+export ao_period=128
+export ao_count=2
+export play_start_threshold=1
+export recorder_eqdrc_bypass=1
 export player_eqdrc_bypass=1
+
 ulimit -c unlimited
 echo "/tmp/core-%p-%e" > /proc/sys/kernel/core_pattern
-
 rkpartybox

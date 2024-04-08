@@ -201,6 +201,13 @@ struct rc_pb_player_attr {
     struct rc_pb_param_level_detect detect;
 };
 
+struct rc_pb_recorder_gt_attr {
+    char   *card_name;
+    rc_u32  sample_rate;
+    rc_u32  channels;
+    rc_u32  bit_width;
+};
+
 struct rc_pb_recorder_attr {
     char   *card_name;
     rc_u32  sample_rate;
@@ -212,6 +219,7 @@ struct rc_pb_recorder_attr {
     rc_u32  pool_cnt;  /* RW; 0 means no need get frame, can reduce cpu usage */
     struct rc_pb_param_level_detect detect;
     enum rc_pb_howling_ref_mode ref_mode;
+    struct rc_pb_recorder_gt_attr *guitar;
 };
 
 typedef void (*notifyfun_t)(enum rc_pb_event event, rc_s32 cmd, void *opaque);

@@ -2,7 +2,7 @@
 	"howling_configs": {
 		"drop_ref_chan" : 0,
 		"notch" : {
-			"status" : "enable",
+			"status" : "disable",
 			"div_num" : 3,
 			"freq_div" : [100, 800, 4900, 12000],
 			"power_threshold" : [1e8, 5e7, 2e4],
@@ -28,20 +28,41 @@
 			"freq_apply" : 0
 		},
 		"af" : {
-			"status" : "disable",
-			"filter_len" : 5,
+			"status" : "enable",
+			"filter_len" : 4,
 			"delay_len" : 15,
 			"af_ref_threshold" : 10,
 			"af_mic_threshold" : 10,
-			"jump_len" : 3,
-			"start_freq" : 1000,
+			"jump_len" : 0,
+			"start_freq" : 0,
+			"end_freq" : 1000,
 			"auto_adapted" :0,
 			"dual_filter" : 0
 		},
 		"pf" : {
 			"status" : "disable",
-			"fast_filter_len" : 2,
-			"delay_len" : 15
+			"fast_filter_len" : 3,
+			"delay_len" : 1,
+			"start_freq" : 0,
+			"end_freq" : 300,
+			"alpha" : 0.995
+		},
+		"aes" : {
+			"status" : "enable",
+			"Beta_Up": 0.001,
+			"Beta_Down": 0.002,
+			"Beta_Up_Low": 0.001,
+			"Beta_Down_Low": 0.002,
+			"low_freq": 1000,
+			"high_freq": 3750,
+			"start_freq": 0,
+			"end_freq": 400,
+			"THD_Flag": 0,
+			"HARD_Flag": 0,
+			"LimitRatio" : [
+				[1.0, 0.5, 0.5],
+				[1.0, 0.8, 0.6]
+			]
 		},
 		"hpf" : {
 			"status": "enable",
