@@ -307,9 +307,7 @@ static lv_obj_t * remove_list_btn(lv_obj_t * parent, uint32_t track_id)
     if(btn != NULL)
        lv_obj_remove_style_all(btn);
     lv_obj_t *child = NULL;
-    int32_t child_id = 0;
-    while ((child = lv_obj_get_child(parent, child_id)) != NULL) {
-        child_id = lv_obj_get_child_id(child);
+    while ((child = lv_obj_get_child(parent, child)) != NULL) {
         lv_obj_remove_style_all(child);
         lv_obj_del(child);
     }
