@@ -39,7 +39,8 @@ struct dot_key
      * if pre_alexa_mode defined as ALEXA_INVALID_MODE, means this value is not used
      */
     int (*key_process)(void);
-    struct timeval time;
+    struct timeval ptime;
+    struct timeval utime;
 };
 
 void maintask_keyscan_fd_process(int fd);

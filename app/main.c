@@ -222,7 +222,6 @@ void main(int argc, char **argv) {
     pbox_create_KeyadcSaraTask();
 #else
     pbox_create_KeyScanTask();
-    pbox_create_KeyProcessTask();
 #endif
     pbox_create_usb_task();
     #if ENABLE_USE_SOCBT

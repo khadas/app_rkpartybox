@@ -8,8 +8,6 @@
 #include "pbox_app.h"
 #include "pbox_common.h"
 #if ENABLE_SARAADC == 0
-pthread_mutex_t key_mutex;
-pbox_keyevent_msg_t key_event[MAX_KEY_BUFFERED];
 void keyscan_data_recv();
 
 static int pbox_app_key_set_playpause();
@@ -66,6 +64,26 @@ struct dot_key support_keys [] =
 
 const size_t support_keys_size = sizeof(support_keys) / sizeof(struct dot_key);
 
+void maintask_keyevent_data_recv(pbox_keyevent_msg_t *msg)
+{
+    int j;
+
+    for(j = 0; j < support_keys_size; j++) {
+        if(msg->key_code == support_keys[j].key_code && msg->key_code_b == support_keys[j].key_code_b
+        && msg->is_long_press == support_keys[j].is_long_press && msg->is_key_valid) {
+            if(support_keys[j].key_process){
+                support_keys[j].key_process();
+                break;
+            } else {
+                ALOGI("key_process NULL \n");
+            }
+            if(j == support_keys_size){
+                ALOGD("Unhandled key values\n");
+            }
+        }
+    }
+}
+
 void maintask_keyscan_fd_process(int fd) {
     char buff[sizeof(pbox_keyevent_msg_t)] = {0};
     int ret = recv(fd, buff, sizeof(buff), 0);
@@ -75,30 +93,13 @@ void maintask_keyscan_fd_process(int fd) {
         return;
     }
     pbox_keyevent_msg_t *msg = (pbox_keyevent_msg_t *)buff;
-    ALOGI("%s sock recv: key code: %d, press ? %d\n", __func__, msg->key_code, msg->is_key_valid);
+    ALOGI("%s sock recv: key code: %d, valid ? %d\n", __func__, msg->key_code, msg->is_key_valid);
 
-    pthread_mutex_lock(&key_mutex);
-    if (msg->is_key_valid) {
-        for(i = 0; i < MAX_KEY_BUFFERED; i++) {
-            if (key_event[i].key_code == 0) {
-                key_event[i].key_code = msg->key_code;
-                key_event[i].key_code_b = 0;
-                key_event[i].is_long_press = msg->is_long_press;
-                key_event[i].is_key_valid = msg->is_key_valid;
-                break;
-            }
-        }
-    }
-
-    if (i == MAX_KEY_BUFFERED -1)
-        ALOGD("Can't find valid buffer, you should increase the value of MAX_KEY_BUFFERED\n");
-    pthread_mutex_unlock(&key_mutex);
-    //if (msg->is_key_valid)
-        //init_time(0, keyscan_data_recv);
+    maintask_keyevent_data_recv(msg);
     return;
 }
 
-int pbox_app_key_set_playpause()
+int pbox_app_key_set_playpause(void)
 {
     ALOGD("pbox_app_key_set_playpause =====!\n");
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP || pboxUIdata->play_status == _PAUSE)
@@ -108,21 +109,21 @@ int pbox_app_key_set_playpause()
     return 1;
 }
 
-int pbox_app_key_set_volume_up()
+int pbox_app_key_set_volume_up(void)
 {
     ALOGD("---pbox_app_key_set_volume_up =====!\n");
     pbox_app_music_volume_up(DISP_All|DISP_FS);
     return 1;
 }
 
-int pbox_app_key_set_volume_down()
+int pbox_app_key_set_volume_down(void)
 {
     ALOGD("---pbox_app_key_set_volume_down =====!\n");
     pbox_app_music_volume_down(DISP_All|DISP_FS);
     return 1;
 }
 
-int pbox_app_key_set_mic()
+int pbox_app_key_set_mic(void)
 {
     ALOGD("pbox_app_key_set_mic =====!\n");
     if (pboxUIdata->micData[0].micmute)
@@ -132,7 +133,7 @@ int pbox_app_key_set_mic()
     return 0;
 }
 
-int pbox_app_key_set_echo_3a() {
+int pbox_app_key_set_echo_3a(void) {
     ALOGD("pbox_app_key_set_echo_3a =====!\n");
     if (pboxUIdata->micData[0].echo3a)
         pbox_app_music_set_echo_3a(0, false, DISP_All);
@@ -160,19 +161,19 @@ int pbox_app_key_switch_input_source(void) {
     return -1;
 }
 
-int enter_long_playpause_mode()
+int enter_long_playpause_mode(void)
 {
     ALOGD("enter_long_playpause_mode\n");
     return 1;
 }
 
-int long_volume_step_up()
+int long_volume_step_up(void)
 {
     ALOGD("---long_volume_step_up--\n");
     return 1;
 }
 
-int long_volume_step_down()
+int long_volume_step_down(void)
 {
 
     ALOGD("---long_volume_step_down\n");
@@ -180,112 +181,46 @@ int long_volume_step_down()
 }
 
 
-int enter_long_key_mode() {
+int enter_long_key_mode(void) {
     ALOGD("enter_long_key_mode =====!\n");
     return 0;
 }
 
 /*recovery*/
-int enter_recovery_mode() {
+int enter_recovery_mode(void) {
     ALOGD("enter_recovery_mode\n");
 	return 0;
 }
 
-int enter_combain_mode() {
+int enter_combain_mode(void) {
     ALOGD("enter_combain_mode\n");
 	return 0;
 }
 
-int pbox_key_music_album_next() {
+int pbox_key_music_album_next(void) {
     ALOGD("pbox_key_music_album_next =====!\n");
     pbox_app_music_album_next(true, DISP_All);
     return 0;
 }
 
-int enter_double_voldown_mode() {
+int enter_double_voldown_mode(void) {
     ALOGD("enter_double_voldown_mode =====!\n");
     return 0;
 }
 
-int enter_double_volup_mode() {
+int enter_double_volup_mode(void) {
     ALOGD("enter_double_volup_mode =====!\n");
     return 0;
 }
 
-int enter_double_key_mode() {
+int enter_double_key_mode(void) {
     ALOGD("enter_double_key_mode =====!\n");
     return 0;
 }
 
-int enter_double_mic_mode() {
+int enter_double_mic_mode(void) {
     ALOGD("enter_double_mic_mode =====!\n");
     return 0;
 }
 
-void *event_process_thread_ex(void * arg)
-{
-    int i, j , k, m;
-    while(1) {
-        pthread_mutex_lock(&key_mutex);
-        for(i = 0; i < MAX_KEY_BUFFERED; i++) {
-            for(j = 0; j < support_keys_size; j++) {
-                if(key_event[i].key_code == support_keys[j].key_code && key_event[i].key_code_b == support_keys[j].key_code_b
-                && key_event[i].is_long_press == support_keys[j].is_long_press) {
-                    if (key_event[i].is_long_press == 0) {
-                        int double_click_tmp = key_event[i].key_code;
-                        for(k = 0;  k < support_keys_size; k++){
-                            if(double_click_tmp == support_keys[k].key_code && support_keys[k].is_long_press == 4)
-                            break;
-                        }
-                        if(k < support_keys_size){
-                            pthread_mutex_unlock(&key_mutex);
-                            usleep(KEY_DOUBLE_CLICK_PERIOD);
-                            int hit_count =0;
-                            for(m = 0; m < MAX_KEY_BUFFERED; m++) {
-                            //ALOGD("key_event[%d],key_code=%d,key_code_b=%d,is_key_valid=%d,is_long_press=%d\n",m,key_event[m].key_code, key_event[m].key_code_b,key_event[m].is_key_valid, key_event[m].is_long_press);
-                                if(key_event[m].key_code == double_click_tmp){
-                                    ALOGD("-----get pressed key %d,key=%d--\n",m,key_event[m].key_code);
-                                    memset(&key_event[m], 0, sizeof(pbox_keyevent_msg_t));//清除按键
-                                    hit_count++;
-                                }
-                            }
-                            if(hit_count >= 2){//double hit
-                                ALOGI("------get double click----\n");
-                                if(support_keys[k].key_process){
-                                    support_keys[k].key_process();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if(support_keys[j].key_process){
-                        support_keys[j].key_process();
-                        //ALOGD("clear keyevent %d\n", i);
-                        memset(&key_event[i], 0, sizeof(pbox_keyevent_msg_t));//清除按键
-                        break;
-                    } else {
-                        ALOGI("key_process NULL \n");
-                    }
-                    if(j == support_keys_size){
-                        ALOGD("Unhandled key values\n");
-                    }
-                }
-            }
-        }
-        pthread_mutex_unlock(&key_mutex);
-        usleep(100 * 1000);
-    }
-}
-
-int pbox_create_KeyProcessTask(void)
-{
-    pthread_t evt_process;
-    int err;
-
-    pthread_mutex_init(&key_mutex, NULL);
-    err = pthread_create(&evt_process, NULL, &event_process_thread_ex, NULL);
-    if (err != 0)
-        ALOGE("cant creat thread event_read_thread_ex");
-    return err;
-}
 #endif
