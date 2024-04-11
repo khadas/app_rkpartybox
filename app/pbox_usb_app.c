@@ -28,7 +28,7 @@ static void handleUsbPpmEvent(const pbox_usb_msg_t* msg);
 
 int unix_socket_usb_send(void *info, int length)
 {
-	return unix_socket_send_cmd(PBOX_CHILD_USBDISK, info, length);
+    return unix_socket_send_cmd(PBOX_CHILD_USBDISK, info, length);
 }
 
 void pbox_app_usb_startScan(void) {

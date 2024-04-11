@@ -142,32 +142,32 @@ void pbox_get_opt(int argc, char *argv[]) {
     extern char **environ;
     char **env = environ;
 
-	for (;;) {
-		int idx;
-		int c;
-		c = getopt_long(argc, argv, short_options, long_options, &idx);
-		if (-1 == c)
-			break;
-		switch (c) {
-		case 0: /* getopt_long() flag */
-			break;
-		case 'c':
-			pbox_ini_path = optarg;
-			break;
-		case 'l':
-			log_level_str = optarg;
-			break;
+    for (;;) {
+        int idx;
+        int c;
+        c = getopt_long(argc, argv, short_options, long_options, &idx);
+        if (-1 == c)
+            break;
+        switch (c) {
+        case 0: /* getopt_long() flag */
+            break;
+        case 'c':
+            pbox_ini_path = optarg;
+            break;
+        case 'l':
+            log_level_str = optarg;
+            break;
         case 'v':
             os_env_set_str("init_vol", optarg);
             break;
-		case 'h':
-			usage_tip(stdout, argc, argv);
-			exit(EXIT_SUCCESS);
-		default:
-			usage_tip(stderr, argc, argv);
-			exit(EXIT_FAILURE);
-		}
-	}
+        case 'h':
+            usage_tip(stdout, argc, argv);
+            exit(EXIT_SUCCESS);
+        default:
+            usage_tip(stderr, argc, argv);
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 void main(int argc, char **argv) {

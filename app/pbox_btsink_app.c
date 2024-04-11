@@ -21,7 +21,7 @@
 
 int unix_socket_btsink_send(void *info, int length)
 {
-	return unix_socket_send_cmd(PBOX_CHILD_BT, info, length);
+    return unix_socket_send_cmd(PBOX_CHILD_BT, info, length);
 }
 
 void pbox_btsink_a2dp_stop(void) {
@@ -158,25 +158,25 @@ void setBtRemoteName(char *name) {
 
 bool isBtConnected(void)
 {
-	if(getBtSinkState()== APP_BT_CONNECTED)
-		return true;
+    if(getBtSinkState()== APP_BT_CONNECTED)
+        return true;
 
-	return false;
+    return false;
 }
 
 bool isBtA2dpConnected(void)
 {
-	if(pboxBtSinkdata->btState==APP_BT_CONNECTED && (pboxBtSinkdata->a2dpState >= A2DP_CONNECTED))
-		return true;
-	
-	return false;
+    if(pboxBtSinkdata->btState==APP_BT_CONNECTED && (pboxBtSinkdata->a2dpState >= A2DP_CONNECTED))
+        return true;
+    
+    return false;
 }
 
 bool isBtA2dpStreaming(void)
 {
-	if(pboxBtSinkdata->btState==APP_BT_CONNECTED && (pboxBtSinkdata->a2dpState == A2DP_STREAMING))
-		return true;
-	return false;
+    if(pboxBtSinkdata->btState==APP_BT_CONNECTED && (pboxBtSinkdata->a2dpState == A2DP_STREAMING))
+        return true;
+    return false;
 }
 
 void update_bt_karaoke_playing_status(bool playing)
@@ -211,16 +211,16 @@ void update_music_positions(uint32_t current, uint32_t total) {
 
 void update_bt_music_volume(int volumeLevel ,display_t policy)
 {
-	float volumeLevelMapp = 0;
+    float volumeLevelMapp = 0;
 
-	if (volumeLevel > 127)
-		volumeLevel = 127;
-	if (volumeLevel < 0)
-		volumeLevel = 0;
+    if (volumeLevel > 127)
+        volumeLevel = 127;
+    if (volumeLevel < 0)
+        volumeLevel = 0;
 
-	volumeLevelMapp = volumeLevel * 100 / 127;
+    volumeLevelMapp = volumeLevel * 100 / 127;
 
-	ALOGD("%s bt volume :%d (0-127)mapping to %f (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
+    ALOGD("%s bt volume :%d (0-127)mapping to %f (0-100)\n", __func__, volumeLevel, volumeLevelMapp);
     //covert to real db volume.
     volumeLevelMapp = PERCENT2TARGET(volumeLevelMapp, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
     volumeLevelMapp = volumeLevelMapp> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volumeLevelMapp;
@@ -374,7 +374,7 @@ void maintask_bt_fd_process(int fd) {
 }
 
 void *btsink_watcher(void *arg) {
-	pthread_setname_np(pthread_self(), "pbox_btwatch");
+    pthread_setname_np(pthread_self(), "pbox_btwatch");
     ALOGD("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
 
     ALOGD("%s \n", __func__);

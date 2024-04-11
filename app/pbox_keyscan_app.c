@@ -42,7 +42,7 @@ struct dot_key support_keys [] =
     {KEY_MICMUTE, 0, 0, 1, 0,  pbox_app_key_set_mic},/*MIC_MUTE*/
 
     /*长按> 3s */
-   	{KEY_PLAY, 0, 1, 1, 0, enter_long_playpause_mode},
+       {KEY_PLAY, 0, 1, 1, 0, enter_long_playpause_mode},
     {KEY_VOLUMEDOWN, 0, 1, 1, 0, long_volume_step_down},/*VOL_DOWN*/
     {KEY_VOLUMEUP, 0, 1, 1, 0, long_volume_step_up},/*VOL_UP*/
     {KEY_MODE, 0, 1, 1, 0 ,enter_long_key_mode},
@@ -189,12 +189,12 @@ int enter_long_key_mode(void) {
 /*recovery*/
 int enter_recovery_mode(void) {
     ALOGD("enter_recovery_mode\n");
-	return 0;
+    return 0;
 }
 
 int enter_combain_mode(void) {
     ALOGD("enter_combain_mode\n");
-	return 0;
+    return 0;
 }
 
 int pbox_key_music_album_next(void) {

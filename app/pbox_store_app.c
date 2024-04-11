@@ -185,10 +185,10 @@ int pbox_app_data_deinit(void) {
 int pbox_app_ui_init(const char *ini_path) {
     int ret = -1;
     char path[128];
-	LOG_WARN("%s: %s\n", __func__, ini_path);
+    LOG_WARN("%s: %s\n", __func__, ini_path);
 
     assert(ini_path);
-	ret = rk_param_init((char *)ini_path);
+    ret = rk_param_init((char *)ini_path);
 
     if(ret != 0) {
         int ret = os_copy_file("/etc/pbox/pbox-factory.ini", ini_path);
@@ -196,5 +196,5 @@ int pbox_app_ui_init(const char *ini_path) {
     }
 
     LOG_WARN("%s ret:%d\n", __func__, ret);
-	return ret;
+    return ret;
 }

@@ -315,7 +315,7 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
 void maintask_lvgl_fd_process(int fd) {
     int bytesAvailable = -1;
     char buff[sizeof(pbox_lcd_msg_t)] = {0};
-	int ret = recv(fd, buff, sizeof(buff), 0);
+    int ret = recv(fd, buff, sizeof(buff), 0);
     if (ret <= 0) {
         if (ret == 0) {
             ALOGW("%s: Connection closed\n", __func__);

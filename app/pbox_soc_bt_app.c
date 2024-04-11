@@ -33,7 +33,7 @@ static void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg);
 
 int unix_socket_socbt_send(void *info, int length)
 {
-	return unix_socket_send_cmd(PBOX_CHILD_BT, info, length);
+    return unix_socket_send_cmd(PBOX_CHILD_BT, info, length);
 }
 
 void pbox_app_btsoc_reply_dsp_version(char *dspver) {
