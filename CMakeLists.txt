@@ -13,6 +13,8 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/modules/audio/
 	${PROJECT_SOURCE_DIR}/sys/
 	${PROJECT_SOURCE_DIR}/utils/log/
+	${PROJECT_SOURCE_DIR}/utils/os/
+	${PROJECT_SOURCE_DIR}/utils/audio/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
 	${PROJECT_SOURCE_DIR}/hal/
@@ -32,6 +34,8 @@ aux_source_directory(./modules/os SRCS)
 aux_source_directory(./modules/audio SRCS)
 aux_source_directory(./sys SRCS)
 aux_source_directory(./utils/log SRCS)
+aux_source_directory(./utils/os SRCS)
+aux_source_directory(./utils/audio SRCS)
 aux_source_directory(./hal SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
@@ -61,7 +65,7 @@ add_executable(${PROJECT_NAME} ${SRCS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE -D_GNU_SOURCE)
 target_link_libraries(${PROJECT_NAME} ${UDEV_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}
-	pthread m freetype rkwifibt
+	pthread m freetype rkwifibt asound
 )
 
 if (LV_USE_DEMO_MUSIC)
@@ -109,7 +113,6 @@ install(FILES bins/SmileySans-Oblique.ttf DESTINATION /etc/pbox)
 
 install(FILES bins/wozai-48k2ch.pcm DESTINATION /etc/pbox)
 install(FILES bins/eq_drc_player.bin DESTINATION /etc/pbox)
-#install(FILES ./bins/eq_drc_recorder_vendor_2chn.bin DESTINATION /etc/pbox RENAME "eq_drc_recorder.bin")
 
 install(FILES bins/Mono.pcm DESTINATION /etc/pbox)
 install(FILES bins/Stereo.pcm DESTINATION /etc/pbox)

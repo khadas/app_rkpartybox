@@ -265,19 +265,32 @@ void pbox_app_rockit_get_player_energy(input_source_t source) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_start_recorder(void) {
+void pbox_app_rockit_start_recorder(input_source_t source, int sampleFreq, int channel, const char *cardName) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_START_RECORDER,
+        .source = source,
     };
 
+    if (0 == sampleFreq) {
+        sampleFreq = 48000;
+    }
+    if (0 == channel) {
+        channel = 2;
+    }
+
+    msg.audioFormat.sampingFreq = sampleFreq;
+    msg.audioFormat.channel = channel;
+    strncpy(msg.audioFormat.cardName, "hw:2,0", 30);
+    ALOGD("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s \n", __func__, source, sampleFreq, channel, cardName);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_stop_recorder(void) {
+void pbox_app_rockit_stop_recorder(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_STOP_RECORDER,
+        .source = source,
     };
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));

@@ -369,7 +369,7 @@ void maintask_bt_fd_process(int fd) {
         return;
 
     bt_sink_data_recv(msg);
-    
+
     return;
 }
 

@@ -136,6 +136,13 @@ void pbox_app_drive_passive_player(input_source_t source, play_status_t status, 
     pbox_app_show_playingStatus((status==PLAYING) ? true: false, policy);
 }
 
+void pbox_app_record_start(input_source_t source, bool start, display_t policy) {
+    if (start)
+        pbox_app_rockit_start_recorder(source, 48000, 2, NULL);
+    else
+        pbox_app_rockit_stop_recorder(source);
+}
+
 void pbox_app_bt_pair_enable(bool enable, display_t policy) {
     pbox_btsink_pair_enable(enable);
     //no ui display now
@@ -773,26 +780,38 @@ void pbox_version_print(void) {
 void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
 #if ENABLE_UAC
     ALOGD("%s\n", __func__);
-    if((role == UAC_ROLE_SPEAKER)) {
-        if(pboxUacdata->state == start)
-            return;
-        ALOGD("%s start=%d\n", __func__, start);
-        pboxUacdata->state = start;
+    switch (role) {
+        case UAC_ROLE_SPEAKER: {
+            if(pboxUacdata->state == start)
+                    return;
+            ALOGD("%s player start=%d\n", __func__, start);
+            pboxUacdata->state = start;
 
-        if (start && is_dest_source_switchable(SRC_UAC, AUTO)) {
-            pbox_app_switch_to_input_source(SRC_UAC, policy);
+            if (start && is_dest_source_switchable(SRC_UAC, AUTO)) {
+                pbox_app_switch_to_input_source(SRC_UAC, policy);
+            }
+
+            if(!is_input_source_selected(SRC_UAC, ANY)) {
+                return;
+            }
+
+            pboxUIdata->play_status = start;
+            pbox_app_drive_passive_player(SRC_UAC, start? PLAYING:_STOP, policy);
+            pbox_multi_displayUacState(role, start, policy);
+        } break;
+
+        case UAC_ROLE_RECORDER: {
+            if(pboxUacdata->record_state == start)
+                return;
+            ALOGD("%s recorder start=%d\n", __func__, start);
+            pboxUacdata->record_state = start;
+
+            pbox_app_record_start(SRC_UAC, start, policy);
         }
 
-        if(!is_input_source_selected(SRC_UAC, ANY)) {
-            return;
-        }
-
-        pboxUIdata->play_status = start;
-        pbox_app_drive_passive_player(SRC_UAC, start? PLAYING:_STOP, policy);
-        pbox_multi_displayUacState(role, start, policy);
+        default: break;
     }
 #endif
-    ////pbox_app_rockit_set_uac_state(role, start);
 }
 
 void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy) {
@@ -800,7 +819,8 @@ void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy) 
     if(!is_input_source_selected(SRC_UAC, ANY)) {
         return;
     }
-    ALOGD("%s freq:%d\n", __func__, freq);
+
+    ALOGD("%s %s freq:%d\n", __func__, (role==UAC_ROLE_SPEAKER)?"spk":"rec", freq);
     if(pboxUacdata->freq != freq) {
         pboxUacdata->freq = freq;
         pbox_app_rockit_start_audiocard_player(SRC_UAC, freq, 2, AUDIO_CARD_UAC);

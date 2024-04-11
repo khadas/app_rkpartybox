@@ -51,9 +51,9 @@ void pbox_app_rockit_set_placement(input_source_t source, placement_t mode);
 
 void pbox_app_rockit_get_player_energy(input_source_t source);
 
-void pbox_app_rockit_start_recorder(void);
+void pbox_app_rockit_start_recorder(input_source_t source, int sampleFreq, int channel, const char *cardName);
 
-void pbox_app_rockit_stop_recorder(void);
+void pbox_app_rockit_stop_recorder(input_source_t source);
 
 void pbox_app_rockit_set_mic_data(uint8_t index, mic_set_kind_t kind, mic_state_t micState);
 

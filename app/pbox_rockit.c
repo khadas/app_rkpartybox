@@ -27,6 +27,8 @@
 #include "pbox_socketpair.h"
 #include "rk_utils.h"
 #include "rkstudio_tuning.h"
+#include "os_task.h"
+#include "pbox_rockit_audio.h"
 
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
@@ -68,6 +70,8 @@ rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_d
 rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db);
 rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms);
+rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms);
 //********************rockit end***********************
 
 //********************rkstudio tunning start**************************
@@ -77,13 +81,7 @@ int (*pbox_deinit_tuning)(void);
 
 static pid_t rockit_tid = -1;
 static volatile bool is_rkstudio_tuning = false;
-
-static struct rockit_pbx_t {
-    rc_pb_ctx *pboxCtx;
-    int signfd[2];
-    pthread_t aux_player_tid;
-    //sem_t      sem;
-} rockCtx;
+struct rockit_pbx_t rockitCtx;
 
 typedef enum {
     PROMPT_STEREO,
@@ -175,7 +173,7 @@ static void* rockitAuxPlayer(void *param) {
     rc_pb_ctx *ptrboxCtx;
     int table[5];
     bool loop = true;
-    int fd = rockCtx.signfd[0];
+    int fd = ctx->signfd[0];
 
     ALOGD("hello %s\n", __func__);
     assert(ctx != NULL);
@@ -230,181 +228,195 @@ int rk_demo_music_create() {
 
     mpi_hdl = dlopen("librockit.so", RTLD_LAZY);
     if (NULL == mpi_hdl) {
-        ALOGE("failed to open librockit.so, err:%s\n", dlerror());
+        ALOGE("%s %d failed to open librockit.so, err:%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_create = (rc_s32 (*)(rc_pb_ctx *ctx, struct rc_pb_attr *attr))dlsym(mpi_hdl, "rc_pb_create");
     if (NULL == rc_pb_create) {
-            ALOGE("failed to open func, err=%s\n", dlerror());
+            ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
             return -1;
     }
     rc_pb_destroy = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_destroy");
     if (NULL == rc_pb_destroy) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_set_volume = (rc_s32 (*)(rc_pb_ctx ctx, rc_float volume_db))dlsym(mpi_hdl, "rc_pb_set_volume");
     if (NULL == rc_pb_set_volume) {
-        ALOGE("failed to dlsym rc_pb_set_volume, err=%s\n", dlerror());
+        ALOGE("%s %d failed to dlsym rc_pb_set_volume, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, rc_float *volume_db))dlsym(mpi_hdl, "rc_pb_get_volume");
     if (NULL == rc_pb_get_volume) {
-            ALOGE("failed to dlsym rc_pb_get_volume, err=%s\n", dlerror());
+            ALOGE("%s %d failed to dlsym rc_pb_get_volume, err=%s\n", __func__, __LINE__, dlerror());
             return -1;
     }
 
     rc_pb_player_start = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_player_attr *attr))dlsym(mpi_hdl, "rc_pb_player_start");
     if (NULL == rc_pb_player_start) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_stop = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src))dlsym(mpi_hdl, "rc_pb_player_stop");
     if (NULL == rc_pb_player_stop) {
-    ALOGE("failed to open  func, err=%s\n", dlerror());
+    ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
     return -1;
     }
 
     rc_pb_player_pause = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src))dlsym(mpi_hdl, "rc_pb_player_pause");
     if (NULL == rc_pb_player_pause) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_resume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src))dlsym(mpi_hdl, "rc_pb_player_resume");
     if (NULL == rc_pb_player_resume) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_dequeue_frame = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, "rc_pb_player_dequeue_frame");
     if (NULL == rc_pb_player_dequeue_frame) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_queue_frame = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, "rc_pb_player_queue_frame");
     if (NULL == rc_pb_player_queue_frame) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_get_position = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec))dlsym(mpi_hdl, 
                                             "rc_pb_player_get_position");
     if (NULL == rc_pb_player_get_position) {
-    ALOGE("failed to open  func, err=%s\n", dlerror());
+    ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
     return -1;
         }
 
     rc_pb_player_get_duration = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 *usec))dlsym(mpi_hdl, 
                                             "rc_pb_player_get_duration");
     if (NULL == rc_pb_player_get_duration) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_set_loop = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_bool loop))dlsym(mpi_hdl, "rc_pb_player_set_loop");
     if (NULL == rc_pb_player_set_loop) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_seek = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_s64 usec))dlsym(mpi_hdl, "rc_pb_player_seek");
     if (NULL == rc_pb_player_seek) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_set_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float volume_db))dlsym(mpi_hdl, 
                                             "rc_pb_player_set_volume");
     if (NULL == rc_pb_player_set_volume) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float *volume_db))dlsym(mpi_hdl, 
                                             "rc_pb_player_get_volume");
     if (NULL == rc_pb_player_get_volume) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_set_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param))dlsym(mpi_hdl,
                                             "rc_pb_player_set_param");
     if (NULL == rc_pb_player_set_param) {
-        ALOGE("failed to open func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_get_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                         "rc_pb_player_get_param");
     if (NULL == rc_pb_player_get_param) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_get_energy = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy))dlsym(mpi_hdl, 
                                         "rc_pb_player_get_energy");
     if (NULL == rc_pb_player_get_energy) {
-        ALOGE("failed to open func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_player_release_energy = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_energy *energy))dlsym(mpi_hdl,
                                                         "rc_pb_player_release_energy");
     if (NULL == rc_pb_player_release_energy) {
-        ALOGE("failed to open func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_start = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_recorder_start");
     if (NULL == rc_pb_recorder_start) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_stop = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_recorder_stop");
     if (NULL == rc_pb_recorder_stop) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_mute =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_bool mute))dlsym(mpi_hdl,
                                                 "rc_pb_recorder_mute");
     if (NULL == rc_pb_recorder_mute) {
-        ALOGE("failed to open func, err=%s", dlerror());
+        ALOGE("%s %d failed to open func, err=%s", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_set_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db))dlsym(mpi_hdl,
                                             "rc_pb_recorder_set_volume");
     if (NULL == rc_pb_recorder_set_volume) {
-        ALOGE("failed to open func, err=%s",dlerror());
+        ALOGE("%s %d failed to open func, err=%s", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_get_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db))dlsym(mpi_hdl,
                                         "rc_pb_recorder_get_volume");
     if (NULL == rc_pb_recorder_get_volume) {
-        ALOGE("failed to open func, err=%s", dlerror());
+        ALOGE("%s %d failed to open func, err=%s", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_set_param = (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_set_param");
     if (NULL == rc_pb_recorder_set_param) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_get_param = (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_get_param");
     if (NULL == rc_pb_recorder_get_param) {
-        ALOGE("failed to open  func, err=%s\n", dlerror());
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+
+    rc_pb_recorder_dequeue_frame = (rc_s32 (*)(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, 
+                                        "rc_pb_recorder_dequeue_frame");
+    if (NULL == rc_pb_recorder_dequeue_frame) {
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+
+    rc_pb_recorder_queue_frame = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, 
+                                        "rc_pb_recorder_queue_frame");
+    if (NULL == rc_pb_recorder_queue_frame) {
+        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
@@ -431,6 +443,7 @@ int rk_demo_music_create() {
     recorder_attr.card_name = "hw:0,0";
     recorder_attr.sample_rate = 48000;
     recorder_attr.bit_width   = 16;
+    recorder_attr.pool_cnt    = 2;
 #if ENABLE_USE_SOCBT
     recorder_attr.channels    = 8;
     recorder_attr.ref_layout = 0xfc;
@@ -452,12 +465,12 @@ int rk_demo_music_create() {
     }
 
     memset(started_player, 0 , sizeof(started_player));
-    int ret = pipe(rockCtx.signfd);
-    rockCtx.pboxCtx = &partyboxCtx;
-    //sem_init(&rockCtx.sem, 0, 0);
+    int ret = pipe(rockitCtx.signfd);
+    rockitCtx.pboxCtx = &partyboxCtx;
+    //sem_init(&rockitCtx.sem, 0, 0);
     ALOGD("%s %d partyboxCtx:%p\n", __func__, __LINE__, &partyboxCtx);
     //rockitAuxPlayer();
-    pthread_create(&rockCtx.aux_player_tid, NULL, rockitAuxPlayer, &rockCtx);
+    pthread_create(&rockitCtx.aux_player_tid, NULL, rockitAuxPlayer, &rockitCtx);
 
     if (rc_pb_recorder_start(partyboxCtx) != 0) {
         ALOGE("rc_pb_recorder_start failed, err!!!\n");
@@ -468,7 +481,7 @@ int rk_demo_music_create() {
 
 int audio_prompt_send(prompt_audio_t prompt) {
     int id = prompt;
-    int ret = write(rockCtx.signfd[1], &id, sizeof(int));
+    int ret = write(rockitCtx.signfd[1], &id, sizeof(int));
     return ret;
 }
 
@@ -689,6 +702,43 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     #endif
     started_player[dest] = true;
     //set_vocal_separate_thread_cpu();
+}
+
+static char* getInputSourceString(input_source_t source) {
+    switch (source) {
+        case SRC_USB: return "usb";
+        case SRC_BT: return "bt";
+#if ENABLE_UAC
+        case SRC_UAC: return "uac";
+#endif
+#if ENABLE_AUX
+        case SRC_AUX: return "aux";
+#endif
+        default: return "unkown";
+    }
+}
+
+static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFormat_t audioFormat) {
+    int ret;
+    char tid_name[16];
+    if(rockitCtx.uacRecordTask.runing) {
+        os_task_destroy(&rockitCtx.uacRecordTask);
+    }
+
+    snprintf(tid_name, sizeof(tid_name), "pbox_%s_rec", getInputSourceString(source));
+    rockitCtx.audioFormat.sampingFreq = audioFormat.sampingFreq;
+    rockitCtx.audioFormat.channel = audioFormat.channel;
+    snprintf(rockitCtx.audioFormat.cardName, sizeof(rockitCtx.audioFormat.cardName), "%s", audioFormat.cardName);
+    ALOGW("%s, rockitCtx:%p, partyboxCtx:%p\n", __func__, &rockitCtx, rockitCtx.pboxCtx);
+
+    ret = os_task_create(&rockitCtx.uacRecordTask, tid_name, pbox_rockit_record_routine, &rockitCtx);
+}
+
+static void pbox_rockit_music_stop_recorder(input_source_t source) {
+    int ret;
+    if(rockitCtx.uacRecordTask.runing) {
+        os_task_destroy(&rockitCtx.uacRecordTask);
+    }
 }
 
 static void pbox_rockit_music_pause(input_source_t source)
@@ -1459,7 +1509,8 @@ static void *pbox_rockit_server(void *arg)
     pthread_setname_np(pthread_self(), "party_rockit");
     rockit_tid = syscall(SYS_gettid);
 
-    rk_demo_music_create();
+    if(rk_demo_music_create() < 0)
+        exit(EXIT_FAILURE);
 
     int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
 
@@ -1514,6 +1565,14 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_START_AUDIOCARD_PLAYER: {
                 pbox_rockit_music_start_audiocard(msg->source, msg->audioFormat);
+            } break;
+
+            case PBOX_ROCKIT_START_RECORDER: {
+                pbox_rockit_music_start_recorder(msg->source, msg->audioFormat);
+            } break;
+
+            case PBOX_ROCKIT_STOP_RECORDER: {
+                pbox_rockit_music_stop_recorder(msg->source);
             } break;
 
             case PBOX_ROCKIT_PAUSE_PLAYER: {

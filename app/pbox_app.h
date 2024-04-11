@@ -47,6 +47,7 @@ typedef struct {
 
     struct _pbox_uac {
         bool state;
+        bool record_state;
         uint32_t freq;
     } uac;
 
