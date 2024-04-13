@@ -273,11 +273,11 @@ void audio_event(const struct _uevent *uevent) {
     event = uevent->strs[UAC_KEY_USB_STATE];
     direct = uevent->strs[UAC_KEY_DIRECTION];
     status = uevent->strs[UAC_KEY_STREAM_STATE];
-    ALOGD("+++++++++++++++++++++++++\n");
+    /*ALOGD("+++++++++++++++++++++++++\n");
     ALOGD("keys = %s\n", keys);
     ALOGD("event = %s\n", event);
     ALOGD("direct = %s\n", direct);
-    ALOGD("status = %s\n", status);
+    ALOGD("status = %s\n", status);*/
     if ((event == NULL) || (direct == NULL) || (status == NULL)) {
         return;
     }

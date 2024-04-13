@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "slog.h"
 #include "pbox_model.h"
+#include "board.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -169,20 +170,10 @@ typedef enum {
     UAC_ROLE_NUM
 } uac_role_t;
 
-typedef enum {
-    SRC_USB,
-    SRC_BT,
-#if ENABLE_UAC
-    SRC_UAC,
-#endif
-#if ENABLE_AUX
-    SRC_AUX,
-#endif
-#if ENABLE_RAW_PCM
-    SRC_PCM,
-#endif
-    SRC_NUM
-} input_source_t;
+typedef struct {
+    input_source_t source;
+    bool enable;
+} favor_input_order_t;
 
 typedef enum {
     MANUAL,

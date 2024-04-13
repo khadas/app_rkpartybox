@@ -40,7 +40,7 @@ static void dump_out_data(const void* buffer,size_t bytes, int size)
        ALOGD("TEST playback pcmfile restart\n");
    }
 }
-
+#include <inttypes.h>
 void *pbox_rockit_record_routine(void *params) {
     snd_pcm_t *pcm_handle = NULL;
     char *buffer;
@@ -95,7 +95,9 @@ void *pbox_rockit_record_routine(void *params) {
         sent = frames = 0;
 retry_alsa_write:
         //2 channel,16bit.
+        uint64_t tmp = time_get_os_boot_us();
         frames = snd_pcm_writei(pcm_handle, (char *)buffer + sent*4, in_frames - sent);
+        //ALOGE("pbox snd_pcm_writei, in:%08d, out:%08d, sent:%08d, %"PRIu64"\t\n", in_frames, frames, sent, time_get_os_boot_us() - tmp);
         if (frames < 0) {
             switch (-frames) {
                 case EINTR: {

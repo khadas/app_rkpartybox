@@ -42,7 +42,7 @@
 		"pf" : {
 			"status" : "disable",
 			"fast_filter_len" : 2,
-			"delay_len" : 15
+			"delay_len" : 15,
 			"start_freq" : 0,
 			"end_freq" : 300,
 			"alpha" : 0.995

@@ -422,7 +422,7 @@ int rk_demo_music_create() {
 
     attr.card_name              = "hw:0,0";
     attr.sample_rate            = 48000;
-#if ENABLE_USE_SOCBT
+#if ENABLE_EXT_BT_MCU
     attr.channels               = 6;
 #else
     attr.channels               = 2;
@@ -444,7 +444,7 @@ int rk_demo_music_create() {
     recorder_attr.sample_rate = 48000;
     recorder_attr.bit_width   = 16;
     recorder_attr.pool_cnt    = 2;
-#if ENABLE_USE_SOCBT
+#if ENABLE_EXT_BT_MCU
     recorder_attr.channels    = 8;
     recorder_attr.ref_layout = 0xfc;
     recorder_attr.rec_layout = 0x03;
@@ -575,31 +575,20 @@ static void rockit_pbbox_notify_energy(energy_info_t energy)
 static enum rc_pb_play_src covert2rockitSource(input_source_t source) {
     enum rc_pb_play_src destSource = RC_PB_PLAY_SRC_BUTT;
     switch (source) {
-        case SRC_USB: {
-#if ENABLE_EXT_MCU_USB
-            destSource = RC_PB_PLAY_SRC_BT;
-#else
+        case SRC_CHIP_USB: {
             destSource = RC_PB_PLAY_SRC_LOCAL;
-#endif
         } break;
-        case SRC_BT: {
-            destSource = RC_PB_PLAY_SRC_BT; //recieve it from audiocard..
-        } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
+
+        case SRC_CHIP_UAC: {
             destSource = RC_PB_PLAY_SRC_UAC;
         } break;
-#endif
-#if ENABLE_AUX
-        case SRC_AUX: {
+
+        case SRC_CHIP_BT:
+        case SRC_EXT_BT:
+        case SRC_EXT_USB:
+        case SRC_EXT_AUX: {
             destSource = RC_PB_PLAY_SRC_BT;
         } break;
-#endif
-#if ENABLE_RAW_PCM
-        case SRC_PCM: {
-            destSource = RC_PB_PLAYER_SOURCE_PCM; //send raw pcm to rockit
-        } break;
-#endif
         default:
             break;
     }
@@ -624,7 +613,7 @@ static void pbox_rockit_music_stop(input_source_t source)
 static void pbox_rockit_music_local_start(const char *track_uri, const char *headers)
 {
     struct rc_pb_player_attr playerAttr;
-    enum rc_pb_play_src dest = covert2rockitSource(SRC_USB);
+    enum rc_pb_play_src dest = covert2rockitSource(SRC_CHIP_USB);
     struct rc_pb_param_level_detect detect;
     detect.rms_tc = 200;
     detect.hold_time = 0;
@@ -642,7 +631,7 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
     playerAttr.valid_start_bit = 0;
 
     ALOGD("%s :%s, ctx=%p\n", __func__, track_uri, partyboxCtx);
-    pbox_rockit_music_stop(SRC_USB);
+    pbox_rockit_music_stop(SRC_CHIP_USB);
     rc_pb_player_start(partyboxCtx, RC_PB_PLAY_SRC_LOCAL, &playerAttr);
 
     started_player[dest] = true;
@@ -691,31 +680,10 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     assert(partyboxCtx);
     assert(rc_pb_player_start);
     ALOGD("%s freq:%d, channel: %d, card:%s source:%d\n", __func__, sampleFreq, channel, cardName, source);
-    #if 0//ENABLE_USE_SOCBT
-    if(false == vendor_started) {
-        vendor_started = true;
-        rc_pb_player_start(partyboxCtx, dest, &playerAttr);
-    }
-    #else
     pbox_rockit_music_stop(source);
     rc_pb_player_start(partyboxCtx, dest, &playerAttr);
-    #endif
     started_player[dest] = true;
     //set_vocal_separate_thread_cpu();
-}
-
-static char* getInputSourceString(input_source_t source) {
-    switch (source) {
-        case SRC_USB: return "usb";
-        case SRC_BT: return "bt";
-#if ENABLE_UAC
-        case SRC_UAC: return "uac";
-#endif
-#if ENABLE_AUX
-        case SRC_AUX: return "aux";
-#endif
-        default: return "unkown";
-    }
 }
 
 static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFormat_t audioFormat) {
@@ -819,7 +787,7 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
         default: break;
     }
 
-    #if ENABLE_USE_SOCBT
+    #if ENABLE_EXT_BT_MCU
         param.reverb.mode = RC_PB_REVERB_MODE_KTV;
     #endif
 
@@ -1278,7 +1246,7 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, float reverb) {
         param.reverb.mode = RC_PB_REVERB_MODE_KTV;
     }
 
-    #if ENABLE_USE_SOCBT
+    #if ENABLE_EXT_BT_MCU
         param.reverb.mode = RC_PB_REVERB_MODE_KTV;
     #endif
 
@@ -1370,9 +1338,7 @@ static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {
     uac_role_t role = msg->uac.uac_role;
     float volume = msg->uac.volume;
     if(role == UAC_ROLE_SPEAKER) {
-#if ENABLE_UAC
-        pbox_rockit_music_master_volume_adjust(SRC_UAC, volume);
-#endif
+        pbox_rockit_music_master_volume_adjust(SRC_CHIP_UAC, volume);
     }
     else if(role == UAC_ROLE_RECORDER) {
         pbox_rockit_music_mic_volume_adjust(0, volume);
@@ -1586,9 +1552,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_STOP_PLAYER: {
-                #if 1//ENABLE_USE_SOCBT == 0
                 pbox_rockit_music_stop(msg->source);
-                #endif
             } break;
 
             case PBOX_ROCKIT_GET_PLAYERCURRENTPOSITION: {

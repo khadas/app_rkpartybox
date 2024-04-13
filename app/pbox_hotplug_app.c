@@ -68,13 +68,11 @@ const usb_event_handle_t usbEventTable[] = {
     { PBOX_USB_DISK_CHANGE_EVT,     handleUsbChangeEvent        },
     { PBOX_USB_AUDIO_FILE_ADD_EVT,  handleUsbAudioFileAddEvent  },
 
-    #if ENABLE_UAC
     { PBOX_USB_UAC_ROLE_CHANGE_EVT, handleUacRoleStateEvent     },
     { PBOX_USB_UAC_SAMPLE_RATE_EVT, handleUacSampleRateEvent    },
     { PBOX_USB_UAC_VOLUME_EVT,      handleUacVolumeEvent        },
     { PBOX_USB_UAC_MUTE_EVT,        handleUacMuteEvent          },
     { PBOX_USB_UAC_PPM_EVT,         handleUsbPpmEvent           },
-    #endif
     // Add other as needed...
 };
 
@@ -137,11 +135,11 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
             pboxTrackdata->track_num = 0;
             pboxTrackdata->track_id = 0;
             pbox_app_usb_list_update(pboxTrackdata->track_id, DISP_All);
-            if(is_input_source_selected(SRC_USB, ANY)) {
+            if(is_input_source_selected(SRC_CHIP_USB, ANY)) {
                 pbox_app_music_stop(DISP_All);
                 pbox_app_show_usb_state(usbDiskState, DISP_All);
                 if(pboxUIdata->autoSource == true) {
-                    pbox_app_autoswitch_next_input_source(SRC_USB, DISP_All);
+                    pbox_app_autoswitch_next_input_source(SRC_CHIP_USB, DISP_All);
                 }
             }
         } break;
@@ -151,9 +149,9 @@ void handleUsbChangeEvent(const pbox_usb_msg_t* msg) {
             strncpy(&pboxUsbdata->usbDiskName[0], msg->usbDiskInfo.usbDiskName, MAX_APP_NAME_LENGTH);
             pboxUsbdata->usbDiskName[MAX_APP_NAME_LENGTH] = 0;
             ALOGD("%s usbState: %d, usb name[%s]\n", __func__, usbDiskState, pboxUsbdata->usbDiskName);
-            if(is_dest_source_switchable(SRC_USB, AUTO))
-                pbox_app_switch_to_input_source(SRC_USB, DISP_All);
-            if(is_input_source_selected(SRC_USB, ANY))
+            if(is_dest_source_auto_switchable(SRC_CHIP_USB))
+                pbox_app_switch_to_input_source(SRC_CHIP_USB, DISP_All);
+            if(is_input_source_selected(SRC_CHIP_USB, ANY))
                 pbox_app_show_usb_state(usbDiskState, DISP_All);
         } break;
 

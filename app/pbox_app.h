@@ -52,7 +52,9 @@ typedef struct {
     } uac;
 
     input_source_t inputDevice;
+    uint32_t avail_srcs;
     int32_t volume_resume_time;//it mustbe 10 times of PBOX_TIMER_INTERVAL
+
     struct _pbox_ui {
         placement_t placement;
         stereo_mode_t stereo;
@@ -76,8 +78,9 @@ extern struct _pbox_ui *const pboxUIdata;
 extern struct _pbox_track *const pboxTrackdata;
 extern usb_disk_info_t *const pboxUsbdata;
 extern struct _pbox_uac *const pboxUacdata;
-extern const input_source_t input_priority[];
+extern favor_input_order_t input_order_config[SRC_NUM];
 
+void pbox_app_set_favor_source_order(void);
 void pbox_app_show_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy);
 void pbox_app_show_tack_info(char *title, char *artist, display_t policy);
 void pbox_app_show_bt_state(btsink_state_t state, display_t policy);
@@ -161,11 +164,11 @@ void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status
 void pbox_app_btsoc_set_music_volume(float volume, display_t policy);
 #define pbox_app_btsoc_get_music_volume(a) pbox_app_music_get_music_volume(a)
 
-bool is_dest_source_switchable(input_source_t source, switch_source_t mode);
+bool is_dest_source_auto_switchable(input_source_t source);
 bool is_input_source_selected(input_source_t source, switch_source_t mode);
 bool isInputSourceConnected(input_source_t source);
 bool is_input_source_automode(void);
-
+bool is_input_source_configed(input_source_t source);
 int pbox_app_ui_load(void);
 
 #ifdef __cplusplus

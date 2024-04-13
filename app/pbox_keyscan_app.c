@@ -146,14 +146,19 @@ int pbox_app_key_switch_input_source(void) {
     input_source_t dest = pboxData->inputDevice;
     pboxUIdata->autoSource = false;
 
-    for (int i = 0; i< SRC_NUM; i++) {
-        if(input_priority[i] == pboxData->inputDevice) {
-            dest = input_priority[(i+1)%SRC_NUM];
+    for (int i = 0; i < SRC_NUM; i++) {
+        if(!input_order_config[i].enable) {
+            continue;
+        }
+        if(input_order_config[i].source == pboxData->inputDevice) {
+            do {
+                dest = input_order_config[++i%SRC_NUM].source;
+            } while(!input_order_config[i%SRC_NUM].enable);
             break;
         }
     }
 
-    ALOGI("%s change [%d->%d]=====!\n", __func__, pboxData->inputDevice, dest);
+    ALOGW("%s change: [%s->%s]\n", __func__, getInputSourceString(pboxData->inputDevice), getInputSourceString(dest));
     if(dest != pboxData->inputDevice) {
         pbox_app_switch_to_input_source(dest, DISP_All);
         return 0;

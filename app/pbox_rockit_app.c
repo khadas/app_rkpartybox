@@ -330,9 +330,7 @@ void pbox_app_rockit_set_uac_state(uac_role_t role, bool start) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_STATE,
-#if ENABLE_AUX
-        .source = SRC_AUX,
-#endif
+        .source = SRC_CHIP_UAC,
     };
     msg.uac.uac_role = role;
     msg.uac.state = start;
@@ -343,9 +341,7 @@ void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
-#if ENABLE_AUX
-        .source = SRC_AUX,
-#endif
+        .source = SRC_CHIP_UAC,
     };
     msg.uac.uac_role = role;
     msg.uac.sampleFreq = freq;
@@ -356,9 +352,7 @@ void pbox_app_rockit_set_uac_volume(uac_role_t role, float volume) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_VOLUME,
-#if ENABLE_AUX
-        .source = SRC_AUX,
-#endif
+        .source = SRC_CHIP_UAC,
     };
     msg.uac.uac_role = role;
     msg.uac.volume = volume;
@@ -369,9 +363,7 @@ void pbox_app_rockit_set_mute(uac_role_t role, bool mute) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_MUTE,
-#if ENABLE_AUX
-        .source = SRC_AUX,
-#endif
+        .source = SRC_CHIP_UAC,
     };
     msg.uac.uac_role = role;
     msg.uac.mute = mute;
@@ -382,9 +374,7 @@ void pbox_app_rockit_set_ppm(uac_role_t role, int32_t ppm) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_UAC_PPM,
-#if ENABLE_AUX
-        .source = SRC_AUX,
-#endif
+        .source = SRC_CHIP_UAC,
     };
     msg.uac.uac_role = role;
     msg.uac.ppm = ppm;

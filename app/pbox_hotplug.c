@@ -197,9 +197,7 @@ const UsbCmdHandler_t usb_event_handlers[] = {
 };
 
 void handleUacStartScanCmd(const pbox_usb_msg_t* msg) {
-    #if ENABLE_UAC
     //exec_command_system("/etc/init.d/S50usbdevice.sh restart");
-    #endif
 }
 
 void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {
@@ -372,9 +370,6 @@ static void *pbox_hotplug_dev_server(void *arg)
 
                 case USB_DEV_UAC: {
                     char buffer[512] = {0};
-                    struct _uevent event;
-                    event.size = 0;
-                    PBOX_ARRAY_SET(event.strs, 0, sizeof(event.strs)/sizeof(event.strs[0]));
                     int len = recv(hotplug_fds[i], buffer, sizeof(buffer), 0);
                     if (len <= 0) {
                         if (len == 0) {
@@ -389,15 +384,17 @@ static void *pbox_hotplug_dev_server(void *arg)
                     if(len < 32 || len > sizeof(buffer)) {
                         ALOGW("invalid message!!!!!!!!!!!!!!!!!\n");
                     }
-
-                    for (int m = 0, n =0; m < len; m++) {
-                        if (*(buffer + m) == '\0' && (m + 1) != len) {
-                            event.strs[n++] = buffer + m + 1;
-                            event.size = n;
+                    do {
+                        struct _uevent event;
+                        memset(&event, 0, sizeof(event));
+                        for (int m = 0, n =0; m < len; m++) {
+                            if (*(buffer + m) == '\0' && (m + 1) != len) {
+                                event.strs[n++] = buffer + m + 1;
+                                event.size = n;
+                            }
                         }
-                    }
-
-                    parse_event(&event);
+                        parse_event(&event);
+                    } while(0);
                 } break;
             }
         }

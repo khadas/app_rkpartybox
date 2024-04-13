@@ -268,15 +268,13 @@ void socbt_pbox_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t le
     //msg.input_source.input = buff[0]&0x1F;
     switch(buff[0]&0x1F) {
         case 0: {
-            msg.input_source.input = SRC_BT;
+            msg.input_source.input = SRC_EXT_BT;
         } break;
-#if ENABLE_AUX
         case 1: {
-            msg.input_source.input = SRC_AUX;
+            msg.input_source.input = SRC_EXT_AUX;
         } break;
-#endif
         case 2: {
-            msg.input_source.input = SRC_USB;
+            msg.input_source.input = SRC_EXT_USB;
         } break;
     }
     ALOGD("%s opcode:%d play_status:%d, source:%d\n", __func__, opcode, msg.input_source.status, msg.input_source.input);

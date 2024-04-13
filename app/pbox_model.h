@@ -6,49 +6,71 @@
 extern "C" {
 #endif
 
-#ifdef ENABLE_EXT_BT_MCU
-#define ENABLE_LCD_DISPLAY  0
-#define ENABLE_USE_SOCBT    1
-#define ENABLE_RK_LED_EFFECT    0
-#define MAX_APP_NAME_LENGTH     127
-#define MAX_MUSIC_NAME_LENGTH   (MAX_APP_NAME_LENGTH*2)
-#define ENABLE_RK_ROCKIT    1
-#define ENABLE_UAC          0
-#define DEFAULT_SAMPLE_FREQ 48000
-#define DEFAULT_MIC_3A      true
-#define ENABLE_EXT_MCU_USB  1
-#define ENABLE_AUX          1
-#define MIC_NUM             2
-#define ENABLE_RAW_PCM      0
-#define ENABLE_SARAADC   1
-#define MAX_MAIN_VOLUME   0
-#define MIN_MAIN_VOLUME   (-40)
-#define MIN_MAIN_VOLUME_MUTE (-80)
-#define DEFAULT_MAIN_VOLUME ((MAX_MAIN_VOLUME+MIN_MAIN_VOLUME)/2)
-#define MAX_MIC_PHONE_VOLUME   0
-#define MIN_MIC_PHONE_VOLUME   (-100)
-#define DEFAULT_HUMAN_LEVEL 5
-#else
+#ifndef ENABLE_LCD_DISPLAY
 #define ENABLE_LCD_DISPLAY 1
-#define ENABLE_USE_SOCBT 0
+#endif
+
+#ifndef ENABLE_EXT_BT_MCU
+#define ENABLE_EXT_BT_MCU 0
+#endif
+
+#ifndef ENABLE_RK_LED_EFFECT
 #define ENABLE_RK_LED_EFFECT 1
+#endif
+
+#ifndef MAX_APP_NAME_LENGTH
 #define MAX_APP_NAME_LENGTH 255
+#endif
+
+#ifndef MAX_MUSIC_NAME_LENGTH
 #define MAX_MUSIC_NAME_LENGTH (MAX_APP_NAME_LENGTH*2)
+#endif
+
+#ifndef ENABLE_RK_ROCKIT
 #define ENABLE_RK_ROCKIT    1
-#define ENABLE_UAC    1
+#endif
+
+#ifndef DEFAULT_SAMPLE_FREQ
 #define DEFAULT_SAMPLE_FREQ 44100
+#endif
+
+#ifndef DEFAULT_MIC_3A
 #define DEFAULT_MIC_3A      true
-#define ENABLE_EXT_MCU_USB   0
-#define ENABLE_AUX          0
+#endif
+
+#ifndef MIC_NUM
 #define MIC_NUM             1
-#define ENABLE_RAW_PCM      0
+#endif
+
+#ifndef ENABLE_SARAADC
 #define ENABLE_SARAADC   0
+#endif
+
+#ifndef MAX_MAIN_VOLUME
 #define MAX_MAIN_VOLUME   0
+#endif
+
+#ifndef MIN_MAIN_VOLUME
 #define MIN_MAIN_VOLUME   (-40)
+#endif
+
+#ifndef MIN_MAIN_VOLUME_MUTE
 #define MIN_MAIN_VOLUME_MUTE (-80)
+#endif
+
+#ifndef DEFAULT_MAIN_VOLUME
 #define DEFAULT_MAIN_VOLUME ((MAX_MAIN_VOLUME+MIN_MAIN_VOLUME)/2)
+#endif
+
+#ifndef MAX_MIC_PHONE_VOLUME
 #define MAX_MIC_PHONE_VOLUME   0
+#endif
+
+#ifndef MIN_MIC_PHONE_VOLUME
 #define MIN_MIC_PHONE_VOLUME   (-100)
+#endif
+
+#ifndef DEFAULT_HUMAN_LEVEL
 #define DEFAULT_HUMAN_LEVEL 15
 #endif
 

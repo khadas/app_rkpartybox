@@ -60,7 +60,7 @@ int maintask_read_event(int source, int fd) {
         #endif
 
         case PBOX_MAIN_BT: {
-        #if ENABLE_USE_SOCBT
+        #if ENABLE_EXT_BT_MCU
             maintask_btsoc_fd_process(fd);
         #else
             maintask_bt_fd_process(fd);
@@ -179,12 +179,9 @@ void main(int argc, char **argv) {
     pbox_get_opt(argc, argv);
     pbox_debug_init(log_level_str);
 
+    pbox_app_set_favor_source_order();
     pbox_app_ui_init(pbox_ini_path);
     pbox_app_ui_load();
-
-#if !ENABLE_USE_SOCBT
-    //pbox_init_background();
-#endif
 
     for (i = 0; i< PBOX_SOCKPAIR_NUM; i++) {
         struct timeval timeout;
@@ -224,7 +221,7 @@ void main(int argc, char **argv) {
     pbox_create_KeyScanTask();
 #endif
     pbox_create_hotplug_dev_task();
-    #if ENABLE_USE_SOCBT
+    #if ENABLE_EXT_BT_MCU
     pbox_create_btsoc_task();
     #else
     pbox_create_bttask();
@@ -324,16 +321,14 @@ void maintask_timer_fd_process(int timer_fd) {
 
     if ((0 == msTimePassed%1000) && (pboxUIdata->play_status == PLAYING)) {
         //every one second send command to refresh position
-        #if !ENABLE_EXT_MCU_USB
-        if(pboxData->inputDevice == SRC_USB)
-            pbox_app_rockit_get_music_current_postion(SRC_USB);
-        #endif
+        if(pboxData->inputDevice == SRC_CHIP_USB)
+            pbox_app_rockit_get_music_current_postion(SRC_CHIP_USB);
     }
 
     if((isPoweron == false) /*&& (0 == msTimePassed%100)*/) {
         isPoweron = true;
         pbox_app_usb_pollState();
-        #if ENABLE_USE_SOCBT
+        #if ENABLE_EXT_BT_MCU
         pbox_app_btsoc_init();
         #else
         pbox_app_music_mics_init(DISP_All);

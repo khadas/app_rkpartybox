@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.8)
 project(rkpartybox)
 
 add_definitions(-g -D__EXPORTED_HEADERS__)
-
 include_directories(
 	${PROJECT_SOURCE_DIR}/app/
 	${PROJECT_SOURCE_DIR}/modules/uac/
@@ -14,7 +13,6 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/sys/
 	${PROJECT_SOURCE_DIR}/utils/log/
 	${PROJECT_SOURCE_DIR}/utils/os/
-	${PROJECT_SOURCE_DIR}/utils/audio/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
 	${PROJECT_SOURCE_DIR}/hal/
@@ -23,7 +21,6 @@ include_directories(
 
 include_directories(${GLIB2_INCLUDE_DIRS})
 include_directories(${DBUS_INCLUDE_DIRS})
-
 aux_source_directory(${PROJECT_SOURCE_DIR}/sys SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/cJSON SRCS)
 aux_source_directory(./app SRCS)
@@ -35,14 +32,16 @@ aux_source_directory(./modules/audio SRCS)
 aux_source_directory(./sys SRCS)
 aux_source_directory(./utils/log SRCS)
 aux_source_directory(./utils/os SRCS)
-aux_source_directory(./utils/audio SRCS)
 aux_source_directory(./hal SRCS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
 message("CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
 message("CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
+
 if (LV_USE_DEMO_MUSIC)
+add_definitions(-DENABLE_LCD_DISPLAY=1)
+add_definitions(-DDEFAULT_HUMAN_LEVEL=15)
 add_definitions(-DLV_USE_DEMO_MUSIC=1)
 add_definitions(-DUSE_DRM=1)
 include_directories(${PROJECT_SOURCE_DIR}/app/music_ui/)
@@ -54,7 +53,36 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/lvgl/ SRCS)
 aux_source_directory(./app/music_ui SRCS)
 aux_source_directory(./app/music_ui/lvgl SRCS)
 aux_source_directory(./app/music_ui/assets SRCS)
+else()
+add_definitions(-DENABLE_LCD_DISPLAY=0)
+add_definitions(-DDEFAULT_HUMAN_LEVEL=5)
 endif()
+
+if (ENABLE_RK_LED_EFFECT)
+add_definitions(-DENABLE_RK_LED_EFFECT=1)
+else()
+add_definitions(-DENABLE_RK_LED_EFFECT=0)
+endif()
+
+# for linux, this is not need. may use this if rtos.
+# if (ENABLE_RKCHIP_UAC)
+# aux_source_directory(./modules/uac SRCS)
+# endif()
+
+if (ENABLE_MIC)
+add_definitions(-DENABLE_MIC=1)
+add_definitions(-DMIC_NUM=${MICPHONE_NUM})
+message("MICPHONE_NUM: ${MICPHONE_NUM}")
+else()
+add_definitions(-DENABLE_MIC=0)
+endif()
+
+if (ENABLE_RKCHIP_SARADC)
+add_definitions(-DENABLE_RKCHIP_SARADC=1)
+else()
+add_definitions(-DENABLE_RKCHIP_SARADC=0)
+endif()
+
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(UDEV libudev REQUIRED)
@@ -74,21 +102,23 @@ target_link_libraries(${PROJECT_NAME} lvgl lv_drivers drm)
 endif()
 
 if(RK3308_PBOX_CORE_BOARD)
-	add_definitions(-DENABLE_EXT_BT_MCU)
+	message("RK3308_PBOX_CORE_BOARD: building....")
+	add_definitions(-DENABLE_EXT_BT_MCU=1)
 	install(FILES ./lib64/librkaudio_effect_howling.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
-	install(FILES ./lib64/librockit.so DESTINATION "lib" RENAME "librockit.so")
 	install(FILES ./bins/eq_drc_recorder_vendor_2chn.bin DESTINATION /etc/pbox RENAME "eq_drc_recorder.bin")
 	install(FILES ./bins/rkstudio_vendor_2in6out.bin DESTINATION /etc/pbox RENAME "rkstudio.bin")
 	install(FILES ./bins/config_howling_vendor.json DESTINATION /etc/pbox RENAME "config_howling.json")
 	install(PROGRAMS bins/partybox_app_vendor.sh DESTINATION bin RENAME "partybox_app.sh")
+	install(FILES ./bins/.usb_config_nouac DESTINATION /etc/init.d  RENAME ".usb_config")
 else()
+	add_definitions(-DENABLE_EXT_BT_MCU=0)
 	install(FILES ./lib64/librkaudio_effect_howling.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
-	install(FILES ./lib64/librockit.so DESTINATION "lib" RENAME "librockit.so")
 	install(FILES ./bins/eq_drc_recorder_evb_1chn.bin DESTINATION /etc/pbox RENAME "eq_drc_recorder.bin")
 	install(FILES ./bins/rkstudio_evb_2in2out.bin DESTINATION /etc/pbox RENAME "rkstudio.bin")
 	install(FILES ./bins/config_howling_evb.json DESTINATION /etc/pbox RENAME "config_howling.json")
 	install(PROGRAMS bins/partybox_app_evb.sh DESTINATION bin RENAME "partybox_app.sh")
 	install(FILES ./bins/.usb_config DESTINATION /etc/init.d)
+	install(FILES ./lib64/bt/librkwifibt.so DESTINATION "lib" RENAME "librkwifibt.so")
 endif()
 
 set(ROCKIT_FILE_LIBS
@@ -102,7 +132,7 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkaudio_effect_vocal.so
        ./lib64/librkstudio_tuning.so
        ./lib64/librkstudio.so
-       ./lib64/bt/librkwifibt.so
+       ./lib64/librockit.so
        )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

@@ -20,8 +20,13 @@
 #include "pbox_common.h"
 #include "pbox_socketpair.h"
 #include "pbox_lvgl.h"
-#if LV_USE_DEMO_MUSIC
+#if ENABLE_LCD_DISPLAY
 #include "lv_demo_music.h"
+#endif
+
+#if (ENABLE_LCD_DISPLAY == 0)
+#define _lv_demo_music_update_ui_info(...)         ((void) 0)
+#define _lv_demo_music_update_list(...)         ((void) 0)
 #endif
 
 // Define a function pointer type for event handlers

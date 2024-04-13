@@ -37,7 +37,11 @@ pbox_data_t pbox_data = {
         .state = false,
         .freq = 48000,
     },
-    .inputDevice = SRC_USB,
+#if ENABLE_EXT_BT_MCU
+    .inputDevice = SRC_EXT_BT,
+#else
+    .inputDevice = SRC_CHIP_USB,
+#endif
     .volume_resume_time = -1,
 };
 
@@ -47,14 +51,35 @@ struct _pbox_ui *const pboxUIdata  = &(pbox_data.ui);
 struct _pbox_track *const pboxTrackdata  = &(pbox_data.track);
 usb_disk_info_t *const pboxUsbdata  = &(pbox_data.usbDisk);
 struct _pbox_uac *const pboxUacdata = &(pbox_data.uac);
-static bool play_command_sended = false;
-#if ENABLE_UAC
-const input_source_t input_priority[SRC_NUM] = {SRC_BT, SRC_USB, SRC_UAC};
-#else
-const input_source_t input_priority[SRC_NUM] = {SRC_BT, SRC_USB};
-#endif
 
-static bool check_dest_source(input_source_t* destSource);
+favor_input_order_t input_order_config[SRC_NUM];
+void pbox_app_set_favor_source_order(void) {
+    pboxData->avail_srcs = 0;
+    const input_source_t input_priority[SRC_NUM] = FAVOR_SRC_ORDER;
+    for (int i = 0; i < SRC_NUM; i++) {
+        input_order_config[i].source = input_priority[i];
+        input_order_config[i].enable = PBOX_INPUT_SRCS&(1 << input_priority[i]);
+
+        if(input_order_config[i].enable) {
+            ALOGW("%s, source:%d, %s\n", __func__, input_order_config[i].source, getInputSourceString(input_order_config[i].source));
+            pboxData->avail_srcs++;
+        }
+    }
+};
+
+bool is_input_source_configed(input_source_t source) {
+    for (int i = 0; i < SRC_NUM; i++) {
+        if(!input_order_config[i].enable) {
+            continue;
+        }
+
+        if(input_order_config[i].source == source) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void pbox_app_show_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy) {
     //nothing to notify rockit
     pbox_multi_displayTrackPosition(durationOnly, current, duration, policy);
@@ -80,7 +105,7 @@ void pbox_app_show_playingStatus(bool play, display_t policy) {
 }
 
 void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy) {
-    ALOGD("%s, source:%d, restart:%d\n", __func__, source, restart);
+    ALOGW("%s, source:%d, restart:%d\n", __func__, source, restart);
     if(!is_input_source_selected(source, ANY)) {
         return;
     }
@@ -91,24 +116,24 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
     }
 
     switch(source) {
-        case SRC_BT: {
-            pbox_app_rockit_start_audiocard_player(SRC_BT, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_BT);
+        case SRC_CHIP_BT: {
+            pbox_app_rockit_start_audiocard_player(source, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_RKCHIP_BT);
         } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
-            pbox_app_rockit_start_audiocard_player(SRC_UAC, pboxUacdata->freq, 2, AUDIO_CARD_UAC);
-        }
-#endif
-#if ENABLE_EXT_MCU_USB
-        case SRC_USB: {
-            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_USB);
-        }
-#endif
-#if ENABLE_AUX
-        case SRC_AUX: {
-            pbox_app_rockit_start_audiocard_player(SRC_BT, 48000, 2, AUDIO_CARD_AUX);
-        }
-#endif
+
+        case SRC_EXT_BT: {
+            pbox_app_rockit_start_audiocard_player(source, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_EXT_BT);
+        } break;
+
+        case SRC_CHIP_UAC: {
+            pbox_app_rockit_start_audiocard_player(SRC_CHIP_UAC, pboxUacdata->freq, 2, AUDIO_CARD_RKCHIP_UAC);
+        } break;
+
+        case SRC_EXT_USB: {
+            pbox_app_rockit_start_audiocard_player(SRC_EXT_USB, 48000, 2, AUDIO_CARD_EXT_USB);
+        } break;
+        case SRC_EXT_AUX: {
+            pbox_app_rockit_start_audiocard_player(SRC_EXT_AUX, 48000, 2, AUDIO_CARD_EXT_AUX);
+        } break;
     }
 
     //pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
@@ -191,30 +216,6 @@ bool is_input_source_selected(input_source_t source, switch_source_t mode) {
     }
 }
 
-bool is_dest_source_switchable(input_source_t source, switch_source_t mode) {
-    bool result;
-    input_source_t dest = source;
-
-    result = check_dest_source(&source);
-    result =  result && (source == dest);
-
-    switch (mode) {
-        case MANUAL: {
-            return result && (pboxUIdata->autoSource == false);
-        } break;
-
-        case AUTO: {
-            return result && (pboxUIdata->autoSource == true);
-        } break;
-
-        case ANY: {
-            return result;
-        } break;
-    }
-
-    return false;
-}
-
 void pbox_app_autoswitch_next_input_source(input_source_t currentSource, display_t policy) {
     input_source_t dest;
     int index = -1;
@@ -222,7 +223,11 @@ void pbox_app_autoswitch_next_input_source(input_source_t currentSource, display
         return;
 
     for(int i = 0; i< SRC_NUM; i++) {
-        if(input_priority[i] == currentSource) {
+        if(!input_order_config[i].enable) {
+            continue;
+        }
+
+        if(input_order_config[i].source == currentSource) {
             index = i;
             break;
         }
@@ -232,40 +237,42 @@ void pbox_app_autoswitch_next_input_source(input_source_t currentSource, display
         return;
 
     for(int i= index+1; i < SRC_NUM; i++) {
-#if ENABLE_UAC
-        if(input_priority[i] == SRC_UAC) {
-            pbox_app_switch_to_input_source(SRC_UAC, policy);
+        if(!input_order_config[i].enable) {
+            continue;
+        }
+
+        if(input_order_config[i].source == SRC_CHIP_UAC) {
+            pbox_app_switch_to_input_source(SRC_CHIP_UAC, policy);
             return;
         }
-#endif
-        {
-            if(is_dest_source_switchable(input_priority[i], AUTO)) {
-                pbox_app_switch_to_input_source(input_priority[i], policy);
-                return;
-            }
+
+        if(is_dest_source_auto_switchable(input_order_config[i].source)) {
+            pbox_app_switch_to_input_source(input_order_config[i].source, policy);
+            return;
         }
     }
 }
 
-#ifdef ENABLE_EXT_BT_MCU
-bool isInputSourceConnected(input_source_t source) {
-    return true;
-}
-#else
 bool isInputSourceConnected(input_source_t source) {
     switch(source) {
-        case SRC_BT: {
+        case SRC_CHIP_BT: {
             return isBtConnected();
         } break;
 
-        case SRC_USB: {
+        case SRC_CHIP_USB: {
             return isUsbDiskConnected();
         } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
+
+        case SRC_CHIP_UAC: {
             return pboxUacdata->state;
         } break;
-#endif
+
+        case SRC_EXT_BT:
+        case SRC_EXT_USB:
+        case SRC_EXT_AUX: {
+            return true;//tmp code
+        } break;
+
         default: {
             break;
         }
@@ -273,20 +280,21 @@ bool isInputSourceConnected(input_source_t source) {
 
     return false;
 }
-#endif
 
-bool check_dest_source(input_source_t* destSource) {
+bool is_dest_source_auto_switchable(input_source_t destSource) {
     int index = -1;
 
     if (pboxUIdata->autoSource == false) {
-        return true;
+        return false;
     }
 
     for(int i= 0; i< SRC_NUM; i++) {
-        if(input_priority[i] == *destSource) {
+        if(!input_order_config[i].enable) {
+            continue;
+        }
+        if(input_order_config[i].source == destSource) {
             index = i;
             break;
-
         }
     }
 
@@ -294,13 +302,15 @@ bool check_dest_source(input_source_t* destSource) {
         return false;
 
     for(int i = 0; i < index; i++) {
-        if(isInputSourceConnected(input_priority[i])) {
-            *destSource = input_priority[i];
-            return true;
+        if(!input_order_config[i].enable) {
+            continue;
+        }
+        if(isInputSourceConnected(input_order_config[i].source)) {
+            return false;//a higher source is connected..
         }
     }
 
-    if(isInputSourceConnected(*destSource)) {
+    if(isInputSourceConnected(destSource)) {
         return true;
     }
 
@@ -309,49 +319,43 @@ bool check_dest_source(input_source_t* destSource) {
 
 //this means we switch source actively...
 void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
-    ALOGD("%s, source: [%d->%d]\n", __func__, pboxData->inputDevice, source);
+    ALOGD("%s, source: [%s->%s]\n", __func__, getInputSourceString(pboxData->inputDevice), getInputSourceString(source));
     if(pboxData->inputDevice == source)
         return;
     pbox_app_music_stop(policy);
     pboxData->inputDevice = source;
     switch(source) {
-        case SRC_BT: {
+        case SRC_CHIP_BT:
+        case SRC_EXT_BT: {
             pbox_app_show_bt_state(pboxBtSinkdata->btState, policy);
-            if(isInputSourceConnected(SRC_BT)) {
-                pbox_app_restart_passive_player(SRC_BT, false, policy);
+            if(isInputSourceConnected(source)) {
+                pbox_app_restart_passive_player(source, false, policy);
             } else {
                 pbox_app_show_tack_info(" ", " ", policy);
             }
         } break;
-#if ENABLE_AUX
-        case SRC_AUX: {
-            pbox_app_restart_passive_player(SRC_AUX, false, policy);
+        case SRC_EXT_AUX: {
+            pbox_app_restart_passive_player(SRC_EXT_AUX, false, policy);
         } break;
-#endif
-#if ENABLE_EXT_MCU_USB
-        case SRC_USB: {
-            pbox_app_restart_passive_player(SRC_USB, false, policy);
+        case SRC_EXT_USB: {
+            pbox_app_restart_passive_player(SRC_EXT_USB, false, policy);
         } break;
-#else
-        case SRC_USB: {
+        case SRC_CHIP_USB: {
             pbox_app_show_usb_state(pboxUsbdata->usbState, policy);
-            if(isInputSourceConnected(SRC_USB)) {
+            if(isInputSourceConnected(SRC_CHIP_USB)) {
                 pbox_app_usb_list_update(pboxTrackdata->track_id, policy);
             } else {
                 pbox_app_show_tack_info(" ", " ",  policy);
             }
         } break;
-#endif
-#if ENABLE_UAC
-        case SRC_UAC: {
+
+        case SRC_CHIP_UAC: {
             pboxUIdata->play_status = pboxUacdata->state;
             pbox_app_show_playingStatus(pboxUacdata->state, policy);
             pbox_multi_displayUacState(UAC_ROLE_SPEAKER, pboxUacdata->state, policy);
             pbox_app_show_tack_info(" ", " ",  policy);
-            //pbox_app_uac_restart();
-            pbox_app_restart_passive_player(SRC_UAC, false, policy);
+            pbox_app_restart_passive_player(SRC_CHIP_UAC, false, policy);
         } break;
-#endif
     }
     //no ui display now
 }
@@ -361,18 +365,17 @@ void pbox_app_music_pause(display_t policy)
     if(pboxUIdata->play_status != PLAYING)
         return;
     switch (pboxData->inputDevice) {
-        case SRC_BT: {
+        case SRC_CHIP_BT: {
             if (isBtA2dpConnected()) {
                 pbox_btsink_playPause(false);
             }
         } break;
 
-        case SRC_USB: {
+        case SRC_CHIP_USB: {
         } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
+
+        case SRC_CHIP_UAC: {
         } break;
-#endif
     }
 
     pbox_app_rockit_pause_player(pboxData->inputDevice);
@@ -387,13 +390,13 @@ void pbox_app_music_trackid(uint32_t id, display_t policy) {
 
 void pbox_app_music_start(display_t policy) {
     switch (pboxData->inputDevice) {
-        case SRC_BT: {
+        case SRC_CHIP_BT: {
             if (isBtA2dpConnected()) {
                 pbox_btsink_playPause(true);
             }
         } break;
 
-        case SRC_USB: {
+        case SRC_CHIP_USB: {
             char track_uri[MAX_MUSIC_NAME_LENGTH+1];
             ALOGD("pboxTrackdata->track_id:%d, track_num:%d\n", pboxTrackdata->track_id, pboxTrackdata->track_num);
             for (int i=0 ; i< pboxTrackdata->track_num; i++) {
@@ -409,13 +412,12 @@ void pbox_app_music_start(display_t policy) {
             pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
             pbox_multi_displayTrackInfo(track_name, NULL, policy);
         } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
+
+        case SRC_CHIP_UAC: {
             pbox_multi_displayTrackInfo("", NULL, policy);
-            pbox_app_restart_passive_player(SRC_UAC, true, policy);
+            pbox_app_restart_passive_player(SRC_CHIP_UAC, true, policy);
         } break;
         default:
-#endif
             break;
     }
 }
@@ -423,24 +425,23 @@ void pbox_app_music_start(display_t policy) {
 void pbox_app_music_resume(display_t policy) {
     //pbox_app_music_stop(policy);
     switch (pboxData->inputDevice) {
-        case SRC_BT: {
+        case SRC_CHIP_BT: {
             if (isBtA2dpConnected()&&(!isBtA2dpStreaming())) {
                 pbox_btsink_playPause(true);
             }
         } break;
 
-        case SRC_USB: {
+        case SRC_CHIP_USB: {
             if (pboxTrackdata->track_num == 0) {
                 return;
             }
             pbox_app_music_start(policy);
-            pbox_app_rockit_get_player_duration(SRC_USB);
+            pbox_app_rockit_get_player_duration(SRC_CHIP_USB);
         } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
+
+        case SRC_CHIP_UAC: {
             pbox_app_music_start(policy);
         } break;
-#endif
     }
     pboxUIdata->play_status = PLAYING;
     pbox_multi_displayIsPlaying(true, policy);
@@ -453,28 +454,28 @@ void pbox_app_music_stop(display_t policy)
         return;
     }
     switch (pboxData->inputDevice) {
-        case SRC_BT: {
+        case SRC_CHIP_BT: {
             if (isBtA2dpConnected())
                 pbox_btsink_a2dp_stop();
-            pbox_app_rockit_stop_player(SRC_BT);
+            pbox_app_rockit_stop_player(SRC_CHIP_BT);
         } break;
-#if ENABLE_AUX
-        case SRC_AUX: {
-            pbox_app_rockit_stop_player(SRC_BT);
+
+        case SRC_EXT_AUX: {
+            pbox_app_rockit_stop_player(SRC_EXT_AUX);
         } break;
-#endif
-        case SRC_USB: {
-#if ENABLE_EXT_MCU_USB
-            pbox_app_rockit_stop_player(SRC_BT);
-#else
-            pbox_app_rockit_stop_player(SRC_USB);
-#endif
+
+        case SRC_CHIP_USB: {
+            pbox_app_rockit_stop_player(SRC_CHIP_USB);
         } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
-            pbox_app_rockit_stop_player(SRC_UAC);
+
+        case SRC_EXT_USB: {
+            pbox_app_rockit_stop_player(SRC_EXT_USB);
         } break;
-#endif
+
+        case SRC_CHIP_UAC: {
+            pbox_app_rockit_stop_player(SRC_CHIP_UAC);
+        } break;
+
         default:
         break;
     }
@@ -501,9 +502,9 @@ void pbox_app_music_album_next(bool next, display_t policy)
 {
     ALOGD("%s, next:%d, inputDevice:%d\n", __func__, next, pboxData->inputDevice);
     switch (pboxData->inputDevice) {
-        case SRC_BT: {
+        case SRC_CHIP_BT: {
             if (isBtA2dpConnected()) {
-                pbox_app_rockit_set_player_volume(SRC_BT, MIN_MAIN_VOLUME);
+                pbox_app_rockit_set_player_volume(SRC_CHIP_BT, MIN_MAIN_VOLUME);
                 if(next) {
                     pbox_btsink_music_next(true);
                 }
@@ -518,7 +519,7 @@ void pbox_app_music_album_next(bool next, display_t policy)
             }
         } break;
 
-        case SRC_USB: {
+        case SRC_CHIP_USB: {
             uint32_t *const pId = &(pboxTrackdata->track_id);
             if(pboxTrackdata->track_num == 0) {
                 return;
@@ -547,13 +548,13 @@ void pbox_app_music_album_next(bool next, display_t policy)
             }
 
         } break;
-#if ENABLE_UAC
-        case SRC_UAC: {
+
+        case SRC_CHIP_UAC: {
             char text[32] = {0};
             snprintf(text, 31, "UAC NO SUPPORT:%s !!!", next? "NEXT":"PREV");
             pbox_multi_displayTrackInfo(text, NULL,  DISP_All);
         } break;
-#endif
+
         default:
         break;
     }
@@ -617,10 +618,10 @@ void pbox_app_music_init(void) {
     pbox_app_music_set_accomp_music_level(pboxUIdata->accomLevel, DISP_All);
     pbox_app_music_set_human_music_level(pboxUIdata->humanLevel, DISP_All);
     pbox_app_music_original_singer_open(!(pboxUIdata->vocalSplit), DISP_All);
-    #if ENABLE_USE_SOCBT
+    #if ENABLE_EXT_BT_MCU
         pbox_app_music_set_placement(pboxUIdata->placement, DISP_All);
         pbox_app_music_set_stereo_mode(pboxUIdata->stereo, DISP_All);
-        pbox_app_switch_to_input_source(SRC_BT, DISP_All);
+        pbox_app_switch_to_input_source(SRC_CHIP_BT, DISP_All);
     #endif
 }
 
@@ -778,7 +779,6 @@ void pbox_version_print(void) {
 }
 
 void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
-#if ENABLE_UAC
     ALOGD("%s\n", __func__);
     switch (role) {
         case UAC_ROLE_SPEAKER: {
@@ -787,16 +787,17 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
             ALOGD("%s player start=%d\n", __func__, start);
             pboxUacdata->state = start;
 
-            if (start && is_dest_source_switchable(SRC_UAC, AUTO)) {
-                pbox_app_switch_to_input_source(SRC_UAC, policy);
+            if (start && is_dest_source_auto_switchable(SRC_CHIP_UAC)) {
+                pbox_app_switch_to_input_source(SRC_CHIP_UAC, policy);
             }
 
-            if(!is_input_source_selected(SRC_UAC, ANY)) {
+            if(!is_input_source_selected(SRC_CHIP_UAC, ANY)) {
                 return;
             }
 
             pboxUIdata->play_status = start;
-            pbox_app_drive_passive_player(SRC_UAC, start? PLAYING:_STOP, policy);
+            pbox_app_drive_passive_player(SRC_CHIP_UAC, start? PLAYING:_STOP, policy);
+            pbox_app_show_playingStatus(pboxUacdata->state, policy);
             pbox_multi_displayUacState(role, start, policy);
         } break;
 
@@ -806,31 +807,27 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
             ALOGD("%s recorder start=%d\n", __func__, start);
             pboxUacdata->record_state = start;
 
-            pbox_app_record_start(SRC_UAC, start, policy);
+            pbox_app_record_start(SRC_CHIP_UAC, start, policy);
         }
 
         default: break;
     }
-#endif
 }
 
 void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy) {
-#if ENABLE_UAC
-    if(!is_input_source_selected(SRC_UAC, ANY)) {
+    if(!is_input_source_selected(SRC_CHIP_UAC, ANY)) {
         return;
     }
 
     ALOGD("%s %s freq:%d\n", __func__, (role==UAC_ROLE_SPEAKER)?"spk":"rec", freq);
     if(pboxUacdata->freq != freq) {
         pboxUacdata->freq = freq;
-        pbox_app_rockit_start_audiocard_player(SRC_UAC, freq, 2, AUDIO_CARD_UAC);
+        pbox_app_rockit_start_audiocard_player(SRC_CHIP_UAC, freq, 2, AUDIO_CARD_RKCHIP_UAC);
     }
-#endif
 }
 
 void pbox_app_uac_volume_change(uac_role_t role, uint32_t volume, display_t policy) {
-#if ENABLE_UAC
-    if(!is_input_source_selected(SRC_UAC, ANY)) {
+    if(!is_input_source_selected(SRC_CHIP_UAC, ANY)) {
         return;
     }
 
@@ -840,29 +837,24 @@ void pbox_app_uac_volume_change(uac_role_t role, uint32_t volume, display_t poli
         pbox_app_rockit_set_uac_volume(role, pboxUIdata->mainVolumeLevel);
         pbox_multi_displayUacVolume(role, volume, policy);
     }
-#endif
 }
 
 void pbox_app_uac_mute_change(uac_role_t role, bool mute, display_t policy) {
-#if ENABLE_UAC
-    if(!is_input_source_selected(SRC_UAC, ANY)) {
+    if(!is_input_source_selected(SRC_CHIP_UAC, ANY)) {
         return;
     }
 
     pbox_app_rockit_set_mute(role, mute);
     pbox_multi_displayUacMute(role, mute, policy);
-#endif
 }
 
 void pbox_app_uac_ppm_change(uac_role_t role, int32_t ppm, display_t policy) {
-#if ENABLE_UAC
-    if(!is_input_source_selected(SRC_UAC, ANY)) {
+    if(!is_input_source_selected(SRC_CHIP_UAC, ANY)) {
         return;
     }
 
     pbox_app_rockit_set_ppm(role, ppm);
     pbox_multi_displayUacPpm(role, ppm, policy);
-#endif
 }
 
 void pbox_app_usb_start_scan(display_t policy) {

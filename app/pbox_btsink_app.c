@@ -205,7 +205,7 @@ void update_music_positions(uint32_t current, uint32_t total) {
 
     if(prev_total != total) {
         prev_total = total;
-        pbox_app_restart_passive_player(SRC_BT, true, DISP_All);
+        pbox_app_restart_passive_player(SRC_CHIP_BT, true, DISP_All);
     }
 }
 
@@ -250,18 +250,18 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 } break;
                 case APP_BT_DISCONNECT: {
                     pbox_app_bt_pair_enable(true, DISP_All);
-                    if(is_input_source_selected(SRC_BT, AUTO)) {
-                        pbox_app_autoswitch_next_input_source(SRC_BT, DISP_All);
+                    if(is_input_source_selected(SRC_CHIP_BT, AUTO)) {
+                        pbox_app_autoswitch_next_input_source(SRC_CHIP_BT, DISP_All);
                     }
                 } break;
                 case APP_BT_CONNECTED: {
                     setBtRemoteName(msg->btinfo.remote_name);
                     pbox_app_bt_pair_enable(false, DISP_All);
 
-                    if(is_dest_source_switchable(SRC_BT, AUTO))
-                        pbox_app_switch_to_input_source(SRC_BT, DISP_All);
-                    if(is_input_source_selected(SRC_BT, ANY)) {
-                        pbox_app_restart_passive_player(SRC_BT, true, DISP_All);
+                    if(is_dest_source_auto_switchable(SRC_CHIP_BT))
+                        pbox_app_switch_to_input_source(SRC_CHIP_BT, DISP_All);
+                    if(is_input_source_selected(SRC_CHIP_BT, ANY)) {
+                        pbox_app_restart_passive_player(SRC_CHIP_BT, true, DISP_All);
                     }
                 } break;
                 case APP_BT_NONE: {
@@ -269,7 +269,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 } break;
             }
 
-            if(is_input_source_selected(SRC_BT, ANY))
+            if(is_input_source_selected(SRC_CHIP_BT, ANY))
                 pbox_app_show_bt_state(pboxBtSinkdata->btState, DISP_All);
         } break;
 
@@ -282,7 +282,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             ALOGD("%s recv msg: a2dpsink state: %d -> [%d]\n", __func__, pboxBtSinkdata->a2dpState, a2dpState);
             if(pboxBtSinkdata->a2dpState != a2dpState) {
                 pboxBtSinkdata->a2dpState = a2dpState;
-                if(!is_input_source_selected(SRC_BT, ANY))
+                if(!is_input_source_selected(SRC_CHIP_BT, ANY))
                     break;
 
                 if(pboxBtSinkdata->a2dpState == A2DP_STREAMING) {
@@ -303,7 +303,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 pboxBtSinkdata->pcmSampeFreq = freq;
                 pboxBtSinkdata->pcmChannel = channel;
                 if(pboxBtSinkdata->a2dpState == A2DP_STREAMING) {
-                    pbox_app_restart_passive_player(SRC_BT, false, DISP_All);
+                    pbox_app_restart_passive_player(SRC_CHIP_BT, false, DISP_All);
                 }
             }
             ALOGD("%s update: pbox_data.btsink: freq:%d channel: %d\n", __func__, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel);
@@ -313,7 +313,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             char *title = msg->btinfo.track.title;
             char *artist = msg->btinfo.track.artist;
             ALOGD("%s recv msg rack: %s %s\n", __func__, title, artist);
-            if(is_input_source_selected(SRC_BT, ANY))
+            if(is_input_source_selected(SRC_CHIP_BT, ANY))
                 update_music_track_info(title, artist);
         } break;
 
@@ -321,7 +321,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             uint32_t current = msg->btinfo.positions.current;
             uint32_t total = msg->btinfo.positions.total;
 
-            if(is_input_source_selected(SRC_BT, ANY))
+            if(is_input_source_selected(SRC_CHIP_BT, ANY))
                 update_music_positions(current, total);
         } break;
 
@@ -341,7 +341,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
 
         case RK_BT_ABS_VOL: {
             //when seperate function is enable, don't set bt volume to mainVolume.
-            if ((!pboxUIdata->vocalSplit) && is_input_source_selected(SRC_BT, ANY))
+            if ((!pboxUIdata->vocalSplit) && is_input_source_selected(SRC_CHIP_BT, ANY))
                 update_bt_music_volume(msg->media_volume, DISP_All|DISP_FS);
         } break;
 

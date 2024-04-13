@@ -14,14 +14,13 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <linux/netlink.h>
-
-#include "uac_uevent.h"
-#include "uac_control.h"
 #include "pbox_common.h"
 #include "pbox_socket.h"
 #include "pbox_usb_uac.h"
 #include "pbox_hotplug.h"
 #include "rk_utils.h"
+#include "uac_uevent.h"
+#include "uac_control.h"
 
 bool isUacEnabled(void) {
     const char *filename = "/oem/uac_config";
@@ -89,22 +88,19 @@ void parse_event(const struct _uevent *event) {
     }
     ALOGI("uac event -------------------------\n");
 #endif
-    if(isUacEnabled())
-    {
+    if(isUacEnabled()) {
         audio_event(event);
     }
 }
 
 void uac_init(void) {
     uac_control_create(&uac);
-#if ENABLE_UAC
     //if (!isUacEnabled())
     //    return;
     //exec_command_system("touch /tmp/.usb_config");
     //exec_command_system("echo \"usb_adb_en\" > /tmp/.usb_config");
     //exec_command_system("echo \"usb_uac1_en\" >> /tmp/.usb_config");
     //exec_command_system("/etc/init.d/S50usbdevice.sh restart");
-#endif
 }
 
 int uac_monitor_get_fd(void) {
