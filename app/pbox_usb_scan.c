@@ -47,6 +47,7 @@ bool file_is_supported(char *filepath, music_format_t* file_type)
         { MUSIC_FILE_WAV, "wav"},
         { MUSIC_FILE_FLAC, "flac"},
         { MUSIC_FILE_OGG, "ogg"},
+        { MUSIC_FILE_APE, "ape"},
     };
 
     for (int i = 0; i < sizeof(formats) / sizeof(*formats); i++) {

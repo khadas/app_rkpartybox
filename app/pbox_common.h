@@ -142,7 +142,8 @@ typedef enum {
     MUSIC_FILE_MP3,
     MUSIC_FILE_WAV,
     MUSIC_FILE_FLAC,
-    MUSIC_FILE_OGG
+    MUSIC_FILE_OGG,
+    MUSIC_FILE_APE,
 } music_format_t;
 
 typedef enum {
