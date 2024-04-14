@@ -20,7 +20,7 @@
 #include "pbox_common.h"
 #include "pbox_socket.h"
 #include "pbox_usb_uac.h"
-#include "pbox_usb.h"
+#include "pbox_hotplug.h"
 #include "rk_utils.h"
 
 bool isUacEnabled(void) {

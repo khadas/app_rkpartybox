@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include "pbox_common.h"
-#include "pbox_usb.h"
+#include "pbox_hotplug.h"
 #if ENABLE_SARAADC
 #include "pbox_keyadcSara.h"
 #else
@@ -49,7 +49,7 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
         case PBOX_MAIN_KEYSCAN: {
             sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
         } break;
-        case PBOX_MAIN_USBDISK: {
+        case PBOX_MAIN_HOTPLUG: {
             sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
         } break;
 
@@ -77,7 +77,7 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
                 id = ((pbox_rockit_msg_t*)info)->msgId;
                 break;
             #endif
-            case PBOX_MAIN_USBDISK:
+            case PBOX_MAIN_HOTPLUG:
                 id = ((pbox_usb_msg_t*)info)->msgId;
                 break;
             case PBOX_MAIN_KEYSCAN:

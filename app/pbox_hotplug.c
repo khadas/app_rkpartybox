@@ -18,7 +18,7 @@
 
 #include "uac_uevent.h"
 #include "pbox_common.h"
-#include "pbox_usb.h"
+#include "pbox_hotplug.h"
 #include "pbox_usb_scan.h"
 #include "pbox_usb_uac.h"
 #include "pbox_socket.h"
@@ -40,7 +40,7 @@ typedef struct {
 usb_state_t usb_server_state = USB_DISCONNECTED;
 
 int unix_socket_usb_notify(void *info, int length) {
-    return unix_socket_notify_msg(PBOX_MAIN_USBDISK, info, length);
+    return unix_socket_notify_msg(PBOX_MAIN_HOTPLUG, info, length);
 }
 
 void uac_pbox_notify_role_change(uint32_t role, bool start) {
@@ -249,24 +249,24 @@ void process_pbox_usb_cmd(const pbox_usb_msg_t* msg) {
 
 #define USB_UDP_SOCKET 0
 #define USB_DEV_DETECT 1
-#define USB_DEV_UAC    2 
-#define USB_FD_NUM     3
+#define USB_DEV_UAC    2
+#define HOTPLUG_FD_NUM     3
 
-pthread_t usb_server_task_id;
+pthread_t hotplug_dev_server_task_id;
 
-static void *pbox_usb_server(void *arg)
+static void *pbox_hotplug_dev_server(void *arg)
 {
-    int usb_fds[USB_FD_NUM];
+    int hotplug_fds[HOTPLUG_FD_NUM];
     char buff[sizeof(pbox_usb_msg_t)] = {0};
     pbox_usb_msg_t *msg;
     struct udev *udev;
 
-    pthread_setname_np(pthread_self(), "pbox_usb");
-    PBOX_ARRAY_SET(usb_fds, -1, sizeof(usb_fds)/sizeof(usb_fds[0]));
+    pthread_setname_np(pthread_self(), "pbox_hotplug_dev_server");
+    PBOX_ARRAY_SET(hotplug_fds, -1, sizeof(hotplug_fds)/sizeof(hotplug_fds[0]));
 
-    usb_fds[USB_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+    hotplug_fds[USB_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
 
-    if (usb_fds[USB_UDP_SOCKET] < 0) {
+    if (hotplug_fds[USB_UDP_SOCKET] < 0) {
         perror("Failed to create UDP socket");
         return (void *)-1;
     }
@@ -280,18 +280,18 @@ static void *pbox_usb_server(void *arg)
     struct udev_monitor *mon = udev_monitor_new_from_netlink(udev, "udev");
     udev_monitor_filter_add_match_subsystem_devtype(mon, "usb", "usb_device");
     udev_monitor_enable_receiving(mon);
-    usb_fds[USB_DEV_DETECT] = udev_monitor_get_fd(mon);
+    hotplug_fds[USB_DEV_DETECT] = udev_monitor_get_fd(mon);
 
-    usb_fds[USB_DEV_UAC] = uac_monitor_get_fd();
+    hotplug_fds[USB_DEV_UAC] = uac_monitor_get_fd();
     uac_init();
 
-    int max_fd = findMax(usb_fds, sizeof(usb_fds)/sizeof(usb_fds[0]));
+    int max_fd = findMax(hotplug_fds, sizeof(hotplug_fds)/sizeof(hotplug_fds[0]));
 
     fd_set read_fds;
     FD_ZERO(&read_fds);
-    FD_SET(usb_fds[USB_UDP_SOCKET], &read_fds);
-    FD_SET(usb_fds[USB_DEV_DETECT], &read_fds);
-    FD_SET(usb_fds[USB_DEV_UAC], &read_fds);
+    FD_SET(hotplug_fds[USB_UDP_SOCKET], &read_fds);
+    FD_SET(hotplug_fds[USB_DEV_DETECT], &read_fds);
+    FD_SET(hotplug_fds[USB_DEV_UAC], &read_fds);
     struct timeval tv = {
         .tv_sec = 1,
         .tv_usec = 0,
@@ -323,12 +323,12 @@ static void *pbox_usb_server(void *arg)
         }
 
         //ALOGD("%s result:%d\n", __func__, result);
-        for (int i = 0, ret =-1; i < USB_FD_NUM; i++) {
-            if((ret = FD_ISSET(usb_fds[i], &read_set)) == 0)
+        for (int i = 0, ret =-1; i < HOTPLUG_FD_NUM; i++) {
+            if((ret = FD_ISSET(hotplug_fds[i], &read_set)) == 0)
                 continue;
             switch (i) {
                 case USB_UDP_SOCKET: {
-                    int ret = recv(usb_fds[i], buff, sizeof(buff), 0);
+                    int ret = recv(hotplug_fds[i], buff, sizeof(buff), 0);
                     if (ret <= 0) {
                         if (ret == 0) {
                             ALOGW("Socket closed\n");
@@ -375,7 +375,7 @@ static void *pbox_usb_server(void *arg)
                     struct _uevent event;
                     event.size = 0;
                     PBOX_ARRAY_SET(event.strs, 0, sizeof(event.strs)/sizeof(event.strs[0]));
-                    int len = recv(usb_fds[i], buffer, sizeof(buffer), 0);
+                    int len = recv(hotplug_fds[i], buffer, sizeof(buffer), 0);
                     if (len <= 0) {
                         if (len == 0) {
                             ALOGW("Socket closed\n");
@@ -405,15 +405,15 @@ static void *pbox_usb_server(void *arg)
 
     udev_monitor_unref(mon);
     udev_unref(udev);
-    close(usb_fds[USB_UDP_SOCKET]);
-    close(usb_fds[USB_DEV_DETECT]);
+    close(hotplug_fds[USB_UDP_SOCKET]);
+    close(hotplug_fds[USB_DEV_DETECT]);
     return NULL;
 }
 
-int pbox_create_usb_task(void) {
+int pbox_create_hotplug_dev_task(void) {
     int ret;
 
-    ret = pthread_create(&usb_server_task_id, NULL, pbox_usb_server, NULL);
+    ret = pthread_create(&hotplug_dev_server_task_id, NULL, pbox_hotplug_dev_server, NULL);
     if (ret < 0)
     {
         ALOGE("usb server start failed\n");

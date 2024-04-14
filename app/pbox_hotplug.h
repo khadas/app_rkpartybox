@@ -1,5 +1,5 @@
-#ifndef _PBOX_USB_H_
-#define _PBOX_USB_H_
+#ifndef _PBOX_HOTPLUG_H_
+#define _PBOX_HOTPLUG_H_
 #include <stdbool.h>
 #include <stdint.h>
 #include "pbox_common.h"
@@ -40,7 +40,7 @@ void uac_pbox_notify_host_mute(uint32_t role, bool on);
 void uac_pbox_notify_host_ppm(uint32_t role, int32_t ppm);
 
 void usb_pbox_notify_audio_file_added(music_format_t format, char *fileName);
-int pbox_create_usb_task(void);
+int pbox_create_hotplug_dev_task(void);
 #ifdef __cplusplus
 }
 #endif

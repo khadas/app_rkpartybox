@@ -5,7 +5,7 @@
 #include "pbox_multi_display.h"
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
-#include "pbox_usb_app.h"
+#include "pbox_hotplug_app.h"
 #include "pbox_soc_bt_app.h"
 #include "board.h"
 

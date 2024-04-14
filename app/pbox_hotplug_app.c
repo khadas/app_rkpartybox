@@ -11,7 +11,7 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 #include "pbox_common.h"
-#include "pbox_usb.h"
+#include "pbox_hotplug.h"
 #include "pbox_app.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
@@ -192,7 +192,7 @@ void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
 }
 
 // Function to process an incoming pbox_usb_msg_t event
-void maintask_usb_data_recv(const pbox_usb_msg_t* msg) {
+void maintask_hotplug_data_recv(const pbox_usb_msg_t* msg) {
     if (msg == NULL) {
         ALOGW("Error: Null event message received.\n");
         return;
@@ -212,7 +212,7 @@ void maintask_usb_data_recv(const pbox_usb_msg_t* msg) {
     ALOGW("Warning: No handle found for event ID %d.\n", msg->msgId);
 }
 
-void maintask_usb_fd_process(int fd) {
+void maintask_hotplug_fd_process(int fd) {
     char buff[sizeof(pbox_usb_msg_t)] = {0};
     int ret = recv(fd, buff, sizeof(buff), 0);
 
@@ -233,5 +233,5 @@ void maintask_usb_fd_process(int fd) {
         return;
     }
 
-    maintask_usb_data_recv(msg);
+    maintask_hotplug_data_recv(msg);
 }

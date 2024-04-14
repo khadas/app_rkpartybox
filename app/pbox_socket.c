@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include "pbox_common.h"
-#include "pbox_usb.h"
+#include "pbox_hotplug.h"
 #include "pbox_keyscan_app.h"
 #include "pbox_lvgl.h"
 #include "pbox_rockit.h"

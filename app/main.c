@@ -31,8 +31,8 @@
 #include "pbox_keyscan_app.h"
 #include "pbox_keyscan.h"
 #endif
-#include "pbox_usb.h"
-#include "pbox_usb_app.h"
+#include "pbox_hotplug.h"
+#include "pbox_hotplug_app.h"
 #include "pbox_light_effect_app.h"
 #include "pbox_light_effect.h"
 #include "pbox_soc_bt_app.h"
@@ -77,8 +77,8 @@ int maintask_read_event(int source, int fd) {
             maintask_keyscan_fd_process(fd);
         } break;
 
-        case PBOX_MAIN_USBDISK: {
-            maintask_usb_fd_process(fd);
+        case PBOX_MAIN_HOTPLUG: {
+            maintask_hotplug_fd_process(fd);
         } break;
 
         case PBOX_MAIN_FD_TIMER: {
@@ -206,7 +206,7 @@ void main(int argc, char **argv) {
     pbox_fds[PBOX_MAIN_ROCKIT] = get_client_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
     #endif
     pbox_fds[PBOX_MAIN_KEYSCAN] = get_client_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
-    pbox_fds[PBOX_MAIN_USBDISK] = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+    pbox_fds[PBOX_MAIN_HOTPLUG] = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
     pbox_fds[PBOX_MAIN_FD_TIMER] = create_fd_timer();
     //battery_fd;
 #if ENABLE_LCD_DISPLAY
@@ -223,7 +223,7 @@ void main(int argc, char **argv) {
 #else
     pbox_create_KeyScanTask();
 #endif
-    pbox_create_usb_task();
+    pbox_create_hotplug_dev_task();
     #if ENABLE_USE_SOCBT
     pbox_create_btsoc_task();
     #else

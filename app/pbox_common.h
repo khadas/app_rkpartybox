@@ -66,7 +66,7 @@ typedef enum {
 #if ENABLE_RK_ROCKIT
     PBOX_MAIN_ROCKIT,
 #endif
-    PBOX_MAIN_USBDISK,
+    PBOX_MAIN_HOTPLUG,
 #if ENABLE_LCD_DISPLAY
     PBOX_MAIN_LVGL,
 #endif

@@ -8,7 +8,7 @@
 #include <paths.h>
 #include <dirent.h>
 
-#include "pbox_usb.h"
+#include "pbox_hotplug.h"
 #include "pbox_common.h"
 
 static char *strlwr(char *s)
