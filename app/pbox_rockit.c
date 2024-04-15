@@ -120,7 +120,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
     attr.detect.rms_tc = 200;
     attr.detect.hold_time = 0;
     attr.detect.decay_time = 200;
-    attr.detect.detect_per_frm = 10;
+    attr.detect.detect_per_frm = 2;
     attr.detect.band_cnt = 10;
 
     static int old = -1;
@@ -438,7 +438,7 @@ int rk_demo_music_create() {
     detect.rms_tc = 200;
     detect.hold_time = 0;
     detect.decay_time = 200;
-    detect.detect_per_frm = 10;
+    detect.detect_per_frm = 2;
     detect.band_cnt = 10;
     recorder_attr.card_name = "hw:0,0";
     recorder_attr.sample_rate = 48000;
@@ -629,7 +629,7 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
     detect.rms_tc = 200;
     detect.hold_time = 0;
     detect.decay_time = 200;
-    detect.detect_per_frm = 10;
+    detect.detect_per_frm = 2;
     detect.band_cnt = 10;
 
     assert(partyboxCtx);
@@ -659,7 +659,7 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     detect.rms_tc = 200;
     detect.hold_time = 0;
     detect.decay_time = 200;
-    detect.detect_per_frm = 10;
+    detect.detect_per_frm = 2;
     detect.band_cnt = 10;
 
     memset(&playerAttr, 0, sizeof(playerAttr));
@@ -1028,7 +1028,7 @@ static void mapDataToNewRange(int energyData[], int length, int nowMin, int nowM
 static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info_t* pEnergy) {
     struct rc_pb_energy energy;
     int energyData[10];
-    static int energyDataPrev[10];
+    //static int energyDataPrev[10];
     static int energykeep[10];
     bool energy_debug = 0;
     enum rc_pb_play_src dest = covert2rockitSource(source);
@@ -1043,29 +1043,30 @@ static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info
     if (!ret) {
         for (rc_s32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
             //translate energy range from [-90, 0] to [0, 100]
-            energyData[i] = energy.energy_vec[10 + i] + 90;
-            energyData[i] = energyData[i] + energyData[i]/10 + 1; //map to [1, 100]
+            //energyData[i] = energy.energy_vec[10 + i] + 90;
+            //energyData[i] = energyData[i] + energyData[i]/10 + 1; //map to [1, 100]
+            energyData[i] = energy.energy_vec[10 + i];
             if(energy_debug) {
                 ALOGD("freq[%5.0f]HZ energy[%5.0f]DB energyData[%05d]\n",
                                 energy.energy_vec[i], energy.energy_vec[10 + i], energyData[i]);
             }
         }
 
-        mapDataToNewRange(energyData, sizeof(energyData)/sizeof(int), 0 , 100);
+        //mapDataToNewRange(energyData, sizeof(energyData)/sizeof(int), 0 , 100);
 
-        for(rc_s32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
-            if(abs(energyDataPrev[i] - energyData[i]) < 3){
-                energykeep[i]++;
-            } else {
-                energykeep[i]=0;
-            }
+        //for(rc_s32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
+        //    if(abs(energyDataPrev[i] - energyData[i]) < 3){
+        //        energykeep[i]++;
+        //    } else {
+        //        energykeep[i]=0;
+        //    }
 
-            if(energykeep[i] > 2) {
-                energykeep[i]=0;
-                energyData[i] = energyData[i]<5 ? energyData[i] : (energyData[i] - rand()%5);
-            }
-        }
-        memcpy(energyDataPrev, energyData, sizeof(energyData)/sizeof(int) * sizeof(int));
+        //    if(energykeep[i] > 2) {
+        //        energykeep[i]=0;
+        //        energyData[i] = energyData[i]<5 ? energyData[i] : (energyData[i] - rand()%5);
+        //    }
+        //}
+        //memcpy(energyDataPrev, energyData, sizeof(energyData)/sizeof(int) * sizeof(int));
 
         pEnergy->size = 10;
         for(int i = 0; i < pEnergy->size; i++) {

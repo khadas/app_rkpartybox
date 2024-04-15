@@ -745,23 +745,24 @@ static lv_obj_t * create_chart_box(lv_obj_t * parent)
 {
     /* Create the spectrum chart visualizer */
     lv_obj_t *obj = lv_chart_create(parent);
-    lv_chart_set_axis_tick(obj, LV_CHART_AXIS_PRIMARY_Y, 0, 0, 6, 1, true, 80);
+    lv_chart_set_axis_tick(obj, LV_CHART_AXIS_PRIMARY_Y, 0, 0, 4, 1, true, 80);
     lv_chart_set_axis_tick(obj, LV_CHART_AXIS_PRIMARY_X, 5, 3, 10, 1, true, 50);
     lv_chart_set_type(obj, LV_CHART_TYPE_BAR);
     lv_chart_set_div_line_count(obj, 10, 0);
     lv_chart_set_point_count(obj, 10);
     lv_chart_set_range(obj, LV_CHART_AXIS_PRIMARY_X, 0, 100);
+    lv_chart_set_range(obj, LV_CHART_AXIS_PRIMARY_Y, -90, 0);
     serdata = lv_chart_add_series(obj, lv_theme_get_color_primary(obj), LV_CHART_AXIS_PRIMARY_Y);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
-    lv_chart_set_next_value(obj, serdata, 0);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
+    lv_chart_set_next_value(obj, serdata, -90);
     
     return obj;
 }

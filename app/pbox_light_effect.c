@@ -204,7 +204,7 @@ void pbox_light_effect_soundreactive_analysis(energy_data_t energy_data)
 
 
 	for (int i = 0; i < energy_data.size; i++) {
-		ctrl->energy_total += energy_data.energykeep[i].energy;
+		ctrl->energy_total += abs(energy_data.energykeep[i].energy);
 	}
 
 	ctrl->energy_total_data_record[ctrl->energy_data_index] = ctrl->energy_total;
@@ -223,7 +223,7 @@ void pbox_light_effect_soundreactive_analysis(energy_data_t energy_data)
 	//ALOGI("==========variance:%lf standarddeviation:%lf energy_total:%d energy_total_average:%d============\n",variance,sqrt(variance),ctrl->energy_total, ctrl->energy_total_average);
 
 
-	if ((ctrl->energy_total  > ctrl->energy_total_average))
+	if ((ctrl->energy_total  < ctrl->energy_total_average))
 		leffect->led_effect_type =  9;
 	else
 		leffect->led_effect_type =  10;
