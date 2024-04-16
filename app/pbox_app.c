@@ -319,8 +319,8 @@ bool is_dest_source_auto_switchable(input_source_t destSource) {
 //this means we switch source actively...
 void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
     ALOGD("%s, source: [%s->%s]\n", __func__, getInputSourceString(pboxData->inputDevice), getInputSourceString(source));
-    if(pboxData->inputDevice == source)
-        return;
+    //if(pboxData->inputDevice == source)
+    //    return;
     pbox_app_music_stop(policy);
     pboxData->inputDevice = source;
     switch(source) {
@@ -355,6 +355,10 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
             pbox_multi_echoUacState(UAC_ROLE_SPEAKER, pboxUacdata->state, policy);
             pbox_app_echo_tack_info(" ", " ",  policy);
             pbox_app_restart_passive_player(SRC_CHIP_UAC, false, policy);
+
+            //if you awlays want disable uac recored when swith source, enable this code..
+            //if(pboxUacdata->record_state)
+            //    pbox_app_record_start(SRC_CHIP_UAC, pboxUacdata->record_state, policy);
         } break;
     }
     //no ui display now
@@ -474,6 +478,8 @@ void pbox_app_music_stop(display_t policy)
 
         case SRC_CHIP_UAC: {
             pbox_app_rockit_stop_player(SRC_CHIP_UAC);
+            //enable the code if u not nedd uac recored when switch to other source.
+            //pbox_app_rockit_stop_recorder(SRC_CHIP_UAC);
         } break;
 
         default:
@@ -795,7 +801,7 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
                 return;
             }
 
-            pboxUIdata->play_status = start;
+            //pboxUIdata->play_status = start;
             pbox_app_drive_passive_player(SRC_CHIP_UAC, start? PLAYING:_STOP, policy);
             pbox_app_echo_playingStatus(pboxUacdata->state, policy);
             pbox_multi_echoUacState(role, start, policy);
@@ -807,7 +813,7 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
             ALOGD("%s recorder start=%d\n", __func__, start);
             pboxUacdata->record_state = start;
 
-            pbox_app_record_start(SRC_CHIP_UAC, start, policy);
+            //pbox_app_record_start(SRC_CHIP_UAC, start, policy);
         }
 
         default: break;

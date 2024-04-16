@@ -124,7 +124,7 @@ retry_alsa_write:
         sent = sent + frames;
         if (sent < in_frames) {
             ALOGE("rewriting written:%d, \n", frames, in_frames);
-            goto retry_alsa_write;
+            //goto retry_alsa_write;
         }
         if(resample) { os_free(buffer);}
         rc_pb_recorder_queue_frame(*ptrboxCtx, &frame_info, -1);

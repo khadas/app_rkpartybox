@@ -443,14 +443,16 @@ int rk_demo_music_create() {
     recorder_attr.card_name = "hw:0,0";
     recorder_attr.sample_rate = 48000;
     recorder_attr.bit_width   = 16;
-    recorder_attr.pool_cnt    = 2;
+
 #if ENABLE_EXT_BT_MCU
+    recorder_attr.pool_cnt    = 0;
     recorder_attr.channels    = 8;
     recorder_attr.ref_layout = 0xfc;
     recorder_attr.rec_layout = 0x03;
     recorder_attr.chn_layout  = 0xff;
     recorder_attr.ref_mode = RC_PB_HOWLING_REF_MODE_SOFT;
 #else
+    recorder_attr.pool_cnt    = 0;
     recorder_attr.channels    = 4;
     recorder_attr.ref_layout = 0x03;
     recorder_attr.rec_layout = 0x04;
