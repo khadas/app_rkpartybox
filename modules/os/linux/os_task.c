@@ -21,7 +21,7 @@ int os_task_create(os_task_t *task, const char* name, task_routine_t routine_fun
     }
 
     pthread_mutex_lock(&task->lock);
-    snprintf(task->name, sizeof(task->name), "%s", name?name:"pbox_child_task");
+    snprintf(task->name, sizeof(task->name), "%s", name?name:"pbox_child");
     pthread_mutex_unlock(&task->lock);
     pthread_setname_np(task->task_tid, name);
 

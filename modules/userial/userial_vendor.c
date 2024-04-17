@@ -324,7 +324,7 @@ void dump_data(uint8_t *data, uint16_t total) {
     ALOGW("}\n");
 }
 
-uint16_t userial_send(uint8_t *data, uint16_t total) {
+uint16_t userial_send_data(uint8_t *data, uint16_t total) {
     int ret;
     assert(data != NULL);
     assert(total > 0);

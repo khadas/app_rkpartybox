@@ -16,7 +16,7 @@ void pbox_app_lcd_displayMicMute(bool mute);
 void pbox_app_lcd_displayAccompMusicLevel(uint32_t accomp_music_level);
 void pbox_app_lcd_displayHumanMusicLevel(uint32_t human_music_level);
 void pbox_app_lcd_displayReservLevel(uint32_t reserv_music_level);
-void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel);
+void pbox_app_lcd_displayVocalFadeoutSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel);
 void pbox_app_lcd_dispplayEnergy(energy_info_t energy);
 void pbox_app_lcd_displayEcho3A(bool on);
 void pbox_app_lcd_displayRevertbMode(pbox_revertb_t mode);

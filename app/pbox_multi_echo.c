@@ -1,9 +1,12 @@
-/************* UI include two part:*************************
-***************************1. LED effect show **************
-***************************2. LCD screnn display ***********
-* mainly here, almost are command to display something, so,
+/************* UI include two part:**************************
+***************************1. LED effect show ***************
+***************************2. LCD screen display ************
+***************************3. BTMCU display *****************
+***************************4. echo to storage device ********
+* here echo means display. we echo message to different disps
+* mainly here, almost are command to echo something, so,
 * when key pressed, scream pressed, or bt info feedback,
-* we may call api in this page to display something.
+* we may call api in this page to echo something.
 ************************************************************/
 
 #include <stdio.h>
@@ -18,41 +21,45 @@
 #include "pbox_light_effect_app.h"
 #include "pbox_app.h"
 #include "pbox_store_app.h"
+#include "pbox_soc_bt_app.h"
+
 
 #define LEFT_SHIFT_COUNT(num) (__builtin_ctz(num))
 
 #define LED_DISPLAY_MASK (ENABLE_RK_LED_EFFECT << LEFT_SHIFT_COUNT(DISP_LED))
 #define LCD_DISPLAY_MASK (ENABLE_LCD_DISPLAY << LEFT_SHIFT_COUNT(DISP_LCD))
+#define BTMCU_DISP_MASK (ENABLE_EXT_BT_MCU << LEFT_SHIFT_COUNT(DISP_BTMCU))
 #define STORAGE_DISP_MASK (DISP_FS)
 
-void pbox_multi_displayIsPlaying(bool play, display_t policy)
+void pbox_multi_echoIsPlaying(bool play, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayPlayPause(play);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_PlayPause(play);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_playPause(play);
 }
 
-void pbox_multi_displayPrevNext(bool next, display_t policy)
+void pbox_multi_echoPrevNext(bool next, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayPrevNext(next);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_PrevNext(next);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_PrevNext(next);
 }
 
-void pbox_multi_displayTrackInfo(const char *title, const char *artist, display_t policy)
+void pbox_multi_echoTrackInfo(const char *title, const char *artist, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayTrackInfo(title, artist);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_TrackInfo(title, artist);
 }
 
-void pbox_multi_displayTrackPosition(bool durationOnly, uint32_t mCurrent, uint32_t mDuration, display_t policy)
+void pbox_multi_echoTrackPosition(bool durationOnly, uint32_t mCurrent, uint32_t mDuration, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayTrackPosition(durationOnly, mCurrent, mDuration);
@@ -60,17 +67,19 @@ void pbox_multi_displayTrackPosition(bool durationOnly, uint32_t mCurrent, uint3
         pbox_app_led_TrackPosition(mCurrent, mDuration);
 }
 
-void pbox_multi_displayMusicVolumeLevel(float musicVolume, display_t policy)
+void pbox_multi_echoMusicVolumeLevel(float musicVolume, display_t policy)
 {
     int32_t volume = TARGET2PERCENT(musicVolume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
     volume = volume > 100 ? 100 : volume;
     volume = volume < 0 ? 0 : volume;
 
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_music_volume(musicVolume);
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_music_volume(musicVolume);
 }
 
-void pbox_multi_displayMainVolumeLevel(float mainVolume, display_t policy)
+void pbox_multi_echoMainVolumeLevel(float mainVolume, display_t policy)
 {
     int32_t volume = TARGET2PERCENT(mainVolume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
     volume = volume > 100 ? 100 : volume;
@@ -78,15 +87,16 @@ void pbox_multi_displayMainVolumeLevel(float mainVolume, display_t policy)
 
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayMainVolumeLevel(volume);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MainVolumeLevel(volume);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_main_volume(volume);
 
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_volume(mainVolume);
 }
 
-void pbox_multi_displayMicVolumeLevel(uint8_t index, float micVolume, display_t policy)
+void pbox_multi_echoMicVolumeLevel(uint8_t index, float micVolume, display_t policy)
 {
     int32_t volume = TARGET2PERCENT(micVolume, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME);
     volume = volume > 100 ? 100 : volume;
@@ -95,35 +105,40 @@ void pbox_multi_displayMicVolumeLevel(uint8_t index, float micVolume, display_t 
     ALOGD("%s micVolume: %f, volume: %d\n", __func__, micVolume, volume);
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayMicVolumeLevel(volume);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MicVolumeLevel(volume);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_mic_volume(index, micVolume);
 
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_mic_volume(index, micVolume);
 }
 
-void pbox_multi_displayMicMute(uint8_t index, bool mute, display_t policy)
+void pbox_multi_echoMicMute(uint8_t index, bool mute, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayMicMute(mute);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_mic_mute(index, mute);
 
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_mic_mute(index, mute);
 }
 
-void pbox_multi_displayMicMux(uint8_t index, mic_mux_t mux, display_t policy)
+void pbox_multi_echoMicMux(uint8_t index, mic_mux_t mux, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayMicMux(index, mux);
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MicMux(index, mux);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_micMux(index, mux);
 
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_mic_mux(index, mux);
 }
 
-void pbox_multi_displayMicTreble(uint8_t index, float treble, display_t policy)
+void pbox_multi_echoMicTreble(uint8_t index, float treble, display_t policy)
 {
     int32_t volume =  TARGET2PERCENT(treble, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE);
     volume = volume > 100 ? 100 : volume;
@@ -133,12 +148,14 @@ void pbox_multi_displayMicTreble(uint8_t index, float treble, display_t policy)
         pbox_app_lcd_displayMicTreble(index, volume);
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MicTreble(index, volume);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_mic_treble(index, volume);
 
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_mic_treble(index, treble);
 }
 
-void pbox_multi_displayMicBass(uint8_t index, float bass, display_t policy)
+void pbox_multi_echoMicBass(uint8_t index, float bass, display_t policy)
 {
     int32_t volume =  TARGET2PERCENT(bass, MIN_BASS_VALUE, MAX_BASS_VALUE);
     volume = volume > 100 ? 100 : volume;
@@ -148,11 +165,14 @@ void pbox_multi_displayMicBass(uint8_t index, float bass, display_t policy)
         pbox_app_lcd_displayMicBass(index, volume);
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MicBass(index, volume);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_mic_bass(index, volume);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_mic_bass(index, bass);
 }
 
-void pbox_multi_displayMicReverb(uint8_t index, float reverb, display_t policy)
+void pbox_multi_echoMicReverb(uint8_t index, float reverb, display_t policy)
 {
     int32_t volume =  TARGET2PERCENT(reverb, MIN_REVERB_VALUE, MAX_REVERB_VALUE);
     volume = volume > 100 ? 100 : volume;
@@ -162,110 +182,143 @@ void pbox_multi_displayMicReverb(uint8_t index, float reverb, display_t policy)
         pbox_app_lcd_displayMicReverb(index, volume);
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MicReverb(index, volume);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_mic_reverb(index, volume);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_mic_reverb(index, reverb);
 }
 
-void pbox_multi_displayAccompMusicLevel(uint32_t accomp_music_level, display_t policy)
+void pbox_multi_echoAccompMusicLevel(uint32_t accomp_music_level, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayAccompMusicLevel(accomp_music_level);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_AccompMusicLevel(accomp_music_level);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_accompMusicLevel(accomp_music_level);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_accomp_music_level(accomp_music_level);
 }
 
-void pbox_multi_displayHumanMusicLevel(uint32_t human_music_level, display_t policy)
+void pbox_multi_echoHumanMusicLevel(uint32_t human_music_level, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayHumanMusicLevel(human_music_level);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_HumanMusicLevel(human_music_level);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_humanMusicLevel(human_music_level);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_human_music_level(human_music_level);
 }
 
-void pbox_multi_displayReservLevel(uint32_t reserv_music_level, display_t policy)
+void pbox_multi_echoReservLevel(uint32_t reserv_music_level, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayReservLevel(reserv_music_level);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_ReservLevel(reserv_music_level);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_reservLevel(reserv_music_level);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_reserv_music_level(reserv_music_level);
-}
+ }
 
-void pbox_multi_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel, display_t policy)
+void pbox_multi_echoVocalFadeoutSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
-        pbox_app_lcd_displayMusicSeparateSwitch(enable, hlevel, alevel, rlevel);
-
+        pbox_app_lcd_displayVocalFadeoutSwitch(enable, hlevel, alevel, rlevel);
     if (policy & LED_DISPLAY_MASK)
-        pbox_app_led_MusicSeparateSwitch(enable, hlevel, alevel, rlevel);
+        pbox_app_led_vocalFadeout_switch(enable, hlevel, alevel, rlevel);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_vocalFadeout_switch(enable);
+
     if (policy & STORAGE_DISP_MASK)
-        pbox_app_music_store_vocal_split(enable);
+        pbox_app_store_vocalFadeout_switch(enable);
 }
 
-void pbox_multi_displayMusicStereoMode(stereo_mode_t stereo, display_t policy)
+void pbox_multi_echoStereoMode(stereo_mode_t stereo, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayMusicStereoMode(stereo);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MusicStereoMode(stereo);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_stereo_mode(stereo);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_stereo_mode(stereo);
 }
 
-void pbox_multi_displayMusicPlaceMode(placement_t place, display_t policy)
+void pbox_multi_echoPlacement(placement_t place, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayMusicPlaceMode(place);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MusicPlaceMode(place);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_placement(place);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_placement(place);
 }
 
-void pbox_multi_displayMusicOutdoorMode(inout_door_t outdoor, display_t policy)
+void pbox_multi_echoOutdoorMode(inout_door_t outdoor, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayMusicOutdoorMode(outdoor);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_MusicOutdoorMode(outdoor);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_inout_door(outdoor);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_outdoor_mode(outdoor);
 }
 
-void pbox_multi_displayEcho3A(uint8_t index, bool enable, display_t policy)
+void pbox_multi_echoPoweron_status(bool status, display_t policy)
 {
-    if (policy & LCD_DISPLAY_MASK)
-        pbox_app_lcd_displayEcho3A(enable);
-
-    if (policy & LED_DISPLAY_MASK)
-        pbox_app_led_echo3A(enable);
-    if (policy & STORAGE_DISP_MASK)
-        pbox_app_music_store_echo_3a(index, enable);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_poweron(status);
 }
 
-void pbox_multi_displayRevertMode(uint8_t index, pbox_revertb_t mode, display_t policy)
+void pbox_multi_echo_dsp_version(char* version, display_t policy)
+{
+    if(!version) return;
+
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_dsp_version("v1.00");
+}
+
+void pbox_multi_echoInputSource(input_source_t inputSource, play_status_t status, display_t policy) {
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_inputSource(inputSource, status);
+}
+
+void pbox_multi_echoEcho3A(uint8_t index, bool enable, display_t policy)
+{
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_music_echo3A(index, enable);
+}
+
+void pbox_multi_echoRevertMode(uint8_t index, pbox_revertb_t mode, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_displayRevertbMode(mode);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_revertMode(mode);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_echoRevert(index, mode);
+
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_recoder_revert(index, mode);
 }
 
-void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy)
+void pbox_multi_echoEnergyInfo(energy_info_t energy, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_dispplayEnergy(energy);
@@ -274,15 +327,14 @@ void pbox_multi_displayEnergyInfo(energy_info_t energy, display_t policy)
         pbox_app_led_energyInfo(energy);
 }
 
-void pbox_multi_displayUsbListupdate(uint32_t trackId, display_t policy)
+void pbox_multi_echoUsbListupdate(uint32_t trackId, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_dispplayUsbListupdate(trackId);
 }
 
-void pbox_multi_displayUsbState(usb_state_t state, display_t policy)
+void pbox_multi_echoUsbState(usb_state_t state, display_t policy)
 {
-
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_dispplayUsbState(state);
 
@@ -290,9 +342,8 @@ void pbox_multi_displayUsbState(usb_state_t state, display_t policy)
         pbox_app_led_usbState(state);
 }
 
-void pbox_multi_displaybtState(btsink_state_t state, display_t policy)
+void pbox_multi_echobtState(btsink_state_t state, display_t policy)
 {
-
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_dispplaybtState(state);
 
@@ -300,20 +351,21 @@ void pbox_multi_displaybtState(btsink_state_t state, display_t policy)
         pbox_app_led_btState(state);
 }
 
-void pbox_multi_displayUacState(uac_role_t role, bool start, display_t policy)
+void pbox_multi_echoUacState(uac_role_t role, bool start, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_dispplayUacState(start);
-
     if (policy & LED_DISPLAY_MASK)
         pbox_app_led_uacState(start);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_uacState(role, start);
 }
 
-void pbox_multi_displayUacFreq(uac_role_t role, uint32_t freq, display_t policy)
+void pbox_multi_echoUacFreq(uac_role_t role, uint32_t freq, display_t policy)
 {
 }
 
-void pbox_multi_displayUacVolume(uac_role_t role, uint32_t volume, display_t policy)
+void pbox_multi_echoUacVolume(uac_role_t role, uint32_t volume, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)
     {
@@ -331,14 +383,15 @@ void pbox_multi_displayUacVolume(uac_role_t role, uint32_t volume, display_t pol
         pbox_app_led_uacVolume(volume);
 }
 
-void pbox_multi_displayUacMute(uac_role_t role, bool mute, display_t policy)
+void pbox_multi_echoUacMute(uac_role_t role, bool mute, display_t policy)
 {
 }
 
-void pbox_multi_displayUacPpm(uac_role_t role, int32_t ppm, display_t policy)
+void pbox_multi_echoUacPpm(uac_role_t role, int32_t ppm, display_t policy)
 {
 }
 
-#undef LED_DISPLAY_MASK
-#undef LCD_DISPLAY_MASK
 #undef STORAGE_DISP_MASK
+#undef BTMCU_DISP_MASK
+#undef LCD_DISPLAY_MASK
+#undef LED_DISPLAY_MASK

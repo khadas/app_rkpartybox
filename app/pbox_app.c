@@ -2,11 +2,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include "pbox_app.h"
-#include "pbox_multi_display.h"
+#include "pbox_multi_echo.h"
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
 #include "pbox_hotplug_app.h"
-#include "pbox_soc_bt_app.h"
 #include "board.h"
 
 pbox_data_t pbox_data = {
@@ -80,28 +79,28 @@ bool is_input_source_configed(input_source_t source) {
     return false;
 }
 
-void pbox_app_show_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy) {
+void pbox_app_echo_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy) {
     //nothing to notify rockit
-    pbox_multi_displayTrackPosition(durationOnly, current, duration, policy);
+    pbox_multi_echoTrackPosition(durationOnly, current, duration, policy);
 }
 
-void pbox_app_show_tack_info(char *title, char *artist, display_t policy) {
+void pbox_app_echo_tack_info(char *title, char *artist, display_t policy) {
     //nothing to notify rockit
-    pbox_multi_displayTrackInfo(title, artist, policy);
+    pbox_multi_echoTrackInfo(title, artist, policy);
 }
 
-void pbox_app_show_bt_state(btsink_state_t state, display_t policy) {
+void pbox_app_echo_bt_state(btsink_state_t state, display_t policy) {
     //nothing to notify rockit
-    pbox_multi_displaybtState(state, policy);
+    pbox_multi_echobtState(state, policy);
 }
 
 void pbox_app_resume_volume_later(int32_t msdelay) {
     pboxData->volume_resume_time = msdelay;
 }
 
-void pbox_app_show_playingStatus(bool play, display_t policy) {
+void pbox_app_echo_playingStatus(bool play, display_t policy) {
     //nothing to notify rockit
-    pbox_multi_displayIsPlaying(play, policy);
+    pbox_multi_echoIsPlaying(play, policy);
 }
 
 void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy) {
@@ -136,7 +135,7 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
         } break;
     }
 
-    //pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
+    //pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, policy);
     pbox_app_resume_volume_later(650);
 }
 
@@ -158,7 +157,7 @@ void pbox_app_drive_passive_player(input_source_t source, play_status_t status, 
         } break;
     }
     pboxUIdata->play_status = status;
-    pbox_app_show_playingStatus((status==PLAYING) ? true: false, policy);
+    pbox_app_echo_playingStatus((status==PLAYING) ? true: false, policy);
 }
 
 void pbox_app_record_start(input_source_t source, bool start, display_t policy) {
@@ -327,11 +326,11 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
     switch(source) {
         case SRC_CHIP_BT:
         case SRC_EXT_BT: {
-            pbox_app_show_bt_state(pboxBtSinkdata->btState, policy);
+            pbox_app_echo_bt_state(pboxBtSinkdata->btState, policy);
             if(isInputSourceConnected(source)) {
                 pbox_app_restart_passive_player(source, false, policy);
             } else {
-                pbox_app_show_tack_info(" ", " ", policy);
+                pbox_app_echo_tack_info(" ", " ", policy);
             }
         } break;
         case SRC_EXT_AUX: {
@@ -345,15 +344,15 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
             if(isInputSourceConnected(SRC_CHIP_USB)) {
                 pbox_app_usb_list_update(pboxTrackdata->track_id, policy);
             } else {
-                pbox_app_show_tack_info(" ", " ",  policy);
+                pbox_app_echo_tack_info(" ", " ",  policy);
             }
         } break;
 
         case SRC_CHIP_UAC: {
             pboxUIdata->play_status = pboxUacdata->state;
-            pbox_app_show_playingStatus(pboxUacdata->state, policy);
-            pbox_multi_displayUacState(UAC_ROLE_SPEAKER, pboxUacdata->state, policy);
-            pbox_app_show_tack_info(" ", " ",  policy);
+            pbox_app_echo_playingStatus(pboxUacdata->state, policy);
+            pbox_multi_echoUacState(UAC_ROLE_SPEAKER, pboxUacdata->state, policy);
+            pbox_app_echo_tack_info(" ", " ",  policy);
             pbox_app_restart_passive_player(SRC_CHIP_UAC, false, policy);
         } break;
     }
@@ -379,7 +378,7 @@ void pbox_app_music_pause(display_t policy)
     }
 
     pbox_app_rockit_pause_player(pboxData->inputDevice);
-    pbox_multi_displayIsPlaying(false, policy);
+    pbox_multi_echoIsPlaying(false, policy);
     pboxUIdata->play_status = _PAUSE;
 }
 
@@ -409,12 +408,12 @@ void pbox_app_music_start(display_t policy) {
             sprintf(track_uri, MUSIC_PATH"%s", track_name);
             ALOGW("play track [%s]\n", track_uri);
             pbox_app_rockit_start_local_player(track_uri, NULL);
-            pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, policy);
-            pbox_multi_displayTrackInfo(track_name, NULL, policy);
+            pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, policy);
+            pbox_multi_echoTrackInfo(track_name, NULL, policy);
         } break;
 
         case SRC_CHIP_UAC: {
-            pbox_multi_displayTrackInfo("", NULL, policy);
+            pbox_multi_echoTrackInfo("", NULL, policy);
             pbox_app_restart_passive_player(SRC_CHIP_UAC, true, policy);
         } break;
         default:
@@ -444,7 +443,7 @@ void pbox_app_music_resume(display_t policy) {
         } break;
     }
     pboxUIdata->play_status = PLAYING;
-    pbox_multi_displayIsPlaying(true, policy);
+    pbox_multi_echoIsPlaying(true, policy);
 }
 
 void pbox_app_music_stop(display_t policy)
@@ -480,22 +479,22 @@ void pbox_app_music_stop(display_t policy)
         break;
     }
 
-    pbox_multi_displayIsPlaying(false, policy);
+    pbox_multi_echoIsPlaying(false, policy);
     pboxUIdata->play_status = _STOP;
 }
 
-void pbox_app_music_set_volume(float volume, display_t policy) {
+void pbox_app_music_set_main_volume(float volume, display_t policy) {
     ALOGD("%s main volume: %f\n", __func__, volume);
     pboxUIdata->mainVolumeLevel = volume;
     pbox_app_rockit_set_player_volume(pboxData->inputDevice, volume);
-    pbox_multi_displayMainVolumeLevel(volume, policy);
+    pbox_multi_echoMainVolumeLevel(volume, policy);
 }
 
 void pbox_app_music_set_music_volume(float volume, display_t policy) {
     ALOGD("%s music volume: %f\n", __func__, volume);
     pboxUIdata->musicVolumeLevel = volume;
     pbox_app_rockit_set_music_volume(pboxData->inputDevice, volume);
-    pbox_multi_displayMusicVolumeLevel(volume, policy);
+    pbox_multi_echoMusicVolumeLevel(volume, policy);
 }
 
 void pbox_app_music_album_next(bool next, display_t policy)
@@ -539,7 +538,7 @@ void pbox_app_music_album_next(bool next, display_t policy)
             }
 
             if(*pId < pboxTrackdata->track_num) {
-                pbox_multi_displayTrackInfo(pboxTrackdata->track_list[*pId].title, NULL,  DISP_All);
+                pbox_multi_echoTrackInfo(pboxTrackdata->track_list[*pId].title, NULL,  DISP_All);
             }
 
             if(pboxUIdata->play_status == PLAYING) {
@@ -552,7 +551,7 @@ void pbox_app_music_album_next(bool next, display_t policy)
         case SRC_CHIP_UAC: {
             char text[32] = {0};
             snprintf(text, 31, "UAC NO SUPPORT:%s !!!", next? "NEXT":"PREV");
-            pbox_multi_displayTrackInfo(text, NULL,  DISP_All);
+            pbox_multi_echoTrackInfo(text, NULL,  DISP_All);
         } break;
 
         default:
@@ -571,7 +570,7 @@ void pbox_app_music_original_singer_open(bool orignal, display_t policy)
 
     pboxUIdata->vocalSplit = !orignal;
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate , hlevel, alevel, rlevel);
-    pbox_multi_displayMusicSeparateSwitch(seperate , hlevel, alevel, rlevel, policy);
+    pbox_multi_echoVocalFadeoutSwitch(seperate , hlevel, alevel, rlevel, policy);
 }
 
 //album mode: shuffle, sequence, repeat, repeat one.....
@@ -584,36 +583,36 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
         return;
 
     pbox_app_rockit_set_player_seek(pboxData->inputDevice, dest);
-    pbox_multi_displayTrackPosition(false, dest, duration, policy);
+    pbox_multi_echoTrackPosition(false, dest, duration, policy);
 }
 
 void pbox_app_music_set_mic_all(uint32_t index, mic_state_t micdata, display_t policy) {
     pboxUIdata->micData[index] = micdata;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_ALL, micdata);
-    pbox_multi_displayMicVolumeLevel(index, micdata.micVolume, policy);
-    pbox_multi_displayMicMux(index, micdata.micMux, policy);
-    pbox_multi_displayMicMute(index, micdata.micmute, policy);
-    pbox_multi_displayRevertMode(index, micdata.reverbMode, policy);
-    pbox_multi_displayEcho3A(index, micdata.echo3a, policy);
-    pbox_multi_displayMicBass(index, micdata.micBass, policy);
-    pbox_multi_displayMicTreble(index, micdata.micTreble, policy);
-    pbox_multi_displayMicReverb(index, micdata.micReverb, policy);
+    pbox_multi_echoMicVolumeLevel(index, micdata.micVolume, policy);
+    pbox_multi_echoMicMux(index, micdata.micMux, policy);
+    pbox_multi_echoMicMute(index, micdata.micmute, policy);
+    pbox_multi_echoRevertMode(index, micdata.reverbMode, policy);
+    pbox_multi_echoEcho3A(index, micdata.echo3a, policy);
+    pbox_multi_echoMicBass(index, micdata.micBass, policy);
+    pbox_multi_echoMicTreble(index, micdata.micTreble, policy);
+    pbox_multi_echoMicReverb(index, micdata.micReverb, policy);
 }
 
 void pbox_app_music_set_mic_volume(uint32_t index, float volume, display_t policy) {
     pboxUIdata->micData[index].micVolume = volume;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_VOLUME, pboxUIdata->micData[index]);
-    pbox_multi_displayMicVolumeLevel(index, volume, policy);
+    pbox_multi_echoMicVolumeLevel(index, volume, policy);
 }
 
 void pbox_app_music_set_mic_mute(uint8_t index, bool mute, display_t policy){
     pboxUIdata->micData[index].micmute = mute;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUTE, pboxUIdata->micData[index]);
-    pbox_multi_displayMicMute(index, mute, policy);
+    pbox_multi_echoMicMute(index, mute, policy);
 }
 
 void pbox_app_music_init(void) {
-    pbox_app_music_set_volume(pboxUIdata->mainVolumeLevel, DISP_All);
+    pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, DISP_All);
     pbox_app_music_set_music_volume(pboxUIdata->musicVolumeLevel, DISP_All);
     pbox_app_music_set_accomp_music_level(pboxUIdata->accomLevel, DISP_All);
     pbox_app_music_set_human_music_level(pboxUIdata->humanLevel, DISP_All);
@@ -635,25 +634,25 @@ void pbox_app_music_mics_init(display_t policy) {
 void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy) {
     pboxUIdata->micData[index].micMux = mux;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUX, pboxUIdata->micData[index]);
-    pbox_multi_displayMicMux(index, mux, policy);
+    pbox_multi_echoMicMux(index, mux, policy);
 }
 
 void pbox_app_music_set_mic_treble(uint8_t index, float treble, display_t policy) {
     pboxUIdata->micData[index].micTreble = treble;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_TREBLE, pboxUIdata->micData[index]);
-    pbox_multi_displayMicTreble(index, treble, policy);
+    pbox_multi_echoMicTreble(index, treble, policy);
 }
 
 void pbox_app_music_set_mic_bass(uint8_t index, float bass, display_t policy) {
     pboxUIdata->micData[index].micBass = bass;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_BASS, pboxUIdata->micData[index]);
-    pbox_multi_displayMicBass(index, bass, policy);
+    pbox_multi_echoMicBass(index, bass, policy);
 }
 
 void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy) {
     pboxUIdata->micData[index].micReverb = reverb;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_REVERB, pboxUIdata->micData[index]);
-    pbox_multi_displayMicReverb(index, reverb, policy);
+    pbox_multi_echoMicReverb(index, reverb, policy);
 }
 
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
@@ -665,8 +664,8 @@ void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
     ALOGD("%s hlevel: %d, alevel: %d, seperate:%d\n", __func__, hlevel, volume, seperate);
     pboxUIdata->accomLevel = volume;
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, volume, rlevel);
-    //pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, volume, rlevel, policy);
-    pbox_multi_displayAccompMusicLevel(volume, policy);
+
+    pbox_multi_echoAccompMusicLevel(volume, policy);
 }
 
 void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy) {
@@ -678,8 +677,8 @@ void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy) {
     ALOGD("%s hlevel: %d, alevel: %d, seperate:%d\n", __func__, volume, alevel, seperate);
     pboxUIdata->humanLevel = volume;
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, volume, alevel, rlevel);
-    //pbox_multi_displayMusicSeparateSwitch(seperate, volume, alevel, rlevel, policy);
-    pbox_multi_displayHumanMusicLevel(volume, policy);
+
+    pbox_multi_echoHumanMusicLevel(volume, policy);
 }
 
 void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
@@ -691,41 +690,41 @@ void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
     ALOGD("%s hlevel: %d, alevel: %d, rlevel:%d, seperate:%d\n", __func__, hlevel, alevel, volume, seperate);
     pboxUIdata->reservLevel = volume;
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, alevel, volume);
-    //pbox_multi_displayMusicSeparateSwitch(seperate, hlevel, alevel, volume, policy);
-    pbox_multi_displayReservLevel(volume, policy);
+
+    pbox_multi_echoReservLevel(volume, policy);
 }
 
 void pbox_app_music_set_echo_3a(uint8_t index, bool enable, display_t policy) {
     pboxUIdata->micData[index].echo3a = enable;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_ECHO_3A, pboxUIdata->micData[index]);
-    pbox_multi_displayEcho3A(index, enable, policy);
+    pbox_multi_echoEcho3A(index, enable, policy);
 }
 
 void pbox_app_music_set_recoder_revert(uint8_t index, pbox_revertb_t reverbMode, display_t policy) {
     pboxUIdata->micData[index].reverbMode = reverbMode;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_REVERB_MODE, pboxUIdata->micData[index]);
-    pbox_multi_displayRevertMode(index, reverbMode, policy);
+    pbox_multi_echoRevertMode(index, reverbMode, policy);
 }
 
 void pbox_app_music_set_stereo_mode(stereo_mode_t stereo, display_t policy) {
     ALOGD("%s :%d\n", __func__, stereo);
     pboxUIdata->stereo = stereo;
     pbox_app_rockit_set_stereo_mode(pboxData->inputDevice, stereo);
-    pbox_multi_displayMusicStereoMode(stereo, policy);
+    pbox_multi_echoStereoMode(stereo, policy);
 }
 
 void pbox_app_music_set_outdoor_mode(inout_door_t outdoor, display_t policy) {
     ALOGD("%s :%d\n", __func__, outdoor);
     pboxUIdata->outdoor = outdoor;
     pbox_app_rockit_set_outdoor_mode(pboxData->inputDevice, outdoor);
-    pbox_multi_displayMusicOutdoorMode(outdoor, policy);
+    pbox_multi_echoOutdoorMode(outdoor, policy);
 }
 
 void pbox_app_music_set_placement(placement_t place, display_t policy) {
     ALOGD("%s :%d\n", __func__, place);
     pboxUIdata->placement = place;
     pbox_app_rockit_set_placement(pboxData->inputDevice, place);
-    pbox_multi_displayMusicPlaceMode(place, policy);
+    pbox_multi_echoPlacement(place, policy);
 }
 
 void pbox_app_tunning_init(display_t policy) {
@@ -740,7 +739,7 @@ void pbox_app_music_volume_up(display_t policy) {
 
     ALOGD("%s volume up:%f, mainVol:%f\n", __func__, volume, pboxUIdata->mainVolumeLevel);
     if(pboxUIdata->mainVolumeLevel != volume)
-    pbox_app_music_set_volume(volume, policy);
+    pbox_app_music_set_main_volume(volume, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
@@ -753,7 +752,7 @@ void pbox_app_music_volume_down(display_t policy) {
     volume = volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volume;
 
     ALOGD("%s volume down:%f\n", __func__, volume);
-    pbox_app_music_set_volume(volume, policy);
+    pbox_app_music_set_main_volume(volume, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
@@ -797,8 +796,8 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
 
             pboxUIdata->play_status = start;
             pbox_app_drive_passive_player(SRC_CHIP_UAC, start? PLAYING:_STOP, policy);
-            pbox_app_show_playingStatus(pboxUacdata->state, policy);
-            pbox_multi_displayUacState(role, start, policy);
+            pbox_app_echo_playingStatus(pboxUacdata->state, policy);
+            pbox_multi_echoUacState(role, start, policy);
         } break;
 
         case UAC_ROLE_RECORDER: {
@@ -835,7 +834,7 @@ void pbox_app_uac_volume_change(uac_role_t role, uint32_t volume, display_t poli
     ALOGD("%s volume:%d->%f\n", __func__, volume, pboxUIdata->mainVolumeLevel);
     if((role == UAC_ROLE_SPEAKER)) {
         pbox_app_rockit_set_uac_volume(role, pboxUIdata->mainVolumeLevel);
-        pbox_multi_displayUacVolume(role, volume, policy);
+        pbox_multi_echoUacVolume(role, volume, policy);
     }
 }
 
@@ -845,7 +844,7 @@ void pbox_app_uac_mute_change(uac_role_t role, bool mute, display_t policy) {
     }
 
     pbox_app_rockit_set_mute(role, mute);
-    pbox_multi_displayUacMute(role, mute, policy);
+    pbox_multi_echoUacMute(role, mute, policy);
 }
 
 void pbox_app_uac_ppm_change(uac_role_t role, int32_t ppm, display_t policy) {
@@ -854,7 +853,7 @@ void pbox_app_uac_ppm_change(uac_role_t role, int32_t ppm, display_t policy) {
     }
 
     pbox_app_rockit_set_ppm(role, ppm);
-    pbox_multi_displayUacPpm(role, ppm, policy);
+    pbox_multi_echoUacPpm(role, ppm, policy);
 }
 
 void pbox_app_usb_start_scan(display_t policy) {
@@ -864,77 +863,126 @@ void pbox_app_usb_start_scan(display_t policy) {
 
 void pbox_app_show_usb_state(usb_state_t state, display_t policy) {
     //nothing to notify rockit
-    pbox_multi_displayUsbState(state, policy);
+    pbox_multi_echoUsbState(state, policy);
 }
 
 void pbox_app_usb_list_update(uint32_t trackId, display_t policy) {
     //nothing to notify rockit
-    pbox_multi_displayUsbListupdate(trackId, policy);
+    pbox_multi_echoUsbListupdate(trackId, policy);
 }
 
-void pbox_app_btsoc_get_dsp_version(display_t policy) {
-    pbox_app_btsoc_reply_dsp_version("v1.00");
+void pbox_app_btsoc_init(void) {
+    pbox_app_echo_poweron_status(DISP_All);
+    pbox_app_echo_music_volume(DISP_All);
+}
+
+void pbox_app_echo_dsp_version(display_t policy) {
+    //pbox_app_btsoc_echo_dsp_version("v1.00");
+    pbox_multi_echo_dsp_version("v1.00", policy);
     //nothing to notify rockit
     //nothing to do with ui
 }
 
-void pbox_app_btsoc_get_volume(display_t policy) {
-    pbox_app_btsoc_reply_main_volume(pboxUIdata->mainVolumeLevel);
-    //nothing to notify rockit
-    //nothing to do with ui
+void pbox_app_echo_main_volume(display_t policy) {
+    pbox_multi_echoMainVolumeLevel(pboxUIdata->mainVolumeLevel, policy);
+}
+
+void pbox_app_echo_music_volume(display_t policy) {
+    pbox_multi_echoMusicVolumeLevel(pboxUIdata->musicVolumeLevel, policy);
+}
+
+void pbox_app_echo_placement(display_t policy) {
+    pbox_multi_echoPlacement(pboxUIdata->placement, policy);
+}
+
+void pbox_app_echo_inout_door(display_t policy) {
+    pbox_multi_echoOutdoorMode(pboxUIdata->outdoor, policy);
+}
+
+void pbox_app_echo_micMux(uint8_t index, display_t policy) {
+    pbox_multi_echoMicMux(index, pboxUIdata->micData[index].micMux, policy);
+}
+
+void pbox_app_echo_poweron_status(display_t policy) {
+    //it mustbe powered on
+    pbox_multi_echoPoweron_status(true, policy);
+}
+
+void pbox_app_echo_stereo_mode(display_t policy) {
+    pbox_multi_echoStereoMode(pboxUIdata->stereo, policy);
+}
+
+void pbox_app_echo_voice_fadeout_mode(display_t policy) {
+    uint32_t hlevel = pboxUIdata->humanLevel;
+    uint32_t alevel = pboxUIdata->accomLevel;
+    uint32_t rlevel = pboxUIdata->reservLevel;
+    bool seperate = pboxUIdata->vocalSplit;
+
+    pbox_multi_echoVocalFadeoutSwitch(seperate , hlevel, alevel, rlevel, policy);
+}
+
+void pbox_app_echo_input_source(display_t policy) {
+    pbox_multi_echoInputSource(pboxData->inputDevice, pboxUIdata->play_status, policy);
+}
+
+void pbox_app_echo_micdata(uint8_t index, mic_set_kind_t kind, display_t policy) {
+    switch (kind) {
+        case MIC_SET_DEST_ECHO_3A: {
+            pbox_multi_echoEcho3A(index, pboxUIdata->micData[index].echo3a, policy);
+        } break;
+        case MIC_SET_DEST_MUTE: {
+            pbox_multi_echoMicMute(index, pboxUIdata->micData[index].micmute, policy);
+        } break;
+        case MIC_SET_DEST_MUX: {
+            pbox_multi_echoMicMux(index, pboxUIdata->micData[index].micMux, policy);
+        } break;
+        case MIC_SET_DEST_REVERB_MODE: {
+            pbox_multi_echoRevertMode(index, pboxUIdata->micData[index].reverbMode, policy);
+        } break;
+        case MIC_SET_DEST_VOLUME: {
+            pbox_multi_echoMicVolumeLevel(index, pboxUIdata->micData[index].micVolume, policy);
+        } break;
+        case MIC_SET_DEST_TREBLE: {
+            pbox_multi_echoMicTreble(index, pboxUIdata->micData[index].micTreble, policy);
+        } break;
+        case MIC_SET_DEST_BASS: {
+            pbox_multi_echoMicBass(index, pboxUIdata->micData[index].micBass, policy);
+        } break;
+        case MIC_SET_DEST_REVERB: {
+            pbox_multi_echoMicReverb(index, pboxUIdata->micData[index].micReverb, policy);
+        } break;
+        default: break;
+    }
 }
 
 void pbox_app_btsoc_set_volume(float volume, display_t policy) {
-    if(pboxUIdata->mainVolumeLevel != volume)
-    pbox_app_music_set_volume(volume, policy);
+    if(pboxUIdata->mainVolumeLevel == volume)
+        return;
+    pbox_app_music_set_main_volume(volume, policy);
 }
 
 void pbox_app_btsoc_set_music_volume(float volume, display_t policy) {
-    if(pboxUIdata->musicVolumeLevel != volume)
+    if(pboxUIdata->musicVolumeLevel == volume)
+        return;
     pbox_app_music_set_music_volume(volume, policy);
 }
 
 void pbox_app_btsoc_set_placement(placement_t placement, display_t policy) {
-    if(pboxUIdata->placement != placement)
+    if(pboxUIdata->placement == placement)
+        return;
     pbox_app_music_set_placement(placement, policy);
 }
 
-void pbox_app_btsoc_get_placement(display_t policy) {
-    pbox_app_btsoc_reply_placement(pboxUIdata->placement);
-    //nothing to notify rockit
-    //nothing to do with ui
-}
-
-void pbox_app_btsoc_get_mic1_state(display_t policy) {
-}
-
-void pbox_app_btsoc_get_mic2_state(display_t policy) {
-}
-
 void pbox_app_btsoc_set_outdoor_mode(inout_door_t inout, display_t policy) {
-    if(pboxUIdata->outdoor != inout)
+    if(pboxUIdata->outdoor == inout)
+        return;
     pbox_app_music_set_outdoor_mode(inout, policy);
 }
 
-void pbox_app_btsoc_get_inout_door(display_t policy) {
-    pbox_app_btsoc_reply_inout_door(0);
-}
-
-void pbox_app_btsoc_get_poweron(display_t policy) {
-    pbox_app_btsoc_reply_poweron(true);
-}
-
 void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy) {
-    if(pboxUIdata->stereo != mode)
+    if(pboxUIdata->stereo == mode)
+        return;
     pbox_app_music_set_stereo_mode(mode, policy);
-}
-
-void pbox_app_btsoc_get_stereo_mode(display_t policy) {
-    pbox_app_btsoc_reply_stereo_mode(MODE_STEREO);
-}
-
-void pbox_app_btsoc_get_human_voice_fadeout(display_t policy) {
-    //pbox_app_btsoc_reply_human_voice_fadeout(pboxUIdata->fadeout);
 }
 
 void pbox_app_btsoc_set_mic_data(mic_data_t data, display_t policy) {
@@ -978,27 +1026,21 @@ void pbox_app_btsoc_set_mic_data(mic_data_t data, display_t policy) {
 }
 
 void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy) {
-    if(pboxUIdata->vocalSplit != fadeout)
+    if(pboxUIdata->vocalSplit == fadeout)
+        return;
     pbox_app_music_original_singer_open(fadeout? false: true, policy);
 }
 
 void pbox_app_btsoc_set_mic_mux(uint8_t index, mic_mux_t micMux, display_t policy) {
-    if(pboxUIdata->micData[index].micMux != micMux)
+    if(pboxUIdata->micData[index].micMux == micMux)
+        return;
     pbox_app_music_set_mic_mux(index, micMux, policy);
-}
-
-void pbox_app_btsoc_get_input_source(display_t policy) {
-    pbox_app_btsoc_reply_input_source_with_playing_status(pboxData->inputDevice, pboxUIdata->play_status);
 }
 
 void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status, display_t policy) {
     if(pboxData->inputDevice != source)
-    pbox_app_switch_to_input_source(source, policy);
+        pbox_app_switch_to_input_source(source, policy);
 
     if(pboxUIdata->play_status != status)
-    pbox_app_drive_passive_player(source, status, policy);
-}
-
-void pbox_app_music_get_music_volume(display_t policy) {
-    pbox_app_btsoc_reply_music_volume(pboxUIdata->musicVolumeLevel);
+        pbox_app_drive_passive_player(source, status, policy);
 }

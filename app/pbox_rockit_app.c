@@ -10,7 +10,7 @@
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
 #include "pbox_rockit.h"
-#include "pbox_multi_display.h"
+#include "pbox_multi_echo.h"
 #include "pbox_app.h"
 
 int unix_socket_rockit_send(void *info, int length)
@@ -396,21 +396,21 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                                 __func__, energy_data.energykeep[i].freq,
                                 energy_data.energykeep[i].energy);
             }*/
-            pbox_multi_displayEnergyInfo(energy_data, DISP_All);
+            pbox_multi_echoEnergyInfo(energy_data, DISP_All);
 
         } break;
         case PBOX_ROCKIT_MUSIC_POSITION_EVT: {
             //ALOGD("duration: %d", music_duration);
             music_position = msg->mPosition;
             if ((music_duration != 0) && (music_position !=0)) {
-                pbox_multi_displayTrackPosition(false, music_position, music_duration, DISP_All);
+                pbox_multi_echoTrackPosition(false, music_position, music_duration, DISP_All);
             }
         } break;
         case PBOX_ROCKIT_MUSIC_DURATION_EVT: {
             music_duration = msg->duration;
             ALOGD("duration: %d", music_duration);
             if (music_duration != 0) {
-                pbox_multi_displayTrackPosition(true, music_position, music_duration, DISP_All);
+                pbox_multi_echoTrackPosition(true, music_position, music_duration, DISP_All);
             }
         } break;
         case PBOX_ROCKIT_MUSIC_MAIN_VOLUME_EVT: {
@@ -419,13 +419,13 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
             if(volume < MIN_MAIN_VOLUME)
                 volume = MIN_MAIN_VOLUME;
             pboxUIdata->mainVolumeLevel = volume;
-            pbox_multi_displayMainVolumeLevel(volume, DISP_All);
+            pbox_multi_echoMainVolumeLevel(volume, DISP_All);
         } break;
         case PBOX_ROCKIT_MUSIC_CHANNEL_VOLUME_EVT: {
             int32_t volume = msg->volume;
             ALOGD("volume: %d", volume);
             pboxUIdata->musicVolumeLevel = volume;
-            pbox_multi_displayMusicVolumeLevel(volume, DISP_All);
+            pbox_multi_echoMusicVolumeLevel(volume, DISP_All);
         } break;
         case PBOX_ROCKIT_PLAY_COMPLETED_EVT: {
             music_position = 0;
@@ -467,7 +467,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                         *volume += 25;
                     ALOGD("%s volume up:%d\n", __func__, *volume);
 
-                    pbox_app_music_set_volume(*volume, DISP_All);
+                    pbox_app_music_set_main_volume(*volume, DISP_All);
                     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
                         pbox_app_music_resume(DISP_All);
                     }
@@ -486,7 +486,7 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                         else if (*volume >= 5)
                             *volume -= 5;
 
-                        pbox_app_music_set_volume(*volume, DISP_All);
+                        pbox_app_music_set_main_volume(*volume, DISP_All);
                     }
                     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) {
                         pbox_app_music_resume(DISP_All);

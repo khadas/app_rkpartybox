@@ -36,18 +36,17 @@ int unix_socket_socbt_send(void *info, int length)
     return unix_socket_send_cmd(PBOX_CHILD_BT, info, length);
 }
 
-void pbox_app_btsoc_reply_dsp_version(char *dspver) {
+void pbox_app_btsoc_echo_dsp_version(char *dspver) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_VERSION_CMD,
     };
 
-    strncpy(msg.fw_ver, dspver, MAX_SHORT_NAME_LENGTH);
-    msg.fw_ver[MAX_SHORT_NAME_LENGTH] = 0;
+    snprintf(msg.fw_ver, MAX_SHORT_NAME_LENGTH, "%s", dspver);
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_main_volume(uint32_t volume) {
+void pbox_app_btsoc_echo_main_volume(float volume) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_MAIN_VOLUME_CMD,
@@ -57,7 +56,7 @@ void pbox_app_btsoc_reply_main_volume(uint32_t volume) {
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_placement(placement_t placement) {
+void pbox_app_btsoc_echo_placement(placement_t placement) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_PLACEMENT_CMD,
@@ -67,7 +66,7 @@ void pbox_app_btsoc_reply_placement(placement_t placement) {
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_inout_door(inout_door_t inout){
+void pbox_app_btsoc_echo_inout_door(inout_door_t inout){
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_IN_OUT_DOOR_CMD,
@@ -77,7 +76,7 @@ void pbox_app_btsoc_reply_inout_door(inout_door_t inout){
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_poweron(bool poweron){
+void pbox_app_btsoc_echo_poweron(bool poweron){
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_POWER_ON_CMD,
@@ -87,7 +86,7 @@ void pbox_app_btsoc_reply_poweron(bool poweron){
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_stereo_mode(stereo_mode_t mode){
+void pbox_app_btsoc_echo_stereo_mode(stereo_mode_t mode){
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_STEREO_MODE_CMD,
@@ -97,7 +96,7 @@ void pbox_app_btsoc_reply_stereo_mode(stereo_mode_t mode){
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_human_voice_fadeout(bool fadeout){
+void pbox_app_btsoc_echo_human_voice_fadeout(bool fadeout){
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_CMD,
@@ -107,18 +106,18 @@ void pbox_app_btsoc_reply_human_voice_fadeout(bool fadeout){
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_input_source_with_playing_status(input_source_t source, play_status_t status){
+void pbox_app_btsoc_echo_input_source_with_playing_status(input_source_t source, play_status_t status){
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_SWITCH_SOURCE_CMD,
     };
 
     msg.input_source.input = source;
-    unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
     msg.input_source.status = status;
+    unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_reply_music_volume(uint32_t level) {
+void pbox_app_btsoc_echo_music_volume(float level) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_SOCBT_DSP_MUSIC_VOLUME_CMD,
@@ -128,16 +127,10 @@ void pbox_app_btsoc_reply_music_volume(uint32_t level) {
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
-void pbox_app_btsoc_init(void) {
-    pbox_app_btsoc_reply_poweron(true);
-//    pbox_app_btsoc_reply_main_volume(pboxUIdata->mainVolumeLevel);
-    pbox_app_btsoc_reply_music_volume(pboxUIdata->musicVolumeLevel);
-}
-
 void handleDspVersionEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s DSP Version: %s\n", __func__, msg->fw_ver);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_dsp_version(DISP_All);
+        pbox_app_echo_dsp_version(DISP_BTMCU);
         return;
     }
 }
@@ -145,71 +138,72 @@ void handleDspVersionEvent(const pbox_socbt_msg_t *msg) {
 void handleMainVolumeEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Main Volume: %f\n", __func__, msg->volume);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_volume(DISP_All);
+        pbox_app_echo_main_volume(DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_volume(msg->volume, DISP_All|DISP_FS);
+    pbox_app_btsoc_set_volume(msg->volume, DISP_All_EXCLUDE_BTMCU|DISP_FS);
 }
 
 void handlePlacementEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Placement: %u\n", __func__, msg->placement);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_placement(DISP_All);
+        pbox_app_echo_placement(DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_placement(msg->placement, DISP_All);
+    pbox_app_btsoc_set_placement(msg->placement, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handleMic1MuxEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Mic State: %d\n", __func__, msg->micMux);
     if(msg->op == OP_READ) {
-        //add implement
+        pbox_app_echo_micMux(0, DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_mic_mux(0, msg->micMux, DISP_All);
+    pbox_app_btsoc_set_mic_mux(0, msg->micMux, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handleMic2MuxEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Mic State: %d\n", __func__, msg->micMux);
     if(msg->op == OP_READ) {
-        //add implement
+        pbox_app_echo_micMux(1, DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_mic_mux(1, msg->micMux, DISP_All);
+    pbox_app_btsoc_set_mic_mux(1, msg->micMux, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s In/Out Door: %d\n", __func__, msg->outdoor);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_inout_door(DISP_All);
+        pbox_app_echo_inout_door(DISP_BTMCU);
         return;
     }
-    //pbox_app_btsoc_set_outdoor_mode(msg->outdoor, DISP_All);
 
-    pbox_app_btsoc_set_human_voice_fadeout(msg->outdoor?false:true, DISP_All);
+    pbox_app_btsoc_set_outdoor_mode(msg->outdoor, DISP_All_EXCLUDE_BTMCU);
+    //tmp coding, for vendor board no human voice button..
+    pbox_app_btsoc_set_human_voice_fadeout(msg->outdoor?false:true, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handleMicDataEvent(const pbox_socbt_msg_t *msg) {
     uint8_t index = msg->micdata.index;
-    mic_set_kind_t kind = msg->micdata.index;
+    mic_set_kind_t kind = msg->micdata.kind;
 
     ALOGD("%s op:%d Mic[%d] kind: %d\n", __func__, msg->op, index, kind);
     if(msg->op == OP_READ) {
-        //to do
+        pbox_app_echo_micdata(index, kind, DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_mic_data(msg->micdata, DISP_All);
+    pbox_app_btsoc_set_mic_data(msg->micdata, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s\n", __func__);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_poweron(DISP_All);
+        pbox_app_echo_poweron_status(DISP_BTMCU);
         return;
     }
 }
@@ -217,28 +211,28 @@ void handlePowerOnEvent(const pbox_socbt_msg_t *msg) {
 void handleStereoModeEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Sound Mode: %d\n", __func__, msg->stereo);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_stereo_mode(DISP_All);
+        pbox_app_echo_stereo_mode(DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_stereo_mode(msg->stereo, DISP_All);
+    pbox_app_btsoc_set_stereo_mode(msg->stereo, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Human VoiceFadeout: %u\n", __func__, msg->fadeout);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_human_voice_fadeout(DISP_All);
+        pbox_app_echo_voice_fadeout_mode(DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_human_voice_fadeout(msg->fadeout, DISP_All);
+    pbox_app_btsoc_set_human_voice_fadeout(msg->fadeout, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Switch Source: Play Status = %d, Input Source = %d\n", 
                 __func__, msg->input_source.status, msg->input_source.input);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_input_source(DISP_All);
+        pbox_app_echo_input_source(DISP_BTMCU);
         return;
     }
 
@@ -248,11 +242,11 @@ void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
 void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Music Volume Volume: %f\n", __func__, msg->musicVolLevel);
     if(msg->op == OP_READ) {
-        pbox_app_btsoc_get_music_volume(DISP_All);
+        pbox_app_echo_music_volume(DISP_BTMCU);
         return;
     }
 
-    pbox_app_btsoc_set_music_volume(msg->musicVolLevel, DISP_All|DISP_FS);
+    pbox_app_btsoc_set_music_volume(msg->musicVolLevel, DISP_All_EXCLUDE_BTMCU|DISP_FS);
 }
 
 // Define a struct to associate opcodes with handles

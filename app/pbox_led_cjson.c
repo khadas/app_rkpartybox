@@ -1,5 +1,6 @@
 #include "pbox_led_cjson.h"
 #include "slog.h"
+#include "os_minor_type.h"
 //获取json文本的数据
 
 const char *jsonfile = "/etc/pbox/led_effect.json";
@@ -47,7 +48,7 @@ char *get_json_data(const char *jsonfile)
 
 	fseek(f_json, 0, SEEK_SET); //将指针移动到文件首部
 
-	json_data = (char *) malloc(json_size + 1); //向系统申请分配指定size个字节的内存空间
+	json_data = (char *) os_malloc(json_size + 1); //向系统申请分配指定size个字节的内存空间
 	memset(json_data, 0, json_size + 1);
 	int ret = fread((void *) json_data, json_size, 1, f_json); //将f_json中的数据读入中json_data中
 
@@ -84,7 +85,7 @@ int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effe
 	cJSON * pJson = cJSON_Parse(p);
 	if (NULL == pJson) {
 		ALOGE("parse %s led_effect failed, return\n", led_effect_name);
-		free(p);
+		os_free(p);
 		return -1;
 	}
 	cJSON * root = cJSON_GetObjectItem(pJson, led_effect_name);
@@ -126,13 +127,13 @@ int get_led_effect_data(struct light_effect_ctrl * ctrl, struct led_effect* effe
 	} else {
 		ALOGE("cJSON_GetObjectItem led_effect %s failed, return\n",led_effect_name);
 		cJSON_Delete(pJson);
-		free(p);
+		os_free(p);
 		return -1;
 	}
 	ALOGD("parse %s led_effect success\n", led_effect_name);
 	dump_led_effect(effect);
 	cJSON_Delete(pJson);
-	free(p);
+	os_free(p);
 	return 0;
 }
 
@@ -198,7 +199,7 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 	cJSON * pJson = cJSON_Parse(p);
 	if (NULL == pJson) {
 		ALOGE("parse %s led_effect failed, return\n", config_name);
-		free(p);
+		os_free(p);
 		return -1;
 	}
 	cJSON * root = cJSON_GetObjectItem(pJson, config_name);
@@ -223,7 +224,7 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 
 		total_num = get_led_total_num(ctrl);
 
-		ctrl->position_mapp = (int *)malloc(sizeof(int) * total_num);
+		ctrl->position_mapp = (int *)os_malloc(sizeof(int) * total_num);
 		if (ctrl->position_mapp == NULL) {
 			ALOGE("position_mapp malloc fail\n");
 			goto failed;
@@ -238,7 +239,7 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 				ctrl->position_mapp[i] = pposition_mapp->valueint;
 			} else {
 				ALOGE("could not find logic mapp %d\n", i + 1);
-				free(ctrl->position_mapp);
+				os_free(ctrl->position_mapp);
 				goto failed;
 			}
 		}
@@ -254,12 +255,12 @@ int base_light_config_init(struct light_effect_ctrl *ctrl, char *config_name)
 		ALOGE("cJSON_GetObjectItem led_effect %s failed, return\n",config_name);
 failed:
 		cJSON_Delete(pJson);
-		free(p);
+		os_free(p);
 		return -1;
 	}
 	ALOGD("parse %s led_effect success\n", config_name);
 	dump_config(ctrl);
 	cJSON_Delete(pJson);
-	free(p);
+	os_free(p);
 	return 0;
 }

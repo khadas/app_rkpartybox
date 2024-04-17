@@ -8,6 +8,7 @@
 #include <paths.h>
 #include <dirent.h>
 
+#include "os_minor_type.h"
 #include "pbox_hotplug.h"
 #include "pbox_common.h"
 
@@ -59,7 +60,7 @@ bool file_is_supported(char *filepath, music_format_t* file_type)
     }
 
     ALOGW("%s is %ssupported, [%s]\n", filepath, result ? "" : "not ", suffix);
-    free(suffix);
+    os_free(suffix);
     return result;
 }
 

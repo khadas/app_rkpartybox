@@ -41,6 +41,7 @@
 #include "pbox_socketpair.h"
 #include "pbox_common.h"
 #include "pbox_keyscan_app.h"
+#include "os_minor_type.h"
 
 #ifdef RK_VAD
 #include "vad.h"
@@ -172,13 +173,13 @@ int find_multi_event_dev(int event_type, int *fds) {
         } else {
             fds[count++] = fd;
         }
-        free(namelist[i]);
+        os_free(namelist[i]);
     }
 
     if(count == 0) {
         ALOGI("Can't find device by event_type[%d,%s]\n", event_type, support_event[event_type].name);
     }
-    free(namelist);
+    os_free(namelist);
     return count;
 }
 

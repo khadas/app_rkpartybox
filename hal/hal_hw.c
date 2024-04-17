@@ -61,8 +61,8 @@ float HW_MIC_TREBLE(uint8_t index) {
 }
 
 float HW_MIC_BASS(uint8_t index) {
-    assert(index <= DSP_MIC_BASS_MAX_VOL);
     return MIC_BASS[index];
+    assert(index <= DSP_MIC_BASS_MAX_VOL);
 }
 
 float HW_GT_REVERB(uint8_t index) {
@@ -78,4 +78,44 @@ float HW_GT_TREBLE(uint8_t index) {
 float HW_GT_BASS(uint8_t index) {
     assert(index <= DSP_MIC_BASS_MAX_VOL);
     return GT_BASS[index];
+}
+
+const float* hw_get_main_volume_table(uint16_t* size) {
+    *size = sizeof(MAIN_GAIN)/sizeof(float);
+    return &MAIN_GAIN[0];
+}
+
+const float* hw_get_music_volume_table(uint16_t* size) {
+    *size = sizeof(MUSIC_GAIN)/sizeof(float);
+    return &MUSIC_GAIN[0];
+}
+
+const float* hw_get_mic_reverb_table(uint16_t* size) {
+    *size = sizeof(MIC_REVERB)/sizeof(float);
+    return &MIC_REVERB[0];
+}
+
+const float* hw_get_mic_treble_table(uint16_t* size) {
+    *size = sizeof(MIC_TREBLE)/sizeof(float);
+    return &MIC_TREBLE[0];
+}
+
+const float* hw_get_mic_bass_table(uint16_t* size) {
+    *size = sizeof(MIC_BASS)/sizeof(float);
+    return &MIC_BASS[0];
+}
+
+const float* hw_get_guitar_reverb_table(uint16_t* size) {
+    *size = sizeof(GT_REVERB)/sizeof(float);
+    return &GT_REVERB[0];
+}
+
+const float* hw_get_guitar_treble_table(uint16_t* size) {
+    *size = sizeof(GT_TREBLE)/sizeof(float);
+    return &GT_TREBLE[0];
+}
+
+const float* hw_get_guitar_bass_table(uint16_t* size) {
+    *size = sizeof(GT_BASS)/sizeof(float);
+    return &GT_BASS[0];
 }

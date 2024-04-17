@@ -8,17 +8,20 @@
 #include <pthread.h>
 #include <RkBtBase.h>
 #include <RkBtSink.h>
-#include "pbox_common.h"
-#include "rk_btsink.h"
-#include "rk_utils.h"
-#include "pbox_socket.h"
-#include "pbox_socketpair.h"
 //vendor code for broadcom
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+
+#include "pbox_common.h"
+#include "rk_btsink.h"
+#include "rk_utils.h"
+#include "pbox_socket.h"
+#include "pbox_socketpair.h"
+
+#include "os_minor_type.h"
 
 static int vendor_set_high_priority(char *ba, uint8_t priority, uint8_t direction);
 
@@ -583,7 +586,7 @@ static int get_acl_handle(int fd, char *bdaddr) {
     int max_conn = 10;
     char addr[18];
 
-    conn_list = malloc(max_conn * (
+    conn_list = os_malloc(max_conn * (
         sizeof(struct hci_conn_list_req) + sizeof(struct hci_conn_info)));
     if (!conn_list) {
         ALOGE("Out of memory in %s\n", __FUNCTION__);
@@ -620,7 +623,7 @@ static int get_acl_handle(int fd, char *bdaddr) {
     ret = 0;
 
 out:
-    free(conn_list);
+    os_free(conn_list);
     return ret;
 }
 

@@ -45,7 +45,7 @@ int pbox_app_music_store_stereo_mode(stereo_mode_t stereo) {
     return rk_param_set_int("ui:stereo", (int)(stereo));
 }
 
-int pbox_app_music_store_vocal_split(bool split) {
+int pbox_app_store_vocalFadeout_switch(bool split) {
     ramdata_ditry++;
     return rk_param_set_bool("ui:vocalSplit", split);
 }

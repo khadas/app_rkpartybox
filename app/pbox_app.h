@@ -14,8 +14,10 @@ typedef enum {
     DISP_NONE = 0,
     DISP_LED = 1<<0,
     DISP_LCD = 1<<1,
-    DISP_FS = 1<<2, //File system
-    DISP_All = DISP_LED|DISP_LCD
+    DISP_BTMCU = 1<<2,
+    DISP_FS = 1<<3, //File system
+    DISP_All = (DISP_LED|DISP_LCD|DISP_BTMCU),
+    DISP_All_EXCLUDE_BTMCU = (DISP_All&(~DISP_BTMCU)),
 } display_t;
 
 typedef struct {
@@ -81,10 +83,6 @@ extern struct _pbox_uac *const pboxUacdata;
 extern favor_input_order_t input_order_config[SRC_NUM];
 
 void pbox_app_set_favor_source_order(void);
-void pbox_app_show_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy);
-void pbox_app_show_tack_info(char *title, char *artist, display_t policy);
-void pbox_app_show_bt_state(btsink_state_t state, display_t policy);
-void pbox_app_show_playingStatus(bool play, display_t policy);
 void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy);
 void pbox_app_bt_pair_enable(bool enable, display_t policy);
 void pbox_app_bt_local_update(display_t policy);
@@ -109,7 +107,7 @@ void pbox_app_music_mics_init(display_t policy);
 void pbox_app_tunning_init(display_t policy);
 void pbox_app_resume_volume_later(int32_t msdelay);
 
-void pbox_app_music_set_volume(float volume, display_t policy);
+void pbox_app_music_set_main_volume(float volume, display_t policy);
 void pbox_app_music_set_music_volume(float volume, display_t policy);
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy);
@@ -128,7 +126,6 @@ void pbox_app_music_set_mic_bass(uint8_t index, float bass, display_t policy);
 void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy);
 void pbox_app_music_set_mic_all(uint32_t index, mic_state_t micdata, display_t policy);
 
-void pbox_app_music_get_music_volume(display_t policy);
 void pbox_version_print(void);
 void pbox_app_music_init(void);
 
@@ -143,26 +140,34 @@ void pbox_app_usb_list_update(uint32_t trackId, display_t policy);
 void pbox_app_show_usb_state(usb_state_t state, display_t policy);
 void pbox_app_usb_start_scan(display_t policy);
 
-void pbox_app_btsoc_get_dsp_version(display_t policy);
-void pbox_app_btsoc_get_volume(display_t policy);
+void pbox_app_btsoc_init(void);
 void pbox_app_btsoc_set_volume(float volume, display_t policy);
 void pbox_app_btsoc_set_placement(placement_t placement, display_t policy);
-void pbox_app_btsoc_get_placement(display_t policy);
-void pbox_app_btsoc_get_mic1_state(display_t policy);
-void pbox_app_btsoc_get_mic2_state(display_t policy);
 void pbox_app_btsoc_set_outdoor_mode(inout_door_t inout, display_t policy);
-void pbox_app_btsoc_get_inout_door(display_t policy);
-void pbox_app_btsoc_get_poweron(display_t policy);
 void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy);
-void pbox_app_btsoc_get_stereo_mode(display_t policy);
-void pbox_app_btsoc_get_human_voice_fadeout(display_t policy);
 void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy);
 void pbox_app_btsoc_set_mic_mux(uint8_t index, mic_mux_t micMux, display_t policy);
 void pbox_app_btsoc_set_mic_data(mic_data_t data, display_t policy);
-void pbox_app_btsoc_get_input_source(display_t policy);
 void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status, display_t policy);
 void pbox_app_btsoc_set_music_volume(float volume, display_t policy);
-#define pbox_app_btsoc_get_music_volume(a) pbox_app_music_get_music_volume(a)
+
+void pbox_app_echo_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy);
+void pbox_app_echo_tack_info(char *title, char *artist, display_t policy);
+void pbox_app_echo_bt_state(btsink_state_t state, display_t policy);
+void pbox_app_echo_playingStatus(bool play, display_t policy);
+
+void pbox_app_echo_dsp_version(display_t policy);
+void pbox_app_echo_main_volume(display_t policy);
+void pbox_app_echo_music_volume(display_t policy);
+void pbox_app_echo_placement(display_t policy);
+void pbox_app_echo_inout_door(display_t policy);
+void pbox_app_echo_poweron_status(display_t policy);
+void pbox_app_echo_stereo_mode(display_t policy);
+void pbox_app_echo_voice_fadeout_mode(display_t policy);
+void pbox_app_echo_micMux(uint8_t index, display_t policy);
+void pbox_app_echo_micdata(uint8_t index, mic_set_kind_t kind, display_t policy);
+void pbox_app_echo_input_source(display_t policy);
+
 
 bool is_dest_source_auto_switchable(input_source_t source);
 bool is_input_source_selected(input_source_t source, switch_source_t mode);

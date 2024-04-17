@@ -60,6 +60,8 @@ typedef struct {
 } pbox_socbt_msg_t;
 
 int pbox_create_btsoc_task(void);
+
+const struct NotifyFuncs* pbox_socbt_get_notify_funcs(void);
 #ifdef __cplusplus
 }
 #endif

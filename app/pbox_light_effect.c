@@ -24,6 +24,7 @@
 #include "pthread.h"
 #include "pbox_ledctrl.h"
 #include "pbox_led_cjson.h"
+#include "os_minor_type.h"
 
 struct led_effect *leffect;
 struct led_effect *foreground_leffect;
@@ -957,7 +958,7 @@ static void *pbox_light_effect_server(void *arg)
 int effect_calcule_data_init(void)
 {
 	int total_num;
-	cal_data = malloc(sizeof(struct effect_calcule_data));
+	cal_data = os_malloc(sizeof(struct effect_calcule_data));
 	if (!cal_data) {
 		ALOGE("%s:effect_calcule_data alloc failed\n", __func__);
 		goto exit5;
@@ -966,28 +967,28 @@ int effect_calcule_data_init(void)
 
 	total_num = get_led_total_num(ctrl);
 
-	cal_data->force_bright = malloc(sizeof(int) * total_num);
+	cal_data->force_bright = os_malloc(sizeof(int) * total_num);
 	if (!cal_data->force_bright) {
 		ALOGE("%s:cal_data->force_bright alloc failed\n", __func__);
 		goto exit4;
 	}
 	memset(cal_data->force_bright, 0x00, sizeof(int) * total_num);
 
-	cal_data->back_bright = malloc(sizeof(int) * total_num);
+	cal_data->back_bright = os_malloc(sizeof(int) * total_num);
 	if (!cal_data->back_bright) {
 		ALOGE("%s:cal_data->back_bright alloc failed\n", __func__);
 		goto exit3;
 	}
 	memset(cal_data->back_bright, 0x00, sizeof(int) * total_num);
 
-	cal_data->bright = malloc(sizeof(int) * total_num);
+	cal_data->bright = os_malloc(sizeof(int) * total_num);
 	if (!cal_data->bright) {
 		ALOGE("%s:cal_data->bright alloc failed\n", __func__);
 		goto exit2;
 	}
 	memset(cal_data->bright, 0x00, sizeof(int) * total_num);
 	
-	cal_data->step_bright = malloc(sizeof(int) * total_num);
+	cal_data->step_bright = os_malloc(sizeof(int) * total_num);
 	if (!cal_data->step_bright) {
 		ALOGE("%s:cal_data->step_bright alloc failed\n", __func__);
 		goto exit1;
@@ -996,32 +997,32 @@ int effect_calcule_data_init(void)
 
 	return 0;
 exit1:
-	free(cal_data->bright);
+	os_free(cal_data->bright);
 exit2:
-	free(cal_data->back_bright);
+	os_free(cal_data->back_bright);
 exit3:
-	free(cal_data->force_bright);
+	os_free(cal_data->force_bright);
 exit4:
-	free(cal_data);
+	os_free(cal_data);
 exit5:
 	return -1;
 }
 
 int effect_calcule_data_deinit(void)
 {
-	free(cal_data->step_bright);
-	free(cal_data->bright);
-	free(cal_data->back_bright);
-	free(cal_data->force_bright);
-	free(cal_data);
+	os_free(cal_data->step_bright);
+	os_free(cal_data->bright);
+	os_free(cal_data->back_bright);
+	os_free(cal_data->force_bright);
+	os_free(cal_data);
 	return 0;
 }
 
 int base_light_config_deinit(void)
 {
-	free(ctrl->position_mapp);
-	free(ctrl->unit_fd);
-	free(ctrl);
+	os_free(ctrl->position_mapp);
+	os_free(ctrl->unit_fd);
+	os_free(ctrl);
 }
 
 int pbox_light_effect_init(void)
@@ -1033,7 +1034,7 @@ int pbox_light_effect_init(void)
 		return 0;
 	}
 
-	ctrl = malloc(sizeof(struct light_effect_ctrl));
+	ctrl = os_malloc(sizeof(struct light_effect_ctrl));
 	if (!ctrl) {
 		ALOGE("%s:light_effect_ctrl alloc failed\n", __func__);
 		goto exit4;
@@ -1045,14 +1046,14 @@ int pbox_light_effect_init(void)
 
 	ctrl->soundreactive_mute = 1;
 
-	leffect = malloc(sizeof(struct led_effect));
+	leffect = os_malloc(sizeof(struct led_effect));
 	if (!leffect) {
 		ALOGE("%s:led_effect alloc failed\n", __func__);
 		goto exit3;
 	}
 	memset(leffect, 0x00, sizeof(struct led_effect));
 
-	foreground_leffect = malloc(sizeof(struct led_effect));
+	foreground_leffect = os_malloc(sizeof(struct led_effect));
 	if (!foreground_leffect) {
 		ALOGE("%s:led_effect alloc failed\n", __func__);
 		goto exit2;
@@ -1066,11 +1067,11 @@ int pbox_light_effect_init(void)
 
 	return 0;
 exit1:
-	free(foreground_leffect);
+	os_free(foreground_leffect);
 exit2:
-	free(leffect);
+	os_free(leffect);
 exit3:
-	free(ctrl);
+	os_free(ctrl);
 exit4:
 	return -1;
 }
@@ -1084,8 +1085,8 @@ int pbox_light_effect_deinit(struct light_effect_ctrl * ctrl)
 
 	led_userspace_ctrl_deinit(ctrl);
 	effect_calcule_data_deinit();
-	free(foreground_leffect);
-	free(leffect);
+	os_free(foreground_leffect);
+	os_free(leffect);
 	base_light_config_deinit();
 
 	ctrl = NULL;

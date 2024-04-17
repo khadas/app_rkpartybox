@@ -15,7 +15,7 @@
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
 #include "pbox_rockit_app.h"
-#include "pbox_multi_display.h"
+#include "pbox_multi_echo.h"
 #include "pbox_app.h"
 #include "rk_utils.h"
 
@@ -190,18 +190,18 @@ void update_bt_karaoke_playing_status(bool playing)
         pbox_app_rockit_pause_player(pboxData->inputDevice);
     }
     pboxUIdata->play_status = playing ? PLAYING:_PAUSE;
-    pbox_app_show_playingStatus(playing, DISP_All);
+    pbox_app_echo_playingStatus(playing, DISP_All);
 }
 
 void update_music_track_info(char *title, char *artist) {
     ALOGD("%s track:[%s]-[%s]\n", __func__, title, artist);
-    pbox_app_show_tack_info(title, artist, DISP_All);
+    pbox_app_echo_tack_info(title, artist, DISP_All);
 }
 
 void update_music_positions(uint32_t current, uint32_t total) {
     static uint32_t  prev_total = 0;
     ALOGD("%s position:[%d]-[%d](%d)\n", __func__, current, total, prev_total);
-    pbox_app_show_track_position(false, current, total, DISP_All);
+    pbox_app_echo_track_position(false, current, total, DISP_All);
 
     if(prev_total != total) {
         prev_total = total;
@@ -227,7 +227,7 @@ void update_bt_music_volume(int volumeLevel ,display_t policy)
     volumeLevelMapp = volumeLevelMapp< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volumeLevelMapp;
 
     if(volumeLevelMapp != pboxUIdata->mainVolumeLevel)
-    pbox_app_music_set_volume((float)volumeLevelMapp, policy);
+    pbox_app_music_set_main_volume((float)volumeLevelMapp, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
@@ -270,7 +270,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
             }
 
             if(is_input_source_selected(SRC_CHIP_BT, ANY))
-                pbox_app_show_bt_state(pboxBtSinkdata->btState, DISP_All);
+                pbox_app_echo_bt_state(pboxBtSinkdata->btState, DISP_All);
         } break;
 
         case BT_SINK_NAME: {

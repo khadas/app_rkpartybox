@@ -12,6 +12,7 @@
 #include "rc_partybox.h"
 #include "pbox_rockit_audio.h"
 #include "rk_utils.h"
+#include "os_minor_type.h"
 
 //#define PCM_DEVICE "hw:2,0"
 
@@ -83,7 +84,7 @@ void *pbox_rockit_record_routine(void *params) {
         in_frames = frame_info.size/frame_info.channels/(frame_info.bit_width/8);
         if(frame_info.channels == 1) {
             resample = 1;
-            buffer = malloc(frame_info.size*2);
+            buffer = os_malloc(frame_info.size*2);
             for(int i = 0; i < in_frames; i++) {
                 ((int16_t *)buffer)[2*i] =   ((int16_t *)frame_info.data)[i];
                 ((int16_t *)buffer)[2*i+1] = ((int16_t *)frame_info.data)[i];
@@ -125,13 +126,13 @@ retry_alsa_write:
             ALOGE("rewriting written:%d, \n", frames, in_frames);
             goto retry_alsa_write;
         }
-        if(resample) { free(buffer); buffer = NULL;}
+        if(resample) { os_free(buffer);}
         rc_pb_recorder_queue_frame(*ptrboxCtx, &frame_info, -1);
         continue;
 
 close_alsa:
         ALOGE("ALSA close_alsa: %d\n", frames);
-        if(resample) { free(buffer); buffer = NULL;}
+        if(resample) { os_free(buffer);}
         rc_pb_recorder_queue_frame(*ptrboxCtx, &frame_info, -1);
         pcm_close(&pcm_handle);
     }

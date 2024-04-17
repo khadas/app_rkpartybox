@@ -136,7 +136,7 @@ void pbox_app_lcd_displayReservLevel(uint32_t reserv_music_level) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_displayMusicSeparateSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel) {
+void pbox_app_lcd_displayVocalFadeoutSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH,
@@ -270,7 +270,7 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
             float volume = msg->mainVolume;
             volume = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volume/100 + MIN_MAIN_VOLUME; //covert to real db volume.
             if(volume == pboxUIdata->mainVolumeLevel) break;
-            pbox_app_music_set_volume(volume, DISP_LED|DISP_FS);
+            pbox_app_music_set_main_volume(volume, DISP_LED|DISP_FS);
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             float mic_volume = msg->micVolume;

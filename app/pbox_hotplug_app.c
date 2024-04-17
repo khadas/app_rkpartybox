@@ -16,6 +16,7 @@
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
 #include "pbox_btsink_app.h"
+#include "os_minor_type.h"
 
 typedef void (*usb_event_handle)(const pbox_usb_msg_t*);
 static void handleUsbChangeEvent(const pbox_usb_msg_t* msg);
@@ -112,7 +113,7 @@ char* pbox_app_usb_get_title(uint32_t trackId) {
     return NULL;
 }
 
-#define pbox_free(a) do { if(a) {free(a); a = NULL;}} while(0)
+#define pbox_free(a) do { if(a) {os_free(a);}} while(0)
 
 bool isUsbDiskConnected(void) {
     return (pboxUsbdata->usbState != USB_DISCONNECTED);
@@ -177,7 +178,7 @@ void handleUsbAudioFileAddEvent(const pbox_usb_msg_t* msg) {
 
     char **pTitle = &(pboxTrackdata->track_list[pboxTrackdata->track_num].title);
     int len = strlen(msg->usbMusicFile.fileName);
-    *pTitle = malloc(len + 1);
+    *pTitle = os_malloc(len + 1);
     if(*pTitle) {
         strncpy(*pTitle, msg->usbMusicFile.fileName, len);
         (*pTitle)[len] = 0;

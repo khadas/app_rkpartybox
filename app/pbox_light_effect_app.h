@@ -28,7 +28,7 @@ void pbox_app_led_startup_effect(void);
 
 #define pbox_app_led_TrackInfo(...)         ((void) 0)
 #define pbox_app_led_TrackPosition(...)     ((void) 0)
-#define pbox_app_led_MusicSeparateSwitch(...) ((void) 0)
+#define pbox_app_led_vocalFadeout_switch(...) ((void) 0)
 #define pbox_app_led_echo3A(...)            ((void) 0)
 #define pbox_app_led_revertMode(...)        ((void) 0)
 #define pbox_app_led_usbState(...)          ((void) 0)
@@ -44,4 +44,4 @@ void pbox_app_led_startup_effect(void);
 }
 #endif
 
-#endif  // _PBOX_MULTI_DISPLAY_H_
+#endif
