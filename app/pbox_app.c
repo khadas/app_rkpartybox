@@ -342,7 +342,8 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
         case SRC_CHIP_USB: {
             pbox_app_show_usb_state(pboxUsbdata->usbState, policy);
             if(isInputSourceConnected(SRC_CHIP_USB)) {
-                pbox_app_usb_list_update(pboxTrackdata->track_id, policy);
+                //pbox_app_usb_list_update(pboxTrackdata->track_id, policy);
+                pbox_app_echo_tack_info(pbox_app_usb_get_title(pboxTrackdata->track_id), " ", policy);
             } else {
                 pbox_app_echo_tack_info(" ", " ",  policy);
             }
