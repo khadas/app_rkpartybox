@@ -136,6 +136,7 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
     }
 
     //pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, policy);
+    pbox_app_music_original_singer_open(!pboxUIdata->vocalSplit, policy);
     pbox_app_resume_volume_later(650);
 }
 
@@ -414,6 +415,7 @@ void pbox_app_music_start(display_t policy) {
             ALOGW("play track [%s]\n", track_uri);
             pbox_app_rockit_start_local_player(track_uri, NULL);
             pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, policy);
+            pbox_app_music_original_singer_open(!pboxUIdata->vocalSplit, policy);
             pbox_multi_echoTrackInfo(track_name, NULL, policy);
         } break;
 
@@ -621,8 +623,8 @@ void pbox_app_music_set_mic_mute(uint8_t index, bool mute, display_t policy){
 void pbox_app_music_init(void) {
     pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, DISP_All);
     pbox_app_music_set_music_volume(pboxUIdata->musicVolumeLevel, DISP_All);
-    pbox_app_music_set_accomp_music_level(pboxUIdata->accomLevel, DISP_All);
-    pbox_app_music_set_human_music_level(pboxUIdata->humanLevel, DISP_All);
+    //pbox_app_music_set_accomp_music_level(pboxUIdata->accomLevel, DISP_All);
+    //pbox_app_music_set_human_music_level(pboxUIdata->humanLevel, DISP_All);
     pbox_app_music_original_singer_open(!(pboxUIdata->vocalSplit), DISP_All);
     #if ENABLE_EXT_BT_MCU
         pbox_app_music_set_placement(pboxUIdata->placement, DISP_All);
