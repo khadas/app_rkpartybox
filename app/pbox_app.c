@@ -450,7 +450,7 @@ void pbox_app_music_stop(display_t policy)
 {
      ALOGD("%s\n", __func__);
     if (pboxUIdata->play_status == IDLE || pboxUIdata->play_status == _STOP) {
-        return;
+        //return;
     }
     switch (pboxData->inputDevice) {
         case SRC_CHIP_BT: {
