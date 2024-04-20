@@ -44,7 +44,11 @@
 void maintask_timer_fd_process(int timer_fd);
 
 static int main_loop = 1;
+#if ENABLE_LCD_DISPLAY
+#define PBOX_TIMER_INTERVAL 20
+#else
 #define PBOX_TIMER_INTERVAL 10
+#endif
 
 pbox_pipe_t pbox_pipe_fds[PBOX_SOCKPAIR_NUM];
 
@@ -305,7 +309,7 @@ void maintask_timer_fd_process(int timer_fd) {
     msTimePassed += PBOX_TIMER_INTERVAL;
     //ALOGD("working time:%llu\n", msTimePassed);
 
-    if (0 == msTimePassed%20) {
+    if (0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) {
         //every 10ms send command to reflash lvgl ui.
         pbox_app_lcd_dispplayReflash();
     }
@@ -314,7 +318,7 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_data_save();
     }
 
-    if((0 == msTimePassed%50) && (pboxUIdata->play_status == PLAYING)) {
+    if((0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) && (pboxUIdata->play_status == PLAYING)) {
         //send commamd to get engery.
         pbox_app_rockit_get_player_energy(pboxData->inputDevice);
     }
@@ -343,8 +347,8 @@ void maintask_timer_fd_process(int timer_fd) {
 
     if(pboxData->volume_resume_time > 0) {
         pboxData->volume_resume_time -= PBOX_TIMER_INTERVAL;
-        if(pboxData->volume_resume_time == 0) {
-            pboxData->volume_resume_time = -1;
+        if(pboxData->volume_resume_time <= 0) {
+            //pboxData->volume_resume_time = -1;
             pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, DISP_All);
         }
     }

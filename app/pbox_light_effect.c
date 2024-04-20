@@ -740,6 +740,7 @@ int led_effect_volume(struct led_effect* effect)
 
 void *pbox_light_effect_drew(void *para)
 {
+	pthread_setname_np(pthread_self(), "pbox_led_draw");
 	while (true) {
 		//ALOGD("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
 		if (foreground_leffect_job) {
@@ -811,7 +812,7 @@ static void *pbox_light_effect_server(void *arg)
 	pbox_light_effect_msg_t *msg;
 
 
-	pthread_setname_np(pthread_self(), "party_light_effect");
+	pthread_setname_np(pthread_self(), "party_led_effect");
 
 	int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LED);
 

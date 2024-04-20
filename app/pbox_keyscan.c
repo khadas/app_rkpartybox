@@ -185,7 +185,7 @@ int find_multi_event_dev(int event_type, int *fds) {
 
 void *pbox_KeyEvent_send(void * arg) {
     int i;
-
+    pthread_setname_np(pthread_self(), "pbox_keysend");
     while(1) {
         if (key_read.is_key_valid == 1) {
             for(i = 0;  i < support_keys_size; i++){

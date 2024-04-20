@@ -259,7 +259,7 @@ static void *pbox_hotplug_dev_server(void *arg)
     pbox_usb_msg_t *msg;
     struct udev *udev;
 
-    pthread_setname_np(pthread_self(), "pbox_hotplug_dev_server");
+    pthread_setname_np(pthread_self(), "pbox_hotplug");
     PBOX_ARRAY_SET(hotplug_fds, -1, sizeof(hotplug_fds)/sizeof(hotplug_fds[0]));
 
     hotplug_fds[USB_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);

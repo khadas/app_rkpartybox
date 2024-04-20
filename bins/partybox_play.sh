@@ -18,15 +18,15 @@ amixer -c 0 cset numid=45 3
 amixer -c 0 cset numid=46 30
 amixer -c 0 cset numid=47 30
 
-echo 1 > "$ACODEC_FILE_PATH"
-sleep 1
-echo 11 > "$ACODEC_FILE_PATH"
-sleep 1
-while true; do
-    dac_output=$(cat "$ACODEC_FILE_PATH")
-    if [ "$dac_output" != "dac path: both line out and hp out" ]; then
-        echo "Content is not 'dac path: both line out and hp out'. Setting dac_output to 1."
-        echo 11 > "$ACODEC_FILE_PATH"
-    fi
-    sleep 1
-done
+#echo 1 > "$ACODEC_FILE_PATH"
+#sleep 1
+#echo 11 > "$ACODEC_FILE_PATH"
+#sleep 1
+#while true; do
+#    dac_output=$(cat "$ACODEC_FILE_PATH")
+#    if [ "$dac_output" != "dac path: both line out and hp out" ]; then
+#        echo "Content is not 'dac path: both line out and hp out'. Setting dac_output to 1."
+#        echo 11 > "$ACODEC_FILE_PATH"
+#    fi
+#    sleep 1
+#done
