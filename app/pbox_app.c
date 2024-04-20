@@ -815,7 +815,7 @@ void pbox_app_uac_state_change(uac_role_t role, bool start, display_t policy) {
             ALOGD("%s recorder start=%d\n", __func__, start);
             pboxUacdata->record_state = start;
 
-            //pbox_app_record_start(SRC_CHIP_UAC, start, policy);
+            pbox_app_record_start(SRC_CHIP_UAC, start, policy);
         }
 
         default: break;
