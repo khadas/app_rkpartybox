@@ -32,7 +32,7 @@ extern lv_ft_info_t ttf_main_l;
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-uint32_t track_num = 0;
+uint32_t track_list_num = 0;
 static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id);
 static void remove_list_btn(lv_obj_t * parent, uint32_t track_id);
 static void btn_click_event_cb(lv_event_t * e);
@@ -153,8 +153,8 @@ lv_obj_t * _lv_demo_music_list_create(lv_obj_t * parent)
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
 
     uint32_t track_id;
-    track_num = _lv_demo_music_get_track_num();
-    for(track_id = 0; track_id < track_num; track_id++) {
+    track_list_num = _lv_demo_music_get_track_num();
+    for(track_id = 0; track_id < track_list_num; track_id++) {
         add_list_btn(list,  track_id);
     }
 
@@ -162,7 +162,7 @@ lv_obj_t * _lv_demo_music_list_create(lv_obj_t * parent)
     lv_obj_set_scroll_snap_y(list, LV_SCROLL_SNAP_CENTER);
 #endif
 
-    if (track_num > 0) //scan some mp3 file
+    if (track_list_num > 0) //scan some mp3 file
         _lv_demo_music_list_btn_check(0, true);
 
     return list;
@@ -206,12 +206,12 @@ void _lv_demo_music_update_track_list(lv_obj_t * list) {
     uint32_t track_id;
     uint32_t new_track_num = _lv_demo_music_get_track_num();
 
-    for(track_id = 0; track_id < track_num; track_id++) {
+    for(track_id = 0; track_id < track_list_num; track_id++) {
         remove_list_btn(list, track_id);
     }
 
-    track_num = new_track_num;
-    for(track_id = 0; track_id < track_num; track_id++) {
+    track_list_num = new_track_num;
+    for(track_id = 0; track_id < track_list_num; track_id++) {
         add_list_btn(list, track_id);
     }
 }
