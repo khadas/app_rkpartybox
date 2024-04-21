@@ -85,7 +85,7 @@ void pbox_app_rockit_start_audiocard_player(input_source_t source, int sampleFre
 
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
-    strncpy(msg.audioFormat.cardName, cardName, 30);
+    strncpy(msg.audioFormat.cardName, cardName, sizeof(msg.audioFormat.cardName));
     ALOGD("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s \n", __func__, source, sampleFreq, channel, cardName);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
@@ -281,8 +281,8 @@ void pbox_app_rockit_start_recorder(input_source_t source, int sampleFreq, int c
 
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
-    strncpy(msg.audioFormat.cardName, "hw:2,0", 30);
-    ALOGD("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s \n", __func__, source, sampleFreq, channel, cardName);
+    snprintf(msg.audioFormat.cardName, sizeof(msg.audioFormat.cardName), "%s", AUDIO_CARD_RKCHIP_UAC);
+    ALOGD("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s\n", __func__, source, sampleFreq, channel, cardName);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 

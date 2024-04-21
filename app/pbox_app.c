@@ -162,10 +162,11 @@ void pbox_app_drive_passive_player(input_source_t source, play_status_t status, 
 }
 
 void pbox_app_record_start(input_source_t source, bool start, display_t policy) {
-    if (start)
+    if (start && (pboxData->inputDevice == SRC_CHIP_UAC))
         pbox_app_rockit_start_recorder(source, 48000, 2, NULL);
     else
         pbox_app_rockit_stop_recorder(source);
+        -
 }
 
 void pbox_app_bt_pair_enable(bool enable, display_t policy) {
@@ -358,8 +359,8 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
             pbox_app_restart_passive_player(SRC_CHIP_UAC, false, policy);
 
             //if you awlays want disable uac recored when swith source, enable this code..
-            //if(pboxUacdata->record_state)
-            //    pbox_app_record_start(SRC_CHIP_UAC, pboxUacdata->record_state, policy);
+            if(pboxUacdata->record_state)
+                pbox_app_record_start(SRC_CHIP_UAC, pboxUacdata->record_state, policy);
         } break;
     }
     //no ui display now
@@ -481,7 +482,7 @@ void pbox_app_music_stop(display_t policy)
         case SRC_CHIP_UAC: {
             pbox_app_rockit_stop_player(SRC_CHIP_UAC);
             //enable the code if u not nedd uac recored when switch to other source.
-            //pbox_app_rockit_stop_recorder(SRC_CHIP_UAC);
+            pbox_app_rockit_stop_recorder(SRC_CHIP_UAC);
         } break;
 
         default:

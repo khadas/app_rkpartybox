@@ -4,6 +4,7 @@
 #include <string.h>
 #include <alsa/asoundlib.h>
 #include "slog.h"
+#include "alsa_pcm.h"
 
 static int pcm_set_hw_params(snd_pcm_t *pcm, int channels, int rate,
         unsigned int *buffer_time, unsigned int *period_time) {
@@ -97,19 +98,18 @@ fail:
 }
 
 const char * device = "hw:2,0";
-int pcm_open(snd_pcm_t **pcm, const char* device, int channels, int rate,
-        unsigned int *buffer_time, unsigned int *period_time) {
+int pcm_open(snd_pcm_t **pcm, alsa_card_conf_t* audioConfig, int block) {
     snd_pcm_t *_pcm = NULL;
     char buf[256];
     char *tmp;
     int err;
 
-    if ((err = snd_pcm_open(&_pcm, device, SND_PCM_STREAM_PLAYBACK, 0)) != 0) {
+    if ((err = snd_pcm_open(&_pcm, audioConfig->cardName, SND_PCM_STREAM_PLAYBACK, block)) != 0) {
         snprintf(buf, sizeof(buf), "%s", snd_strerror(err));
         goto fail;
     }
 
-    if ((err = pcm_set_hw_params(_pcm, channels, rate, buffer_time, period_time)) != 0) {
+    if ((err = pcm_set_hw_params(_pcm, audioConfig->channel, audioConfig->sampingFreq, audioConfig->buffer_time, audioConfig->period_time)) != 0) {
         snprintf(buf, sizeof(buf), "Set HW params: %s", "fail");
         goto fail;
     }

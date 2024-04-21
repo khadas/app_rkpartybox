@@ -42,6 +42,7 @@ static void dump_out_data(const void* buffer,size_t bytes, int size)
    }
 }
 #include <inttypes.h>
+
 void *pbox_rockit_record_routine(void *params) {
     snd_pcm_t *pcm_handle = NULL;
     char *buffer;
@@ -51,6 +52,7 @@ void *pbox_rockit_record_routine(void *params) {
     snd_pcm_sframes_t in_frames;
     snd_pcm_sframes_t frames;
     snd_pcm_sframes_t sent;
+    alsa_card_conf_t audioConfig;
 
     os_task_t *task = (os_task_t *)params;
     struct rockit_pbx_t *ctx;
@@ -59,7 +61,7 @@ void *pbox_rockit_record_routine(void *params) {
     if(task == NULL) return NULL;
 
     task->pid_tid = syscall(SYS_gettid);//linux tid, not posix tid.
-    rk_setRtPrority(task->pid_tid, SCHED_RR, 9);
+    rk_setRtPrority(task->pid_tid, SCHED_RR, 0);
     ctx = (struct rockit_pbx_t *)task->params;
     assert(ctx != NULL);
     assert(ctx->pboxCtx != NULL);
@@ -70,9 +72,13 @@ void *pbox_rockit_record_routine(void *params) {
 
     while(__atomic_load_n(&task->runing, __ATOMIC_RELAXED)) {
         if(pcm_handle == NULL) {
-            unsigned int buffer_time = pcm_buffer_time;
-            unsigned int period_time = pcm_period_time;
-            if (pcm_open(&pcm_handle, ctx->audioFormat.cardName, 2, ctx->audioFormat.sampingFreq, &buffer_time, &period_time) < 0) {
+            snprintf(audioConfig.cardName, sizeof(audioConfig.cardName), "%s", ctx->audioFormat.cardName);
+            audioConfig.sampingFreq = ctx->audioFormat.sampingFreq;
+            audioConfig.channel = ctx->audioFormat.channel;
+            audioConfig.buffer_time = &pcm_buffer_time;
+            audioConfig.period_time = &pcm_period_time;
+
+            if (pcm_open(&pcm_handle, &audioConfig, SND_PCM_NONBLOCK) < 0) {
                 ALOGW("pcm_open %s\n", strerror(errno));
                 continue;
             }
@@ -93,20 +99,28 @@ void *pbox_rockit_record_routine(void *params) {
             resample = 0;
             buffer = frame_info.data;
         }
-        sent = frames = 0;
+        int32_t written = 0;
+        int retry = 10;
+        int64_t frameTime = (in_frames)*1000000/(frame_info.sample_rate);//us
 retry_alsa_write:
+        if (retry <=0) goto skip_alsa;
         //2 channel,16bit.
         uint64_t tmp = time_get_os_boot_us();
-        frames = snd_pcm_writei(pcm_handle, (char *)buffer + sent*4, in_frames - sent);
+        frames = snd_pcm_writei(pcm_handle, (char *)buffer + written*4, in_frames - written);
         //ALOGE("pbox snd_pcm_writei, in:%08d, out:%08d, sent:%08d, %"PRIu64"\t\n", in_frames, frames, sent, time_get_os_boot_us() - tmp);
         if (frames < 0) {
             switch (-frames) {
                 case EINTR: {
                     goto retry_alsa_write;
                 } break;
+                case EAGAIN: {
+                    if(retry--) usleep(1000);
+                    goto retry_alsa_write;
+                } break;
                 case EPIPE: {
                     ALOGE("ALSA playback PCM underrun\n");
-                    snd_pcm_prepare(pcm_handle);
+                    if(retry--) usleep(1000);
+                    //snd_pcm_prepare(pcm_handle);
                     goto retry_alsa_write;
                 } break;
                 default: {
@@ -121,11 +135,24 @@ retry_alsa_write:
         }
 
         //dump_out_data1((char *)buffer + sent*4, frames*4, 60);
-        sent = sent + frames;
-        if (sent < in_frames) {
-            ALOGE("rewriting written:%d, \n", frames, in_frames);
-            //goto retry_alsa_write;
+        retry = 10;
+        written = written + frames;
+        int64_t timeUs = (in_frames - written)*1000000/(frame_info.sample_rate);
+        if(timeUs > 0) {
+            /* - Sometimes the sleep schedule is too long, which results in the data not being sent in time and
+            *  resulting in an underrun.The sleep time cannot exceed the buffing time,So bufferTime/2
+            *  is used to avoid that.
+            */
+           timeUs = (timeUs > frameTime / 2 ? frameTime / 2 : timeUs);
+           usleep(timeUs);
         }
+
+        if (written < in_frames) {
+            //ALOGE("11rewriting written:%d, \n", frames, in_frames);
+            goto retry_alsa_write;
+        }
+
+skip_alsa:
         if(resample) { os_free(buffer);}
         rc_pb_recorder_queue_frame(*ptrboxCtx, &frame_info, -1);
         continue;

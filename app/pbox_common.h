@@ -99,7 +99,7 @@ typedef enum {
 typedef struct {
     int sampingFreq;
     int channel;
-    char cardName[30];
+    char cardName[16];
 } pbox_audioFormat_t;
 
 typedef struct {
