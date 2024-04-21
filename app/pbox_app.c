@@ -166,7 +166,6 @@ void pbox_app_record_start(input_source_t source, bool start, display_t policy) 
         pbox_app_rockit_start_recorder(source, 48000, 2, NULL);
     else
         pbox_app_rockit_stop_recorder(source);
-        -
 }
 
 void pbox_app_bt_pair_enable(bool enable, display_t policy) {

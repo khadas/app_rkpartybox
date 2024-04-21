@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include "slog.h"
 #include <alsa/asoundlib.h>
 #include <sys/syscall.h>
@@ -20,6 +22,10 @@ static unsigned int pcm_buffer_time = 160000;
 static unsigned int pcm_period_time =  20000;
 extern rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx, struct rc_pb_frame_info *, rc_s32);
 extern rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx, struct rc_pb_frame_info *, rc_s32);
+extern rc_s32 (*rc_pb_player_start)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_player_attr *);
+extern rc_s32 (*rc_pb_player_stop)(rc_pb_ctx, enum rc_pb_play_src);
+extern rc_s32 (*rc_pb_player_dequeue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
+extern rc_s32 (*rc_pb_player_queue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
 
 static void dump_out_data(const void* buffer,size_t bytes, int size)
 {
@@ -43,7 +49,7 @@ static void dump_out_data(const void* buffer,size_t bytes, int size)
 }
 #include <inttypes.h>
 
-void *pbox_rockit_record_routine(void *params) {
+void *pbox_rockit_record_routine(void *arg) {
     snd_pcm_t *pcm_handle = NULL;
     char *buffer;
     int bits2byte, resample = 0;
@@ -54,7 +60,7 @@ void *pbox_rockit_record_routine(void *params) {
     snd_pcm_sframes_t sent;
     alsa_card_conf_t audioConfig;
 
-    os_task_t *task = (os_task_t *)params;
+    os_task_t *task = (os_task_t *)arg;
     struct rockit_pbx_t *ctx;
     rc_pb_ctx *ptrboxCtx;
     struct rc_pb_frame_info frame_info;
@@ -166,4 +172,134 @@ close_alsa:
 
     pcm_close(&pcm_handle);
     return NULL;
+}
+
+//this is auxiliary rockit player.
+// it used to play ring, notification etc...
+#define READ_SIZE 1024
+const char* prompt_file[PROMPT_NUM] = {
+    "/oem/Stereo.pcm",
+    "/oem/Mono.pcm",
+    "/oem/Widen.pcm",
+    "/oem/Split_on.pcm",
+    "/oem/Split_off.pcm"
+};
+
+void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
+    int32_t size = 0;
+    FILE *file = NULL;
+    struct rc_pb_player_attr attr;
+    struct rc_pb_frame_info frame_info;
+
+    memset(&attr, 0, sizeof(attr));
+    attr.bit_width = 16;
+    attr.channels = 2;
+    attr.sample_rate = 48000;
+    attr.pool_size = READ_SIZE;
+    attr.pool_cnt = 1;
+    attr.detect.rms_tc = 200;
+    attr.detect.hold_time = 0;
+    attr.detect.decay_time = 200;
+    attr.detect.detect_per_frm = 2;
+    attr.detect.band_cnt = 10;
+
+    static int old = -1;
+
+    if(old == (int)index) {
+        return;
+    }
+    old = index;
+    if(index >= PROMPT_NUM) {
+        return;
+    }
+
+    file = fopen(prompt_file[index], "rb");
+    if (file == NULL) {
+        ALOGE("%s open prompt file: %s failed: %s.\n", __func__, prompt_file[index], strerror(errno));
+        return;
+    }
+
+    //ALOGD("%s file:%s\n", __func__, prompt_file[index]);
+    rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
+
+    while (true) {
+        rc_pb_player_dequeue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
+                                    &frame_info, -1);
+        memset(frame_info.data, 0, READ_SIZE);
+        size = fread(frame_info.data, 1, READ_SIZE, file);
+        if (size <= 0) {
+            ALOGW("eof\n");
+            frame_info.size = 0;
+            rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
+                                        &frame_info, -1);
+            //fseek(file, 0, SEEK_SET);
+            fclose(file);
+            //loop = false;
+            break;
+        };
+        frame_info.sample_rate = 48000;
+        frame_info.channels = 2;
+        frame_info.bit_width = 16;
+        frame_info.size = size;
+        rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
+                                    &frame_info, -1);
+    }
+
+    rc_pb_player_stop(*ptrboxCtx, RC_PB_PLAY_SRC_PCM);
+}
+
+void* pbox_rockit_aux_player_routine(void *arg) {
+    os_task_t *task = (os_task_t *)arg;
+    struct rockit_pbx_t *ctx;
+
+    rc_pb_ctx *ptrboxCtx;
+    int table[5];
+    bool loop = true;
+    int fd;
+
+    ALOGD("hello %s\n", __func__);
+    assert(ctx != NULL);
+    assert(ctx->pboxCtx != NULL);
+    ctx = (struct rockit_pbx_t *)task->params;
+    fd = ctx->signfd[0];
+    ptrboxCtx = ctx->pboxCtx;
+    ALOGD("%s Ctx:%p\n", __func__, ptrboxCtx);
+
+    while (loop) {
+        fd_set read_fds;
+        FD_ZERO(&read_fds);
+        FD_SET(fd, &read_fds);
+
+        int result = select(fd + 1, &read_fds, NULL, NULL, NULL);
+        if (result < 0) {
+            if (errno != EINTR) {
+                perror("select failed");
+                break;
+            } else {
+                continue;
+            }
+        }
+
+        int stashCount;
+        if (ioctl(fd, FIONREAD, &stashCount) < 0) {
+            continue;
+        }
+        stashCount = stashCount / sizeof(int);
+        if (stashCount <= 0) {
+            continue;
+        }
+        if (stashCount > sizeof(table) / sizeof(table[0])) {
+            stashCount = sizeof(table) / sizeof(table[0]);
+        }
+
+        OSI_NO_INTR(stashCount = read(fd, (char*)&table[0], stashCount * sizeof(int)));
+        if (stashCount <= 0) {
+            break;
+        }
+        stashCount = stashCount / sizeof(int);
+        assert(stashCount > 0);
+
+        ALOGD("%s total:%d, last = %d\n", __func__, stashCount, (prompt_audio_t)table[stashCount - 1]);
+        audio_sound_prompt(ptrboxCtx, (prompt_audio_t)table[stashCount - 1]);
+    }
 }

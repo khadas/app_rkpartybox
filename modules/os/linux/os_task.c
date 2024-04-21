@@ -11,7 +11,7 @@ int os_task_create(os_task_t *task, const char* name, task_routine_t routine_fun
     assert(task);
 
     pthread_mutex_init(&task->lock, NULL);
-    task->params = stack;
+    task->params = stack;//todo...need to optmise...
 
     __atomic_store_n(&task->runing, true, __ATOMIC_RELAXED);
     ret = pthread_create(&task->task_tid, NULL, routine_func, task);

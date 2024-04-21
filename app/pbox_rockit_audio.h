@@ -9,15 +9,25 @@
 extern "C" {
 #endif
 
+typedef enum {
+    PROMPT_STEREO,
+    PROMPT_MONO,
+    PROMPT_WIDEN,
+    PROMPT_FADE_ON,
+    PROMPT_FADE_OFF,
+    PROMPT_NUM
+} prompt_audio_t;
+
 struct rockit_pbx_t {
     rc_pb_ctx *pboxCtx;
     int signfd[2];
-    pthread_t aux_player_tid;
+    os_task_t auxPlayerTask;
     os_task_t uacRecordTask;
     pbox_audioFormat_t audioFormat;
 };
 
-void *pbox_rockit_record_routine(void *params);
+void *pbox_rockit_record_routine(void *arg);
+void* pbox_rockit_aux_player_routine(void *arg);
 
 #ifdef __cplusplus
 }
