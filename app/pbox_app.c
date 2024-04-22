@@ -441,7 +441,10 @@ void pbox_app_music_resume(display_t policy) {
             if (pboxTrackdata->track_num == 0) {
                 return;
             }
-            pbox_app_music_start(policy);
+            if(pboxUIdata->play_status == _PAUSE)
+                pbox_app_rockit_resume_player(SRC_CHIP_USB);//todo...
+            else
+                pbox_app_music_start(policy);
             pbox_app_rockit_get_player_duration(SRC_CHIP_USB);
         } break;
 
