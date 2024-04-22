@@ -34,7 +34,7 @@ extern lv_ft_info_t ttf_main_l;
  **********************/
 uint32_t track_list_num = 0;
 static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id);
-static void remove_list_btn(lv_obj_t * parent, uint32_t track_id);
+static lv_obj_t * remove_list_btn(lv_obj_t * parent, uint32_t track_id);
 static void btn_click_event_cb(lv_event_t * e);
 
 /**********************
@@ -301,13 +301,18 @@ static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id)
     return btn;
 }
 
-static void remove_list_btn(lv_obj_t * parent, uint32_t track_id)
+static lv_obj_t * remove_list_btn(lv_obj_t * parent, uint32_t track_id)
 {
     lv_obj_t * btn = lv_obj_get_child(parent, track_id);
-    if(btn != NULL) {
+    if(btn != NULL)
        lv_obj_remove_style_all(btn);
-       lv_obj_del(btn);
+    lv_obj_t *child = NULL;
+    while ((child = lv_obj_get_child(parent, child)) != NULL) {
+        lv_obj_remove_style_all(child);
+        lv_obj_del(child);
     }
+
+    return btn;
 }
 
 static void btn_click_event_cb(lv_event_t * e)
