@@ -309,7 +309,8 @@ void maintask_timer_fd_process(int timer_fd) {
     msTimePassed += PBOX_TIMER_INTERVAL;
     //ALOGD("working time:%llu\n", msTimePassed);
 
-    if (0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) {
+    //40ms, 25frames..
+    if (0 == msTimePassed%(PBOX_TIMER_INTERVAL*2)) {
         //every 10ms send command to reflash lvgl ui.
         pbox_app_lcd_dispplayReflash();
     }
