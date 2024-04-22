@@ -56,6 +56,7 @@ typedef struct {
     input_source_t inputDevice;
     uint32_t avail_srcs;
     int32_t volume_resume_time;//it mustbe 10 times of PBOX_TIMER_INTERVAL
+    bool trackchanged;
 
     struct _pbox_ui {
         placement_t placement;

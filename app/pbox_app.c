@@ -441,10 +441,14 @@ void pbox_app_music_resume(display_t policy) {
             if (pboxTrackdata->track_num == 0) {
                 return;
             }
-            if(pboxUIdata->play_status == _PAUSE)
-                pbox_app_rockit_resume_player(SRC_CHIP_USB);//todo...
-            else
+            if(pboxUIdata->play_status != _PAUSE || pboxData->trackchanged) {
+                pboxData->trackchanged = false;
                 pbox_app_music_start(policy);
+            }
+            else {
+                pbox_app_rockit_resume_player(SRC_CHIP_USB);
+            }
+
             pbox_app_rockit_get_player_duration(SRC_CHIP_USB);
         } break;
 
@@ -556,6 +560,8 @@ void pbox_app_music_album_next(bool next, display_t policy)
             if(pboxUIdata->play_status == PLAYING) {
                 pbox_app_music_stop(policy);
                 pbox_app_music_resume(policy);
+            } else {
+                pboxData->trackchanged = true;
             }
 
         } break;
