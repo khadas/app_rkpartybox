@@ -98,11 +98,11 @@ add_executable(${PROJECT_NAME} ${SRCS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE -D_GNU_SOURCE)
 target_link_libraries(${PROJECT_NAME} ${UDEV_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}
-	pthread m freetype rkwifibt asound
+	pthread m asound
 )
 
 if (LV_USE_DEMO_MUSIC)
-target_link_libraries(${PROJECT_NAME} lvgl lv_drivers drm)
+target_link_libraries(${PROJECT_NAME} lvgl lv_drivers drm freetype)
 endif()
 
 if(RK3308_PBOX_CORE_BOARD)
@@ -115,6 +115,7 @@ if(RK3308_PBOX_CORE_BOARD)
 	install(PROGRAMS bins/partybox_app_vendor.sh DESTINATION bin RENAME "partybox_app.sh")
 	install(FILES ./bins/.usb_config_nouac DESTINATION /etc/init.d  RENAME ".usb_config")
 else()
+	target_link_libraries(${PROJECT_NAME} rkwifibt)
 	add_definitions(-DENABLE_EXT_BT_MCU=0)
 	install(FILES ./lib64/librkaudio_effect_howling.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
 	install(FILES ./bins/eq_drc_recorder_evb_1chn.bin DESTINATION /etc/pbox RENAME "eq_drc_recorder.bin")

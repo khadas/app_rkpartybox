@@ -9,20 +9,25 @@
 #include <RkBtBase.h>
 #include <RkBtSink.h>
 //vendor code for broadcom
+#if (ENABLE_EXT_BT_MCU==0)
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
+#endif
 #include <sys/ioctl.h>
 #include <errno.h>
-
 #include "pbox_common.h"
 #include "rk_btsink.h"
 #include "rk_utils.h"
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
-
 #include "os_minor_type.h"
 
+#if (ENABLE_EXT_BT_MCU==0)
+#define ENABLE_BLUEZ_UTILS
+#endif
+
+#ifdef ENABLE_BLUEZ_UTILS
 static int vendor_set_high_priority(char *ba, uint8_t priority, uint8_t direction);
 
 #define PRINT_FLAG_ERR "[RK_BT_ERROR]"
@@ -880,3 +885,5 @@ int pbox_create_bttask(void)
 
     return ret;
 }
+#undef ENABLE_BLUEZ_UTILS
+#endif
