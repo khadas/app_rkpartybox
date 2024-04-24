@@ -34,7 +34,7 @@ extern lv_ft_info_t ttf_main_l;
  **********************/
 uint32_t track_list_num = 0;
 static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id);
-static lv_obj_t * remove_list_btn(lv_obj_t * parent, uint32_t track_id);
+static void remove_list_btn(lv_obj_t * parent);
 static void btn_click_event_cb(lv_event_t * e);
 
 /**********************
@@ -206,9 +206,10 @@ void _lv_demo_music_update_track_list(lv_obj_t * list) {
     uint32_t track_id;
     uint32_t new_track_num = _lv_demo_music_get_track_num();
 
-    for(track_id = 0; track_id < track_list_num; track_id++) {
-        remove_list_btn(list, track_id);
-    }
+    //for(track_id = 0; track_id < track_list_num; track_id++) {
+    if (track_list_num > 0)
+        remove_list_btn(list);
+    //}
 
     track_list_num = new_track_num;
     for(track_id = 0; track_id < track_list_num; track_id++) {
@@ -301,18 +302,18 @@ static lv_obj_t * add_list_btn(lv_obj_t * parent, uint32_t track_id)
     return btn;
 }
 
-static lv_obj_t * remove_list_btn(lv_obj_t * parent, uint32_t track_id)
+static void remove_list_btn(lv_obj_t * parent)
 {
-    lv_obj_t * btn = lv_obj_get_child(parent, track_id);
-    if(btn != NULL)
-       lv_obj_remove_style_all(btn);
+    //lv_obj_t * btn = lv_obj_get_child(parent, track_id);
+    //if(btn != NULL)
+      // lv_obj_remove_style_all(btn);
     lv_obj_t *child = NULL;
-    while ((child = lv_obj_get_child(parent, child)) != NULL) {
+    while ((child = lv_obj_get_child(parent, 0)) != NULL) {
         lv_obj_remove_style_all(child);
         lv_obj_del(child);
     }
 
-    return btn;
+    //return btn;
 }
 
 static void btn_click_event_cb(lv_event_t * e)
