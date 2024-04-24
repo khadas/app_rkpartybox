@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "os_utils.h"
+#include "os_minor_type.h"
 #include "pbox_common.h"
 
 #ifdef __cplusplus
@@ -21,8 +23,10 @@ typedef enum {
 struct rockit_pbx_t {
     rc_pb_ctx *pboxCtx;
     int signfd[2];
-    os_task_t auxPlayerTask;
-    os_task_t uacRecordTask;
+    os_task_t* auxPlayerTask;
+    os_sem_t* auxplay_stop_sem;
+    os_task_t* uacRecordTask;
+    os_sem_t* rec_stop_sem;
     pbox_audioFormat_t audioFormat;
 };
 

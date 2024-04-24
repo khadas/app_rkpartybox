@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <pthread.h>
-#include <semaphore.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/timerfd.h>
@@ -18,7 +17,6 @@
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/syscall.h>
-
 #include "rc_partybox.h"
 #include "rc_rkstudio_vendor.h"
 #include "pbox_common.h"
@@ -28,6 +26,8 @@
 #include "rk_utils.h"
 #include "rkstudio_tuning.h"
 #include "os_task.h"
+#include "os_minor_type.h"
+
 #include "pbox_rockit_audio.h"
 
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
@@ -333,9 +333,9 @@ int rk_demo_music_create() {
     memset(started_player, 0 , sizeof(started_player));
     int ret = pipe(rockitCtx.signfd);
     rockitCtx.pboxCtx = &partyboxCtx;
-    //sem_init(&rockitCtx.sem, 0, 0);
     ALOGD("%s %d partyboxCtx:%p\n", __func__, __LINE__, &partyboxCtx);
-    os_task_create(&rockitCtx.auxPlayerTask, "pbox_aux_player", pbox_rockit_aux_player_routine, &rockitCtx);
+    rockitCtx.auxplay_stop_sem = os_sem_new(0);
+    rockitCtx.auxPlayerTask = os_task_create("pbox_aux_player", pbox_rockit_aux_player_routine, 0, &rockitCtx);
 
     if (rc_pb_recorder_start(partyboxCtx) != 0) {
         ALOGE("rc_pb_recorder_start failed, err!!!\n");
@@ -554,8 +554,8 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
 static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFormat_t audioFormat) {
     int ret;
     char tid_name[16];
-    if(rockitCtx.uacRecordTask.runing) {
-        os_task_destroy(&rockitCtx.uacRecordTask);
+    if(rockitCtx.uacRecordTask) {
+        os_task_destroy(rockitCtx.uacRecordTask);
     }
 
     snprintf(tid_name, sizeof(tid_name), "pbox_%s_rec", getInputSourceString(source));
@@ -564,13 +564,16 @@ static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFo
     snprintf(rockitCtx.audioFormat.cardName, sizeof(rockitCtx.audioFormat.cardName), "%s", audioFormat.cardName);
     ALOGW("%s, rockitCtx:%p, partyboxCtx:%p\n", __func__, &rockitCtx, rockitCtx.pboxCtx);
 
-    ret = os_task_create(&rockitCtx.uacRecordTask, tid_name, pbox_rockit_record_routine, &rockitCtx);
+    rockitCtx.rec_stop_sem = os_sem_new(0);
+    rockitCtx.uacRecordTask = os_task_create(tid_name, pbox_rockit_record_routine, 0, &rockitCtx);
 }
 
 static void pbox_rockit_music_stop_recorder(input_source_t source) {
     int ret;
-    if(rockitCtx.uacRecordTask.runing) {
-        os_task_destroy(&rockitCtx.uacRecordTask);
+    if(rockitCtx.uacRecordTask) {
+        os_sem_post(rockitCtx.rec_stop_sem);
+        os_task_destroy(rockitCtx.uacRecordTask);
+        os_sem_free(rockitCtx.rec_stop_sem);
     }
 }
 
@@ -1527,6 +1530,9 @@ static void *pbox_rockit_server(void *arg)
     }
 
     pbox_deinit_tuning();
+    os_sem_post(rockitCtx.auxplay_stop_sem);
+    os_task_destroy(rockitCtx.auxPlayerTask);
+    os_sem_free(rockitCtx.auxplay_stop_sem);
     pbox_rockit_music_destroy();
 }
 

@@ -3,14 +3,29 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <semaphore.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 typedef void* os_memptr_t;
 
-bool os_free(os_memptr_t memptr);
+#ifdef __unix__
+typedef sem_t os_sem_t;
+#endif
+bool os_free_osi(os_memptr_t memptr);
 os_memptr_t os_malloc(uint16_t u16size);
+
+os_sem_t *os_sem_new(unsigned int value);
+int os_sem_post(os_sem_t *sem);
+void os_sem_free(os_sem_t *sem);
+int os_sem_wait(os_sem_t *sem);
+int os_sem_trywait(os_sem_t *sem);
+
+#define os_free(memptr)  do {   \
+    os_free_osi(memptr);        \
+    memptr = NULL;              \
+} while(0)
 
 #ifdef __cplusplus
 }

@@ -5,9 +5,9 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include "slog.h"
 #include <alsa/asoundlib.h>
 #include <sys/syscall.h>
+#include "slog.h"
 #include "rc_comm_partybox.h"
 #include "alsa_pcm.h"
 #include "os_task.h"
@@ -47,8 +47,8 @@ static void dump_out_data(const void* buffer,size_t bytes, int size)
        ALOGD("TEST playback pcmfile restart\n");
    }
 }
-#include <inttypes.h>
 
+#include <inttypes.h>
 void *pbox_rockit_record_routine(void *arg) {
     snd_pcm_t *pcm_handle = NULL;
     char *buffer;
@@ -60,15 +60,11 @@ void *pbox_rockit_record_routine(void *arg) {
     snd_pcm_sframes_t sent;
     alsa_card_conf_t audioConfig;
 
-    os_task_t *task = (os_task_t *)arg;
-    struct rockit_pbx_t *ctx;
+    struct rockit_pbx_t *ctx = arg;
     rc_pb_ctx *ptrboxCtx;
     struct rc_pb_frame_info frame_info;
-    if(task == NULL) return NULL;
 
-    task->pid_tid = syscall(SYS_gettid);//linux tid, not posix tid.
-    rk_setRtPrority(task->pid_tid, SCHED_RR, 0);
-    ctx = (struct rockit_pbx_t *)task->params;
+    rk_setRtPrority(syscall(SYS_gettid), SCHED_RR, 0);
     assert(ctx != NULL);
     assert(ctx->pboxCtx != NULL);
     ptrboxCtx = ctx->pboxCtx;
@@ -76,7 +72,7 @@ void *pbox_rockit_record_routine(void *arg) {
     ALOGW("%s cardName: %s, freq:%d, chanel:%d\n", 
             __func__, ctx->audioFormat.cardName, ctx->audioFormat.sampingFreq, ctx->audioFormat.channel);
 
-    while(__atomic_load_n(&task->runing, __ATOMIC_RELAXED)) {
+    while(os_sem_trywait(ctx->rec_stop_sem) != 0) {
         if(pcm_handle == NULL) {
             snprintf(audioConfig.cardName, sizeof(audioConfig.cardName), "%s", ctx->audioFormat.cardName);
             audioConfig.sampingFreq = ctx->audioFormat.sampingFreq;
@@ -92,7 +88,7 @@ void *pbox_rockit_record_routine(void *arg) {
             ALOGW("period_size: %d, byte:%d\n", period_size, period_size*4);
         }
 
-        rc_pb_recorder_dequeue_frame(*ptrboxCtx, &frame_info, -1);//dlopen not ready!!!
+        rc_pb_recorder_dequeue_frame(*ptrboxCtx, &frame_info, -1);
         in_frames = frame_info.size/frame_info.channels/(frame_info.bit_width/8);
         if(frame_info.channels == 1) {
             resample = 1;
@@ -249,8 +245,8 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
 }
 
 void* pbox_rockit_aux_player_routine(void *arg) {
-    os_task_t *task = (os_task_t *)arg;
-    struct rockit_pbx_t *ctx;
+    //os_task_t *task = (os_task_t *)arg;
+    struct rockit_pbx_t *ctx = arg;
 
     rc_pb_ctx *ptrboxCtx;
     int table[5];
@@ -260,12 +256,12 @@ void* pbox_rockit_aux_player_routine(void *arg) {
     ALOGD("hello %s\n", __func__);
     assert(ctx != NULL);
     assert(ctx->pboxCtx != NULL);
-    ctx = (struct rockit_pbx_t *)task->params;
+    //ctx = (struct rockit_pbx_t *)task->params;
     fd = ctx->signfd[0];
     ptrboxCtx = ctx->pboxCtx;
     ALOGD("%s Ctx:%p\n", __func__, ptrboxCtx);
 
-    while (loop) {
+    while (os_sem_trywait(ctx->auxplay_stop_sem) != 0) {
         fd_set read_fds;
         FD_ZERO(&read_fds);
         FD_SET(fd, &read_fds);

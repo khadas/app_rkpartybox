@@ -6,19 +6,11 @@
 extern "C" {
 #endif
 
-typedef struct {
-    void *params; //keep it on the head..
-    volatile bool runing;
-    pid_t pid_tid;
-    pthread_t task_tid;
-    pthread_mutex_t lock;
-    char name[16];
-}os_task_t;
-
+typedef struct os_task_t os_task_t;
 typedef void *(* task_routine_t)(void *);
-
-int os_task_create(os_task_t *task, const char* name, task_routine_t routine_func, void* stack);
+os_task_t* os_task_create(const char* name, task_routine_t routine_func, uint32_t stack_size, void* stack);
 void os_task_destroy(os_task_t *task);
+bool is_os_task_started(struct os_task_t* task);
 
 #ifdef __cplusplus
 }

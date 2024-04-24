@@ -407,8 +407,6 @@ void set_vocal_separate_thread_cpu(void) {
 
  int rk_setRtPrority(pid_t pid, int policy, int priority)
  {
-     char cThreadName[32] = {0};
-
      struct sched_param param;
      struct timespec tp;
 
