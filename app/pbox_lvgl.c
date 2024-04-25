@@ -12,7 +12,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
-#include <pthread.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -20,6 +19,7 @@
 #include "pbox_common.h"
 #include "pbox_socketpair.h"
 #include "pbox_lvgl.h"
+#include "os_task.h"
 #if ENABLE_LCD_DISPLAY
 #include "lv_demo_music.h"
 #endif
@@ -432,7 +432,6 @@ static void *pbox_touchLCD_server(void *arg)
     int sock_fd;
     char buff[sizeof(pbox_lcd_msg_t)] = {0};
     pbox_lcd_msg_t *msg;
-    pthread_setname_np(pthread_self(), "pbox_lcd");
 
     pbox_lvgl_init();
     #if ENABLE_LCD_DISPLAY
@@ -483,13 +482,13 @@ static void *pbox_touchLCD_server(void *arg)
     }
 }
 
-pthread_t touchLcd_server_task_id;
+os_task_t* touchLcd_server_task_id;
 
 int pbox_create_lvglTask(void)
 {
     int ret;
 
-    ret = pthread_create(&touchLcd_server_task_id, NULL, pbox_touchLCD_server, NULL);
+    ret = (touchLcd_server_task_id = os_task_create("pbox_lcd", pbox_touchLCD_server, 0, NULL))?0:-1;
     if (ret < 0)
     {
         ALOGE("touchLCD server start failed\n");

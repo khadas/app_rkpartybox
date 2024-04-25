@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <pthread.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -24,6 +23,7 @@
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
 #include "rk_utils.h"
+#include "os_task.h"
 
 static void handleUsbStartScanCmd(const pbox_usb_msg_t* msg);
 static void handleUsbPollStateCmd(const pbox_usb_msg_t* msg);
@@ -250,8 +250,7 @@ void process_pbox_usb_cmd(const pbox_usb_msg_t* msg) {
 #define USB_DEV_UAC    2
 #define HOTPLUG_FD_NUM     3
 
-pthread_t hotplug_dev_server_task_id;
-
+os_task_t* hotplug_task_id;
 static void *pbox_hotplug_dev_server(void *arg)
 {
     int hotplug_fds[HOTPLUG_FD_NUM];
@@ -259,7 +258,6 @@ static void *pbox_hotplug_dev_server(void *arg)
     pbox_usb_msg_t *msg;
     struct udev *udev;
 
-    pthread_setname_np(pthread_self(), "pbox_hotplug");
     PBOX_ARRAY_SET(hotplug_fds, -1, sizeof(hotplug_fds)/sizeof(hotplug_fds[0]));
 
     hotplug_fds[USB_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
@@ -410,7 +408,7 @@ static void *pbox_hotplug_dev_server(void *arg)
 int pbox_create_hotplug_dev_task(void) {
     int ret;
 
-    ret = pthread_create(&hotplug_dev_server_task_id, NULL, pbox_hotplug_dev_server, NULL);
+    ret = (hotplug_task_id = os_task_create("pbox_hotplug", pbox_hotplug_dev_server, 0, NULL))? 0:-1;
     if (ret < 0)
     {
         ALOGE("usb server start failed\n");

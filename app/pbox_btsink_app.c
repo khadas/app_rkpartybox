@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <pthread.h>
 #include <RkBtBase.h>
 #include <RkBtSink.h>
 #include "pbox_common.h"
@@ -374,7 +373,6 @@ void maintask_bt_fd_process(int fd) {
 }
 
 void *btsink_watcher(void *arg) {
-    pthread_setname_np(pthread_self(), "pbox_btwatch");
     ALOGD("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
 
     ALOGD("%s \n", __func__);

@@ -26,7 +26,6 @@
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
-#include <pthread.h>
 #include <pwd.h>
 #include <stdarg.h>
 #include <stdlib.h>

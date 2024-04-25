@@ -11,7 +11,6 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <signal.h>
 
 #include "pbox_ledctrl.h"

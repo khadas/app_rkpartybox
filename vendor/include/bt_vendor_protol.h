@@ -1,6 +1,5 @@
 #ifndef _VENDOR_INCLUDE_BT_VENDOR_PROTOL_
 #define _VENDOR_INCLUDE_BT_VENDOR_PROTOL_
-#include <pthread.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

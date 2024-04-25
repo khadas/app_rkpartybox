@@ -6,7 +6,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
-#include <pthread.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/timerfd.h>
@@ -78,13 +77,4 @@ static void* set_background_setting(void *arg) {
     exec_command_system("sleep 1");
     exec_command_system("echo 11 > "ACODEC_FILE_PATH);
     return (void*)(0);
-}
-
-void pbox_init_background(void) {
-    pthread_t vocal_cpuset;
-    int ret = pthread_create(&vocal_cpuset, NULL, set_background_setting, NULL);
-    if (ret < 0)
-    {
-        ALOGE("pbox_init_background fail\n");
-    }
 }

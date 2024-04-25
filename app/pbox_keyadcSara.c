@@ -5,13 +5,12 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <pthread.h>
 #include <sys/socket.h>
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
-
 #include "pbox_common.h"
 #include "pbox_keyadcSara.h"
+#include "os_task.h"
 
 #if ENABLE_SARAADC
 #define MAX_SARA_ADC 1023
@@ -96,7 +95,6 @@ static void *adckey_sara_detect_server(void *arg)
     #define SARA_RANGE_100(X) X*100/(MAX_SARA_ADC-MIN_SARA_ADC)
     uint32_t saraSample[KNOB_BUTTON_NUM];
     int adckey_fd[KNOB_BUTTON_NUM];
-    pthread_setname_np(pthread_self(), "pbox_sarakey");
     ALOGD("%s hello\n", __func__);
     PBOX_ARRAY_SET(adckey_fd, -1, sizeof(adckey_fd)/sizeof(adckey_fd[0]));
     if(adckey_init_fd(adckey_fd, KNOB_BUTTON_NUM) < 0) {
@@ -134,10 +132,10 @@ static void *adckey_sara_detect_server(void *arg)
 
 int pbox_create_KeyadcSaraTask(void)
 {
-    pthread_t keyadcSara_tid;
+    os_task_t* keyadcSara_tid;
     int err;
 
-    err = pthread_create(&keyadcSara_tid, NULL, &adckey_sara_detect_server, NULL);
+    err = (keyadcSara_tid = os_task_create("pbox_sarakey", adckey_sara_detect_server, 0, NULL))? 0:-1;
     if (err != 0)
         ALOGE("cant create keyadc_sara_detect_server thread!");
     return err;

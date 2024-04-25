@@ -25,6 +25,7 @@
 #include "pbox_ledctrl.h"
 #include "pbox_led_cjson.h"
 #include "os_minor_type.h"
+#include "os_task.h"
 
 struct led_effect *leffect;
 struct led_effect *foreground_leffect;
@@ -738,9 +739,8 @@ int led_effect_volume(struct led_effect* effect)
 	foreground_leffect_job = 0;
 }
 
-void *pbox_light_effect_drew(void *para)
+void *pbox_light_effect_draw(void *para)
 {
-	pthread_setname_np(pthread_self(), "pbox_led_draw");
 	while (true) {
 		//ALOGD("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
 		if (foreground_leffect_job) {
@@ -811,8 +811,6 @@ static void *pbox_light_effect_server(void *arg)
 	char buff[sizeof(pbox_light_effect_msg_t)] = {0};
 	pbox_light_effect_msg_t *msg;
 
-
-	pthread_setname_np(pthread_self(), "party_led_effect");
 
 	int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LED);
 
@@ -1093,8 +1091,8 @@ int pbox_light_effect_deinit(struct light_effect_ctrl * ctrl)
 	ctrl = NULL;
 }
 
-pthread_t light_effect_task_id;
-pthread_t light_effect_drew_id;
+os_task_t* light_effect_task_id;
+os_task_t* light_effect_draw_id;
 
 #if ENABLE_RK_LED_EFFECT
 int pbox_create_lightEffectTask(void)
@@ -1107,11 +1105,11 @@ int pbox_create_lightEffectTask(void)
 		return ret;
 	}
 
-	ret = pthread_create(&light_effect_task_id, NULL, pbox_light_effect_server, NULL);
+	ret = (light_effect_task_id = os_task_create("pbox_led_effect", pbox_light_effect_server, 0, NULL))? 0:-1;
 	if (ret < 0)
 		ALOGE("light effect server start failed\n");
 
-	ret = pthread_create(&light_effect_drew_id, NULL,pbox_light_effect_drew, NULL);
+	ret = (light_effect_draw_id = os_task_create("pbox_led_draw", pbox_light_effect_draw, 0, NULL))? 0:-1;
 	if (ret < 0)
 		ALOGE("light effect drew start failed\n");
 

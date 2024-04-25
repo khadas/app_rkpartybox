@@ -8,7 +8,6 @@
 #include <errno.h>
 #include <assert.h>
 #include <dlfcn.h>
-#include <pthread.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/timerfd.h>
@@ -27,13 +26,13 @@
 #include "rkstudio_tuning.h"
 #include "os_task.h"
 #include "os_minor_type.h"
-
+#include "os_task.h"
 #include "pbox_rockit_audio.h"
 
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
 
-pthread_t rockit_task_id;
+os_task_t* rockit_task_id;
 //void *player_ctx = NULL;
 rc_pb_ctx partyboxCtx;
 
@@ -548,7 +547,6 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     pbox_rockit_music_stop(source);
     rc_pb_player_start(partyboxCtx, dest, &playerAttr);
     started_player[dest] = true;
-    //set_vocal_separate_thread_cpu();
 }
 
 static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFormat_t audioFormat) {
@@ -1341,7 +1339,6 @@ static void *pbox_rockit_server(void *arg)
     char buff[sizeof(pbox_rockit_msg_t)] = {0};
     int ret;
     pbox_rockit_msg_t *msg;
-    pthread_setname_np(pthread_self(), "party_rockit");
     rockit_tid = syscall(SYS_gettid);
 
     if(rk_demo_music_create() < 0)
@@ -1540,7 +1537,7 @@ int pbox_create_rockitTask(void)
 {
     int ret;
 
-    ret = pthread_create(&rockit_task_id, NULL, pbox_rockit_server, NULL);
+    ret = (rockit_task_id = os_task_create("pbox_rockit", pbox_rockit_server, 0, NULL))? 0:-1;
     if (ret < 0)
     {
         ALOGE("btsink server start failed\n");

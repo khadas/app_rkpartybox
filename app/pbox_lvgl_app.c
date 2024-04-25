@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
-#include <pthread.h>
 #include <fcntl.h>
 #include <sys/un.h>
 #include <sys/socket.h>

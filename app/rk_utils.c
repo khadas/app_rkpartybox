@@ -381,16 +381,7 @@ static void *vocal_separate_cpu(void *arg)
     }
 }
 
-void set_vocal_separate_thread_cpu(void) {
-    pthread_t vocal_cpuset;
-    int ret = pthread_create(&vocal_cpuset, NULL, vocal_separate_cpu, NULL);
-    if (ret < 0)
-    {
-        ALOGE("vocal_separate_cpu_set fail\n");
-    }
-}
-
- void rk_schedparam_show(pid_t pid)
+void rk_schedparam_show(pid_t pid)
  {
      int policy, ret;
      struct sched_param param;

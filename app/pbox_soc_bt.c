@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <pthread.h>
 #include "pbox_soc_bt.h"
 #include "rk_utils.h"
 #include "board.h"
@@ -15,6 +14,7 @@
 #include "userial_vendor.h"
 #include "pbox_socketpair.h"
 #include "bt_vendor_protol.h"
+#include "os_task.h"
 
 typedef void (*socbt_cmd_handle)(const pbox_socbt_msg_t*);
 
@@ -368,7 +368,6 @@ static void *btsoc_sink_server(void *arg) {
     vendor_data_recv_handler_t  uart_vendor_data_recv_hander = vendor_get_data_recv_func();
     btsoc_register_vendor_notify_func(pbox_socbt_get_notify_funcs());
 
-    pthread_setname_np(pthread_self(), "pbox_btsoc");
     PBOX_ARRAY_SET(btsoc_fds, -1, sizeof(btsoc_fds)/sizeof(btsoc_fds[0]));
 
     btsoc_fds[BTSOC_UDP_SOCKET] =   get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
@@ -422,10 +421,10 @@ static void *btsoc_sink_server(void *arg) {
 
 int pbox_create_btsoc_task(void)
 {
-    pthread_t tid_server;
+    os_task_t* tid_server;
     int ret;
 
-    ret = pthread_create(&tid_server, NULL, btsoc_sink_server, NULL);
+    ret = (tid_server = os_task_create("pbox_btsoc", btsoc_sink_server, 0, NULL))?0:-1;
     if (ret < 0)
     {
         ALOGE("btsink server start failed\n");

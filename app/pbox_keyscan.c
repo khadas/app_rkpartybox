@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <stdbool.h>
@@ -42,6 +41,7 @@
 #include "pbox_common.h"
 #include "pbox_keyscan_app.h"
 #include "os_minor_type.h"
+#include "os_task.h"
 
 #ifdef RK_VAD
 #include "vad.h"
@@ -185,7 +185,6 @@ int find_multi_event_dev(int event_type, int *fds) {
 
 void *pbox_KeyEvent_send(void * arg) {
     int i;
-    pthread_setname_np(pthread_self(), "pbox_keysend");
     while(1) {
         if (key_read.is_key_valid == 1) {
             for(i = 0;  i < support_keys_size; i++){
@@ -224,7 +223,7 @@ void *pbox_KeyEventScan(void * arg) {
     struct timeval sel_timeout_tv;
     int hasLongLongFunc = 0;
     int key_fds_count;
-    prctl(PR_SET_NAME,"event_read_thread_ex");
+
     if(getuid() != 0) {
         fprintf(stderr, "Not running as root, no devices may be available.\n");
         return NULL;
@@ -421,18 +420,18 @@ void *pbox_KeyEventScan(void * arg) {
 
 int pbox_create_KeyScanTask(void)
 {
-    pthread_t evt_reader;
-    pthread_t evt_process;
+    os_task_t* evt_reader;
+    os_task_t* evt_process;
     int err;
 
     pthread_mutex_init(&ev_mutex, NULL);
-    err = pthread_create(&evt_reader, NULL, &pbox_KeyEventScan, NULL);
+    err = (evt_reader = os_task_create("event_read_thread_ex", &pbox_KeyEventScan, 0, NULL))? 0:-1;
     if (err != 0) {
         ALOGE("cant creat thread pbox_KeyEventScan");
         return err;
     }
 
-    err = pthread_create(&evt_process, NULL, &pbox_KeyEvent_send, NULL);
+    err = (evt_process = os_task_create("pbox_keysend", &pbox_KeyEvent_send, 0, NULL))? 0:-1;
     if (err != 0) {
         ALOGE("cant creat thread pbox_KeyEvent_send");
     }

@@ -7,7 +7,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
-#include <pthread.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include "pbox_common.h"

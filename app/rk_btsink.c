@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <pthread.h>
 #include <RkBtBase.h>
 #include <RkBtSink.h>
 //vendor code for broadcom
@@ -22,6 +21,7 @@
 #include "pbox_socket.h"
 #include "pbox_socketpair.h"
 #include "os_minor_type.h"
+#include "os_task.h"
 
 #if (ENABLE_EXT_BT_MCU==0)
 #define ENABLE_BLUEZ_UTILS
@@ -769,7 +769,7 @@ static void *btsink_server(void *arg)
     char buff[sizeof(rk_bt_msg_t)] = {0};
     int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
 
-    pthread_setname_np(pthread_self(), "pbox_btserver");
+    //pthread_setname_np(pthread_self(), "pbox_btserver");
     ALOGW("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
     memset(&bt_content, 0, sizeof(RkBtContent));
     btsink_config_name();
@@ -868,16 +868,16 @@ fail:
 
 int pbox_create_bttask(void)
 {
-    pthread_t tid_server, tid_watch;
+    os_task_t *tid_server, *tid_watch;
     int ret;
 
-    ret = pthread_create(&tid_server, NULL, btsink_server, NULL);
+    ret = (tid_server = os_task_create("pbox_btserv", btsink_server, 0, NULL))?0:-1;
     if (ret < 0)
     {
         ALOGE("btsink server start failed\n");
     }
 
-    //ret = pthread_create(&tid_watch, NULL, btsink_watcher, NULL);
+    ret = (tid_watch = os_task_create("pbox_btwatch", btsink_watcher, 0, NULL))?0:-1;
     if (ret < 0)
     {
         ALOGE("btsink watcher start failed\n");

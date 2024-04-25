@@ -4,13 +4,13 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <errno.h>
 #include <assert.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/timerfd.h>
 #include <sys/select.h>
+#include <sys/prctl.h>
 #include <sys/time.h>
 #include <getopt.h>
 #include "pbox_app.h"
@@ -177,7 +177,7 @@ void pbox_get_opt(int argc, char *argv[]) {
 void main(int argc, char **argv) {
     int max_fd, i;
     int pbox_fds[PBOX_MAIN_NUM] = {0};
-    pthread_setname_np(pthread_self(), "party_main");
+    prctl(PR_SET_NAME, "party_main");
     signal(SIGINT, sigterm_handler);
     pbox_version_print();
     pbox_get_opt(argc, argv);
