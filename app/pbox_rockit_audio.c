@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <sys/ioctl.h>
 #include <alsa/asoundlib.h>
 #include <sys/syscall.h>
@@ -48,7 +49,6 @@ static void dump_out_data(const void* buffer,size_t bytes, int size)
    }
 }
 
-#include <inttypes.h>
 void *pbox_rockit_record_routine(void *arg) {
     snd_pcm_t *pcm_handle = NULL;
     char *buffer;
@@ -120,9 +120,9 @@ retry_alsa_write:
                     goto retry_alsa_write;
                 } break;
                 case EPIPE: {
-                    ALOGE("ALSA playback PCM underrun\n");
-                    if(retry--) usleep(1000);
-                    //snd_pcm_prepare(pcm_handle);
+                    ALOGE("alsa playback underrun:%d\n", retry);
+                    if(retry--)// usleep(1000);
+                        snd_pcm_prepare(pcm_handle);
                     goto retry_alsa_write;
                 } break;
                 default: {
