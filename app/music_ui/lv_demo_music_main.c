@@ -15,7 +15,7 @@
 #include "../pbox_common.h"
 #include "pbox_btsink_app.h"
 #include "rk_btsink.h"
-#include "timestamp.h"
+#include "os_minor_type.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1080,7 +1080,7 @@ static void play_event_click_cb(lv_event_t * e)
     static uint32_t time_ms = 0;
 
         lv_obj_t * obj = lv_event_get_target(e);
-    if((clock_ms() - time_ms) < 300) {
+    if((os_unix_time_ms() - time_ms) < 300) {
         if(last_state && (!lv_obj_has_state(obj, LV_STATE_CHECKED))) {
             printf("last state playing skip\n");
             lv_obj_add_state(obj, LV_STATE_CHECKED);
@@ -1094,7 +1094,7 @@ static void play_event_click_cb(lv_event_t * e)
         return;
     }
 
-    time_ms = clock_ms();
+    time_ms = os_unix_time_ms();
 
     if(lv_obj_has_state(obj, LV_STATE_CHECKED)) {
         _lv_demo_music_resume();
@@ -1111,11 +1111,11 @@ static void prev_click_event_cb(lv_event_t * e)
     static uint32_t prev_last_time = 0;
     LV_UNUSED(e);
 
-    if((clock_ms() - prev_last_time) < 300) {
+    if((os_unix_time_ms() - prev_last_time) < 300) {
         return;
     }
 
-    prev_last_time = clock_ms();
+    prev_last_time = os_unix_time_ms();
 
     _lv_demo_music_album_next(false);
 }
@@ -1123,11 +1123,11 @@ static void prev_click_event_cb(lv_event_t * e)
 static void next_click_event_cb(lv_event_t * e)
 {
     static uint32_t next_last_time = 0;
-    if((clock_ms() - next_last_time) < 300) {
+    if((os_unix_time_ms() - next_last_time) < 300) {
         return;
     }
 
-    next_last_time = clock_ms();
+    next_last_time = os_unix_time_ms();
 
     lv_event_code_t code = lv_event_get_code(e);
     if(code == LV_EVENT_CLICKED) {

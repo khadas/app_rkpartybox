@@ -22,6 +22,10 @@ void os_sem_free(os_sem_t *sem);
 int os_sem_wait(os_sem_t *sem);
 int os_sem_trywait(os_sem_t *sem);
 
+uint32_t os_get_boot_time_ms(void);
+uint64_t os_get_boot_time_us(void);
+uint64_t os_unix_time_ms(void);
+uint64_t os_unix_time_us(void);
 #define os_free(memptr)  do {   \
     os_free_osi(memptr);        \
     memptr = NULL;              \

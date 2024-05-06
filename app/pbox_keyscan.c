@@ -188,7 +188,7 @@ void *pbox_KeyEvent_send(void * arg) {
     while(1) {
         if (key_read.is_key_valid == 1) {
             for(i = 0;  i < support_keys_size; i++){
-                if(key_read.key_code == support_keys[i].key_code && support_keys[i].is_long_press == 4)
+                if(key_read.key_code == support_keys[i].key_code && support_keys[i].press_type == 4)
                     break;
             }
             if(i < support_keys_size) {
@@ -198,10 +198,9 @@ void *pbox_KeyEvent_send(void * arg) {
             pbox_keyevent_msg_t msg = {0};
             msg.key_code = key_read.key_code;
             msg.key_code_b = key_read.key_code_b;
-            msg.is_long_press = key_read.is_long_press;
+            msg.press_type = key_read.press_type;
             msg.is_key_valid = key_read.is_key_valid;
-            msg.time.tv_sec = key_read.utime.tv_sec;
-            msg.time.tv_usec = key_read.utime.tv_usec;
+            msg.unix_time = key_read.utime;
 
             ALOGD("%s sock send: code: %d, valid ? %d\n", __func__, msg.key_code, msg.is_key_valid);
             memset(&key_read, 0, sizeof(struct dot_key));
@@ -210,7 +209,7 @@ void *pbox_KeyEvent_send(void * arg) {
             pthread_mutex_unlock(&ev_mutex);
         }
 
-        usleep(100 * 1000);
+         usleep(100 * 1000);
     }
 }
 
@@ -267,24 +266,21 @@ void *pbox_KeyEventScan(void * arg) {
             pthread_mutex_lock(&ev_mutex);
 
             if(0 != current_dot_key.key_code) {
-                struct timeval tv_now, tv_delta;
+                uint64_t tv_now;
                 int delta_time;
 
-                gettimeofday(&tv_now, 0);
-                ALOGD("Now: time %ld.%06ld\n", tv_now.tv_sec, tv_now.tv_usec);
-                tv_delta.tv_sec = tv_now.tv_sec - current_dot_key.ptime.tv_sec;
-                tv_delta.tv_usec = tv_now.tv_usec - current_dot_key.ptime.tv_usec;
-                delta_time = tv_delta.tv_sec * 1000 + tv_delta.tv_usec / 1000;
-                //ALOGD("Delta: time %ld.%06ld, delta_time=%d\n", tv_delta.tv_sec, tv_delta.tv_usec, delta_time);
+                tv_now = os_unix_time_ms();
+                delta_time = tv_now - current_dot_key.ptime;
+                ALOGD("Now: time %ld delta_time=%d\n", tv_now, delta_time);
 
                 if(current_dot_key.is_combain_key && delta_time > KEY_LONG_PRESS_PREIOD) {
                     ALOGD("key[0x%x] [0x%x]  combain key\n", current_dot_key.key_code,  current_dot_key.key_code_b);
-                    current_dot_key.is_long_press = 3;
+                    current_dot_key.press_type = 3;
                     current_dot_key.is_key_valid = 1;
                 } else if (delta_time > KEY_LONG_PRESS_PREIOD && delta_time < KEY_VERY_LONG_PRESS_PERIOD) {
                     ALOGD("key[0x%x] is long long key????\n", current_dot_key.key_code);
                     for(j = 0; j < support_keys_size; j++) {
-                        if(support_keys[j].key_code == current_dot_key.key_code && 2 == support_keys[j].is_long_press) {
+                        if(support_keys[j].key_code == current_dot_key.key_code && 2 == support_keys[j].press_type) {
                             ALOGI("key[0x%x] has longlong key event\n", current_dot_key.key_code);
                             hasLongLongFunc = 1;
                             break;
@@ -297,13 +293,13 @@ void *pbox_KeyEventScan(void * arg) {
                      }
                     if (!hasLongLongFunc) {
                         ALOGI("key[0x%x] long key\n", current_dot_key.key_code);
-                        current_dot_key.is_long_press = 1;
+                        current_dot_key.press_type = 1;
                         current_dot_key.is_key_valid = 1;
                         hasLongLongFunc = 0;
                     }
                 } else if(delta_time > KEY_VERY_LONG_PRESS_PERIOD) {
                     ALOGI("key[0x%x] long long key\n", current_dot_key.key_code);
-                    current_dot_key.is_long_press = 2;
+                    current_dot_key.press_type = 2;
                     current_dot_key.is_key_valid = 1;
                     hasLongLongFunc = 0;
                 }
@@ -319,9 +315,8 @@ void *pbox_KeyEventScan(void * arg) {
             continue;
         }
 
-        k = 0;
-        while(k < key_fds_count) {
-            int key_fd = key_fds[k++];
+        for(k = 0; k < key_fds_count; k++) {
+            int key_fd = key_fds[k];
             if(FD_ISSET(key_fd, &rdfs)) {
                 rd = read(key_fd, ev, sizeof(ev));
 
@@ -336,6 +331,7 @@ void *pbox_KeyEventScan(void * arg) {
 
                     type = ev[i].type;
                     code = ev[i].code;
+                    uint32_t ev_time = ev[i].time.tv_sec*1000+ ev[i].time.tv_usec/1000;
                     ALOGD("Event: time %ld.%06ld,\n", ev[i].time.tv_sec, ev[i].time.tv_usec);
                     #ifdef RK_VAD
                     clear_vad_count();//has key event,clear vad count.
@@ -350,24 +346,18 @@ void *pbox_KeyEventScan(void * arg) {
                             //cmcc_interrupt_remind(100);
                             if (0 == current_dot_key.key_code && current_dot_key.key_code != code ) {
                                 current_dot_key.key_code = code;
-                                current_dot_key.ptime.tv_sec =  ev[i].time.tv_sec;
-                                current_dot_key.ptime.tv_usec = ev[i].time.tv_usec;
-                                current_dot_key.utime.tv_sec = 0;
-                                current_dot_key.utime.tv_usec = 0;
+                                current_dot_key.ptime = ev_time;
+                                current_dot_key.utime = 0;
                             } else if (current_dot_key.key_code == code ) { //repeated
-                                current_dot_key.ptime.tv_sec =  ev[i].time.tv_sec;
-                                current_dot_key.ptime.tv_usec = ev[i].time.tv_usec;
+                                current_dot_key.ptime =  ev_time;
                             } else {
                                 int delta_time;
-                                struct timeval  tv_delta;
-                                tv_delta.tv_sec = ev[i].time.tv_sec - current_dot_key.ptime.tv_sec;
-                                tv_delta.tv_usec = ev[i].time.tv_usec - current_dot_key.ptime.tv_usec;
-                                delta_time = tv_delta.tv_sec * 1000 + tv_delta.tv_usec / 1000;
-                                ALOGD("combain key delta time  %ld.%06ld\n", tv_delta.tv_sec, tv_delta.tv_usec);
+                                uint64_t tv_delta;
+                                delta_time = ev_time - current_dot_key.ptime;
+                                ALOGD("combain key delta time  %ld\n", tv_delta);
                                 if (delta_time < 400) { //400ms combain key
                                     current_dot_key.key_code_b = code;
-                                    current_dot_key.ptime.tv_sec = ev[i].time.tv_sec;
-                                    current_dot_key.ptime.tv_usec = ev[i].time.tv_usec;
+                                    current_dot_key.ptime = ev_time;
                                     current_dot_key.is_combain_key = 1; //combain key flag
                                 }
                             }
@@ -375,37 +365,28 @@ void *pbox_KeyEventScan(void * arg) {
                         }
                         else {    //press up, signal wakeword thread to get a valid key
                             if(0 != current_dot_key.key_code) {
-                                struct timeval tv_now, tv_delta;
+                                uint64_t tv_now;
                                 int delta_time, repeat_time;
 
-                                gettimeofday(&tv_now, 0);
-                                ALOGD("Now: time %ld.%06ld\n", tv_now.tv_sec, tv_now.tv_usec);
-
-                                tv_delta.tv_sec = ev[i].time.tv_sec - current_dot_key.utime.tv_sec;
-                                tv_delta.tv_usec = ev[i].time.tv_usec - current_dot_key.utime.tv_usec;
-                                repeat_time = tv_delta.tv_sec * 1000 + tv_delta.tv_usec / 1000;
-
-                                current_dot_key.utime.tv_sec =  ev[i].time.tv_sec;
-                                current_dot_key.utime.tv_usec = ev[i].time.tv_usec;
-                                tv_delta.tv_sec = ev[i].time.tv_sec - current_dot_key.ptime.tv_sec;
-                                tv_delta.tv_usec = ev[i].time.tv_usec - current_dot_key.ptime.tv_usec;
-                                delta_time = tv_delta.tv_sec * 1000 + tv_delta.tv_usec / 1000;
-                                ALOGD("Delta: time %ld.%06ld, delta_time=%d, repeat_time=%d\n",
-                                      tv_delta.tv_sec, tv_delta.tv_usec, delta_time, repeat_time);
+                                tv_now = os_unix_time_ms();
+                                repeat_time = ev_time - current_dot_key.utime;
+                                current_dot_key.utime = ev_time;
+                                delta_time = ev_time - current_dot_key.ptime;
+                                ALOGD("Now: time %ld, delta_time=%d, repeat_time=%d\n",tv_now, delta_time, repeat_time);
 
                                 memcpy(&key_read, &current_dot_key, sizeof(struct dot_key));
                                 key_read.is_key_valid = 1;
                                 if (key_read.is_combain_key && delta_time > KEY_LONG_PRESS_PREIOD) {
-                                    key_read.is_long_press = 3;
+                                    key_read.press_type = 3;
                                 } else if(delta_time > KEY_LONG_PRESS_PREIOD && delta_time < KEY_VERY_LONG_PRESS_PERIOD) {
-                                    key_read.is_long_press = 1;
+                                    key_read.press_type = 1;
                                 } else if(delta_time > KEY_VERY_LONG_PRESS_PERIOD) {
-                                    key_read.is_long_press = 2;
+                                    key_read.press_type = 2;
                                 } else if (repeat_time < (KEY_DOUBLE_CLICK_PERIOD / 1000)) {
-                                    key_read.is_long_press = 4;
+                                    key_read.press_type = 4;
                                 }
 
-                                ALOGD("key up, keycode1=%x,keycode2=%x,valid=%d,longtype=%d, combain=%d\n", key_read.key_code, key_read.key_code_b, key_read.is_key_valid, key_read.is_long_press, key_read.is_combain_key);
+                                ALOGD("key up, keycode1=%x,keycode2=%x,valid=%d,longtype=%d, combain=%d\n", key_read.key_code, key_read.key_code_b, key_read.is_key_valid, key_read.press_type, key_read.is_combain_key);
 
                                 hasLongLongFunc = 0;
                             }

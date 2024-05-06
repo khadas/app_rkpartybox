@@ -69,7 +69,7 @@ void maintask_keyevent_data_recv(pbox_keyevent_msg_t *msg)
 
     for(j = 0; j < support_keys_size; j++) {
         if(msg->key_code == support_keys[j].key_code && msg->key_code_b == support_keys[j].key_code_b
-        && msg->is_long_press == support_keys[j].is_long_press && msg->is_key_valid) {
+        && msg->press_type == support_keys[j].press_type && msg->is_key_valid) {
             if(support_keys[j].key_process){
                 support_keys[j].key_process();
                 break;

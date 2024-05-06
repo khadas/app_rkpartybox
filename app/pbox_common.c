@@ -10,7 +10,6 @@
 #include <sys/socket.h>
 #include <sys/timerfd.h>
 #include <sys/select.h>
-#include <sys/time.h>
 #include "pbox_common.h"
 #include "rk_utils.h"
 
@@ -42,18 +41,6 @@ void start_fd_timer(int timer_fd, int start, int interval, bool loop) {
         ALOGE("%s error", __func__);
         return;
     }
-}
-
-uint64_t time_get_os_boot_ms(void) { 
-    return time_get_os_boot_us() / 1000;
-}
-
-uint64_t time_get_os_boot_us(void) {
-  struct timespec ts_now = {};
-  clock_gettime(CLOCK_BOOTTIME, &ts_now);
-
-  return ((uint64_t)ts_now.tv_sec * 1000000L) +
-         ((uint64_t)ts_now.tv_nsec / 1000);
 }
 
 int findMax(int array[], int size) {

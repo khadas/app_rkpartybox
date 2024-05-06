@@ -20,16 +20,16 @@ extern "C" {
 typedef struct {
     int key_code;
     int key_code_b;
-    int is_long_press;
+    int press_type;
     int is_key_valid;
-struct timeval time;
+    uint64_t unix_time;//from 1970.01.01 in ms
 } pbox_keyevent_msg_t;
 
 struct dot_key
 {
     int key_code;
     int key_code_b;
-    int is_long_press;//0表示短按，1表示大于3s的长按，2表示大于10s的超长按，3表示长按组合键，4表示快速双击
+    int press_type;//0表示短按，1表示大于3s的长按，2表示大于10s的超长按，3表示长按组合键，4表示快速双击
     int is_key_valid;
     int is_combain_key; //combian key
     /*
@@ -39,8 +39,8 @@ struct dot_key
      * if pre_alexa_mode defined as ALEXA_INVALID_MODE, means this value is not used
      */
     int (*key_process)(void);
-    struct timeval ptime;
-    struct timeval utime;
+    uint64_t ptime;
+    uint64_t utime;
 };
 
 void maintask_keyscan_fd_process(int fd);

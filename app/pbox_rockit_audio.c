@@ -107,9 +107,9 @@ void *pbox_rockit_record_routine(void *arg) {
 retry_alsa_write:
         if (retry <=0) goto skip_alsa;
         //2 channel,16bit.
-        uint64_t tmp = time_get_os_boot_us();
+        uint64_t tmp = os_get_boot_time_us();
         frames = snd_pcm_writei(pcm_handle, (char *)buffer + written*4, in_frames - written);
-        //ALOGE("pbox snd_pcm_writei, in:%08d, out:%08d, sent:%08d, %"PRIu64"\t\n", in_frames, frames, sent, time_get_os_boot_us() - tmp);
+        //ALOGE("pbox snd_pcm_writei, in:%08d, out:%08d, sent:%08d, %"PRIu64"\t\n", in_frames, frames, sent, os_get_boot_time_us() - tmp);
         if (frames < 0) {
             switch (-frames) {
                 case EINTR: {

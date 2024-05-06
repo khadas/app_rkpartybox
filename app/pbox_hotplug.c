@@ -24,6 +24,7 @@
 #include "pbox_socketpair.h"
 #include "rk_utils.h"
 #include "os_task.h"
+#include "os_minor_type.h"
 
 static void handleUsbStartScanCmd(const pbox_usb_msg_t* msg);
 static void handleUsbPollStateCmd(const pbox_usb_msg_t* msg);
@@ -208,11 +209,11 @@ void handleUsbStartScanCmd(const pbox_usb_msg_t* msg) {
         return;
     }
     usb_pbox_notify_state_changed(USB_SCANNING, MUSIC_PATH);
-    uint64_t time = time_get_os_boot_ms();
+    uint64_t time = os_get_boot_time_ms();
 
     scan_dir(MUSIC_PATH, 3, usb_pbox_notify_audio_file_added);
     usb_pbox_notify_state_changed(USB_SCANNED, MUSIC_PATH);
-    time = time_get_os_boot_ms() - time;
+    time = os_get_boot_time_ms() - time;
     ALOGW("%s scan finish, used time:%d\n", __func__, time/1000);
 }
 
