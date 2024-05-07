@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include <malloc.h>
+#include <assert.h>
 #include <sys/socket.h>
 #include "pbox_keyscan.h"
 #include "pbox_socket.h"
@@ -42,17 +43,96 @@
 #include "pbox_keyscan_app.h"
 #include "os_minor_type.h"
 #include "os_task.h"
+#include "board.h"
 
 #ifdef RK_VAD
 #include "vad.h"
 #endif
 
-#if ENABLE_SARAADC==0
+#define MAX_SARA_ADC 1023
+#define MIN_SARA_ADC 0
+
+#define DEV_MIC1_BUTTON_BASS    "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
+#define DEV_MIC1_BUTTON_TREBLE  "/sys/bus/iio/devices/iio:device0/in_voltage1_raw"
+#define DEV_MIC1_BUTTON_REVERB  "/sys/bus/iio/devices/iio:device0/in_voltage2_raw"
+#define DEV_MIC2_BUTTON_BASS    "/sys/bus/iio/devices/iio:device0/in_voltage3_raw"
+#define DEV_MIC2_BUTTON_TREBLE  "/sys/bus/iio/devices/iio:device0/in_voltage4_raw"
+#define DEV_MIC2_BUTTON_REVERB  "/sys/bus/iio/devices/iio:device0/in_voltage5_raw"
+
+struct _adcKeyTable {
+    hal_key_t index;
+    char *dev;
+};
+const struct _adcKeyTable adcKeyTable[] = {
+    { HKEY_MIC1BASS,    DEV_MIC1_BUTTON_BASS    },
+    { HKEY_MIC1TREB,    DEV_MIC1_BUTTON_TREBLE  },
+    { HKEY_MIC1REVB,    DEV_MIC1_BUTTON_REVERB  },
+    { HKEY_MIC2BASS,    DEV_MIC2_BUTTON_BASS    },
+    { HKEY_MIC2TREB,    DEV_MIC2_BUTTON_TREBLE  },
+    { HKEY_MIC2REVB,    DEV_MIC2_BUTTON_REVERB  },
+};
+
+static int adckey_init_fd(int fd[], int num) {
+    for (int i = 0; i < num; i++) {
+        //hal_key_t index = adcKeyTable[i].index;
+        fd[i] = open(adcKeyTable[i].dev, O_RDONLY);
+        if(fd[i] <= 0) {
+            ALOGE("%s index:%d\n", __func__, i, fd[i]);
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int adckey_read(int fd) {
+    char buff[6]= {0};
+    int value;
+    lseek(fd, 0, SEEK_SET);
+    int ret = read(fd, buff, sizeof(buff));
+    if (ret < 0) {
+        char str[32] = {0};
+        snprintf(str, sizeof(str)-1, "%s fd:%02d, ret:%d", __func__, fd, ret);
+        perror(str);
+        return -1;
+    }
+    assert(ret==0);
+
+    buff[strlen(buff)-1] = 0;
+    value = atoi(buff);
+    if(value > (MAX_SARA_ADC-MIN_SARA_ADC)/2) {
+        value = value + (MAX_SARA_ADC-MIN_SARA_ADC)/100;
+    }
+
+    //ALOGD("%s fd:%d buff:%s keyValue=%d\n", __func__, fd, buff, value);
+    return value;
+}
+
+static float convert_sara_to_standard(int group, int value) {
+    switch (group) {
+        case HKEY_MIC2BASS:
+        case HKEY_MIC1BASS: {
+            return ORG2TARGET(value, float, MIN_BASS_VALUE, MAX_BASS_VALUE, 0, 1023);
+        } break;
+
+        case HKEY_MIC1TREB:
+        case HKEY_MIC2TREB: {
+            return ORG2TARGET(value, float, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE, 0, 1023);
+        } break;
+
+        case HKEY_MIC1REVB:
+        case HKEY_MIC2REVB: {
+            return ORG2TARGET(value, float, MIN_REVERB_VALUE, MAX_REVERB_VALUE, 0, 1023);
+        } break;
+    }
+
+    return value;
+}
+
 #define DEV_INPUT_EVENT     "/dev/input"
 #define EVENT_DEV_NAME      "event"
 #define BITS_PER_LONG       (sizeof(long) * 8)
 
-extern struct dot_key support_keys[];
+extern const struct dot_key support_keys[];
 extern const size_t support_keys_size;
 pthread_mutex_t ev_mutex;
 
@@ -185,10 +265,25 @@ int find_multi_event_dev(int event_type, int *fds) {
 
 void *pbox_KeyEvent_send(void * arg) {
     int i;
+    bool sara_init = false;
+    int tmp, new;
+    uint32_t saraSample[sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)];
+    int adckey_fd[sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)];
+
+    ALOGD("%s hello\n", __func__);
+    PBOX_ARRAY_SET(adckey_fd, -1, sizeof(adckey_fd)/sizeof(adckey_fd[0]));
+
+    #if ENABLE_SARAADC
+    if(adckey_init_fd(adckey_fd, sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)) < 0) {
+        ALOGE("%s fail\n", __func__);
+        return (void*) 0;
+    }
+    #endif
+
     while(1) {
         if (key_read.is_key_valid == 1) {
             for(i = 0;  i < support_keys_size; i++){
-                if(key_read.key_code == support_keys[i].key_code && support_keys[i].press_type == 4)
+                if(key_read.key_code == support_keys[i].key_code && support_keys[i].press_type == K_DQC)
                     break;
             }
             if(i < support_keys_size) {
@@ -208,6 +303,36 @@ void *pbox_KeyEvent_send(void * arg) {
             unix_socket_keyscan_notify_msg(&msg, sizeof(pbox_keyevent_msg_t));
             pthread_mutex_unlock(&ev_mutex);
         }
+
+        #if ENABLE_SARAADC
+        for(int i = 0; i < sizeof(adcKeyTable)/sizeof(struct _adcKeyTable); i++) {
+            bool notify = false;
+            new = adckey_read(adckey_fd[i]);
+            if(!sara_init) {
+                notify = true;
+                ALOGD("%s %d\n", __func__, __LINE__);
+            }
+
+            if(new != saraSample[i]) {
+                if(abs(new - saraSample[i]) > 10) {
+                    notify = true;
+                    ALOGD("%s %d [%d->%d]\n", __func__, __LINE__, new, saraSample[i]);
+                }
+            }
+
+            if(notify) {
+                pbox_keyevent_msg_t msg = {0, 0, K_KNOB, 1};
+                msg.key_code = adcKeyTable[i].index;
+                msg.value = convert_sara_to_standard(adcKeyTable[i].index, new);
+                ALOGD("i=%d,adckey button[%d] changing: %d->%d upstream:%f------------>\n"
+                            , i, adcKeyTable[i].index, saraSample[i], new, msg.value);
+                unix_socket_keyscan_notify_msg(&msg, sizeof(pbox_keyevent_msg_t));
+                saraSample[i] = new;
+            }
+        }
+        if(!sara_init)
+            sara_init = true;
+        #endif
 
          usleep(100 * 1000);
     }
@@ -275,12 +400,12 @@ void *pbox_KeyEventScan(void * arg) {
 
                 if(current_dot_key.is_combain_key && delta_time > KEY_LONG_PRESS_PREIOD) {
                     ALOGD("key[0x%x] [0x%x]  combain key\n", current_dot_key.key_code,  current_dot_key.key_code_b);
-                    current_dot_key.press_type = 3;
+                    current_dot_key.press_type = K_COMB;
                     current_dot_key.is_key_valid = 1;
                 } else if (delta_time > KEY_LONG_PRESS_PREIOD && delta_time < KEY_VERY_LONG_PRESS_PERIOD) {
                     ALOGD("key[0x%x] is long long key????\n", current_dot_key.key_code);
                     for(j = 0; j < support_keys_size; j++) {
-                        if(support_keys[j].key_code == current_dot_key.key_code && 2 == support_keys[j].press_type) {
+                        if(support_keys[j].key_code == current_dot_key.key_code && K_VLONG == support_keys[j].press_type) {
                             ALOGI("key[0x%x] has longlong key event\n", current_dot_key.key_code);
                             hasLongLongFunc = 1;
                             break;
@@ -293,13 +418,13 @@ void *pbox_KeyEventScan(void * arg) {
                      }
                     if (!hasLongLongFunc) {
                         ALOGI("key[0x%x] long key\n", current_dot_key.key_code);
-                        current_dot_key.press_type = 1;
+                        current_dot_key.press_type = K_LONG;
                         current_dot_key.is_key_valid = 1;
                         hasLongLongFunc = 0;
                     }
                 } else if(delta_time > KEY_VERY_LONG_PRESS_PERIOD) {
                     ALOGI("key[0x%x] long long key\n", current_dot_key.key_code);
-                    current_dot_key.press_type = 2;
+                    current_dot_key.press_type = K_VLONG;
                     current_dot_key.is_key_valid = 1;
                     hasLongLongFunc = 0;
                 }
@@ -330,7 +455,7 @@ void *pbox_KeyEventScan(void * arg) {
                     int type, code;
 
                     type = ev[i].type;
-                    code = ev[i].code;
+                    code = get_userspace_key_from_kernel(ev[i].code);
                     uint32_t ev_time = ev[i].time.tv_sec*1000+ ev[i].time.tv_usec/1000;
                     ALOGD("Event: time %ld.%06ld,\n", ev[i].time.tv_sec, ev[i].time.tv_usec);
                     #ifdef RK_VAD
@@ -377,17 +502,16 @@ void *pbox_KeyEventScan(void * arg) {
                                 memcpy(&key_read, &current_dot_key, sizeof(struct dot_key));
                                 key_read.is_key_valid = 1;
                                 if (key_read.is_combain_key && delta_time > KEY_LONG_PRESS_PREIOD) {
-                                    key_read.press_type = 3;
+                                    key_read.press_type = K_COMB;
                                 } else if(delta_time > KEY_LONG_PRESS_PREIOD && delta_time < KEY_VERY_LONG_PRESS_PERIOD) {
-                                    key_read.press_type = 1;
+                                    key_read.press_type = K_LONG;
                                 } else if(delta_time > KEY_VERY_LONG_PRESS_PERIOD) {
-                                    key_read.press_type = 2;
+                                    key_read.press_type = K_VLONG;
                                 } else if (repeat_time < (KEY_DOUBLE_CLICK_PERIOD / 1000)) {
-                                    key_read.press_type = 4;
+                                    key_read.press_type = K_DQC;
                                 }
 
                                 ALOGD("key up, keycode1=%x,keycode2=%x,valid=%d,longtype=%d, combain=%d\n", key_read.key_code, key_read.key_code_b, key_read.is_key_valid, key_read.press_type, key_read.is_combain_key);
-
                                 hasLongLongFunc = 0;
                             }
                         }
@@ -418,4 +542,3 @@ int pbox_create_KeyScanTask(void)
     }
     return err;
 }
-#endif

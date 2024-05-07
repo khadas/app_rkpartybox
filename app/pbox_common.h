@@ -188,6 +188,15 @@ typedef enum {
 } ext_cmd_t;
 
 typedef enum {
+    K_SHORT,
+    K_LONG,//more than 3 sec
+    K_VLONG,//very long, more than 10 sec
+    K_COMB,//combain keys
+    K_DQC,//double quick click
+    K_KNOB, //knob key
+} key_press_t;
+
+typedef enum {
     MIC_OFF = 1,
     MIC_IN = 2,
     MIC_GT = 3,

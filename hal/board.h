@@ -15,6 +15,7 @@ extern "C" {
 
 char* hardware_get_audio_card(void);
 char* getInputSourceString(input_source_t source);
+int get_userspace_key_from_kernel(uint32_t value);
 
 #define PBOX_INPUT_SRCS HW_SUPPORT_SRCS
 #define FAVOR_SRC_ORDER {SRC_CHIP_BT, SRC_CHIP_USB, SRC_CHIP_UAC, SRC_EXT_BT, SRC_EXT_USB, SRC_EXT_AUX}

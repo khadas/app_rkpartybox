@@ -22,6 +22,28 @@ typedef enum {
 #define MASK_SRC_EXT_USB   (1 << SRC_EXT_USB)
 #define MASK_SRC_EXT_AUX   (1 << SRC_EXT_AUX)
 
+typedef struct {
+    int kernel_space;
+    int user_space;
+} key_pair_t;
+
+typedef enum {
+    HKEY_IDLE,
+    HKEY_PLAY,//KEY APP PLAY
+    HKEY_VOLUP,
+    HKEY_VOLDOWN,
+    HKEY_MODE,
+    HKEY_MIC1MUTE,
+    HKEY_MIC2MUTE,
+    HKEY_MIC1BASS,
+    HKEY_MIC2BASS,
+    HKEY_MIC1TREB,
+    HKEY_MIC2TREB,
+    HKEY_MIC1REVB,
+    HKEY_MIC2REVB,
+    HKEY_NUM
+} hal_key_t;
+
 #ifdef __cplusplus
 }
 #endif

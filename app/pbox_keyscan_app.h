@@ -9,43 +9,8 @@
 extern "C" {
 #endif
 
-#if ENABLE_SARAADC==0
-#define MAX_KEY_BUFFERED	8
-
-#define KEY_DOUBLE_CLICK_PERIOD        (300*1000)   //双击键间隔时间，单位US
-#define KEY_LONG_PRESS_PREIOD           3000        //长按时间间隔，单位ms
-#define KEY_SWITCH_MSEC                 6000
-#define KEY_VERY_LONG_PRESS_PERIOD      10000       //超长按时间间隔，单位ms
-
-typedef struct {
-    int key_code;
-    int key_code_b;
-    int press_type;
-    int is_key_valid;
-    uint64_t unix_time;//from 1970.01.01 in ms
-} pbox_keyevent_msg_t;
-
-struct dot_key
-{
-    int key_code;
-    int key_code_b;
-    int press_type;//0表示短按，1表示大于3s的长按，2表示大于10s的超长按，3表示长按组合键，4表示快速双击
-    int is_key_valid;
-    int is_combain_key; //combian key
-    /*
-     * pre_alexa_mode is used if only one key to switch from different mode, such as wifi/bt/mic_mute mode.
-     * we can define the previous alexa mode as ALEXA_WIFI_MODE if we want to press one key to switch from
-     * wifi mode to other mode.
-     * if pre_alexa_mode defined as ALEXA_INVALID_MODE, means this value is not used
-     */
-    int (*key_process)(void);
-    uint64_t ptime;
-    uint64_t utime;
-};
-
 void maintask_keyscan_fd_process(int fd);
 int  pbox_create_KeyProcessTask(void);
-#endif
 
 #ifdef __cplusplus
 }
