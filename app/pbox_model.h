@@ -42,8 +42,8 @@ extern "C" {
 #define MIC_NUM             1
 #endif
 
-#ifndef ENABLE_SARAADC
-#define ENABLE_SARAADC   0
+#ifndef ENABLE_RKCHIP_SARADC
+#define ENABLE_RKCHIP_SARADC   0
 #endif
 
 #ifndef MAX_MAIN_VOLUME
@@ -67,7 +67,7 @@ extern "C" {
 #endif
 
 #ifndef MIN_MIC_PHONE_VOLUME
-#define MIN_MIC_PHONE_VOLUME   (-100)
+#define MIN_MIC_PHONE_VOLUME   (-80)
 #endif
 
 #ifndef DEFAULT_HUMAN_LEVEL

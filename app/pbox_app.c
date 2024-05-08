@@ -605,6 +605,8 @@ void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t po
 }
 
 void pbox_app_music_set_mic_all(uint32_t index, mic_state_t micdata, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index] = micdata;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_ALL, micdata);
     pbox_multi_echoMicVolumeLevel(index, micdata.micVolume, policy);
@@ -618,12 +620,16 @@ void pbox_app_music_set_mic_all(uint32_t index, mic_state_t micdata, display_t p
 }
 
 void pbox_app_music_set_mic_volume(uint32_t index, float volume, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].micVolume = volume;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_VOLUME, pboxUIdata->micData[index]);
     pbox_multi_echoMicVolumeLevel(index, volume, policy);
 }
 
 void pbox_app_music_set_mic_mute(uint8_t index, bool mute, display_t policy){
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].micmute = mute;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUTE, pboxUIdata->micData[index]);
     pbox_multi_echoMicMute(index, mute, policy);
@@ -638,7 +644,7 @@ void pbox_app_music_init(void) {
     #if ENABLE_EXT_BT_MCU
         pbox_app_music_set_placement(pboxUIdata->placement, DISP_All);
         pbox_app_music_set_stereo_mode(pboxUIdata->stereo, DISP_All);
-        pbox_app_switch_to_input_source(SRC_CHIP_BT, DISP_All);
+        pbox_app_switch_to_input_source(SRC_EXT_BT, DISP_All);
     #endif
 }
 
@@ -650,24 +656,32 @@ void pbox_app_music_mics_init(display_t policy) {
 }
 
 void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].micMux = mux;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUX, pboxUIdata->micData[index]);
     pbox_multi_echoMicMux(index, mux, policy);
 }
 
 void pbox_app_music_set_mic_treble(uint8_t index, float treble, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].micTreble = treble;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_TREBLE, pboxUIdata->micData[index]);
     pbox_multi_echoMicTreble(index, treble, policy);
 }
 
 void pbox_app_music_set_mic_bass(uint8_t index, float bass, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].micBass = bass;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_BASS, pboxUIdata->micData[index]);
     pbox_multi_echoMicBass(index, bass, policy);
 }
 
 void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].micReverb = reverb;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_REVERB, pboxUIdata->micData[index]);
     pbox_multi_echoMicReverb(index, reverb, policy);
@@ -713,12 +727,16 @@ void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
 }
 
 void pbox_app_music_set_echo_3a(uint8_t index, bool enable, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].echo3a = enable;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_ECHO_3A, pboxUIdata->micData[index]);
     pbox_multi_echoEcho3A(index, enable, policy);
 }
 
 void pbox_app_music_set_recoder_revert(uint8_t index, pbox_revertb_t reverbMode, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pboxUIdata->micData[index].reverbMode = reverbMode;
     pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_REVERB_MODE, pboxUIdata->micData[index]);
     pbox_multi_echoRevertMode(index, reverbMode, policy);
@@ -749,7 +767,7 @@ void pbox_app_tunning_init(display_t policy) {
     pbox_app_rockit_init_tunning();
 }
 
-void pbox_app_music_volume_up(display_t policy) {
+void pbox_app_main_volume_up(display_t policy) {
     float volume = pboxUIdata->mainVolumeLevel;
     volume += (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
     volume = volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volume;
@@ -763,7 +781,7 @@ void pbox_app_music_volume_up(display_t policy) {
         pbox_app_music_resume(policy);
 }
 
-void pbox_app_music_volume_down(display_t policy) {
+void pbox_app_main_volume_down(display_t policy) {
     float volume = pboxUIdata->mainVolumeLevel;
     volume -= (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/10;
     volume = volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volume;
@@ -771,6 +789,34 @@ void pbox_app_music_volume_down(display_t policy) {
 
     ALOGD("%s volume down:%f\n", __func__, volume);
     pbox_app_music_set_main_volume(volume, policy);
+
+    if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
+        pbox_app_music_resume(policy);
+}
+
+void pbox_app_music_volume_up(display_t policy) {
+    float volume = pboxUIdata->musicVolumeLevel;
+    volume += (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/20;
+    volume = volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volume;
+    volume = volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volume;
+
+    ALOGD("%s :[%f]->[%f]\n", __func__, pboxUIdata->musicVolumeLevel, volume);
+    if(pboxUIdata->musicVolumeLevel != volume)
+        pbox_app_music_set_music_volume(volume, policy);
+
+    if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
+        pbox_app_music_resume(policy);
+}
+
+void pbox_app_music_volume_down(display_t policy) {
+    float volume = pboxUIdata->musicVolumeLevel;
+    volume -= (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)/20;
+    volume = volume> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volume;
+    volume = volume< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volume;
+
+    ALOGD("%s [%f]->[%f]\n", __func__, volume, pboxUIdata->musicVolumeLevel, volume);
+    if(pboxUIdata->musicVolumeLevel != volume)
+        pbox_app_music_set_music_volume(volume, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
@@ -918,6 +964,8 @@ void pbox_app_echo_inout_door(display_t policy) {
 }
 
 void pbox_app_echo_micMux(uint8_t index, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     pbox_multi_echoMicMux(index, pboxUIdata->micData[index].micMux, policy);
 }
 
@@ -944,6 +992,8 @@ void pbox_app_echo_input_source(display_t policy) {
 }
 
 void pbox_app_echo_micdata(uint8_t index, mic_set_kind_t kind, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     switch (kind) {
         case MIC_SET_DEST_ECHO_3A: {
             pbox_multi_echoEcho3A(index, pboxUIdata->micData[index].echo3a, policy);
@@ -1006,6 +1056,9 @@ void pbox_app_btsoc_set_stereo_mode(stereo_mode_t mode, display_t policy) {
 void pbox_app_btsoc_set_mic_data(mic_data_t data, display_t policy) {
     uint8_t index = data.index;
     mic_set_kind_t kind = data.kind;
+
+    if(index >= MIC_NUM)
+        return;
     switch (data.kind) {
         case MIC_SET_DEST_ECHO_3A: {
             if(pboxUIdata->micData[index].echo3a != data.micState.echo3a)
@@ -1050,6 +1103,8 @@ void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy) {
 }
 
 void pbox_app_btsoc_set_mic_mux(uint8_t index, mic_mux_t micMux, display_t policy) {
+    if(index >= MIC_NUM)
+        return;
     if(pboxUIdata->micData[index].micMux == micMux)
         return;
     pbox_app_music_set_mic_mux(index, micMux, policy);

@@ -41,6 +41,8 @@ typedef enum {
     HKEY_MIC2TREB,
     HKEY_MIC1REVB,
     HKEY_MIC2REVB,
+    HKEY_MIC1_VOL,
+    HKEY_MIC2_VOL,
     HKEY_NUM
 } hal_key_t;
 

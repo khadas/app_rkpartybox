@@ -97,6 +97,8 @@ void pbox_app_music_trackid(uint32_t id, display_t policy);
 void pbox_app_music_start(display_t policy);
 void pbox_app_music_resume(display_t policy);
 void pbox_app_music_stop(display_t policy);
+void pbox_app_main_volume_up(display_t policy);
+void pbox_app_main_volume_down(display_t policy);
 void pbox_app_music_volume_up(display_t policy);
 void pbox_app_music_volume_down(display_t policy);
 void pbox_app_music_album_next(bool next, display_t policy);

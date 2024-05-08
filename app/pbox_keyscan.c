@@ -49,7 +49,10 @@
 #include "vad.h"
 #endif
 
+#ifndef MAX_SARA_ADC
 #define MAX_SARA_ADC 1023
+#endif
+
 #define MIN_SARA_ADC 0
 
 #define DEV_MIC1_BUTTON_BASS    "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
@@ -111,17 +114,26 @@ static float convert_sara_to_standard(int group, int value) {
     switch (group) {
         case HKEY_MIC2BASS:
         case HKEY_MIC1BASS: {
-            return ORG2TARGET(value, float, MIN_BASS_VALUE, MAX_BASS_VALUE, 0, 1023);
+            return ORG2TARGET(value, float, MIN_BASS_VALUE, MAX_BASS_VALUE, 0, MAX_SARA_ADC);
         } break;
 
         case HKEY_MIC1TREB:
         case HKEY_MIC2TREB: {
-            return ORG2TARGET(value, float, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE, 0, 1023);
+            return ORG2TARGET(value, float, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE, 0, MAX_SARA_ADC);
         } break;
 
         case HKEY_MIC1REVB:
         case HKEY_MIC2REVB: {
-            return ORG2TARGET(value, float, MIN_REVERB_VALUE, MAX_REVERB_VALUE, 0, 1023);
+            return ORG2TARGET(value, float, MIN_REVERB_VALUE, MAX_REVERB_VALUE, 0, MAX_SARA_ADC);
+        } break;
+
+        case HKEY_MIC1_VOL: {
+            float vol = ORG2TARGET(value, float, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME, 0, MAX_SARA_ADC);
+            return vol;
+        } break;
+        case HKEY_MIC2_VOL: {
+            float vol = ORG2TARGET(value, float, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME, 0, MAX_SARA_ADC);
+            return vol;
         } break;
     }
 
@@ -273,7 +285,7 @@ void *pbox_KeyEvent_send(void * arg) {
     ALOGD("%s hello\n", __func__);
     PBOX_ARRAY_SET(adckey_fd, -1, sizeof(adckey_fd)/sizeof(adckey_fd[0]));
 
-    #if ENABLE_SARAADC
+    #if ENABLE_RKCHIP_SARADC
     if(adckey_init_fd(adckey_fd, sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)) < 0) {
         ALOGE("%s fail\n", __func__);
         return (void*) 0;
@@ -304,7 +316,7 @@ void *pbox_KeyEvent_send(void * arg) {
             pthread_mutex_unlock(&ev_mutex);
         }
 
-        #if ENABLE_SARAADC
+        #if ENABLE_RKCHIP_SARADC
         for(int i = 0; i < sizeof(adcKeyTable)/sizeof(struct _adcKeyTable); i++) {
             bool notify = false;
             new = adckey_read(adckey_fd[i]);
@@ -314,9 +326,9 @@ void *pbox_KeyEvent_send(void * arg) {
             }
 
             if(new != saraSample[i]) {
-                if(abs(new - saraSample[i]) > 10) {
+                if(abs(new - saraSample[i]) > 20) {
                     notify = true;
-                    ALOGD("%s %d [%d->%d]\n", __func__, __LINE__, new, saraSample[i]);
+                    ALOGD("%s %d [%d->%d]\n", __func__, __LINE__, saraSample[i], new);
                 }
             }
 

@@ -34,7 +34,8 @@ static int pbox_app_knob_set_mic1_reverb(float);
 static int pbox_app_knob_set_mic2_bass(float);
 static int pbox_app_knob_set_mic2_treble(float);
 static int pbox_app_knob_set_mic2_reverb(float);
-
+static int pbox_app_knob_set_mic1_volume(float);
+static int pbox_app_knob_set_mic2_volume(float);
 const struct dot_key support_keys [] =
 {
     /*key           keyb    press_type vaild comb    func                */
@@ -71,6 +72,8 @@ const struct dot_key support_keys [] =
     {HKEY_MIC2BASS, 0,      K_KNOB,       1, 0, pbox_app_knob_set_mic2_bass},
     {HKEY_MIC2TREB, 0,      K_KNOB,       1, 0, pbox_app_knob_set_mic2_treble},
     {HKEY_MIC2REVB, 0,      K_KNOB,       1, 0, pbox_app_knob_set_mic2_reverb},
+    {HKEY_MIC1_VOL, 0,      K_KNOB,       1, 0, pbox_app_knob_set_mic1_volume},
+    {HKEY_MIC2_VOL, 0,      K_KNOB,       1, 0, pbox_app_knob_set_mic2_volume},
 };
 
 const size_t support_keys_size = sizeof(support_keys) / sizeof(struct dot_key);
@@ -204,6 +207,16 @@ int pbox_app_knob_set_mic2_treble(float treble) {
 
 int pbox_app_knob_set_mic2_reverb(float reverb) {
     pbox_app_music_set_mic_reverb(1,  reverb, DISP_All);
+    return true;
+}
+
+int pbox_app_knob_set_mic1_volume(float volume) {
+    pbox_app_music_set_mic_volume(0,  volume, DISP_All);
+    return true;
+}
+
+int pbox_app_knob_set_mic2_volume(float volume) {
+    pbox_app_music_set_mic_volume(1,  volume, DISP_All);
     return true;
 }
 
