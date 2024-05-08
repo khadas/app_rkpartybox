@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #ifndef DEFAULT_SAMPLE_FREQ
-#define DEFAULT_SAMPLE_FREQ 44100
+#define DEFAULT_SAMPLE_FREQ 48000
 #endif
 
 #ifndef DEFAULT_MIC_3A
