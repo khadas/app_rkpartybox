@@ -73,7 +73,7 @@ export ao_count=2
 export play_start_threshold=1
 export recorder_eqdrc_bypass=1
 export player_eqdrc_bypass=1
-
+export player_gender_bypass=1
 ulimit -c unlimited
 echo "/tmp/core-%p-%e" > /proc/sys/kernel/core_pattern
 rkpartybox
