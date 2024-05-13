@@ -142,12 +142,15 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkstudio_tuning.so
        ./lib64/librkstudio.so
        ./lib64/librockit.so
+       ./lib64/librkaudio_effect_scene.so
        )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES ${ROCKIT_FILE_LIBS} DESTINATION "lib")
 install(FILES bins/asound.conf DESTINATION /etc)
 install(FILES bins/led_effect.json DESTINATION /etc/pbox)
+install(FILES bins/config_gender_detect.json DESTINATION /etc/pbox)
+install(FILES bins/config_reverb_doa_detect.json DESTINATION /etc/pbox)
 install(FILES bins/uac_config DESTINATION /etc/pbox)
 install(FILES bins/SmileySans-Oblique.ttf DESTINATION /etc/pbox)
 

@@ -9,6 +9,12 @@ echo -1 > /proc/sys/kernel/sched_rt_runtime_us
 if [ ! -e /oem/config_howling.json ]; then
 	ln -s /etc/pbox/config_howling.json /oem/config_howling.json
 fi
+if [ ! -e /oem/config_reverb_doa_detect.json ]; then
+	ln -s /etc/pbox/config_reverb_doa_detect.json /oem/config_reverb_doa_detect.json
+fi
+if [ ! -e /oem/config_gender_detect.json ]; then
+	ln -s /etc/pbox/config_gender_detect.json /oem/config_gender_detect.json
+fi
 if [ ! -e /oem/eq_drc_player.bin ]; then
 	ln -s /etc/pbox/eq_drc_player.bin /oem/eq_drc_player.bin
 fi
@@ -42,6 +48,8 @@ if [ ! -e /oem/Mono.pcm ]; then
 fi
 
 export rt_cfg_path_3a=/oem/config_howling.json
+export rt_cfg_path_reverb_doa_detect=/oem/config_reverb_doa_detect.json
+export rt_cfg_path_gender_detect=/oem/config_gender_detect.json
 export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
 export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
 export rt_cfg_path_rkstudio=/oem/rkstudio.bin
@@ -55,7 +63,7 @@ export player_gain_1=-80
 export player_gain_2=-80
 export player_gain_3=0
 export ai_period=128
-export ai_count=8
+export ai_count=2
 export ai_buf=1
 export ao_period=128
 export ao_count=2

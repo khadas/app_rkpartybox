@@ -62,6 +62,9 @@ rc_s32 rc_pb_recorder_release_energy(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_ene
 rc_s32 rc_pb_recorder_dequeue_frame(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms);
 rc_s32 rc_pb_recorder_queue_frame(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms);
 
+rc_s32 rc_pb_scene_detect_start(rc_pb_ctx ctx, struct rc_pb_scene_detect_attr *attr);
+rc_s32 rc_pb_scene_detect_stop(rc_pb_ctx ctx);
+rc_s32 rc_pb_scene_get_result(rc_pb_ctx ctx, enum rc_pb_scene_detect_mode mode, rc_float *result);
 #endif
 
 #ifdef __cplusplus

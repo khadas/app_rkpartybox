@@ -71,6 +71,10 @@ rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param
 rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
 rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms);
 rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms);
+rc_s32 (*rc_pb_scene_detect_start)(rc_pb_ctx ctx, struct rc_pb_scene_detect_attr *attr);
+rc_s32 (*rc_pb_scene_detect_stop)(rc_pb_ctx ctx);
+rc_s32 (*rc_pb_scene_get_result)(rc_pb_ctx ctx, enum rc_pb_scene_detect_mode mode, rc_float *result);
+
 //********************rockit end***********************
 
 //********************rkstudio tunning start**************************
@@ -283,6 +287,26 @@ int rk_demo_music_create() {
         return -1;
     }
 
+    rc_pb_scene_detect_start = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_scene_detect_attr *attr))dlsym(mpi_hdl, 
+                                        "rc_pb_scene_detect_start");
+    if (NULL == rc_pb_scene_detect_start) {
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+    rc_pb_scene_detect_stop = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, 
+                                        "rc_pb_scene_detect_stop");
+    if (NULL == rc_pb_scene_detect_stop) {
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+    rc_pb_scene_get_result = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_scene_detect_mode mode, rc_float *result))dlsym(mpi_hdl, 
+                                        "rc_pb_scene_get_result");
+    if (NULL == rc_pb_scene_get_result) {
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+
+    ALOGE("%s hello...", __func__);
     attr.card_name              = "hw:0,0";
     attr.sample_rate            = 48000;
 #if ENABLE_EXT_BT_MCU
@@ -313,14 +337,14 @@ int rk_demo_music_create() {
     recorder_attr.ref_layout = 0xfc;
     recorder_attr.rec_layout = 0x03;
     recorder_attr.chn_layout  = 0xff;
-    recorder_attr.ref_mode = RC_PB_HOWLING_REF_MODE_SOFT;
+    recorder_attr.ref_mode = RC_PB_REF_MODE_SOFT;
 #else
     recorder_attr.pool_cnt    = 2;
     recorder_attr.channels    = 4;
     recorder_attr.ref_layout = 0x03;
     recorder_attr.rec_layout = 0x04;
     recorder_attr.chn_layout  = 0x0f;
-    recorder_attr.ref_mode = RC_PB_HOWLING_REF_MODE_HARD;
+    recorder_attr.ref_mode = RC_PB_REF_MODE_HARD;
 #endif
 
     recorder_attr.detect      = detect;

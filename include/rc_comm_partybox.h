@@ -62,6 +62,7 @@ enum rc_pb_param_type {
     RC_PB_PARAM_TYPE_VOLCAL_SEPARATE,
     RC_PB_PARAM_TYPE_AMIX,
     RC_PB_PARAM_TYPE_RKSTUDIO,
+    RC_PB_PARAM_TYPE_SCENE,
     RC_PB_PARAM_TYPE_BUTT
 };
 
@@ -74,10 +75,10 @@ enum rc_pb_reverb_mode {
     RC_PB_REVERB_MODE_BUTT
 };
 
-enum rc_pb_howling_ref_mode {
-    RC_PB_HOWLING_REF_MODE_NONE = 0,
-    RC_PB_HOWLING_REF_MODE_SOFT,
-    RC_PB_HOWLING_REF_MODE_HARD
+enum rc_pb_ref_mode {
+    RC_PB_REF_MODE_NONE = 0,
+    RC_PB_REF_MODE_SOFT,
+    RC_PB_REF_MODE_HARD
 };
 
 enum rc_pb_rkstudio_cmd {
@@ -102,6 +103,29 @@ enum rc_pb_wake_up_cmd {
     RC_PB_WAKE_UP_CMD_RECIEVE_BUT_NO_TASK,
 
     RC_PB_WAKE_UP_CMD_BUTT
+};
+
+enum rc_pb_scene_detect_mode {
+    RC_PB_SCENE_MODE_DOA    = 1 << 0,
+    RC_PB_SCENE_MODE_REVERB = 1 << 1,
+    RC_PB_SCENE_MODE_GENDER = 1 << 2
+};
+
+enum rc_pb_scene_reverb {
+    RC_PB_SCENE_REVERB_INDOOR = 0,
+    RC_PB_SCENE_REVERB_OUTDOOR
+};
+
+enum rc_pb_scene_gender {
+    RC_PB_SCENE_GENDER_MALE = 0,
+    RC_PB_SCENE_GENDER_FEMALE,
+    RC_PB_SCENE_GENDER_OTHER
+};
+
+enum rc_pb_scene_doa {
+    RC_PB_SCENE_DOA_LEFT = 0,
+    RC_PB_SCENE_DOA_RIGHT,
+    RC_PB_SCENE_DOA_OTHER
 };
 
 struct rc_pb_param_howling {
@@ -137,6 +161,12 @@ struct rc_pb_param_vocal_separate {
     rc_u32  reserve_level[32];   /* RW; Range: [0, 100]; */
 };
 
+struct rc_pb_param_scene_detect {
+    rc_bool bypass;
+    enum rc_pb_scene_detect_mode scene_mode;
+    rc_float result;
+};
+
 struct rc_pb_param_amix {
     rc_u32      card;
     const char *control;
@@ -168,6 +198,7 @@ struct rc_pb_param {
         struct rc_pb_param_vocal_separate vocal;
         struct rc_pb_param_amix           amix;
         struct rc_pb_param_rkstudio       rkstudio;
+        struct rc_pb_param_scene_detect   scene;
     };
 };
 
@@ -218,8 +249,19 @@ struct rc_pb_recorder_attr {
     rc_u32  rec_layout;
     rc_u32  pool_cnt;  /* RW; 0 means no need get frame, can reduce cpu usage */
     struct rc_pb_param_level_detect detect;
-    enum rc_pb_howling_ref_mode ref_mode;
+    enum rc_pb_ref_mode ref_mode;
     struct rc_pb_recorder_gt_attr *guitar;
+};
+
+struct rc_pb_scene_detect_attr {
+    char   *card_name;
+    rc_u32  sample_rate;
+    rc_u32  channels;
+    rc_u32  bit_width;
+    rc_u32  ref_layout;
+    rc_u32  rec_layout;
+    enum rc_pb_ref_mode ref_mode;
+    enum rc_pb_scene_detect_mode scene_mode;
 };
 
 typedef void (*notifyfun_t)(enum rc_pb_event event, rc_s32 cmd, void *opaque);

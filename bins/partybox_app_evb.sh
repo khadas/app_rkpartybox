@@ -21,6 +21,12 @@ fi
 if [ ! -e /oem/config_howling.json ]; then
 	ln -s /etc/pbox/config_howling.json /oem/config_howling.json
 fi
+if [ ! -e /oem/config_reverb_doa_detect.json ]; then
+	ln -s /etc/pbox/config_reverb_doa_detect.json /oem/config_reverb_doa_detect.json
+fi
+if [ ! -e /oem/config_gender_detect.json ]; then
+	ln -s /etc/pbox/config_gender_detect.json /oem/config_gender_detect.json
+fi
 if [ ! -e /oem/Split_off.pcm ]; then
 	ln -s /etc/pbox/Split_off.pcm /oem/Split_off.pcm
 fi
@@ -47,6 +53,8 @@ if [ ! -e /oem/uac_config ]; then
 fi
 
 export rt_cfg_path_3a=/oem/config_howling.json
+export rt_cfg_path_reverb_doa_detect=/oem/config_reverb_doa_detect.json
+export rt_cfg_path_gender_detect=/oem/config_gender_detect.json
 export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
 export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
 export rt_cfg_path_rkstudio=/oem/rkstudio.bin
