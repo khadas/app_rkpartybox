@@ -11,6 +11,7 @@ extern "C" {
 #define AUDIO_CARD_EXT_USB      NULL
 #define AUDIO_CARD_EXT_AUX      NULL
 
+#define AUDIO_CARD_CHIP_VAD       "hw:0,0"
 #define AUDIO_CARD_RKCHIP_BT    "hw:7,1,0"
 #define AUDIO_CARD_RKCHIP_UAC   "hw:2,0"
 

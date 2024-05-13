@@ -17,6 +17,8 @@ typedef enum {
     PROMPT_WIDEN,
     PROMPT_FADE_ON,
     PROMPT_FADE_OFF,
+    PROMPT_INOUT_SENCE,
+    PROMPT_DOA_SENCE,
     PROMPT_NUM
 } prompt_audio_t;
 

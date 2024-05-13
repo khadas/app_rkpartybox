@@ -57,6 +57,9 @@ typedef struct {
     uint32_t avail_srcs;
     int32_t volume_resume_time;//it mustbe 10 times of PBOX_TIMER_INTERVAL
     bool trackchanged;
+    int stereo_shake;
+    int inout_shake;
+    int gender_sence;
 
     struct _pbox_ui {
         placement_t placement;

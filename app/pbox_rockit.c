@@ -28,6 +28,7 @@
 #include "os_minor_type.h"
 #include "os_task.h"
 #include "pbox_rockit_audio.h"
+#include "board.h"
 
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
@@ -87,6 +88,11 @@ static volatile bool is_rkstudio_tuning = false;
 struct rockit_pbx_t rockitCtx;
 
 static bool started_player[RC_PB_PLAY_SRC_BUTT];
+static bool is_scene_detecting = false;
+
+os_sem_t* auxplay_looplay_sem = NULL;
+bool is_prompt_loop_playing = false;
+
 int rk_demo_music_create() {
     //create karaoke recorder && player
     void *mpi_hdl = NULL;
@@ -358,6 +364,8 @@ int rk_demo_music_create() {
     rockitCtx.pboxCtx = &partyboxCtx;
     ALOGD("%s %d partyboxCtx:%p\n", __func__, __LINE__, &partyboxCtx);
     rockitCtx.auxplay_stop_sem = os_sem_new(0);
+    auxplay_looplay_sem = os_sem_new(0);
+
     rockitCtx.auxPlayerTask = os_task_create("pbox_aux_player", pbox_rockit_aux_player_routine, 0, &rockitCtx);
 
     if (rc_pb_recorder_start(partyboxCtx) != 0) {
@@ -367,9 +375,15 @@ int rk_demo_music_create() {
     ALOGD("rockit media player created successfully, partyboxCtx=%p\n", partyboxCtx);
 }
 
-int audio_prompt_send(prompt_audio_t prompt) {
-    int id = prompt;
+int audio_prompt_send(prompt_audio_t prompt, bool loop) {
+    int highBit = (loop?1:0) << (sizeof(int) * 8 - 1);
+    int id = prompt|highBit;
+
+    if(is_prompt_loop_playing&&loop)
+        os_sem_post(auxplay_looplay_sem);
+
     int ret = write(rockitCtx.signfd[1], &id, sizeof(int));
+
     return ret;
 }
 
@@ -406,6 +420,26 @@ static void rockit_pbbox_notify_duration(uint32_t duration)
     msg.type = PBOX_EVT;
     msg.msgId = PBOX_ROCKIT_MUSIC_DURATION_EVT;
     msg.duration = duration;
+
+    unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
+    #endif
+}
+
+/*struct _sense_res {
+    size_t scene;
+    uint32_t result;
+} sence_res;*/
+
+static void rockit_pbbox_notify_environment_sence(uint32_t scene, uint32_t result)
+{
+    #if ENABLE_RK_ROCKIT
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_ROCKIT_ENV_SENCE_EVT,
+    };
+
+    msg.sence_res.scene = scene;
+    msg.sence_res.result = result;
 
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
     #endif
@@ -652,6 +686,166 @@ static int64_t pbox_rockit_music_get_position(input_source_t source) {
     return position;
 }
 
+bool is_env_sensed_value_available(int env, float value) {
+    bool result = false;
+    switch(env) {
+        case ENV_REVERB:{
+            if(value == RC_PB_SCENE_REVERB_INDOOR ||value ==  RC_PB_SCENE_REVERB_OUTDOOR)
+                result = true;
+        } break;
+        case ENV_DOA:{
+            if(value >=0 && value <=  RC_PB_SCENE_DOA_OTHER)
+                result = true;
+        } break;
+        case ENV_GENDER:{
+            if(value >=0 && value <=  RC_PB_SCENE_GENDER_OTHER)
+                result = true;
+        } break;
+    }
+
+    return result;
+}
+
+int convert_sensed_value_to_upper_space(int env, float value) {
+    switch(env) {
+        case ENV_REVERB:{
+            switch((int)value) {
+                case RC_PB_SCENE_REVERB_INDOOR: return INDOOR;
+                case RC_PB_SCENE_REVERB_OUTDOOR: return OUTDOOR;
+            }
+        } break;
+        case ENV_DOA:{
+            switch((int)value) {
+                case RC_PB_SCENE_DOA_LEFT: return DOA_L;
+                case RC_PB_SCENE_DOA_RIGHT: return DOA_R;
+                case RC_PB_SCENE_DOA_OTHER: return DOA_TBD;
+            }
+        } break;
+        case ENV_GENDER:{
+            switch((int)value) {
+                case RC_PB_SCENE_GENDER_MALE: return GENDER_M;
+                case RC_PB_SCENE_GENDER_FEMALE: return GENDER_F;
+                case RC_PB_SCENE_GENDER_OTHER: return GENDER_TBD;
+            }
+        } break;
+    }
+}
+
+static void pbox_rockit_render_env_sence(int scenes) {
+    float result;
+    struct rc_pb_param param;
+    int ret;
+
+    assert(partyboxCtx);
+    assert(rc_pb_scene_get_result);
+    param.type = RC_PB_PARAM_TYPE_SCENE;
+    param.scene.scene_mode = RC_PB_SCENE_MODE_GENDER;
+
+    if(scenes & BIT(ENV_REVERB)) {
+        ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
+        if (!ret) {
+            ALOGW("indoor:%d\n", param.scene.result == RC_PB_SCENE_REVERB_INDOOR ?  1 : 0);
+            if(is_env_sensed_value_available(ENV_REVERB, param.scene.result))
+                rockit_pbbox_notify_environment_sence(ENV_REVERB, convert_sensed_value_to_upper_space(ENV_REVERB, param.scene.result));
+        }
+    }
+
+    if(scenes & BIT(ENV_DOA)) {
+        ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_DOA, &result);
+        if (!ret) {
+            ALOGW("doa:%d\n", param.scene.result);
+            if(is_env_sensed_value_available(ENV_DOA, param.scene.result))
+                rockit_pbbox_notify_environment_sence(ENV_DOA, convert_sensed_value_to_upper_space(ENV_DOA, param.scene.result));
+        }
+    }
+
+    if(scenes & BIT(ENV_GENDER)) {
+        ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_GENDER, &result);
+        if (!ret) {
+            ALOGW("doa:%d\n", param.scene.result);
+            if(is_env_sensed_value_available(ENV_GENDER, param.scene.result))
+                rockit_pbbox_notify_environment_sence(ENV_GENDER, convert_sensed_value_to_upper_space(ENV_GENDER, param.scene.result));
+        }
+    }
+}
+
+static void pbox_rockit_stop_env_detect(pbox_rockit_msg_t *msg) {
+    assert(partyboxCtx);
+    assert(rc_pb_scene_detect_stop);
+
+    if(is_scene_detecting == true) {
+        rc_pb_scene_detect_stop(partyboxCtx);
+        is_scene_detecting = false;
+    }
+}
+
+static int pbox_rockit_start_scene_detect(struct rc_pb_scene_detect_attr *scene_attr) {
+    assert(rc_pb_scene_detect_stop);
+    assert(rc_pb_scene_detect_start);
+    assert(partyboxCtx);
+
+    if(is_scene_detecting == true) {
+        rc_pb_scene_detect_stop(partyboxCtx);
+        is_scene_detecting = false;
+    }
+
+    int ret = rc_pb_scene_detect_start(partyboxCtx, scene_attr);
+    if (ret) {
+        ALOGE("partybox start detect player fail:%d\n", ret);
+        return -1;
+    }
+
+    is_scene_detecting = true;
+    return 0;
+}
+
+static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
+    static struct rc_pb_scene_detect_attr scene_attr;
+    assert(partyboxCtx);
+
+    audio_prompt_send(PROMPT_INOUT_SENCE, true);
+    scene_attr.card_name   = AUDIO_CARD_CHIP_VAD;
+    scene_attr.sample_rate = 48000;
+    scene_attr.channels    = 4;
+    scene_attr.bit_width   = 16;
+    scene_attr.ref_layout  = 0x03;
+    scene_attr.rec_layout  = 0x04;
+    scene_attr.ref_mode    = RC_PB_REF_MODE_SOFT;
+    scene_attr.scene_mode   = RC_PB_SCENE_MODE_REVERB;
+
+    int ret = pbox_rockit_start_scene_detect(&scene_attr);
+    if(ret) {
+        ALOGE("%s fail:%d\n", ret);
+        return;
+    }
+}
+
+//stereo left/right
+static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
+    ALOGW("%s role: %s R_AGENT\n", __func__, msg->agentRole == R_AGENT?CSTR(R_AGENT):CSTR(R_PARTNER));
+    if(msg->agentRole == R_AGENT) {
+        static struct rc_pb_scene_detect_attr doa_scene_attr;
+        doa_scene_attr.card_name   = AUDIO_CARD_CHIP_VAD;
+        doa_scene_attr.sample_rate = 48000;
+        doa_scene_attr.channels    = 4;
+        doa_scene_attr.bit_width   = 16;
+        doa_scene_attr.ref_layout  = 0x03;
+        doa_scene_attr.rec_layout  = 0x04;
+        doa_scene_attr.ref_mode    = RC_PB_REF_MODE_SOFT;
+        doa_scene_attr.scene_mode   = RC_PB_SCENE_MODE_DOA;
+        int ret = pbox_rockit_start_scene_detect(&doa_scene_attr);
+        if (ret) {
+            ALOGE("%s fail:%d\n", ret);
+            return;
+        }
+    }
+
+    if (msg->agentRole == R_PARTNER) {
+        ALOGW("role: R_PARTNER\n");
+        audio_prompt_send(PROMPT_DOA_SENCE, true);
+    }
+}
+
 static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
     struct rc_pb_param param;
     static bool powered_reverb = false;
@@ -692,7 +886,7 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
     rc_pb_recorder_set_param(partyboxCtx, index, &param);
 
     if (powered_reverb) {
-        //audio_prompt_send(mode);
+        //audio_prompt_send(mode, false);
     }
     powered_reverb = true;
 }
@@ -750,7 +944,7 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
 
     if (powered_seperate && oldstate!= enable) {
         dest_audio = enable? PROMPT_FADE_ON:PROMPT_FADE_OFF;
-        audio_prompt_send(dest_audio);
+        audio_prompt_send(dest_audio, false);
     }
     oldstate = enable;
     powered_seperate = true;
@@ -998,7 +1192,7 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
     }
 
     if (powered_stereo) {
-        audio_prompt_send(dest_audio);
+        audio_prompt_send(dest_audio, false);
     }
     powered_stereo = true;
 }
@@ -1530,6 +1724,22 @@ static void *pbox_rockit_server(void *arg)
                 pbox_rockit_music_init_tunning_tool(msg);
             } break;
 
+            case PBOX_ROCKIT_GET_SENCE: {
+                pbox_rockit_render_env_sence(msg->scene);
+            } break;
+
+            case PBOX_ROCKIT_START_INOUT_DETECT: {
+                pbox_rockit_start_inout_detect(msg);
+            } break;
+
+            case PBOX_ROCKIT_START_DOA_DETECT: {
+                pbox_rockit_start_doa_detect(msg);
+            } break;
+
+            case PBOX_ROCKIT_STOP_ENV_DETECT: {
+                pbox_rockit_stop_env_detect(msg);
+            } break;
+
             case PBOX_ROCKIT_SET_UAC_STATE: {
                 pbox_rockit_uac_set_state(msg);
             } break;
@@ -1556,10 +1766,13 @@ static void *pbox_rockit_server(void *arg)
 
     pbox_deinit_tuning();
     os_sem_post(rockitCtx.auxplay_stop_sem);
+    os_sem_post(auxplay_looplay_sem);
     os_task_destroy(rockitCtx.auxPlayerTask);
     os_sem_free(rockitCtx.auxplay_stop_sem);
+    os_sem_free(auxplay_looplay_sem);
     rockitCtx.auxPlayerTask = NULL;
     rockitCtx.auxplay_stop_sem = NULL;
+    auxplay_looplay_sem = NULL;
     pbox_rockit_music_destroy();
 }
 

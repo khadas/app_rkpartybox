@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
+#include <errno.h>
 #include "pbox_app.h"
 #include "pbox_multi_echo.h"
 #include "pbox_btsink_app.h"
@@ -42,6 +44,9 @@ pbox_data_t pbox_data = {
     .inputDevice = SRC_CHIP_USB,
 #endif
     .volume_resume_time = -1,
+    .stereo_shake = -1,
+    .inout_shake = -1,
+    .gender_sence = -1,
 };
 
 pbox_data_t *const pboxData  = &(pbox_data);
@@ -1116,4 +1121,38 @@ void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status
 
     if(pboxUIdata->play_status != status)
         pbox_app_drive_passive_player(source, status, policy);
+}
+
+void pbox_app_post_inout_detect(display_t policy) {
+    ALOGW("%s\n", __func__);
+    pbox_app_rockit_start_inout_detect();
+}
+
+void pbox_app_post_stereo_detect(int agent_role) {
+    ALOGW("%s role:%d\n", __func__, agent_role);
+    pbox_app_rockit_start_doa_detect(agent_role);//partner:to play detect tone, agent: to detect left/right
+ }
+
+void pbox_app_post_stop_detect(void) {
+    ALOGW("%s\n", __func__);
+    pbox_app_rockit_stop_env_detect();
+}
+
+void pbox_app_post_get_sence_value(size_t scene) {
+   ALOGW("%s scene:%d\n", __func__, scene);
+   pbox_app_rockit_post_env_sence(scene);
+}
+
+int get_and_clear_inout_shake(void) {
+    int res = pboxData->inout_shake;
+    printf("%s res:%d %s\n", __func__, res, res == INDOOR? CSTR(INDOOR): (res == OUTDOOR? CSTR(OUTDOOR): "invalid"));
+    pboxData->inout_shake = -1;
+    return res;
+}
+
+int get_and_clear_stereo_shake(void) {
+    int res = pboxData->stereo_shake;
+    printf("%s res:%d %s\n", __func__, res, res == DOA_L? CSTR(DOA_L): (res == DOA_R? CSTR(DOA_R): "invalid"));
+    pboxData->stereo_shake = -1;
+    return res;
 }

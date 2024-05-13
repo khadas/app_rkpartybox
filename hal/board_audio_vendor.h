@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+#define AUDIO_CARD_CHIP_VAD       "hw:0,0"
 #define AUDIO_CARD_EXT_BT       "hw:1,0"
 #define AUDIO_CARD_EXT_USB      AUDIO_CARD_EXT_BT
 #define AUDIO_CARD_EXT_AUX      AUDIO_CARD_EXT_BT

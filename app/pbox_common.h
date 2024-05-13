@@ -249,6 +249,30 @@ typedef enum {
     MODE_WIDEN = 2,
 }stereo_mode_t;
 
+typedef enum {
+    ENV_DOA,    //left, right
+    ENV_REVERB, //in, out
+    ENV_GENDER,
+} env_sense_t;
+
+typedef enum {
+    R_PARTNER, //slave
+    R_AGENT,    //master
+    R_TBD,
+} role_tws_t;
+
+typedef enum {
+    GENDER_M,    //left, right
+    GENDER_F, //in, out
+    GENDER_TBD, //other
+} gender_t;
+
+typedef enum {
+    DOA_L,
+    DOA_R,
+    DOA_TBD,//other
+} direction_t;
+
 typedef struct _uac {
     uac_role_t uac_role;
     union {
@@ -263,6 +287,10 @@ typedef struct _uac {
 typedef struct _pbox_pipe {
     int fd[2];
 } pbox_pipe_t;
+
+#define BIT(x) (1<<x)
+#define CSTR(x) (#x)
+#define CVAL(x) CSTR(x)
 
 #define PBOX_ARRAY_SET(array, value, size)	\
 do											\

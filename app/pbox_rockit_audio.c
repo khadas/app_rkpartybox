@@ -27,6 +27,8 @@ extern rc_s32 (*rc_pb_player_start)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb
 extern rc_s32 (*rc_pb_player_stop)(rc_pb_ctx, enum rc_pb_play_src);
 extern rc_s32 (*rc_pb_player_dequeue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
 extern rc_s32 (*rc_pb_player_queue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
+extern os_sem_t* auxplay_looplay_sem;
+extern bool is_prompt_loop_playing;
 
 static void dump_out_data(const void* buffer,size_t bytes, int size)
 {
@@ -181,7 +183,7 @@ const char* prompt_file[PROMPT_NUM] = {
     "/oem/Split_off.pcm"
 };
 
-void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
+void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     int32_t size = 0;
     FILE *file = NULL;
     struct rc_pb_player_attr attr;
@@ -218,21 +220,30 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
     //ALOGD("%s file:%s\n", __func__, prompt_file[index]);
     rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
 
+    is_prompt_loop_playing = loop;
     while (true) {
+        if(os_sem_trywait(auxplay_looplay_sem) == 0) {
+            loop = 0;
+            frame_info.size = 0;
+            is_prompt_loop_playing = 0;
+            break;
+        }
         rc_pb_player_dequeue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
                                     &frame_info, -1);
         memset(frame_info.data, 0, READ_SIZE);
         size = fread(frame_info.data, 1, READ_SIZE, file);
         if (size <= 0) {
             ALOGW("eof\n");
-            frame_info.size = 0;
-            rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
-                                        &frame_info, -1);
-            //fseek(file, 0, SEEK_SET);
-            fclose(file);
-            //loop = false;
-            break;
-        };
+            if(loop) {
+                fseek(file, 0, SEEK_SET);
+            } else {
+                frame_info.size = 0;
+                rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
+                                            &frame_info, -1);
+                fclose(file);
+                break;
+            }
+        }
         frame_info.sample_rate = 48000;
         frame_info.channels = 2;
         frame_info.bit_width = 16;
@@ -247,10 +258,9 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index) {
 void* pbox_rockit_aux_player_routine(void *arg) {
     //os_task_t *task = (os_task_t *)arg;
     struct rockit_pbx_t *ctx = arg;
-
     rc_pb_ctx *ptrboxCtx;
     int table[5];
-    bool loop = true;
+    bool loop;
     int fd;
 
     ALOGD("hello %s\n", __func__);
@@ -295,7 +305,10 @@ void* pbox_rockit_aux_player_routine(void *arg) {
         stashCount = stashCount / sizeof(int);
         assert(stashCount > 0);
 
-        ALOGD("%s total:%d, last = %d\n", __func__, stashCount, (prompt_audio_t)table[stashCount - 1]);
-        audio_sound_prompt(ptrboxCtx, (prompt_audio_t)table[stashCount - 1]);
+        result = table[stashCount - 1];
+        loop = (result < 0)? true:false;
+
+        ALOGD("%s total:%d, last = %d, loop:%d\n", __func__, stashCount, (prompt_audio_t)result&(~(int)0 >> 1), loop);
+        audio_sound_prompt(ptrboxCtx, result&(~(int)0 >> 1), loop);
     }
 }

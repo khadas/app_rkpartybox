@@ -326,6 +326,44 @@ void pbox_app_rockit_init_tunning(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+void pbox_app_rockit_post_env_sence(size_t scenes) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_GET_SENCE,
+        .scene = scenes,
+    };
+
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_start_inout_detect(void) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_START_INOUT_DETECT,
+    };
+
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+//left, right
+void pbox_app_rockit_start_doa_detect(int agent_role) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_START_DOA_DETECT,
+        .agentRole = agent_role,
+    };
+
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_stop_env_detect(void) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_STOP_ENV_DETECT,
+    };
+
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
 void pbox_app_rockit_set_uac_state(uac_role_t role, bool start) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
@@ -379,6 +417,23 @@ void pbox_app_rockit_set_ppm(uac_role_t role, int32_t ppm) {
     msg.uac.uac_role = role;
     msg.uac.ppm = ppm;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_handle_env_sences(struct _sense_res sense_res) {
+    uint32_t scene = sense_res.scene;
+    ALOGW("%s %s result:%d", __func__, scene==ENV_DOA?CSTR(ENV_DOA):(scene==ENV_REVERB?CSTR(ENV_REVERB):CSTR(ENV_GENDER)), sense_res.result);
+
+    switch (scene) {
+        case ENV_DOA: {
+            pboxData->stereo_shake = sense_res.result;
+        } break;
+        case ENV_REVERB: {
+            pboxData->inout_shake = sense_res.result;
+        } break;
+        case ENV_GENDER: {
+            pboxData->gender_sence = sense_res.result;
+        } break;
+    }
 }
 
 int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
@@ -436,6 +491,10 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
         } break;
         case PBOX_ROCKIT_PLAY_ERROR_EVT: {
             music_position = 0;
+        } break;
+
+        case PBOX_ROCKIT_ENV_SENCE_EVT: {
+            pbox_app_handle_env_sences(msg->sence_res);
         } break;
 
         case PBOX_ROCKIT_AWAKEN_EVT: {

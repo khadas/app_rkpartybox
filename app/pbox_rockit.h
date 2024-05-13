@@ -34,6 +34,10 @@ typedef enum {
     PBOX_ROCKIT_SET_OUTDOOR_MODE,
     PBOX_ROCKIT_SET_PLACEMENT_MODE,
     PBOX_ROCKIT_SET_TUNNING_TOOL,
+    PBOX_ROCKIT_GET_SENCE,
+    PBOX_ROCKIT_START_INOUT_DETECT,
+    PBOX_ROCKIT_START_DOA_DETECT,
+    PBOX_ROCKIT_STOP_ENV_DETECT,
     PBOX_ROCKIT_SET_UAC_STATE,
     PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
     PBOX_ROCKIT_SET_UAC_VOLUME,//30
@@ -49,6 +53,7 @@ typedef enum {
     PBOX_ROCKIT_PLAY_COMPLETED_EVT,
     PBOX_ROCKIT_PLAY_ERROR_EVT,
     PBOX_ROCKIT_AWAKEN_EVT,
+    PBOX_ROCKIT_ENV_SENCE_EVT,
 } pbox_rockit_opcode_t;
 
 typedef struct {
@@ -79,7 +84,13 @@ typedef struct {
                 float volume;
             };
         } wake_up;
+        struct _sense_res {
+            size_t scene;
+            uint32_t result;
+        } sence_res;
         uint32_t duration;
+        size_t scene;
+        uint32_t agentRole;
         energy_info_t energy_data;
         uac_t uac;
     };

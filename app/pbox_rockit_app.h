@@ -61,6 +61,16 @@ void pbox_app_rockit_get_recoder_volume(void);
 
 void pbox_app_rockit_init_tunning(void);
 
+void pbox_app_rockit_post_env_sence(size_t scenes);
+
+void pbox_app_rockit_start_inout_detect(void);
+//left, right
+void pbox_app_rockit_start_doa_detect(int agent_role);
+
+void pbox_app_rockit_start_doa_detect(int agent_role);
+
+void pbox_app_rockit_stop_env_detect(void);
+
 void pbox_app_rockit_set_uac_state(uac_role_t role, bool start);
 
 void pbox_app_rockit_set_uac_freq(uac_role_t role, uint32_t freq);
