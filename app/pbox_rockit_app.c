@@ -198,6 +198,18 @@ void pbox_app_rockit_set_music_volume(input_source_t source, float volume) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+
+void pbox_app_rockit_play_notice_number(uint32_t number) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_NOTICE_NUMBER,
+    };
+
+    msg.number = number;
+    ALOGD("%s :%d\n", __func__, msg.number);
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
 void pbox_app_rockit_get_music_volume(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
@@ -208,17 +220,14 @@ void pbox_app_rockit_get_music_volume(input_source_t source) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_set_player_seperate(input_source_t source, bool enable , uint32_t hlevel, uint32_t alevel, uint32_t rlevel) {
+void pbox_app_rockit_set_player_seperate(input_source_t source, pbox_vocal_t vocal) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_PLAYER_SEPERATE,
         .source = source,
     };
 
-    msg.vocalSeperate.enable = enable;
-    msg.vocalSeperate.humanLevel = hlevel;
-    msg.vocalSeperate.accomLevel = alevel;
-    msg.vocalSeperate.reservLevel = rlevel;
+    msg.vocalSeperate = vocal;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 

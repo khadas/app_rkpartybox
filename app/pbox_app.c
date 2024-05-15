@@ -26,6 +26,7 @@ pbox_data_t pbox_data = {
         #endif
         .reservLevel = 100,
         .vocalSplit = false,
+        .vocallib = true,
         .play_status = IDLE,
         .play_status_prev = IDLE,
         .autoSource = true,
@@ -582,18 +583,53 @@ void pbox_app_music_album_next(bool next, display_t policy)
     }
 }
 
-int nomal_mode_volume = 0;
+void pbox_app_switch_vocal_lib(bool vocalib) {
+    pbox_vocal_t vocal = {
+        .enable = pboxUIdata->vocalSplit,
+        .humanLevel = pboxUIdata->humanLevel,
+        .accomLevel = pboxUIdata->accomLevel,
+        .reservLevel = pboxUIdata->reservLevel,
+        .vocallib = 0,
+    };
+
+    if (vocalib == true) {
+        vocal.vocallib = 1;
+    } else {
+        vocal.vocallib = 2;
+    }
+
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
+    //pbox_app_echo_vocal_lib(vocalib);
+}
 
 void pbox_app_music_original_singer_open(bool orignal, display_t policy)
 {
-    bool seperate = !orignal;
-    uint32_t hlevel = pboxUIdata->humanLevel;
-    uint32_t alevel = pboxUIdata->accomLevel;
-    uint32_t rlevel = pboxUIdata->reservLevel;
+    pbox_vocal_t vocal = {
+        .enable = !orignal,
+        .humanLevel = pboxUIdata->humanLevel,
+        .accomLevel = pboxUIdata->accomLevel,
+        .reservLevel = pboxUIdata->reservLevel,
+        .vocallib = 0,
+    };
 
     pboxUIdata->vocalSplit = !orignal;
-    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate , hlevel, alevel, rlevel);
-    pbox_multi_echoVocalFadeoutSwitch(seperate , hlevel, alevel, rlevel, policy);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
+    pbox_multi_echoVocalFadeoutSwitch(vocal.enable , vocal.humanLevel, vocal.accomLevel, vocal.reservLevel, policy);
+}
+
+void pbox_app_music_vocal_seperate_open(bool seperate, display_t policy)
+{
+    pbox_vocal_t vocal = {
+        .enable = seperate,
+        .humanLevel = pboxUIdata->humanLevel,
+        .accomLevel = pboxUIdata->accomLevel,
+        .reservLevel = pboxUIdata->reservLevel,
+        .vocallib = 0,
+    };
+
+    pboxUIdata->vocalSplit = seperate;
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
+    pbox_multi_echoVocalFadeoutSwitch(vocal.enable , vocal.humanLevel, vocal.accomLevel, vocal.reservLevel, policy);
 }
 
 //album mode: shuffle, sequence, repeat, repeat one.....
@@ -664,7 +700,7 @@ void pbox_app_music_set_mic_mux(uint8_t index, mic_mux_t mux, display_t policy) 
     if(index >= MIC_NUM)
         return;
     pboxUIdata->micData[index].micMux = mux;
-    pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUX, pboxUIdata->micData[index]);
+    //pbox_app_rockit_set_mic_data(index, MIC_SET_DEST_MUX, pboxUIdata->micData[index]);
     pbox_multi_echoMicMux(index, mux, policy);
 }
 
@@ -693,41 +729,52 @@ void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy
 }
 
 void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
-    //uint32_t alevel = pboxUIdata->accomLevel;
-    uint32_t hlevel = pboxUIdata->humanLevel;
-    uint32_t rlevel = pboxUIdata->reservLevel;
-    bool seperate = pboxUIdata->vocalSplit;
-
-    ALOGD("%s hlevel: %d, alevel: %d, seperate:%d\n", __func__, hlevel, volume, seperate);
+    pbox_vocal_t vocal = {
+        .enable = pboxUIdata->vocalSplit,
+        .humanLevel = pboxUIdata->humanLevel,
+        .accomLevel = volume,
+        .reservLevel = pboxUIdata->reservLevel,
+        .vocallib = 0,
+    };
     pboxUIdata->accomLevel = volume;
-    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, volume, rlevel);
+
+    ALOGD("%s alevel: %d, seperate:%d\n", __func__, volume, vocal.enable);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
 
     pbox_multi_echoAccompMusicLevel(volume, policy);
 }
 
+void pbox_app_music_play_notice_number(uint8_t number, display_t policy) {
+    pbox_app_rockit_play_notice_number(number);
+}
+
 void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy) {
-    uint32_t alevel = pboxUIdata->accomLevel;
-    //uint32_t hlevel = pboxUIdata->humanLevel;
-    uint32_t rlevel = pboxUIdata->reservLevel;
-    bool seperate = pboxUIdata->vocalSplit;
-
-    ALOGD("%s hlevel: %d, alevel: %d, seperate:%d\n", __func__, volume, alevel, seperate);
+    pbox_vocal_t vocal = {
+        .enable = pboxUIdata->vocalSplit,
+        .humanLevel = volume,
+        .accomLevel = pboxUIdata->accomLevel,
+        .reservLevel = pboxUIdata->reservLevel,
+        .vocallib = 0,
+    };
     pboxUIdata->humanLevel = volume;
-    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, volume, alevel, rlevel);
 
+    ALOGD("%s hlevel: %d, seperate:%d\n", __func__, volume, pboxUIdata->vocalSplit);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
     pbox_multi_echoHumanMusicLevel(volume, policy);
 }
 
 void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
-    uint32_t alevel = pboxUIdata->accomLevel;
-    uint32_t hlevel = pboxUIdata->humanLevel;
-    //uint32_t rlevel = pboxUIdata->reservLevel;
-    bool seperate = pboxUIdata->vocalSplit;
-
-    ALOGD("%s hlevel: %d, alevel: %d, rlevel:%d, seperate:%d\n", __func__, hlevel, alevel, volume, seperate);
+    pbox_vocal_t vocal = {
+        .enable = pboxUIdata->vocalSplit,
+        .humanLevel = pboxUIdata->humanLevel,
+        .accomLevel = pboxUIdata->accomLevel,
+        .reservLevel = volume,
+        .vocallib = 0,
+    };
     pboxUIdata->reservLevel = volume;
-    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, seperate, hlevel, alevel, volume);
 
+    ALOGD("%s rlevel:%d, seperate:%d\n", __func__, volume, pboxUIdata->vocalSplit);
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
     pbox_multi_echoReservLevel(volume, policy);
 }
 
@@ -825,6 +872,69 @@ void pbox_app_music_volume_down(display_t policy) {
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
+}
+
+int vocal_table[] = {5, 100}; //keep the last as max value
+void pbox_app_music_human_vocal_level_cycle(display_t policy) {
+    static uint8_t vocal = 0;
+    uint8_t id = 0;
+    int table_size = sizeof(vocal_table)/sizeof(int);
+
+    if(pboxUIdata->vocalSplit == false) {
+        id = sizeof(vocal_table)/sizeof(int) - 1;
+    } else {
+        for (int i = 0; i < table_size; i++) {
+            if(vocal_table[i] == vocal) {
+                id = i;
+                break;
+            }
+        }
+    }
+
+    id = (id + 1)%table_size;
+    pboxUIdata->reservLevel = pboxUIdata->humanLevel = vocal = vocal_table[id];
+
+    //pboxUIdata->reservLevel = 100;
+    if(id == 0) {
+        pbox_app_music_vocal_seperate_open(true, policy);
+    } else if (id == (table_size-1)) {
+        pbox_app_music_vocal_seperate_open(false, policy);
+    } else {
+        pbox_app_music_set_human_music_level(vocal_table[id], policy);
+        pbox_app_music_play_notice_number(id, policy);
+    }
+}
+
+int guitar_table[] = {0, 100};
+void pbox_app_music_guitar_vocal_level_cycle(display_t policy) {
+    static uint8_t guitar = 0;
+    uint8_t id = 0;
+    int table_size = sizeof(guitar_table)/sizeof(int);
+
+    if(pboxUIdata->vocalSplit == false) {
+        id = sizeof(guitar_table)/sizeof(int) - 1;
+    } else {
+        int table_size = sizeof(guitar_table)/sizeof(int);
+        for (int i = 0; i < table_size; i++) {
+            if(guitar_table[i] == guitar) {
+                id = i;
+                break;
+            }
+        }
+    }
+
+    id = (id + 1)%table_size;
+    pboxUIdata->humanLevel = pboxUIdata->reservLevel = guitar = guitar_table[id];
+
+    //pboxUIdata->humanLevel = 100;
+    if(id == 0) {
+        pbox_app_music_vocal_seperate_open(true, policy);
+    } else if (id == (table_size-1)) {
+        pbox_app_music_vocal_seperate_open(false, policy);
+    } else {
+        pbox_app_music_set_human_music_level(guitar_table[id], policy);
+        pbox_app_music_play_notice_number(id, policy);
+    }
 }
 
 void pbox_version_print(void) {

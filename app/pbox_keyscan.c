@@ -107,6 +107,7 @@ int adckey_read(int fd) {
     }
 
     //ALOGD("%s fd:%d buff:%s keyValue=%d\n", __func__, fd, buff, value);
+    if(value > MAX_SARA_ADC) value = MAX_SARA_ADC;
     return value;
 }
 
@@ -326,7 +327,7 @@ void *pbox_KeyEvent_send(void * arg) {
             }
 
             if(new != saraSample[i]) {
-                if(abs(new - saraSample[i]) > 20) {
+                if(abs(new - saraSample[i]) > 30) {
                     notify = true;
                     ALOGD("%s %d [%d->%d]\n", __func__, __LINE__, saraSample[i], new);
                 }

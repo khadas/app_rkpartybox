@@ -27,11 +27,17 @@ fi
 if [ ! -e /oem/config_gender_detect.json ]; then
 	ln -s /etc/pbox/config_gender_detect.json /oem/config_gender_detect.json
 fi
-if [ ! -e /oem/Split_off.pcm ]; then
-	ln -s /etc/pbox/Split_off.pcm /oem/Split_off.pcm
+if [ ! -e /oem/vocal_off.pcm ]; then
+	ln -s /etc/pbox/vocal_off.pcm /oem/vocal_off.pcm
 fi
-if [ ! -e /oem/Split_on.pcm ]; then
-	ln -s /etc/pbox/Split_on.pcm /oem/Split_on.pcm
+if [ ! -e /oem/vocal_on.pcm ]; then
+	ln -s /etc/pbox/vocal_on.pcm /oem/vocal_on.pcm
+fi
+if [ ! -e /oem/guitar_off.pcm ]; then
+	ln -s /etc/pbox/guitar_off.pcm /oem/guitar_off.pcm
+fi
+if [ ! -e /oem/guitar_on.pcm ]; then
+	ln -s /etc/pbox/guitar_on.pcm /oem/guitar_on.pcm
 fi
 if [ ! -e /oem/Stereo.pcm ]; then
 	ln -s /etc/pbox/Stereo.pcm /oem/Stereo.pcm
@@ -44,6 +50,33 @@ if [ ! -e /oem/Mono.pcm ]; then
 fi
 if [ ! -e /oem/Sense.pcm ]; then
 	ln -s /etc/pbox/Sense.pcm /oem/Sense.pcm
+fi
+if [ ! -e /oem/doa.pcm ]; then
+	ln -s /etc/pbox/doa.pcm /oem/doa.pcm
+fi
+if [ ! -e /oem/antifeedback_off.pcm ]; then
+	ln -s /etc/pbox/antifeedback_off.pcm /oem/antifeedback_off.pcm
+fi
+if [ ! -e /oem/antifeedback_on.pcm ]; then
+	ln -s /etc/pbox/antifeedback_on.pcm /oem/antifeedback_on.pcm
+fi
+if [ ! -e /oem/zero.pcm ]; then
+	ln -s /etc/pbox/zero.pcm /oem/zero.pcm
+fi
+if [ ! -e /oem/one.pcm ]; then
+	ln -s /etc/pbox/one.pcm /oem/one.pcm
+fi
+if [ ! -e /oem/two.pcm ]; then
+	ln -s /etc/pbox/two.pcm /oem/two.pcm
+fi
+if [ ! -e /oem/three.pcm ]; then
+	ln -s /etc/pbox/three.pcm /oem/three.pcm
+fi
+if [ ! -e /oem/four.pcm ]; then
+	ln -s /etc/pbox/four.pcm /oem/four.pcm
+fi
+if [ ! -e /oem/five.pcm ]; then
+	ln -s /etc/pbox/five.pcm /oem/five.pcm
 fi
 if [ ! -e /oem/rkstudio.bin ]; then
     ln -s /etc/pbox/rkstudio.bin /oem/rkstudio.bin

@@ -36,6 +36,11 @@ static int pbox_app_knob_set_mic2_treble(float);
 static int pbox_app_knob_set_mic2_reverb(float);
 static int pbox_app_knob_set_mic1_volume(float);
 static int pbox_app_knob_set_mic2_volume(float);
+static int pbox_app_key_switch_vocal_level(float);
+static int pbox_app_key_switch_guitar_level(float);
+static int pbox_app_key_switch_vocal_or_guitar(float);
+static int pbox_app_key_switch_vocal_sperate(float);
+
 const struct dot_key support_keys [] =
 {
     /*key           keyb    press_type vaild comb    func                */
@@ -137,6 +142,24 @@ int pbox_app_key_set_volume_down(float reserved)
     return 1;
 }
 
+static bool vocal = 1;
+int pbox_app_key_switch_vocal_or_guitar(float reserved) {
+    ALOGD("---%s %u=====!\n", __func__, vocal);
+    vocal = !vocal;
+    pbox_app_switch_vocal_lib(vocal);
+}
+
+int pbox_app_key_switch_vocal_sperate(float reserved) {
+    if(vocal)
+        pbox_app_music_human_vocal_level_cycle(DISP_All);
+    else
+        pbox_app_music_guitar_vocal_level_cycle(DISP_All);
+}
+
+int pbox_app_key_switch_guitar_level(float reserved) {
+    pbox_app_music_guitar_vocal_level_cycle(DISP_All);
+}
+
 int pbox_app_key_set_mic(float reserved)
 {
     ALOGD("pbox_app_key_set_mic =====!\n");
@@ -148,11 +171,13 @@ int pbox_app_key_set_mic(float reserved)
 }
 
 int pbox_app_key_set_echo_3a(float reserved) {
-    ALOGD("pbox_app_key_set_echo_3a =====!\n");
-    if (pboxUIdata->micData[0].echo3a)
-        pbox_app_music_set_echo_3a(0, false, DISP_All);
-    else
-        pbox_app_music_set_echo_3a(0, true, DISP_All);
+    ALOGD("%s now:%d=====!\n", __func__, pboxUIdata->micData[0].echo3a);
+    for(int i = 0; i < MIC_NUM; i++) {
+        if (pboxUIdata->micData[0].echo3a)
+            pbox_app_music_set_echo_3a(i, false, DISP_All);
+        else
+            pbox_app_music_set_echo_3a(i, true, DISP_All);
+    }
     return 0;
 }
 

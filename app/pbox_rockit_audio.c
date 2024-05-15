@@ -181,13 +181,23 @@ struct _audio_file {
   uint32_t sampleFreq;
   uint32_t channels;
 } prompt_File[PROMPT_NUM] = {
-    {"/oem/Stereo.pcm",     48000, 2},
-    {"/oem/Mono.pcm",       48000, 2},
-    {"/oem/Widen.pcm",      48000, 2},
-    {"/oem/Split_on.pcm",   48000, 2},
-    {"/oem/Split_off.pcm",  48000, 2},
-    {"/oem/Sense.pcm",      48000, 2},
-    {"/oem/Sense.pcm",      48000, 2},
+    {"/oem/Stereo.pcm",             16000, 2},
+    {"/oem/Mono.pcm",               16000, 2},
+    {"/oem/Widen.pcm",              16000, 2},
+    {"/oem/vocal_on.pcm",           16000, 2},
+    {"/oem/vocal_off.pcm",          16000, 2},
+    {"/oem/guitar_on.pcm",    16000, 2},
+    {"/oem/guitar_off.pcm",   16000, 2},
+    {"/oem/Sense.pcm",              16000, 2},
+    {"/oem/doa.pcm",                16000, 2},
+    {"/oem/antifeedback_on.pcm",    16000, 2},
+    {"/oem/antifeedback_off.pcm",   16000, 2},
+    {"/oem/zero.pcm",          16000, 2},
+    {"/oem/one.pcm",           16000, 2},
+    {"/oem/two.pcm",           16000, 2},
+    {"/oem/three.pcm",         16000, 2},
+    {"/oem/four.pcm",          16000, 2},
+    {"/oem/five.pcm",          16000, 2},
 };
 
 void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
@@ -200,7 +210,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     memset(&attr, 0, sizeof(attr));
     attr.bit_width = 16;
     attr.channels = 2;
-    attr.sample_rate = 48000;
+    attr.sample_rate = 16000;
     attr.pool_size = READ_SIZE;
     attr.pool_cnt = 1;
     attr.detect.rms_tc = 200;
@@ -254,7 +264,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
                 break;
             }
         }
-        frame_info.sample_rate = prompt_File[index].sampleFreq;
+        frame_info.sample_rate = 16000;//prompt_File[index].sampleFreq;
         frame_info.channels = prompt_File[index].channels;
         frame_info.bit_width = 16;
         frame_info.size = size;

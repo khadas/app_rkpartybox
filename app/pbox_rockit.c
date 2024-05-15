@@ -838,6 +838,12 @@ static void pbox_rockit_render_env_sence(int scenes) {
     }
 }
 
+static void pbox_rockit_start_play_notice_number(pbox_rockit_msg_t *msg) {
+    uint32_t num = msg->number;
+    num += PROMPT_DIGIT_ZERO;
+    audio_prompt_send(num, false);
+}
+
 static void pbox_rockit_stop_env_detect(pbox_rockit_msg_t *msg) {
     assert(partyboxCtx);
     assert(rc_pb_scene_detect_stop);
@@ -976,6 +982,7 @@ static void pbox_rockit_music_echo_reduction(uint8_t index, bool echo3a) {
     int ret;
     struct rc_pb_param param;
     bool on = echo3a;
+    static bool powered_3aecho = false;
 
     assert(rc_pb_recorder_set_param);
     assert(partyboxCtx);
@@ -984,13 +991,21 @@ static void pbox_rockit_music_echo_reduction(uint8_t index, bool echo3a) {
     param.howling.bypass = !on;
     ret = rc_pb_recorder_set_param(partyboxCtx, index, &param);
     ALOGD("%s rc_pb_recorder_set_param 3a:%s res:%d\n" ,__func__, on?"on":"off", ret);
+
+    if (powered_3aecho) {
+        audio_prompt_send(echo3a? PROMPT_ANTI_BACK_ON:PROMPT_ANTI_BACK_OFF, false);
+    }
+    powered_3aecho = true;
+
 }
 
 static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t vocal) {
+    static int vocal_or_guitar = 1;
     bool enable = vocal.enable;
     uint32_t hLevel = vocal.humanLevel;
     uint32_t aLevel = vocal.accomLevel;
     uint32_t rLevel = vocal.reservLevel;
+    uint32_t vocallib = vocal.vocallib;
     struct rc_pb_param param;
     enum rc_pb_play_src dest = covert2rockitSource(source);
     static bool powered_seperate = false;
@@ -1020,11 +1035,25 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
     param.vocal.human_level = hLevel;
     param.vocal.other_level = aLevel;
     param.vocal.reserve_level[0] = rLevel;
+
+    if(vocallib == 1) {
+        vocal_or_guitar = 1;
+        param.vocal.lib_name = "librkaudio_effect_vocal.so";
+    } else if(vocallib == 2) {
+        vocal_or_guitar = 2;
+        param.vocal.lib_name = "librkaudio_effect_guitar.so";
+    } else {
+        param.vocal.lib_name = NULL;
+    }
+
     ret = rc_pb_player_set_param(partyboxCtx, dest, &param);
     ALOGD("%s rc_pb_player_set_param res:%d\n" ,__func__, ret);
 
-    if (powered_seperate && oldstate!= enable) {
-        dest_audio = enable? PROMPT_FADE_ON:PROMPT_FADE_OFF;
+    if ((powered_seperate && oldstate!= enable) || vocallib) {
+        if (vocal_or_guitar == 2)
+            dest_audio = enable? PROMPT_GUITAR_FADE_ON:PROMPT_GUITAR_FADE_OFF;
+        else
+            dest_audio = enable? PROMPT_FADE_ON:PROMPT_FADE_OFF;
         audio_prompt_send(dest_audio, false);
     }
     oldstate = enable;
@@ -1442,9 +1471,10 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
         __func__, index, kind, micMux, micVolume, micTreble, micBass, micReverb);
 
     if (MIC_SET_DEST_ALL == kind) {
+        pbox_rockit_music_echo_reduction(index, echo3a);
+        return;
         pbox_rockit_music_mic_mute(index, micmute);
         //pbox_rockit_music_mic_mute(index, micMux == MIC_OFF? true: false);
-        pbox_rockit_music_echo_reduction(index, echo3a);
         pbox_rockit_music_mic_volume_adjust(index, micVolume);
         pbox_rockit_set_mic_treble(index, micTreble);
         pbox_rockit_set_mic_bass(index, micBass);
@@ -1452,6 +1482,9 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
         pbox_rockit_music_reverb_mode(index, reverbMode);//keep it after pbox_rockit_set_mic_reverb.
         return;
     }
+
+    if (kind != MIC_SET_DEST_ECHO_3A)
+        return;
 
     switch(kind) {
         case MIC_SET_DEST_ECHO_3A: {
@@ -1821,6 +1854,9 @@ static void *pbox_rockit_server(void *arg)
                 pbox_rockit_stop_env_detect(msg);
             } break;
 
+            case PBOX_ROCKIT_NOTICE_NUMBER: {
+                pbox_rockit_start_play_notice_number(msg);
+            } break;
             case PBOX_ROCKIT_SET_UAC_STATE: {
                 pbox_rockit_uac_set_state(msg);
             } break;

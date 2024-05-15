@@ -38,9 +38,10 @@ typedef enum {
     PBOX_ROCKIT_START_INOUT_DETECT,
     PBOX_ROCKIT_START_DOA_DETECT,//30
     PBOX_ROCKIT_STOP_ENV_DETECT,
+    PBOX_ROCKIT_NOTICE_NUMBER,
     PBOX_ROCKIT_SET_UAC_STATE,
     PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
-    PBOX_ROCKIT_SET_UAC_VOLUME,//34
+    PBOX_ROCKIT_SET_UAC_VOLUME,//35
     PBOX_ROCKIT_SET_UAC_MUTE,
     PBOX_ROCKIT_SET_UAC_PPM,
 
@@ -88,6 +89,7 @@ typedef struct {
             size_t scene;
             uint32_t result;
         } sence_res;
+        uint32_t number;
         uint32_t duration;
         size_t scene;
         uint32_t agentRole;
