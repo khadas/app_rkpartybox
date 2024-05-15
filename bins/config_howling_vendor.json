@@ -15,7 +15,8 @@
 			"imsd_len" : 6,
 			"persist_frame" : 3,
 			"detect_frame" : 3,
-			"sfreq_num" : 20
+			"sfreq_num" : 20,
+			"gain" : -10
 		},
 		"shift" : {
 			"status" : "enable",
@@ -36,6 +37,7 @@
 			"jump_len" : 3,
 			"start_freq" : 1000,
 			"end_freq" : 1000,
+			"adapt_rate" : 0.15,
 			"auto_adapted" :0,
 			"dual_filter" : 0
 		},

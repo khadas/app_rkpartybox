@@ -110,7 +110,7 @@ enum rc_pb_scene_detect_mode {
     RC_PB_SCENE_MODE_REVERB = 1 << 1,
     RC_PB_SCENE_MODE_GENDER = 1 << 2
 };
-
+/*
 enum rc_pb_scene_reverb {
     RC_PB_SCENE_REVERB_INDOOR = 0,
     RC_PB_SCENE_REVERB_OUTDOOR
@@ -127,7 +127,7 @@ enum rc_pb_scene_doa {
     RC_PB_SCENE_DOA_RIGHT,
     RC_PB_SCENE_DOA_OTHER
 };
-
+*/
 struct rc_pb_param_howling {
     rc_bool bypass;
 };

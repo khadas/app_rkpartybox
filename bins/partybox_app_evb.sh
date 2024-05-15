@@ -94,6 +94,7 @@ export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
 export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
 export rt_cfg_path_rkstudio=/oem/rkstudio.bin
 export rt_response_path=/oem/wozai-48k2ch.pcm
+export ref_player_only=0
 export mic_gain_0=5
 export mic_gain_1=5
 export player_gain_0=0

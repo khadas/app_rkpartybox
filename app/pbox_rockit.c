@@ -693,15 +693,15 @@ bool is_env_sensed_value_available(int env, float value) {
     bool result = false;
     switch(env) {
         case ENV_REVERB:{
-            if(value >  0)
+            if(value > 0)
                 result = true;
         } break;
         case ENV_DOA:{
-            if(value >=0 && value <=  RC_PB_SCENE_DOA_OTHER)
+            if(value > 0)
                 result = true;
         } break;
         case ENV_GENDER:{
-            if(value >=0 && value <=  RC_PB_SCENE_GENDER_OTHER)
+            if(value >= 0)
                 result = true;
         } break;
     }
@@ -722,18 +722,13 @@ int convert_sensed_value_to_upper_space(int env, float value) {
             }*/
         } break;
         case ENV_DOA:{
-            switch((int)value) {
-                case RC_PB_SCENE_DOA_LEFT: return DOA_L;
-                case RC_PB_SCENE_DOA_RIGHT: return DOA_R;
-                case RC_PB_SCENE_DOA_OTHER: return DOA_TBD;
-            }
+            if (value > 90)
+                return DOA_L;
+            else
+                return DOA_R;
         } break;
         case ENV_GENDER:{
-            switch((int)value) {
-                case RC_PB_SCENE_GENDER_MALE: return GENDER_M;
-                case RC_PB_SCENE_GENDER_FEMALE: return GENDER_F;
-                case RC_PB_SCENE_GENDER_OTHER: return GENDER_TBD;
-            }
+
         } break;
     }
 }
@@ -831,7 +826,7 @@ static void pbox_rockit_render_env_sence(int scenes) {
         param.scene.scene_mode = RC_PB_SCENE_MODE_GENDER;
         ret = rc_pb_player_get_param(partyboxCtx, SRC_EXT_BT, &param);//tmp source
         if (!ret) {
-            ALOGW("doa:%d\n", __func__, param.scene.result);
+            ALOGW("%s.................................................. gender:%f\n", __func__, param.scene.result);
             if(is_env_sensed_value_available(ENV_GENDER, param.scene.result))
                 rockit_pbbox_notify_environment_sence(ENV_GENDER, convert_sensed_value_to_upper_space(ENV_GENDER, param.scene.result));
         }
