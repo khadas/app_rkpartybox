@@ -31,6 +31,12 @@ uint64_t os_unix_time_us(void);
     memptr = NULL;              \
 } while(0)
 
+int os_gpio_init(uint32_t gpio);
+int os_gpio_deinit(uint32_t gpio);
+int os_set_gpio_pin_direction(uint32_t gpio, uint32_t direction);
+int os_set_gpio_value(uint32_t gpio, uint32_t value);
+int os_get_gpio_value(uint32_t gpio);
+
 #ifdef __cplusplus
 }
 #endif
