@@ -67,13 +67,13 @@ rc_s32 (*rc_pb_player_release_energy)(rc_pb_ctx ctx, enum rc_pb_play_src src, st
 rc_s32 (*rc_pb_recorder_start)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_recorder_stop)(rc_pb_ctx ctx);
 
-rc_s32 (*rc_pb_recorder_mute)(rc_pb_ctx ctx, rc_s32 idx, rc_bool mute);
-rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db);
-rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db);
-rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
-rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
-rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms);
-rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms);
+rc_s32 (*rc_pb_recorder_mute)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_bool mute);
+rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_float volume_db);
+rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_float *volume_db);
+rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms);
+rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms);
 rc_s32 (*rc_pb_scene_detect_start)(rc_pb_ctx ctx, struct rc_pb_scene_detect_attr *attr);
 rc_s32 (*rc_pb_scene_detect_stop)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_scene_get_result)(rc_pb_ctx ctx, enum rc_pb_scene_detect_mode mode, rc_float *result);
@@ -247,49 +247,49 @@ int rk_demo_music_create() {
         return -1;
     }
 
-    rc_pb_recorder_mute =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_bool mute))dlsym(mpi_hdl,
+    rc_pb_recorder_mute =  (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_bool mute))dlsym(mpi_hdl,
                                                 "rc_pb_recorder_mute");
     if (NULL == rc_pb_recorder_mute) {
         ALOGE("%s %d failed to open func, err=%s", __func__, __LINE__, dlerror());
         return -1;
     }
 
-    rc_pb_recorder_set_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db))dlsym(mpi_hdl,
+    rc_pb_recorder_set_volume =  (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_float volume_db))dlsym(mpi_hdl,
                                             "rc_pb_recorder_set_volume");
     if (NULL == rc_pb_recorder_set_volume) {
         ALOGE("%s %d failed to open func, err=%s", __func__, __LINE__, dlerror());
         return -1;
     }
 
-    rc_pb_recorder_get_volume =  (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db))dlsym(mpi_hdl,
+    rc_pb_recorder_get_volume =  (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_float *volume_db))dlsym(mpi_hdl,
                                         "rc_pb_recorder_get_volume");
     if (NULL == rc_pb_recorder_get_volume) {
         ALOGE("%s %d failed to open func, err=%s", __func__, __LINE__, dlerror());
         return -1;
     }
 
-    rc_pb_recorder_set_param = (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
+    rc_pb_recorder_set_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_set_param");
     if (NULL == rc_pb_recorder_set_param) {
         ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
-    rc_pb_recorder_get_param = (rc_s32 (*)(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
+    rc_pb_recorder_get_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_get_param");
     if (NULL == rc_pb_recorder_get_param) {
         ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
-    rc_pb_recorder_dequeue_frame = (rc_s32 (*)(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, 
+    rc_pb_recorder_dequeue_frame = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_dequeue_frame");
     if (NULL == rc_pb_recorder_dequeue_frame) {
         ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
-    rc_pb_recorder_queue_frame = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, 
+    rc_pb_recorder_queue_frame = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_queue_frame");
     if (NULL == rc_pb_recorder_queue_frame) {
         ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
@@ -928,7 +928,16 @@ static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
     }
 }
 
-static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
+enum rc_pb_rec_src covert2rockitRecSource(mic_mux_t mux) {
+    switch (mux) {
+        case MIC_IN: return RC_PB_REC_SRC_MIC;
+        case MIC_GT: return RC_PB_REC_SRC_GUITAR;
+        case MIC_OFF: return RC_PB_REC_SRC_MIC;
+    }
+    return RC_PB_REC_SRC_BUTT;
+}
+static void pbox_rockit_music_reverb_mode(uint8_t index, mic_mux_t mux, pbox_revertb_t mode) {
+    enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
     static bool powered_reverb = false;
 
@@ -936,7 +945,9 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
 
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
-    rc_pb_recorder_get_param(partyboxCtx, index, &param);
+
+    if(recs != MIC_IN) return;
+    rc_pb_recorder_get_param(partyboxCtx, recs, index, &param);
 
     switch (mode) {
         case PBOX_REVERT_USER: {
@@ -965,7 +976,7 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
         param.reverb.bypass = true;
     else 
         param.reverb.bypass = false;
-    rc_pb_recorder_set_param(partyboxCtx, index, &param);
+    rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 
     if (powered_reverb) {
         //audio_prompt_send(mode, false);
@@ -973,25 +984,27 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, pbox_revertb_t mode) {
     powered_reverb = true;
 }
 
-static void pbox_rockit_music_echo_reduction(uint8_t index, bool echo3a) {
+static void pbox_rockit_music_echo_reduction(uint8_t index, mic_mux_t mux, bool echo3a) {
     int ret;
     struct rc_pb_param param;
     bool on = echo3a;
     static bool powered_3aecho = false;
+    enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
 
     assert(rc_pb_recorder_set_param);
     assert(partyboxCtx);
 
+    if(recs != MIC_IN) return;
+
     param.type = RC_PB_PARAM_TYPE_3A;
     param.howling.bypass = !on;
-    ret = rc_pb_recorder_set_param(partyboxCtx, index, &param);
+    ret = rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
     ALOGD("%s rc_pb_recorder_set_param 3a:%s res:%d\n" ,__func__, on?"on":"off", ret);
 
     if (powered_3aecho) {
         audio_prompt_send(echo3a? PROMPT_ANTI_BACK_ON:PROMPT_ANTI_BACK_OFF, false);
     }
     powered_3aecho = true;
-
 }
 
 static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t vocal) {
@@ -1357,21 +1370,26 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
     }
 }
 
-static void pbox_rockit_music_mic_volume_adjust(uint8_t index, float micLevel) {
+static void pbox_rockit_music_mic_volume_adjust(uint8_t index, mic_mux_t mux, float micLevel) {
+    enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_volume);
-    rc_pb_recorder_set_volume(partyboxCtx, index, micLevel);
+    rc_pb_recorder_set_volume(partyboxCtx, recs, index, micLevel);
 }
 
-static void pbox_rockit_music_mic_mute(uint8_t index, bool mute) {
+static void pbox_rockit_music_mic_mute(uint8_t index, mic_mux_t mux, bool mute) {
+    enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     ALOGW("%s: ctx:%p func:%p index: %d mute:%s\n", __func__, partyboxCtx, rc_pb_recorder_mute, index, mute?"on":"off");
     assert(partyboxCtx);
     assert(rc_pb_recorder_mute);
-    rc_pb_recorder_mute(partyboxCtx, index, mute);
+
+    if(recs != MIC_IN) return;//???
+    rc_pb_recorder_mute(partyboxCtx, recs, index, mute);
     ALOGW("%s: %s\n", __func__, mute?"on":"off");
 }
 
-static void pbox_rockit_set_mic_treble(uint8_t index, float treble) {
+static void pbox_rockit_set_mic_treble(uint8_t index, mic_mux_t mux, float treble) {
+    enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
     param.type = RC_PB_PARAM_TYPE_EQDRC;
     param.eqdrc.bypass = false;
@@ -1381,6 +1399,7 @@ static void pbox_rockit_set_mic_treble(uint8_t index, float treble) {
     assert(rc_pb_recorder_set_param);
     ALOGD("%s index:%d, treble:%f\n", __func__, index, treble);
 
+    if(recs != MIC_IN) return;
     if (true) {
         static struct rc_pb_param_eq eq;
         eq.ch = index;
@@ -1392,10 +1411,11 @@ static void pbox_rockit_set_mic_treble(uint8_t index, float treble) {
         eq.boost = treble; // tunning
         param.eqdrc.eq = &eq;
     }
-    rc_pb_recorder_set_param(partyboxCtx, index, &param);
+    rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 }
 
-static void pbox_rockit_set_mic_bass(uint8_t index, float bass) {
+static void pbox_rockit_set_mic_bass(uint8_t index, mic_mux_t mux, float bass) {
+    enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
     param.type = RC_PB_PARAM_TYPE_EQDRC;
     param.eqdrc.bypass = false;
@@ -1405,6 +1425,7 @@ static void pbox_rockit_set_mic_bass(uint8_t index, float bass) {
     assert(rc_pb_recorder_set_param);
     ALOGD("%s index:%d, bass:%f\n", __func__, index, bass);
 
+    if(recs != MIC_IN) return;
     if (true) {
         static struct rc_pb_param_eq eq;
         eq.ch = index;
@@ -1416,10 +1437,11 @@ static void pbox_rockit_set_mic_bass(uint8_t index, float bass) {
         eq.boost = bass; // tunning
         param.eqdrc.eq = &eq;
     }
-    rc_pb_recorder_set_param(partyboxCtx, index, &param);
+    rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 }
 
-static void pbox_rockit_set_mic_reverb(uint8_t index, float reverb) {
+static void pbox_rockit_set_mic_reverb(uint8_t index, mic_mux_t mux, float reverb) {
+    enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
     param.type = RC_PB_PARAM_TYPE_REVERB;
 
@@ -1429,7 +1451,9 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, float reverb) {
 
     memset(&param, 0, sizeof(struct rc_pb_param));
     ALOGD("%s index:%d, reverb:%f\n", __func__, index, reverb);
-    rc_pb_recorder_get_param(partyboxCtx, index, &param);
+
+    if(recs != MIC_IN) return;
+    rc_pb_recorder_get_param(partyboxCtx, recs, index, &param);
     ALOGD("%s got type:%d, bypass:%d, dry:%d, wet:%d\n", \
                 __func__, param.type, param.reverb.bypass, param.reverb.dry_level, param.reverb.wet_level);
 
@@ -1447,7 +1471,7 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, float reverb) {
     param.reverb.bypass = false;
     param.reverb.dry_level = 80;
     param.reverb.wet_level = reverb;
-    rc_pb_recorder_set_param(partyboxCtx, index, &param);
+    rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 }
 
 static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
@@ -1466,45 +1490,41 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
         __func__, index, kind, micMux, micVolume, micTreble, micBass, micReverb);
 
     if (MIC_SET_DEST_ALL == kind) {
-        pbox_rockit_music_echo_reduction(index, echo3a);
-        return;
-        pbox_rockit_music_mic_mute(index, micmute);
-        //pbox_rockit_music_mic_mute(index, micMux == MIC_OFF? true: false);
-        pbox_rockit_music_mic_volume_adjust(index, micVolume);
-        pbox_rockit_set_mic_treble(index, micTreble);
-        pbox_rockit_set_mic_bass(index, micBass);
-        pbox_rockit_set_mic_reverb(index, micReverb);
-        pbox_rockit_music_reverb_mode(index, reverbMode);//keep it after pbox_rockit_set_mic_reverb.
+        pbox_rockit_music_echo_reduction(index, micMux, echo3a);
+        pbox_rockit_music_mic_mute(index, micMux, micmute);
+
+        pbox_rockit_music_mic_volume_adjust(index, micMux, micVolume);
+        pbox_rockit_set_mic_treble(index, micMux, micTreble);
+        pbox_rockit_set_mic_bass(index, micMux, micBass);
+        pbox_rockit_set_mic_reverb(index, micMux, micReverb);
+        pbox_rockit_music_reverb_mode(index, micMux, reverbMode);//keep it after pbox_rockit_set_mic_reverb.
         return;
     }
 
-    if (kind != MIC_SET_DEST_ECHO_3A)
-        return;
-
     switch(kind) {
         case MIC_SET_DEST_ECHO_3A: {
-            pbox_rockit_music_echo_reduction(index, echo3a);
+            pbox_rockit_music_echo_reduction(index, micMux, echo3a);
         } break;
         case MIC_SET_DEST_MUTE: {
-            pbox_rockit_music_mic_mute(index, micmute);
+            pbox_rockit_music_mic_mute(index, micMux, micmute);
         } break;
         case MIC_SET_DEST_MUX: {
-            pbox_rockit_music_mic_mute(index, micMux == MIC_OFF? true: false);
+
         } break;
         case MIC_SET_DEST_REVERB_MODE: {
-            pbox_rockit_music_reverb_mode(index, reverbMode);
+            pbox_rockit_music_reverb_mode(index, micMux, reverbMode);
         } break;
         case MIC_SET_DEST_VOLUME: {
-            pbox_rockit_music_mic_volume_adjust(index, micVolume);
+            pbox_rockit_music_mic_volume_adjust(index, micMux, micVolume);
         } break;
         case MIC_SET_DEST_TREBLE: {
-            pbox_rockit_set_mic_treble(index, micTreble);
+            pbox_rockit_set_mic_treble(index, micMux, micTreble);
         } break;
         case MIC_SET_DEST_BASS: {
-            pbox_rockit_set_mic_bass(index, micBass);
+            pbox_rockit_set_mic_bass(index, micMux, micBass);
         } break;
         case MIC_SET_DEST_REVERB: {
-            pbox_rockit_set_mic_reverb(index, micReverb);
+            pbox_rockit_set_mic_reverb(index, micMux, micReverb);
         } break;
         default: break;
     }
@@ -1538,7 +1558,7 @@ static void pbox_rockit_uac_set_volume(pbox_rockit_msg_t *msg) {
         pbox_rockit_music_master_volume_adjust(SRC_CHIP_UAC, volume);
     }
     else if(role == UAC_ROLE_RECORDER) {
-        pbox_rockit_music_mic_volume_adjust(0, volume);
+        pbox_rockit_music_mic_volume_adjust(0, MIC_IN, volume);
     }
 }
 

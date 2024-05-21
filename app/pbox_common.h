@@ -198,9 +198,9 @@ typedef enum {
 } key_press_t;
 
 typedef enum {
-    MIC_OFF = 1,
-    MIC_IN = 2,
-    MIC_GT = 3,
+    MIC_IN,
+    MIC_GT,
+    MIC_OFF,
 }mic_mux_t;
 
 typedef enum {

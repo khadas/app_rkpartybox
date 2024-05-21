@@ -52,15 +52,17 @@ rc_s32 rc_pb_player_release_energy(rc_pb_ctx ctx, enum rc_pb_play_src src, struc
 
 rc_s32 rc_pb_recorder_start(rc_pb_ctx ctx);
 rc_s32 rc_pb_recorder_stop(rc_pb_ctx ctx);
-rc_s32 rc_pb_recorder_mute(rc_pb_ctx ctx, rc_s32 idx, rc_bool mute);
-rc_s32 rc_pb_recorder_set_volume(rc_pb_ctx ctx, rc_s32 idx, rc_float volume_db);
-rc_s32 rc_pb_recorder_get_volume(rc_pb_ctx ctx, rc_s32 idx, rc_float *volume_db);
-rc_s32 rc_pb_recorder_set_param(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
-rc_s32 rc_pb_recorder_get_param(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_param *param);
-rc_s32 rc_pb_recorder_get_energy(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_energy *energy);
-rc_s32 rc_pb_recorder_release_energy(rc_pb_ctx ctx, rc_s32 idx, struct rc_pb_energy *energy);
-rc_s32 rc_pb_recorder_dequeue_frame(rc_pb_ctx ctx,  struct rc_pb_frame_info *frame_info, rc_s32 ms);
-rc_s32 rc_pb_recorder_queue_frame(rc_pb_ctx ctx, struct rc_pb_frame_info *frame_info, rc_s32 ms);
+rc_s32 rc_pb_recorder_mute(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_bool mute);
+rc_s32 rc_pb_recorder_set_volume(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_float volume_db);
+rc_s32 rc_pb_recorder_get_volume(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_float *volume_db);
+rc_s32 rc_pb_recorder_set_param(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 rc_pb_recorder_get_param(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 rc_pb_recorder_get_energy(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_energy *energy);
+rc_s32 rc_pb_recorder_release_energy(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_energy *energy);
+rc_s32 rc_pb_recorder_dequeue_frame(rc_pb_ctx ctx, enum rc_pb_rec_src src,
+                                    struct rc_pb_frame_info *frame_info, rc_s32 ms);
+rc_s32 rc_pb_recorder_queue_frame(rc_pb_ctx ctx, enum rc_pb_rec_src src,
+                                  struct rc_pb_frame_info *frame_info, rc_s32 ms);
 
 rc_s32 rc_pb_scene_detect_start(rc_pb_ctx ctx, struct rc_pb_scene_detect_attr *attr);
 rc_s32 rc_pb_scene_detect_stop(rc_pb_ctx ctx);

@@ -21,8 +21,8 @@
 
 static unsigned int pcm_buffer_time = 160000;
 static unsigned int pcm_period_time =  20000;
-extern rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx, struct rc_pb_frame_info *, rc_s32);
-extern rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx, struct rc_pb_frame_info *, rc_s32);
+extern rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *, rc_s32);
+extern rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *, rc_s32);
 extern rc_s32 (*rc_pb_player_start)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_player_attr *);
 extern rc_s32 (*rc_pb_player_stop)(rc_pb_ctx, enum rc_pb_play_src);
 extern rc_s32 (*rc_pb_player_dequeue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
@@ -91,7 +91,7 @@ void *pbox_rockit_record_routine(void *arg) {
             ALOGW("period_size: %d, byte:%d\n", period_size, period_size*4);
         }
 
-        rc_pb_recorder_dequeue_frame(*ptrboxCtx, &frame_info, -1);
+        rc_pb_recorder_dequeue_frame(*ptrboxCtx, RC_PB_REC_SRC_MIC, &frame_info, -1);
         in_frames = frame_info.size/frame_info.channels/(frame_info.bit_width/8);
         if(frame_info.channels == 1) {
             resample = 1;
@@ -159,13 +159,13 @@ retry_alsa_write:
 
 skip_alsa:
         if(resample) { os_free(buffer);}
-        rc_pb_recorder_queue_frame(*ptrboxCtx, &frame_info, -1);
+        rc_pb_recorder_queue_frame(*ptrboxCtx, RC_PB_REC_SRC_MIC, &frame_info, -1);
         continue;
 
 close_alsa:
         ALOGE("ALSA close_alsa: %d\n", frames);
         if(resample) { os_free(buffer);}
-        rc_pb_recorder_queue_frame(*ptrboxCtx, &frame_info, -1);
+        rc_pb_recorder_queue_frame(*ptrboxCtx, RC_PB_REC_SRC_MIC, &frame_info, -1);
         pcm_close(&pcm_handle);
     }
 

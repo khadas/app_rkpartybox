@@ -48,6 +48,12 @@ enum rc_pb_play_src {
     RC_PB_PLAY_SRC_BUTT
 };
 
+enum rc_pb_rec_src {
+    RC_PB_REC_SRC_MIC = 0,
+    RC_PB_REC_SRC_GUITAR,
+    RC_PB_REC_SRC_BUTT
+};
+
 enum rc_pb_event {
     RC_PB_EVENT_PLAYBACK_ERROR = 0,
     RC_PB_EVENT_PLAYBACK_COMPLETE,
@@ -110,24 +116,7 @@ enum rc_pb_scene_detect_mode {
     RC_PB_SCENE_MODE_REVERB = 1 << 1,
     RC_PB_SCENE_MODE_GENDER = 1 << 2
 };
-/*
-enum rc_pb_scene_reverb {
-    RC_PB_SCENE_REVERB_INDOOR = 0,
-    RC_PB_SCENE_REVERB_OUTDOOR
-};
 
-enum rc_pb_scene_gender {
-    RC_PB_SCENE_GENDER_MALE = 0,
-    RC_PB_SCENE_GENDER_FEMALE,
-    RC_PB_SCENE_GENDER_OTHER
-};
-
-enum rc_pb_scene_doa {
-    RC_PB_SCENE_DOA_LEFT = 0,
-    RC_PB_SCENE_DOA_RIGHT,
-    RC_PB_SCENE_DOA_OTHER
-};
-*/
 struct rc_pb_param_howling {
     rc_bool bypass;
 };
