@@ -159,6 +159,7 @@ struct rc_pb_param_vocal_separate {
     rc_u32  human_level;         /* RW; Range: [0, 100]; */
     rc_u32  other_level;         /* RW; Range: [0, 100]; */
     rc_u32  reserve_level[32];   /* RW; Range: [0, 100]; */
+    const char *lib_name;
 };
 
 struct rc_pb_param_scene_detect {

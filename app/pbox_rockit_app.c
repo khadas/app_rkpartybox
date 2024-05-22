@@ -421,7 +421,7 @@ void pbox_app_rockit_set_ppm(uac_role_t role, int32_t ppm) {
 
 void pbox_app_handle_env_sences(struct _sense_res sense_res) {
     uint32_t scene = sense_res.scene;
-    ALOGW("%s %s result:%d", __func__, scene==ENV_DOA?CSTR(ENV_DOA):(scene==ENV_REVERB?CSTR(ENV_REVERB):CSTR(ENV_GENDER)), sense_res.result);
+    ALOGW("%s %s result:%d\n", __func__, scene==ENV_DOA?CSTR(ENV_DOA):(scene==ENV_REVERB?CSTR(ENV_REVERB):CSTR(ENV_GENDER)), sense_res.result);
 
     switch (scene) {
         case ENV_DOA: {

@@ -29,6 +29,7 @@ extern rc_s32 (*rc_pb_player_dequeue_frame)(rc_pb_ctx, enum rc_pb_play_src, stru
 extern rc_s32 (*rc_pb_player_queue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
 extern os_sem_t* auxplay_looplay_sem;
 extern bool is_prompt_loop_playing;
+extern int scene_detect_playing;
 
 static void dump_out_data(const void* buffer,size_t bytes, int size)
 {
@@ -175,12 +176,18 @@ close_alsa:
 //this is auxiliary rockit player.
 // it used to play ring, notification etc...
 #define READ_SIZE 1024
-const char* prompt_file[PROMPT_NUM] = {
-    "/oem/Stereo.pcm",
-    "/oem/Mono.pcm",
-    "/oem/Widen.pcm",
-    "/oem/Split_on.pcm",
-    "/oem/Split_off.pcm"
+struct _audio_file {
+  const char* fileName;
+  uint32_t sampleFreq;
+  uint32_t channels;
+} prompt_File[PROMPT_NUM] = {
+    {"/oem/Stereo.pcm",     48000, 2},
+    {"/oem/Mono.pcm",       48000, 2},
+    {"/oem/Widen.pcm",      48000, 2},
+    {"/oem/Split_on.pcm",   48000, 2},
+    {"/oem/Split_off.pcm",  48000, 2},
+    {"/oem/Sense.pcm",      48000, 2},
+    {"/oem/Sense.pcm",      48000, 2},
 };
 
 void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
@@ -189,6 +196,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     struct rc_pb_player_attr attr;
     struct rc_pb_frame_info frame_info;
 
+    index = index & 0xff;
     memset(&attr, 0, sizeof(attr));
     attr.bit_width = 16;
     attr.channels = 2;
@@ -203,7 +211,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
 
     static int old = -1;
 
-    if(old == (int)index) {
+    if((old == (int)index) && (index != PROMPT_INOUT_SENCE) && (index != PROMPT_DOA_SENCE)) {
         return;
     }
     old = index;
@@ -211,13 +219,15 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
         return;
     }
 
-    file = fopen(prompt_file[index], "rb");
+    attr.channels = prompt_File[index].channels;
+    attr.sample_rate = prompt_File[index].sampleFreq;
+    file = fopen(prompt_File[index].fileName, "rb");
     if (file == NULL) {
-        ALOGE("%s open prompt file: %s failed: %s.\n", __func__, prompt_file[index], strerror(errno));
+        ALOGE("%s open prompt file:%s failed: %s.\n", __func__, prompt_File[index].fileName, strerror(errno));
         return;
     }
 
-    //ALOGD("%s file:%s\n", __func__, prompt_file[index]);
+    ALOGD("%s file:%s play start!!!!!\n", __func__, prompt_File[index].fileName);
     rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
 
     is_prompt_loop_playing = loop;
@@ -244,8 +254,8 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
                 break;
             }
         }
-        frame_info.sample_rate = 48000;
-        frame_info.channels = 2;
+        frame_info.sample_rate = prompt_File[index].sampleFreq;
+        frame_info.channels = prompt_File[index].channels;
         frame_info.bit_width = 16;
         frame_info.size = size;
         rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
@@ -253,6 +263,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     }
 
     rc_pb_player_stop(*ptrboxCtx, RC_PB_PLAY_SRC_PCM);
+    ALOGD("%s file:%s play stop!!!!!\n", __func__, prompt_File[index].fileName);
 }
 
 void* pbox_rockit_aux_player_routine(void *arg) {
@@ -307,8 +318,11 @@ void* pbox_rockit_aux_player_routine(void *arg) {
 
         result = table[stashCount - 1];
         loop = (result < 0)? true:false;
+        unsigned int mask = ~(unsigned int)0 >> 1;//clear the highest bit.
+        result &= mask;
 
-        ALOGD("%s total:%d, last = %d, loop:%d\n", __func__, stashCount, (prompt_audio_t)result&(~(int)0 >> 1), loop);
-        audio_sound_prompt(ptrboxCtx, result&(~(int)0 >> 1), loop);
+        ALOGD("%s total:%d, last = %u, loop:%d\n", __func__, stashCount, (prompt_audio_t)result, loop);
+        audio_sound_prompt(ptrboxCtx, result, loop);
+        scene_detect_playing = 0;
     }
 }

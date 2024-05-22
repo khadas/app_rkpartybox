@@ -143,6 +143,7 @@ set(ROCKIT_FILE_LIBS
        ./lib64/librkstudio.so
        ./lib64/librockit.so
        ./lib64/librkaudio_effect_scene.so
+       ./lib64/librkaudio_effect_guitar.so
        )
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
@@ -162,6 +163,7 @@ install(FILES bins/Stereo.pcm DESTINATION /etc/pbox)
 install(FILES bins/Widen.pcm DESTINATION /etc/pbox)
 install(FILES bins/Split_off.pcm DESTINATION /etc/pbox)
 install(FILES bins/Split_on.pcm DESTINATION /etc/pbox)
+install(FILES bins/Sense.pcm DESTINATION /etc/pbox)
 install(FILES bins/pbox-factory.ini DESTINATION /etc/pbox)
 install(PROGRAMS bins/S40-rkpartybox DESTINATION /etc/init.d)
 install(PROGRAMS bins/partybox_play.sh DESTINATION bin)

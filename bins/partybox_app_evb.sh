@@ -42,7 +42,9 @@ fi
 if [ ! -e /oem/Mono.pcm ]; then
 	ln -s /etc/pbox/Mono.pcm /oem/Mono.pcm
 fi
-
+if [ ! -e /oem/Sense.pcm ]; then
+	ln -s /etc/pbox/Sense.pcm /oem/Sense.pcm
+fi
 if [ ! -e /oem/rkstudio.bin ]; then
     ln -s /etc/pbox/rkstudio.bin /oem/rkstudio.bin
 fi
