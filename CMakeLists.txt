@@ -18,12 +18,19 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/utils/os/
 	${PROJECT_SOURCE_DIR}/cJSON/
 	${PROJECT_SOURCE_DIR}/include/
-	${PROJECT_SOURCE_DIR}/hal/
+	${PROJECT_SOURCE_DIR}/hal/include/
 	${CMAKE_SYSROOT}/usr/include/rockchip/
 	)
 
 include_directories(${GLIB2_INCLUDE_DIRS})
 include_directories(${DBUS_INCLUDE_DIRS})
+
+if(RK3308_PBOX_CORE_BOARD)
+include_directories(${PROJECT_SOURCE_DIR}/hal/rockchip_coreboard/)
+else()
+include_directories(${PROJECT_SOURCE_DIR}/hal/rockchip_evb/)
+endif()
+
 aux_source_directory(${PROJECT_SOURCE_DIR}/sys SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/cJSON SRCS)
 aux_source_directory(./app SRCS)

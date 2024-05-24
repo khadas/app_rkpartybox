@@ -28,7 +28,7 @@
 #include "os_minor_type.h"
 #include "os_task.h"
 #include "pbox_rockit_audio.h"
-#include "board.h"
+#include "hal_partybox.h"
 
 //#define RK_INOUT_TEST
 //#define RK_DOA_TEST
@@ -885,7 +885,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
     #else
     audio_prompt_send(PROMPT_INOUT_SENCE, false);
     #endif
-    scene_attr.card_name   = AUDIO_CARD_CHIP_VAD;
+    scene_attr.card_name   = hal_get_audio_vad_card();
     scene_attr.sample_rate = 48000;
     scene_attr.channels    = 4;
     scene_attr.bit_width   = 16;
@@ -906,7 +906,7 @@ static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
     ALOGW("%s role: %s \n", __func__, msg->agentRole == R_AGENT?CSTR(R_AGENT):CSTR(R_PARTNER));
     if(msg->agentRole == R_AGENT) {
         static struct rc_pb_scene_detect_attr doa_scene_attr;
-        doa_scene_attr.card_name   = AUDIO_CARD_CHIP_VAD;
+        doa_scene_attr.card_name   = hal_get_audio_vad_card();
         doa_scene_attr.sample_rate = 48000;
         doa_scene_attr.channels    = 4;
         doa_scene_attr.bit_width   = 16;

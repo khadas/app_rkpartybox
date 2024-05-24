@@ -8,7 +8,7 @@
 #include "pbox_btsink_app.h"
 #include "pbox_rockit_app.h"
 #include "pbox_hotplug_app.h"
-#include "board.h"
+#include "hal_partybox.h"
 
 pbox_data_t pbox_data = {
     .btsink = {
@@ -60,10 +60,10 @@ struct _pbox_uac *const pboxUacdata = &(pbox_data.uac);
 favor_input_order_t input_order_config[SRC_NUM];
 void pbox_app_set_favor_source_order(void) {
     pboxData->avail_srcs = 0;
-    const input_source_t input_priority[SRC_NUM] = FAVOR_SRC_ORDER;
+    //const input_source_t input_priority[SRC_NUM] = FAVOR_SRC_ORDER;
     for (int i = 0; i < SRC_NUM; i++) {
-        input_order_config[i].source = input_priority[i];
-        input_order_config[i].enable = PBOX_INPUT_SRCS&(1 << input_priority[i]);
+        input_order_config[i].source = hal_get_favor_source_order(i);
+        input_order_config[i].enable = hal_get_supported_sources()&(1 << hal_get_favor_source_order(i));
 
         if(input_order_config[i].enable) {
             ALOGW("%s, source:%d, %s\n", __func__, input_order_config[i].source, getInputSourceString(input_order_config[i].source));
@@ -122,22 +122,22 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
 
     switch(source) {
         case SRC_CHIP_BT: {
-            pbox_app_rockit_start_audiocard_player(source, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_RKCHIP_BT);
+            pbox_app_rockit_start_audiocard_player(source, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, hal_get_audio_card(SRC_CHIP_BT));
         } break;
 
         case SRC_EXT_BT: {
-            pbox_app_rockit_start_audiocard_player(source, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, AUDIO_CARD_EXT_BT);
+            pbox_app_rockit_start_audiocard_player(source, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, hal_get_audio_card(SRC_EXT_BT));
         } break;
 
         case SRC_CHIP_UAC: {
-            pbox_app_rockit_start_audiocard_player(SRC_CHIP_UAC, pboxUacdata->freq, 2, AUDIO_CARD_RKCHIP_UAC);
+            pbox_app_rockit_start_audiocard_player(SRC_CHIP_UAC, pboxUacdata->freq, 2, hal_get_audio_card(SRC_CHIP_UAC));
         } break;
 
         case SRC_EXT_USB: {
-            pbox_app_rockit_start_audiocard_player(SRC_EXT_USB, 48000, 2, AUDIO_CARD_EXT_USB);
+            pbox_app_rockit_start_audiocard_player(SRC_EXT_USB, 48000, 2, hal_get_audio_card(SRC_EXT_USB));
         } break;
         case SRC_EXT_AUX: {
-            pbox_app_rockit_start_audiocard_player(SRC_EXT_AUX, 48000, 2, AUDIO_CARD_EXT_AUX);
+            pbox_app_rockit_start_audiocard_player(SRC_EXT_AUX, 48000, 2, hal_get_audio_card(SRC_EXT_AUX));
         } break;
     }
 
@@ -1000,7 +1000,7 @@ void pbox_app_uac_freq_change(uac_role_t role, uint32_t freq, display_t policy) 
     ALOGD("%s %s freq:%d\n", __func__, (role==UAC_ROLE_SPEAKER)?"spk":"rec", freq);
     if(pboxUacdata->freq != freq) {
         pboxUacdata->freq = freq;
-        pbox_app_rockit_start_audiocard_player(SRC_CHIP_UAC, freq, 2, AUDIO_CARD_RKCHIP_UAC);
+        pbox_app_rockit_start_audiocard_player(SRC_CHIP_UAC, freq, 2, hal_get_audio_card(SRC_CHIP_UAC));
     }
 }
 

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "slog.h"
 #include "pbox_model.h"
-#include "board.h"
+#include "hal_partybox.h"
 
 #ifdef __cplusplus
 extern "C" {

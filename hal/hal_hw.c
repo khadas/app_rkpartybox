@@ -1,8 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
-
-#include "hal_hw.h"
+#include "board_audio_hw.h"
 
 // 总音量参数数组
 static const float MAIN_GAIN[DSP_MAIN_MAX_VOL+1] = {-800,-400,-380,-360,-340,-320,-300,\
@@ -40,42 +39,42 @@ static const float GT_TREBLE[DSP_MIC_TREBLE_MAX_VOL+1] = {-120,-115,-110,-105,-1
 static const float GT_BASS[DSP_MIC_BASS_MAX_VOL+1] = {-120,-115,-110,-105,-100,-95,-90,-85,\
 -80,-70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60,70,80,85,90,95,100,105,110,115,120};
 
-float HW_MAIN_GAIN(uint8_t index) {
+float hw_main_gain(uint8_t index) {
     assert(index <= DSP_MAIN_MAX_VOL);
     return MAIN_GAIN[index];
 }
 
-float HW_MUSIC_GAIN(uint8_t index) {
+float hw_music_gain(uint8_t index) {
     assert(index <= DSP_MUSIC_MAX_VOL);
     return MUSIC_GAIN[index];
 }
 
-float HW_MIC_REVERB(uint8_t index) {
+float hw_mic_reverb(uint8_t index) {
     assert(index <= DSP_MIC_REVERB_MAX_VOL);
     return MIC_REVERB[index];
 }
 
-float HW_MIC_TREBLE(uint8_t index) {
+float hw_mic_treble(uint8_t index) {
     assert(index <= DSP_MIC_TREBLE_MAX_VOL);
     return MIC_TREBLE[index];
 }
 
-float HW_MIC_BASS(uint8_t index) {
-    return MIC_BASS[index];
+float hw_mic_bass(uint8_t index) {
     assert(index <= DSP_MIC_BASS_MAX_VOL);
+    return MIC_BASS[index];
 }
 
-float HW_GT_REVERB(uint8_t index) {
+float hw_guitar_reverb(uint8_t index) {
     assert(index <= DSP_MIC_TREBLE_MAX_VOL);
     return GT_REVERB[index];
 }
 
-float HW_GT_TREBLE(uint8_t index) {
+float hw_guitar_treble(uint8_t index) {
     assert(index <= DSP_MIC_TREBLE_MAX_VOL);
     return GT_TREBLE[index];
 }
 
-float HW_GT_BASS(uint8_t index) {
+float hw_guitar_bass(uint8_t index) {
     assert(index <= DSP_MIC_BASS_MAX_VOL);
     return GT_BASS[index];
 }
@@ -118,4 +117,28 @@ const float* hw_get_guitar_treble_table(uint16_t* size) {
 const float* hw_get_guitar_bass_table(uint16_t* size) {
     *size = sizeof(GT_BASS)/sizeof(float);
     return &GT_BASS[0];
+}
+
+int hal_dsp_max_main_vol(void) {
+    return DSP_MAIN_MAX_VOL;
+}
+
+int hal_dsp_max_music_vol(void) {
+    return DSP_MUSIC_MAX_VOL;
+}
+
+int hal_dsp_max_mic_reverb(void) {
+    return DSP_MIC_REVERB_MAX_VOL;
+}
+
+int hal_dsp_max_mic_treble(void) {
+    return DSP_MIC_TREBLE_MAX_VOL;
+}
+
+int hal_dsp_max_mic_bass(void) {
+    return DSP_MIC_BASS_MAX_VOL;
+}
+
+int hal_dsp_max_mic_vol(void) {
+    return DSP_MIC_MAX_VOL;
 }

@@ -9,8 +9,7 @@
 #include <sys/socket.h>
 #include "pbox_soc_bt.h"
 #include "rk_utils.h"
-#include "board.h"
-#include "hal_hw.h"
+#include "hal_partybox.h"
 #include "userial_vendor.h"
 #include "pbox_socketpair.h"
 #include "bt_vendor_protol.h"
@@ -53,9 +52,9 @@ void soc2pbox_notify_master_volume(uint32_t opcode, float volume)
         .msgId = PBOX_SOCBT_DSP_MAIN_VOLUME_EVT,
     };
     //assert(len>0);
-    //assert(volume <= DSP_MAIN_MAX_VOL);
+    //assert(volume <= hal_dsp_max_main_vol());
     msg.op = opcode;
-    msg.volume = volume;//HW_MAIN_GAIN(buff[0])/10;//buff[0]*100/32;
+    msg.volume = volume;//hw_main_gain(buff[0])/10;//buff[0]*100/32;
     ALOGD("%s opcode:%d, volume:%f\n", __func__, opcode, msg.volume);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
@@ -184,7 +183,7 @@ void soc2pbox_notify_music_volume(uint32_t opcode, float volume) {
     };
 
     msg.op = opcode;
-    msg.musicVolLevel = volume; //HW_MUSIC_GAIN(buff[0])/10;//main_gain[buff[0]]/10;//buff[0]*100/32;
+    msg.musicVolLevel = volume;
     ALOGD("%s opcode:%d musicVolLevel:%f\n", __func__, opcode, msg.musicVolLevel);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }

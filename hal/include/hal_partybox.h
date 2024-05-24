@@ -1,0 +1,82 @@
+#ifndef _PTBOX_HARDWARE_BOARD_H_
+#define _PTBOX_HARDWARE_BOARD_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+//#define PBOX_INPUT_SRCS HW_SUPPORT_SRCS
+
+typedef enum {
+    SRC_CHIP_USB,
+    SRC_CHIP_BT,
+    SRC_CHIP_UAC,
+    SRC_EXT_BT,
+    SRC_EXT_USB,
+    SRC_EXT_AUX,
+    SRC_NUM
+} input_source_t;
+
+#define MASK_SRC_CHIP_USB  (1 << SRC_CHIP_USB)
+#define MASK_SRC_CHIP_BT   (1 << SRC_CHIP_BT)
+#define MASK_SRC_CHIP_UAC  (1 << SRC_CHIP_UAC)
+#define MASK_SRC_EXT_BT    (1 << SRC_EXT_BT)
+#define MASK_SRC_EXT_USB   (1 << SRC_EXT_USB)
+#define MASK_SRC_EXT_AUX   (1 << SRC_EXT_AUX)
+
+typedef enum {
+    HKEY_IDLE,
+    HKEY_PLAY,//KEY APP PLAY
+    HKEY_VOLUP,
+    HKEY_VOLDOWN,
+    HKEY_MODE,
+    HKEY_MIC1MUTE,
+    HKEY_MIC2MUTE,
+    HKEY_MIC1BASS,
+    HKEY_MIC2BASS,
+    HKEY_MIC1TREB,
+    HKEY_MIC2TREB,
+    HKEY_MIC1REVB,
+    HKEY_MIC2REVB,
+    HKEY_MIC1_VOL,
+    HKEY_MIC2_VOL,
+    HKEY_NUM
+} hal_key_t;
+
+float hw_main_gain(uint8_t index);
+float hw_music_gain(uint8_t index);
+float hw_mic_reverb(uint8_t index);
+float hw_mic_treble(uint8_t index);
+float hw_mic_bass(uint8_t index);
+float hw_mic_gain(uint8_t index);
+float hw_guitar_reverb(uint8_t index);
+float hw_guitar_treble(uint8_t index);
+float hw_guitar_bass(uint8_t index);
+
+const float* hw_get_main_volume_table(uint16_t* size);
+const float* hw_get_music_volume_table(uint16_t* size);
+const float* hw_get_mic_reverb_table(uint16_t* size);
+const float* hw_get_mic_treble_table(uint16_t* size);
+const float* hw_get_mic_bass_table(uint16_t* size);
+const float* hw_get_guitar_reverb_table(uint16_t* size);
+const float* hw_get_guitar_treble_table(uint16_t* size);
+const float* hw_get_guitar_bass_table(uint16_t* size);
+
+int hal_dsp_max_main_vol(void);
+int hal_dsp_max_music_vol(void);
+int hal_dsp_max_mic_reverb(void);
+int hal_dsp_max_mic_treble(void);
+int hal_dsp_max_mic_bass(void);
+int hal_dsp_max_mic_vol(void);
+
+char *hal_get_audio_card(input_source_t source);
+char* getInputSourceString(input_source_t source);
+int hal_key_convert_kernel_to_upper(uint32_t value);
+char *hal_get_audio_vad_card(void);
+input_source_t hal_get_favor_source_order(int index);
+uint32_t hal_get_supported_sources(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif

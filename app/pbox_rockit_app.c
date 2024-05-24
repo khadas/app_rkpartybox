@@ -290,7 +290,8 @@ void pbox_app_rockit_start_recorder(input_source_t source, int sampleFreq, int c
 
     msg.audioFormat.sampingFreq = sampleFreq;
     msg.audioFormat.channel = channel;
-    snprintf(msg.audioFormat.cardName, sizeof(msg.audioFormat.cardName), "%s", AUDIO_CARD_RKCHIP_UAC);
+    snprintf(msg.audioFormat.cardName, sizeof(msg.audioFormat.cardName), 
+                "%s", hal_get_audio_card(SRC_CHIP_UAC));
     ALOGD("%s src:%d, sampleFreq:%d, channel:%d, cardname:%s\n", __func__, source, sampleFreq, channel, cardName);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }

@@ -5,12 +5,11 @@
 #include <termios.h>
 #include <string.h>
 #include <assert.h>
-#include "hal_hw.h"
 #include "slog.h"
 #include "bt_vendor_protol.h"
 #include "os_minor_type.h"
 #include "userial_vendor.h"
-#include "hal_input.h"
+#include "hal_partybox.h"
 #include "pbox_interface.h"
 
 #define UART_DEVICE "/dev/ttyS0"
@@ -229,20 +228,20 @@ void rkdemo_btsoc_notify_dspver_query(uint32_t opcode, char *buff, int32_t len) 
 void rkdemo_btsoc_notify_master_volume(uint32_t opcode, uint8_t *buff, int32_t len) {
     float volume;
     assert(len>0);
-    assert(buff[0] <= DSP_MAIN_MAX_VOL);
+    assert(buff[0] <= hal_dsp_max_main_vol());
 
     //covert to rockchip standard volume db(max: 0db)
-    volume = HW_MAIN_GAIN(buff[0])/10;
+    volume = hw_main_gain(buff[0])/10;
     rkdemoNotifyFuncs->notify_master_volume(opcode, volume);
 }
 
 void rkdemo_btsoc_notify_music_volume_level(uint32_t opcode, uint8_t *buff, int32_t len) {
     float volume;
     assert(len>0);
-    assert(buff[0] <= DSP_MUSIC_MAX_VOL);
+    assert(buff[0] <= hal_dsp_max_music_vol());
 
     //covert to rockchip standard volume db(max: 0db)
-    volume = HW_MUSIC_GAIN(buff[0])/10;
+    volume = hw_music_gain(buff[0])/10;
     ALOGD("%s opcode:%d musicVolLevel:%f\n", __func__, opcode, volume);
     rkdemoNotifyFuncs->notify_music_volume(opcode, volume);
 }
@@ -309,9 +308,9 @@ void rkdemo_btsoc_notify_mic_reverb(uint32_t opcode, char *buff, int32_t len) {
     uint8_t index = buff[0];
     uint8_t reverb = buff[1];
 
-    assert(reverb <= DSP_MIC_REVERB_MAX_VOL);
+    assert(reverb <= hal_dsp_max_mic_reverb());
     //covert to rockchip standard reverb input
-    float level = HW_MIC_REVERB(reverb);
+    float level = hw_mic_reverb(reverb);
 
     rkdemoNotifyFuncs->notify_mic_reverb(opcode, index, level);
 }
@@ -321,9 +320,9 @@ void rkdemo_btsoc_notify_mic_bass(uint32_t opcode, char *buff, int32_t len) {
     uint8_t index = buff[0];
     uint8_t bass = buff[1];
 
-    assert(bass <= DSP_MIC_BASS_MAX_VOL);
+    assert(bass <= hal_dsp_max_mic_bass());
     //covert to rockchip standard reverb input
-    float level = HW_MIC_BASS(bass)/10;
+    float level = hw_mic_bass(bass)/10;
     rkdemoNotifyFuncs->notify_mic_bass(opcode, index, bass);
 }
 
@@ -332,9 +331,9 @@ void rkdemo_btsoc_notify_mic_treble(uint32_t opcode, char *buff, int32_t len) {
     uint8_t index = buff[0];
     uint8_t treble = buff[1];
 
-    assert(treble <= DSP_MIC_TREBLE_MAX_VOL);
+    assert(treble <= hal_dsp_max_mic_treble());
     //covert to rockchip standard reverb input
-    float level = HW_GT_TREBLE(treble)/10;
+    float level = hw_mic_treble(treble)/10;
     rkdemoNotifyFuncs->notify_mic_treble(opcode, index, treble);
 }
 
@@ -346,9 +345,9 @@ void rkdemo_btsoc_notify_mic_volume(uint32_t opcode, char *buff, int32_t len) {
     uint8_t index = buff[0];
     uint8_t volume = buff[1];
 
-    assert(volume <= DSP_MIC_MAX_VOL);
+    assert(volume <= hal_dsp_max_mic_vol());
     //covert to rockchip standard reverb input
-    float level = VND_ORG2TARGET(volume, float, get_minMicVolume(), get_maxMicVolume(), 0, DSP_MIC_MAX_VOL);
+    float level = VND_ORG2TARGET(volume, float, get_minMicVolume(), get_maxMicVolume(), 0, hal_dsp_max_mic_vol());
     rkdemoNotifyFuncs->notify_mic_volume(opcode, index, volume);
 }
 
@@ -404,14 +403,14 @@ void rkdemo_btsoc_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
         rkdemoNotifyFuncs->notify_inout_door(opcode, temp);
 
         float volume;
-        assert(buff[1] <= DSP_MAIN_MAX_VOL);
+        assert(buff[1] <= hal_dsp_max_main_vol());
         //covert to rockchip standard volume input db(max: 0db)
-        volume = HW_MAIN_GAIN(buff[1])/10;
+        volume = hw_main_gain(buff[1])/10;
         rkdemoNotifyFuncs->notify_master_volume(opcode, volume);
 
-        assert(buff[2] <= DSP_MUSIC_MAX_VOL);
+        assert(buff[2] <= hal_dsp_max_music_vol());
         //covert to rockchip standard volume input db(max: 0db)
-        volume = HW_MUSIC_GAIN(buff[2])/10;
+        volume = hw_music_gain(buff[2])/10;
         rkdemoNotifyFuncs->notify_music_volume(opcode, volume);
 
         rkdemoNotifyFuncs->notify_mic1_mux(opcode, buff[3]);

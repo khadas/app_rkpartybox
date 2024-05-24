@@ -43,7 +43,7 @@
 #include "pbox_keyscan_app.h"
 #include "os_minor_type.h"
 #include "os_task.h"
-#include "board.h"
+#include "hal_partybox.h"
 
 #ifdef RK_VAD
 #include "vad.h"
@@ -468,7 +468,7 @@ void *pbox_KeyEventScan(void * arg) {
                     int type, code;
 
                     type = ev[i].type;
-                    code = get_userspace_key_from_kernel(ev[i].code);
+                    code = hal_key_convert_kernel_to_upper(ev[i].code);
                     uint32_t ev_time = ev[i].time.tv_sec*1000+ ev[i].time.tv_usec/1000;
                     ALOGD("Event: time %ld.%06ld,\n", ev[i].time.tv_sec, ev[i].time.tv_usec);
                     #ifdef RK_VAD
