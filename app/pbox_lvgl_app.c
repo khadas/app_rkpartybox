@@ -75,12 +75,12 @@ void pbox_app_lcd_displayTrackPosition(bool durationOnly, uint32_t mCurrent, uin
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-void pbox_app_lcd_displayMainVolumeLevel(uint32_t mainVolume) {
+void pbox_app_lcd_displayMusicVolumeLevel(uint32_t volume) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_LCD_DISP_MAIN_VOL_LEVEL,
+        .msgId = PBOX_LCD_DISP_MUSIC_VOL_LEVEL,
     };
-    msg.mainVolume = mainVolume;
+    msg.mVolume = volume;
 
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
@@ -265,11 +265,11 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
             if (msecSeekTo <= msecDuration)
                 pbox_app_music_seek_position(msecSeekTo, msecDuration, DISP_LED);
         } break;
-        case PBOX_LCD_MAIN_VOL_LEVEL_EVT: {
-            float volume = msg->mainVolume;
+        case PBOX_LCD_MUSIC_VOL_LEVEL_EVT: {
+            float volume = msg->mVolume;
             volume = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volume/100 + MIN_MAIN_VOLUME; //covert to real db volume.
-            if(volume == pboxUIdata->mainVolumeLevel) break;
-            pbox_app_music_set_main_volume(volume, DISP_LED|DISP_FS);
+            if(volume == pboxUIdata->musicVolumeLevel) break;
+            pbox_app_music_set_music_volume(volume, DISP_LED|DISP_FS);
         } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             float mic_volume = msg->micVolume;

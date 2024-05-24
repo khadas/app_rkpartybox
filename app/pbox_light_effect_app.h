@@ -12,7 +12,7 @@ extern "C" {
 // Function declarations for LED effects
 void pbox_app_led_PlayPause(bool play);
 void pbox_app_led_PrevNext(bool next);
-void pbox_app_led_MainVolumeLevel(uint32_t mainVolume);
+void pbox_app_led_MusicVolumeLevel(uint32_t mVolume);
 void pbox_app_led_MicVolumeLevel(uint32_t micVolume);
 void pbox_app_led_AccompMusicLevel(uint32_t accomp_music_level);
 void pbox_app_led_HumanMusicLevel(uint32_t human_music_level);

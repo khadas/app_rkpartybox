@@ -30,10 +30,10 @@ void pbox_app_led_PrevNext(bool next) {
 	}
 }
 
-void pbox_app_led_MainVolumeLevel(uint32_t mainVolume) {
-	ALOGD("%s mainVolumeLevel: %d\n", __func__, mainVolume);
+void pbox_app_led_MusicVolumeLevel(uint32_t mVolume) {
+	ALOGD("%s mainVolumeLevel: %d\n", __func__, mVolume);
 
-	pbox_light_effect_send_cmd(RK_ECHO_VOLUME_LED_EVT, (void*)&mainVolume, sizeof(uint32_t));
+	pbox_light_effect_send_cmd(RK_ECHO_VOLUME_LED_EVT, (void*)&mVolume, sizeof(uint32_t));
 }
 
 void pbox_app_led_MicVolumeLevel(uint32_t micVolume) {

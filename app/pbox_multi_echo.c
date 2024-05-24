@@ -73,27 +73,26 @@ void pbox_multi_echoMusicVolumeLevel(float musicVolume, display_t policy)
     volume = volume > 100 ? 100 : volume;
     volume = volume < 0 ? 0 : volume;
 
+    if (policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMusicVolumeLevel(volume);
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_MusicVolumeLevel(volume);
     if (policy & BTMCU_DISP_MASK)
-        pbox_app_btsoc_echo_music_volume(musicVolume);
+        pbox_app_btsoc_echo_music_volume(volume);
     if (policy & STORAGE_DISP_MASK)
         pbox_app_music_store_music_volume(musicVolume);
 }
 
-void pbox_multi_echoMainVolumeLevel(float mainVolume, display_t policy)
+void pbox_multi_echoMainVolumeLevel(float mVolume, display_t policy)
 {
-    int32_t volume = TARGET2PERCENT(mainVolume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
+    int32_t volume = TARGET2PERCENT(mVolume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
     volume = volume > 100 ? 100 : volume;
     volume = volume < 0 ? 0 : volume;
 
-    if (policy & LCD_DISPLAY_MASK)
-        pbox_app_lcd_displayMainVolumeLevel(volume);
-    if (policy & LED_DISPLAY_MASK)
-        pbox_app_led_MainVolumeLevel(volume);
     if (policy & BTMCU_DISP_MASK)
         pbox_app_btsoc_echo_main_volume(volume);
-
     if (policy & STORAGE_DISP_MASK)
-        pbox_app_music_store_volume(mainVolume);
+        pbox_app_music_store_volume(mVolume);
 }
 
 void pbox_multi_echoMicVolumeLevel(uint8_t index, float micVolume, display_t policy)
@@ -371,7 +370,7 @@ void pbox_multi_echoUacVolume(uac_role_t role, uint32_t volume, display_t policy
     {
         if (role == UAC_ROLE_SPEAKER)
         {
-            pbox_app_lcd_displayMainVolumeLevel(volume);
+            pbox_app_lcd_displayMusicVolumeLevel(volume);
         }
         else
         {

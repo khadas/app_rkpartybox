@@ -323,12 +323,12 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_invalidate(play_obj);
             }
         } break;
-        case UI_WIDGET_MAIN_VOLUME: {
-            uint32_t mainVolume = msg->mainVolume;
+        case UI_WIDGET_MUSIC_VOLUME: {
+            uint32_t mVolume = msg->mVolume;
             char buf[16];
-            lv_snprintf(buf, sizeof(buf), "Volume  %d", mainVolume);
+            lv_snprintf(buf, sizeof(buf), "Volume  %d", mVolume);
             lv_label_set_text(volume_label, buf);
-            lv_slider_set_value(volume_slider, mainVolume, LV_ANIM_OFF);
+            lv_slider_set_value(volume_slider, mVolume, LV_ANIM_OFF);
         } break;
         case UI_WIDGET_MIC_VOLUME: {
             uint32_t micVolume = msg->micVolume;
@@ -723,7 +723,7 @@ static void master_volume_change_event_cb(lv_event_t *e) {
         printf("master volume value %s\n", buf);
         lv_label_set_text(volume_label, buf);
         mVolumeLevel = (int)lv_slider_get_value(slider);
-        lcd_pbox_notifyMainVolLevel(mVolumeLevel);
+        lcd_pbox_notifyMusicVolLevel(mVolumeLevel);
     }
 }
 

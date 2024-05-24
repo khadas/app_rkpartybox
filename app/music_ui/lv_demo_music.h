@@ -40,7 +40,7 @@ extern "C" {
  **********************/
 typedef enum {
     UI_WIDGET_PLAY_PAUSE,
-    UI_WIDGET_MAIN_VOLUME,
+    UI_WIDGET_MUSIC_VOLUME,
     UI_WIDGET_MIC_VOLUME,
     UI_WIDGET_TRACK_INFO,
     UI_WIDGET_POSITION_INFO,

@@ -16,8 +16,8 @@ pbox_data_t pbox_data = {
         .pcmChannel = 2,
     },
     .ui = {
-        .mainVolumeLevel = DEFAULT_MAIN_VOLUME,
-        .musicVolumeLevel = 0,
+        .mainVolumeLevel = MAX_MAIN_VOLUME,
+        .musicVolumeLevel = DEFAULT_MAIN_VOLUME,
         .accomLevel = 100,
         #if ENABLE_LCD_DISPLAY
         .humanLevel = 15,
@@ -141,7 +141,7 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
         } break;
     }
 
-    //pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, policy);
+    //pbox_app_music_set_music_volume(pboxUIdata->musicVolumeLevel, policy);
     pbox_app_music_original_singer_open(!pboxUIdata->vocalSplit, policy);
     pbox_app_resume_volume_later(650);
 }
@@ -420,7 +420,7 @@ void pbox_app_music_start(display_t policy) {
             sprintf(track_uri, MUSIC_PATH"%s", track_name);
             ALOGW("play track [%s]\n", track_uri);
             pbox_app_rockit_start_local_player(track_uri, NULL);
-            pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, policy);
+            pbox_app_music_set_music_volume(pboxUIdata->musicVolumeLevel, policy);
             pbox_app_music_original_singer_open(!pboxUIdata->vocalSplit, policy);
             pbox_multi_echoTrackInfo(track_name, NULL, policy);
         } break;
@@ -1009,10 +1009,10 @@ void pbox_app_uac_volume_change(uac_role_t role, uint32_t volume, display_t poli
         return;
     }
 
-    pboxUIdata->mainVolumeLevel = PERCENT2TARGET((float)volume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
-    ALOGD("%s volume:%d->%f\n", __func__, volume, pboxUIdata->mainVolumeLevel);
+    pboxUIdata->musicVolumeLevel = PERCENT2TARGET((float)volume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
+    ALOGD("%s volume:%d->%f\n", __func__, volume, pboxUIdata->musicVolumeLevel);
     if((role == UAC_ROLE_SPEAKER)) {
-        pbox_app_rockit_set_uac_volume(role, pboxUIdata->mainVolumeLevel);
+        pbox_app_rockit_set_uac_volume(role, pboxUIdata->musicVolumeLevel);
         pbox_multi_echoUacVolume(role, volume, policy);
     }
 }

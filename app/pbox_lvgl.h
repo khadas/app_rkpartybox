@@ -18,7 +18,7 @@ typedef enum {
     PBOX_LCD_DISP_USB_STATE,
     PBOX_LCD_DISP_BT_STATE,
     PBOX_LCD_DISP_UAC_STATE,
-    PBOX_LCD_DISP_MAIN_VOL_LEVEL,
+    PBOX_LCD_DISP_MUSIC_VOL_LEVEL,
     PBOX_LCD_DISP_MIC_VOL_LEVEL,
     PBOX_LCD_DISP_MIC_MUTE,
     PBOX_LCD_DISP_ACCOMP_MUSIC_LEVEL,
@@ -39,7 +39,7 @@ typedef enum {
     PBOX_LCD_PREV_NEXT_EVT,
     PBOX_LCD_LOOP_MODE_EVT,//260
     PBOX_LCD_SEEK_POSITION_EVT,
-    PBOX_LCD_MAIN_VOL_LEVEL_EVT,//262
+    PBOX_LCD_MUSIC_VOL_LEVEL_EVT,//262
     PBOX_LCD_MIC_VOL_LEVEL_EVT,
     PBOX_LCD_ACCOMP_MUSIC_LEVEL_EVT,//surroundings/environment sound
     PBOX_LCD_HUMAN_MUSIC_LEVEL_EVT,
@@ -61,7 +61,7 @@ typedef struct {
             char artist[MAX_APP_NAME_LENGTH + 1];
         } track;
         uint32_t        trackId;
-        uint32_t        mainVolume;
+        uint32_t        mVolume;
         uint32_t        micVolume;
         uint32_t        accomp_music_level;//surroundings/environment sound level
         uint32_t        human_music_level;
@@ -90,7 +90,7 @@ void lcd_pbox_notifyTrackid(uint32_t trackId);
 void lcd_pbox_notifyPrevNext(bool next);
 void lcd_pbox_notifyLoopMode(bool loop);
 void lcd_pbox_notifySeekPosition(unsigned int mCurrent, unsigned int mDuration);
-void lcd_pbox_notifyMainVolLevel(uint32_t mainVolume);
+void lcd_pbox_notifyMusicVolLevel(uint32_t volume);
 void lcd_pbox_notifyMicVolLevel(uint32_t micVolume);
 void lcd_pbox_notifyAccompMusicLevel(uint32_t accomp_music_level);
 void lcd_pbox_notifyHumanMusicLevel(uint32_t human_music_level);

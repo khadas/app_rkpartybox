@@ -341,6 +341,7 @@ void maintask_timer_fd_process(int timer_fd) {
         pboxData->volume_resume_time -= PBOX_TIMER_INTERVAL;
         if(pboxData->volume_resume_time <= 0) {
             //pboxData->volume_resume_time = -1;
+            pbox_app_music_set_music_volume(pboxUIdata->musicVolumeLevel, DISP_All);
             pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, DISP_All);
         }
     }

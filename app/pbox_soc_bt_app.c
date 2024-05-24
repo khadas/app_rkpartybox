@@ -142,7 +142,7 @@ void handleMainVolumeEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    pbox_app_btsoc_set_volume(msg->volume, DISP_All_EXCLUDE_BTMCU|DISP_FS);
+    pbox_app_btsoc_set_volume(msg->volume, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handlePlacementEvent(const pbox_socbt_msg_t *msg) {

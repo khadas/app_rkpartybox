@@ -225,8 +225,8 @@ void update_bt_music_volume(int volumeLevel ,display_t policy)
     volumeLevelMapp = volumeLevelMapp> MAX_MAIN_VOLUME?MAX_MAIN_VOLUME:volumeLevelMapp;
     volumeLevelMapp = volumeLevelMapp< MIN_MAIN_VOLUME?MIN_MAIN_VOLUME:volumeLevelMapp;
 
-    if(volumeLevelMapp != pboxUIdata->mainVolumeLevel)
-    pbox_app_music_set_main_volume((float)volumeLevelMapp, policy);
+    if(volumeLevelMapp != pboxUIdata->musicVolumeLevel)
+    pbox_app_music_set_music_volume((float)volumeLevelMapp, policy);
 
     if ((pboxUIdata->play_status == _PAUSE) && (pboxUIdata->play_status_prev == PLAYING)) 
         pbox_app_music_resume(policy);
@@ -339,7 +339,7 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
         } break;
 
         case RK_BT_ABS_VOL: {
-            //when seperate function is enable, don't set bt volume to mainVolume.
+            //when seperate function is enable, don't set bt volume to musicVolume.
             if ((!pboxUIdata->vocalSplit) && is_input_source_selected(SRC_CHIP_BT, ANY))
                 update_bt_music_volume(msg->media_volume, DISP_All|DISP_FS);
         } break;
