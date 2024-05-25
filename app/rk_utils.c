@@ -163,9 +163,10 @@ int get_ps_pid_new(const char Name[]) {
 
                 // Check if the process name matches
                 if (strncmp(buf, Name, strlen(Name)) == 0) {
+                    int pid = atoi(ent->d_name);
                     closedir(dir);
                     fclose(file);
-                    return atoi(ent->d_name);  // Process name matches, indicating the process is running
+                    return pid;  // Process name matches, indicating the process is running
                 }
 
                 fclose(file);

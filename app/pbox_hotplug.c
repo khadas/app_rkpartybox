@@ -375,7 +375,7 @@ static void *pbox_hotplug_dev_server(void *arg)
                             ALOGW("Socket closed\n");
                             break;
                         } else {
-                            perror("recvfrom failed");
+                            perror("recvfrom failed\n");
                             continue;
                         }
                     }
@@ -386,9 +386,10 @@ static void *pbox_hotplug_dev_server(void *arg)
                     do {
                         struct _uevent event;
                         memset(&event, 0, sizeof(event));
-                        for (int m = 0, n =0; m < len; m++) {
+                        for (int m = 0, n =0; m < len - 1 && n < sizeof(event.strs)/sizeof(char *); m++) {
+                            //printf("%s m:%d, n:%d, len:%d, %p-%p\n", __func__, m, n, len, buffer, (char *)buffer + m + 1);
                             if (*(buffer + m) == '\0' && (m + 1) != len) {
-                                event.strs[n++] = buffer + m + 1;
+                                event.strs[n++] = (char *)buffer + m + 1;
                                 event.size = n;
                             }
                         }
