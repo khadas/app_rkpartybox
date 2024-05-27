@@ -93,13 +93,6 @@ else()
 add_definitions(-DENABLE_MIC=0)
 endif()
 
-if (ENABLE_RKCHIP_SARADC)
-add_definitions(-DENABLE_RKCHIP_SARADC=1)
-else()
-add_definitions(-DENABLE_RKCHIP_SARADC=0)
-endif()
-
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(UDEV libudev REQUIRED)
 include_directories(${UDEV_INCLUDE_DIRS})

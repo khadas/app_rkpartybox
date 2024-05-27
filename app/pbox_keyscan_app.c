@@ -14,6 +14,8 @@ static int pbox_app_key_set_volume_down(float);
 static int pbox_app_key_set_mic(float);
 static int pbox_app_key_set_echo_3a(float);
 static int pbox_app_key_switch_input_source(float);
+static int pbox_app_key_set_positive(float);
+static int pbox_app_key_set_negative(float);
 
 static int enter_long_playpause_mode(float);
 static int long_volume_step_down(float);
@@ -50,6 +52,10 @@ const struct dot_key support_keys [] =
     {HKEY_VOLDOWN,  0,      K_SHORT,      1, 0, pbox_app_key_set_volume_down},/*VOL_DOWN*/
     {HKEY_MODE,     0,      K_SHORT,      1, 0, pbox_app_key_switch_input_source},
     {HKEY_MIC1MUTE, 0,      K_SHORT,      1, 0, pbox_app_key_switch_vocal_sperate},
+    {HKEY_GPIO_KEY1, 0,     K_SHORT,      1, 0, pbox_app_key_set_echo_3a},
+    {HKEY_GPIO_KEY2, 0,     K_SHORT,      1, 0, pbox_app_key_set_mic},/*MIC_MUTE*/
+    {HKEY_ROTARY_POS, 0,    K_SHORT,      1, 0, pbox_app_key_set_positive},
+    {HKEY_ROTARY_NEG, 0,    K_SHORT,      1, 0, pbox_app_key_set_negative},
 
     /*长按> 3s */
     {HKEY_PLAY,     0,      K_LONG,       1, 0, enter_long_playpause_mode},
@@ -168,6 +174,20 @@ int pbox_app_key_set_mic(float reserved)
         pbox_app_music_set_mic_mute(0, false, DISP_All);
     else
         pbox_app_music_set_mic_mute(0, true, DISP_All);
+    return 0;
+}
+
+int pbox_app_key_set_positive(float reserved)
+{
+    ALOGD("pbox_app_key_set_positive =====!\n");
+    pbox_app_main_volume_up(DISP_All);
+    return 0;
+}
+
+int pbox_app_key_set_negative(float reserved)
+{
+    ALOGD("pbox_app_key_set_negative =====!\n");
+    pbox_app_main_volume_down(DISP_All);
     return 0;
 }
 

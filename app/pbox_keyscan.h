@@ -54,6 +54,7 @@ struct dot_support_event_type
 {
     int		event_type;
     char		*name; /*event name, used to judge this event is supported or not*/
+    int key_type;
 };
 
 struct dot_vol_control

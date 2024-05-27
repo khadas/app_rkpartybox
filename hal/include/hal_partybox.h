@@ -40,6 +40,10 @@ typedef enum {
     HKEY_MIC2REVB,
     HKEY_MIC1_VOL,
     HKEY_MIC2_VOL,
+    HKEY_GPIO_KEY1,
+    HKEY_GPIO_KEY2,
+    HKEY_ROTARY_POS,
+    HKEY_ROTARY_NEG,
     HKEY_NUM
 } hal_key_t;
 

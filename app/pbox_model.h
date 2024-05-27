@@ -42,10 +42,6 @@ extern "C" {
 #define MIC_NUM             1
 #endif
 
-#ifndef ENABLE_RKCHIP_SARADC
-#define ENABLE_RKCHIP_SARADC   0
-#endif
-
 #ifndef MAX_MAIN_VOLUME
 #define MAX_MAIN_VOLUME   0
 #endif

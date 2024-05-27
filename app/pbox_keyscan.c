@@ -55,13 +55,27 @@
 
 #define MIN_SARA_ADC 0
 
+#define ADCKEY_MIC1_GPIO 79
+#define ADCKEY_MIC2_GPIO 80
+
+#define ADCKEY_GPIO_DIRECTION 1
+
+#if ENABLE_EXT_BT_MCU
 #define DEV_MIC1_BUTTON_BASS    "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 #define DEV_MIC1_BUTTON_TREBLE  "/sys/bus/iio/devices/iio:device0/in_voltage1_raw"
 #define DEV_MIC1_BUTTON_REVERB  "/sys/bus/iio/devices/iio:device0/in_voltage2_raw"
 #define DEV_MIC2_BUTTON_BASS    "/sys/bus/iio/devices/iio:device0/in_voltage3_raw"
 #define DEV_MIC2_BUTTON_TREBLE  "/sys/bus/iio/devices/iio:device0/in_voltage4_raw"
 #define DEV_MIC2_BUTTON_REVERB  "/sys/bus/iio/devices/iio:device0/in_voltage5_raw"
+#else
+#define DEV_SARADC3_BUTTON    "/sys/bus/iio/devices/iio:device0/in_voltage3_raw"
+#define DEV_SARADC4_BUTTON    "/sys/bus/iio/devices/iio:device0/in_voltage4_raw"
+#define DEV_SARADC5_BUTTON    "/sys/bus/iio/devices/iio:device0/in_voltage5_raw"
+#endif
 
+
+
+#if ENABLE_EXT_BT_MCU
 struct _adcKeyTable {
     hal_key_t index;
     char *dev;
@@ -74,17 +88,103 @@ const struct _adcKeyTable adcKeyTable[] = {
     { HKEY_MIC2TREB,    DEV_MIC2_BUTTON_TREBLE  },
     { HKEY_MIC2REVB,    DEV_MIC2_BUTTON_REVERB  },
 };
+#else
+struct _adcKeyTable {
+    hal_key_t index;
+    char *dev;
+    int gpio1_value;
+    int gpio2_value;
+};
+const struct _adcKeyTable adcKeyTable[] = {
+    { HKEY_MIC1BASS,   DEV_SARADC4_BUTTON,   0,   0},
+    { HKEY_MIC2BASS,   DEV_SARADC5_BUTTON,   0,   0},
+    { HKEY_MIC1REVB,   DEV_SARADC4_BUTTON,   0,   1},
+    { HKEY_MIC2REVB,   DEV_SARADC5_BUTTON,   0,   1},
+    { HKEY_MIC1TREB,   DEV_SARADC4_BUTTON,   1,   0},
+    { HKEY_MIC2TREB,   DEV_SARADC5_BUTTON,   1,   0},
+    { HKEY_MIC1_VOL,   DEV_SARADC4_BUTTON,   1,   1},
+    { HKEY_MIC2_VOL,   DEV_SARADC5_BUTTON,   1,   1},
+};
+#endif
+
+int adckey_read(int fd);
+bool is_rolling_board() {
+    int fd;
+    int value;
+
+    if (ENABLE_EXT_BT_MCU == 1)
+        return false;
+    fd = open(DEV_SARADC3_BUTTON, O_RDONLY);
+    if(fd <= 0) {
+        ALOGE("%s err: %d\n", __func__, fd);
+        return false;
+    }
+
+    value = adckey_read(fd);
+    close(fd);
+    ALOGE("%s value: %d\n", __func__, value);
+    if (value > 1000)                                 //rolling board is 1004
+        return true;
+    else
+        return false;
+}
+
+bool is_saradc_board() {
+    return ENABLE_EXT_BT_MCU == 1;
+}
 
 static int adckey_init_fd(int fd[], int num) {
-    for (int i = 0; i < num; i++) {
-        //hal_key_t index = adcKeyTable[i].index;
-        fd[i] = open(adcKeyTable[i].dev, O_RDONLY);
-        if(fd[i] <= 0) {
-            ALOGE("%s index:%d\n", __func__, i, fd[i]);
-            return -1;
+    int i, j;
+
+    for (i = 0; i < num; i++) {
+        for (j = 0; j < i; j++) {
+            if (!strcmp(adcKeyTable[i].dev, adcKeyTable[j].dev))
+                break;
+        }
+        if (j < i) {
+            fd[i] = fd[j];
+        } else {
+            fd[i] = open(adcKeyTable[i].dev, O_RDONLY);
+            if(fd[i] <= 0) {
+                ALOGE("%s index:%d\n", __func__, i, fd[i]);
+                return -1;
+            }
         }
     }
     return 0;
+}
+
+static int adckey_deinit_fd(int fd[], int num) {
+    int i, j;
+
+    for (i = 0; i < num; i++) {
+        for (j = 0; j < i; j++) {
+            if (!strcmp(adcKeyTable[i].dev, adcKeyTable[j].dev))
+                break;
+        }
+        if (j == i) {
+            close(fd[i]);
+        }
+	fd[i] = -1;
+    }
+    return 0;
+}
+
+void adckey_init_gpio() {
+    os_gpio_init(ADCKEY_MIC1_GPIO);
+    os_gpio_init(ADCKEY_MIC2_GPIO);
+    os_set_gpio_pin_direction(ADCKEY_MIC1_GPIO, ADCKEY_GPIO_DIRECTION);
+    os_set_gpio_pin_direction(ADCKEY_MIC2_GPIO, ADCKEY_GPIO_DIRECTION);
+}
+
+void adckey_deinit_gpio() {
+    os_gpio_deinit(ADCKEY_MIC1_GPIO);
+    os_gpio_deinit(ADCKEY_MIC2_GPIO);
+}
+
+void switch_adckey_gpio_chn(int num) {
+    os_set_gpio_value(ADCKEY_MIC1_GPIO, adcKeyTable[num].gpio1_value);
+    os_set_gpio_value(ADCKEY_MIC2_GPIO, adcKeyTable[num].gpio2_value);
 }
 
 int adckey_read(int fd) {
@@ -161,12 +261,12 @@ struct dot_key key_read;
 struct dot_key current_dot_key;
 struct dot_support_event_type support_event[] =
 {
-    {KEY_EVENT, rk29_keypad},
-    {KEY_EVENT, gpio_keys},
-    {KEY_EVENT, adc_keys},
-    {KEY_EVENT, rk8xx_pwrkey},
-    {KEY_EVENT, aw9163_ts},
-    {ROTARY_EVENT, rk29_rotary},
+    {KEY_EVENT, rk29_keypad, 0},
+    {KEY_EVENT, gpio_keys, 1},
+    {KEY_EVENT, adc_keys, 2},
+    {KEY_EVENT, rk8xx_pwrkey, 3},
+    {KEY_EVENT, aw9163_ts, 4},
+    {KEY_EVENT, rk29_rotary, 5},
 };
 
 int unix_socket_keyscan_notify_msg(void *info, int length) {
@@ -222,7 +322,7 @@ int is_event_device(const struct dirent *dir) {
  * @return fd counts.
  .
  */
-int find_multi_event_dev(int event_type, int *fds) {
+int find_multi_event_dev(int event_type, int *fds, int *types) {
     struct dirent **namelist;
     int i, ndev;
     char fname[64];
@@ -255,7 +355,7 @@ int find_multi_event_dev(int event_type, int *fds) {
         for(j = 0; j < events_nums; j++) {
             if(support_event[j].event_type == event_type && strstr(name, support_event[j].name)) {
                 /* find according event device */
-                ALOGI("find event device:%s\n", namelist[i]->d_name);
+                ALOGI("find event device:%s, %d\n", namelist[i]->d_name, support_event[j].key_type);
                 ret = fd;
                 print_device_info(fd);
                 break;
@@ -264,6 +364,7 @@ int find_multi_event_dev(int event_type, int *fds) {
         if(ret < 0) {
             close(fd);
         } else {
+            types[count] = support_event[j].key_type;
             fds[count++] = fd;
         }
         os_free(namelist[i]);
@@ -286,12 +387,16 @@ void *pbox_KeyEvent_send(void * arg) {
     ALOGD("%s hello\n", __func__);
     PBOX_ARRAY_SET(adckey_fd, -1, sizeof(adckey_fd)/sizeof(adckey_fd[0]));
 
-    #if ENABLE_RKCHIP_SARADC
-    if(adckey_init_fd(adckey_fd, sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)) < 0) {
-        ALOGE("%s fail\n", __func__);
-        return (void*) 0;
+    bool rolling_board = false;
+    rolling_board = is_rolling_board();
+    if (rolling_board || is_saradc_board()) {
+        if(adckey_init_fd(adckey_fd, sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)) < 0) {
+            ALOGE("%s fail\n", __func__);
+            return (void*) 0;
+        }
     }
-    #endif
+    if (rolling_board)
+        adckey_init_gpio();
 
     while(1) {
         if (key_read.is_key_valid == 1) {
@@ -317,42 +422,47 @@ void *pbox_KeyEvent_send(void * arg) {
             pthread_mutex_unlock(&ev_mutex);
         }
 
-        #if ENABLE_RKCHIP_SARADC
-        for(int i = 0; i < sizeof(adcKeyTable)/sizeof(struct _adcKeyTable); i++) {
-            bool notify = false;
-            new = adckey_read(adckey_fd[i]);
-            if(!sara_init) {
-                notify = true;
-                ALOGD("%s %d\n", __func__, __LINE__);
-            }
+        do {
+            if (!(rolling_board || is_saradc_board()))
+                break;
+            for(int i = 0; i < sizeof(adcKeyTable)/sizeof(struct _adcKeyTable); i++) {
+                bool notify = false;
+                if (rolling_board)
+                    switch_adckey_gpio_chn(i);
 
-            if(new != saraSample[i]) {
-                if(abs(new - saraSample[i]) > 30) {
+                new = adckey_read(adckey_fd[i]);
+                if(!sara_init) {
                     notify = true;
-                    ALOGD("%s %d [%d->%d]\n", __func__, __LINE__, saraSample[i], new);
+                    ALOGD("%s %d\n", __func__, __LINE__);
+                }
+
+                if(new != saraSample[i]) {
+                    if(abs(new - saraSample[i]) > 30) {
+                        notify = true;
+                        ALOGD("%s %d [%d->%d]\n", __func__, __LINE__, saraSample[i], new);
+                    }
+                }
+
+                if(notify) {
+                    pbox_keyevent_msg_t msg = {0, 0, K_KNOB, 1};
+                    msg.key_code = adcKeyTable[i].index;
+                    msg.value = convert_sara_to_standard(adcKeyTable[i].index, new);
+                    ALOGD("i=%d,adckey button[%d] changing: %d->%d upstream:%f------------>\n"
+                                , i, adcKeyTable[i].index, saraSample[i], new, msg.value);
+                    unix_socket_keyscan_notify_msg(&msg, sizeof(pbox_keyevent_msg_t));
+                    saraSample[i] = new;
                 }
             }
-
-            if(notify) {
-                pbox_keyevent_msg_t msg = {0, 0, K_KNOB, 1};
-                msg.key_code = adcKeyTable[i].index;
-                msg.value = convert_sara_to_standard(adcKeyTable[i].index, new);
-                ALOGD("i=%d,adckey button[%d] changing: %d->%d upstream:%f------------>\n"
-                            , i, adcKeyTable[i].index, saraSample[i], new, msg.value);
-                unix_socket_keyscan_notify_msg(&msg, sizeof(pbox_keyevent_msg_t));
-                saraSample[i] = new;
-            }
-        }
-        if(!sara_init)
-            sara_init = true;
-        #endif
+            if(!sara_init)
+                sara_init = true;
+        } while(0);
 
          usleep(100 * 1000);
     }
 }
 
 void *pbox_KeyEventScan(void * arg) {
-    int key_fds[10], max_fd;
+    int key_fds[10], max_fd, key_types[10];
     int rd, ret;
     unsigned int i, j, k, m;
     fd_set rdfs;
@@ -366,7 +476,7 @@ void *pbox_KeyEventScan(void * arg) {
         return NULL;
     }
 
-    key_fds_count = find_multi_event_dev(KEY_EVENT, key_fds);
+    key_fds_count = find_multi_event_dev(KEY_EVENT, key_fds, key_types);
     ALOGD("--find_multi_event_dev count=%d\n",key_fds_count);
     ALOGD ("vol up %d, down %d, play %d, mode:%d, mic %d\n", KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_PLAYPAUSE, KEY_MODE, KEY_MICMUTE);
     if(key_fds_count <= 0) {
@@ -479,7 +589,7 @@ void *pbox_KeyEventScan(void * arg) {
                         ALOGD("-------------- SYN_REPORT ------------\n");
                     }
                     else if(type == EV_KEY) {               //only process EV_KEY,skip EV_REL,EV_ABS,EV_MSC which may introduct errors
-                        ALOGD("input: type=%x,code=%x,key %s, current key event code=%x\n", type, code, ev[i].value ? "down" : "up", current_dot_key.key_code);
+                        ALOGD("input: keytype=%d %d,type=%x,code=%x,key %s, current key event code=%x\n", k, key_types[k], type, code, ev[i].value ? "down" : "up", current_dot_key.key_code);
                         if(ev[i].value == 1) {                   //press down
                             //cmcc_interrupt_remind(100);
                             if (0 == current_dot_key.key_code && current_dot_key.key_code != code ) {
@@ -502,7 +612,7 @@ void *pbox_KeyEventScan(void * arg) {
                             //key_event_notify(&current_dot_key);
                         }
                         else {    //press up, signal wakeword thread to get a valid key
-                            if(0 != current_dot_key.key_code) {
+                            //if(0 != current_dot_key.key_code) {
                                 uint64_t tv_now;
                                 int delta_time, repeat_time;
 
@@ -523,11 +633,26 @@ void *pbox_KeyEventScan(void * arg) {
                                 } else if (repeat_time < (KEY_DOUBLE_CLICK_PERIOD / 1000)) {
                                     key_read.press_type = K_DQC;
                                 }
-
+                                if (key_types[k] == support_event[1].key_type) {
+                                    if (key_read.key_code == HKEY_IDLE)
+                                        key_read.key_code = HKEY_GPIO_KEY1;
+                                    else if (key_read.key_code == HKEY_MODE)
+                                        key_read.key_code = HKEY_GPIO_KEY2;
+                                }
                                 ALOGD("key up, keycode1=%x,keycode2=%x,valid=%d,longtype=%d, combain=%d\n", key_read.key_code, key_read.key_code_b, key_read.is_key_valid, key_read.press_type, key_read.is_combain_key);
                                 hasLongLongFunc = 0;
-                            }
+                            //}
                         }
+                    } else if (type == EV_REL) {
+                        ALOGD("input: keytype=%d,type=%x,code=%x,key %d\n", key_types[k], type, code, ev[i].value);
+                        if (ev[i].value == 1)
+                            key_read.key_code = HKEY_ROTARY_POS;
+                        else
+                            key_read.key_code = HKEY_ROTARY_NEG;
+                        key_read.key_code_b = 0;
+                        key_read.is_key_valid = 1;
+                        key_read.press_type = K_SHORT;
+                        key_read.is_combain_key = 0;
                     }
                 }
                 pthread_mutex_unlock(&ev_mutex);
