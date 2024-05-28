@@ -179,27 +179,28 @@ close_alsa:
 // it used to play ring, notification etc...
 #define READ_SIZE 1024
 struct _audio_file {
+  prompt_audio_t id;
   const char* fileName;
   uint32_t sampleFreq;
   uint32_t channels;
 } prompt_File[PROMPT_NUM] = {
-    {"/oem/Stereo.pcm",             16000, 2},
-    {"/oem/Mono.pcm",               16000, 2},
-    {"/oem/Widen.pcm",              16000, 2},
-    {"/oem/vocal_on.pcm",           16000, 2},
-    {"/oem/vocal_off.pcm",          16000, 2},
-    {"/oem/guitar_on.pcm",    16000, 2},
-    {"/oem/guitar_off.pcm",   16000, 2},
-    {"/oem/Sense.pcm",              16000, 2},
-    {"/oem/doa.pcm",                16000, 2},
-    {"/oem/antifeedback_on.pcm",    16000, 2},
-    {"/oem/antifeedback_off.pcm",   16000, 2},
-    {"/oem/zero.pcm",          16000, 2},
-    {"/oem/one.pcm",           16000, 2},
-    {"/oem/two.pcm",           16000, 2},
-    {"/oem/three.pcm",         16000, 2},
-    {"/oem/four.pcm",          16000, 2},
-    {"/oem/five.pcm",          16000, 2},
+    {PROMPT_STEREO,     "/oem/Stereo.pcm",              16000, 2},
+    {PROMPT_MONO,       "/oem/Mono.pcm",                16000, 2},
+    {PROMPT_WIDEN,      "/oem/Widen.pcm",               16000, 2},
+    {PROMPT_FADE_ON,    "/oem/vocal_on.pcm",            16000, 2},
+    {PROMPT_FADE_OFF,   "/oem/vocal_off.pcm",           16000, 2},
+    {PROMPT_GUITAR_FADE_ON, "/oem/guitar_on.pcm",       16000, 2},
+    {PROMPT_GUITAR_FADE_OFF,"/oem/guitar_off.pcm",      16000, 2},
+    {PROMPT_INOUT_SENCE,"/oem/Sense.pcm",               16000, 2},
+    {PROMPT_DOA_SENCE,  "/oem/doa.pcm",                 16000, 2},
+    {PROMPT_ANTI_BACK_ON,"/oem/antifeedback_on.pcm",    16000, 2},
+    {PROMPT_ANTI_BACK_OFF,"/oem/antifeedback_off.pcm",  16000, 2},
+    {PROMPT_DIGIT_ZERO, "/oem/zero.pcm",                16000, 2},
+    {PROMPT_DIGIT_ONE,  "/oem/one.pcm",                 16000, 2},
+    {PROMPT_DIGIT_TWO,  "/oem/two.pcm",                 16000, 2},
+    {PROMPT_DIGIT_THREE,"/oem/three.pcm",               16000, 2},
+    {PROMPT_DIGIT_FOUR, "/oem/four.pcm",                16000, 2},
+    {PROMPT_DIGIT_FIVE, "/oem/five.pcm",                16000, 2},
 };
 
 void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
@@ -229,6 +230,13 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     old = index;
     if(index >= PROMPT_NUM) {
         return;
+    }
+
+    for (int i = 0; i < PROMPT_NUM; i++) {
+        if(prompt_File[i].id == index) {
+            index = i;
+            break;
+        }
     }
 
     attr.channels = prompt_File[index].channels;
