@@ -27,9 +27,11 @@ extern rc_s32 (*rc_pb_player_start)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb
 extern rc_s32 (*rc_pb_player_stop)(rc_pb_ctx, enum rc_pb_play_src);
 extern rc_s32 (*rc_pb_player_dequeue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
 extern rc_s32 (*rc_pb_player_queue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct rc_pb_frame_info *, rc_s32);
+extern rc_s32 (*rc_pb_player_set_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float volume_db);
 extern os_sem_t* auxplay_looplay_sem;
 extern bool is_prompt_loop_playing;
 extern int scene_detect_playing;
+extern float AuxPlayerVolume;
 
 static void dump_out_data(const void* buffer,size_t bytes, int size)
 {
@@ -239,6 +241,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
 
     ALOGD("%s file:%s play start!!!!!\n", __func__, prompt_File[index].fileName);
     rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
+    rc_pb_player_set_volume(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, AuxPlayerVolume);
 
     is_prompt_loop_playing = loop;
     while (true) {
@@ -264,6 +267,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
                 break;
             }
         }
+
         frame_info.sample_rate = 16000;//prompt_File[index].sampleFreq;
         frame_info.channels = prompt_File[index].channels;
         frame_info.bit_width = 16;

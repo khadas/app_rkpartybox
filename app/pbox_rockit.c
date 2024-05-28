@@ -95,6 +95,7 @@ static bool is_scene_detecting = false;
 os_sem_t* auxplay_looplay_sem = NULL;
 bool is_prompt_loop_playing = false;
 int scene_detect_playing = 0;
+float AuxPlayerVolume = -20;
 
 int rk_demo_music_create() {
     //create karaoke recorder && player
@@ -1111,6 +1112,7 @@ static float pbox_rockit_music_channel_volume_adjust(input_source_t source, floa
     assert(partyboxCtx);
     assert(rc_pb_player_set_volume);
     rc_pb_player_set_volume(partyboxCtx, dest, Level);
+    AuxPlayerVolume = Level;
 
     ALOGD("%s source%d vol:%f\n" ,__func__, source, Level);
     return pbox_rockit_music_channel_volume_get(source);
