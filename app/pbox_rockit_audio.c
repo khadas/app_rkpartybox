@@ -268,8 +268,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
         frame_info.channels = prompt_File[index].channels;
         frame_info.bit_width = 16;
         frame_info.size = size;
-        rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
-                                    &frame_info, -1);
+        rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &frame_info, -1);
     }
 
     rc_pb_player_stop(*ptrboxCtx, RC_PB_PLAY_SRC_PCM);

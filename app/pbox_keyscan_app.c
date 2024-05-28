@@ -49,13 +49,14 @@ const struct dot_key support_keys [] =
     {HKEY_VOLUP,    0,      K_SHORT,      1, 0, pbox_app_key_set_volume_up},/*VOL_UP*/
     {HKEY_VOLDOWN,  0,      K_SHORT,      1, 0, pbox_app_key_set_volume_down},/*VOL_DOWN*/
     {HKEY_MODE,     0,      K_SHORT,      1, 0, pbox_app_key_switch_input_source},
-    {HKEY_MIC1MUTE, 0,      K_SHORT,      1, 0, pbox_app_key_set_mic},/*MIC_MUTE*/
+    {HKEY_MIC1MUTE, 0,      K_SHORT,      1, 0, pbox_app_key_switch_vocal_sperate},
 
     /*长按> 3s */
     {HKEY_PLAY,     0,      K_LONG,       1, 0, enter_long_playpause_mode},
     {HKEY_VOLDOWN,  0,      K_LONG,       1, 0, long_volume_step_down},/*VOL_DOWN*/
     {HKEY_VOLUP,    0,      K_LONG,       1, 0, long_volume_step_up},/*VOL_UP*/
     {HKEY_MODE,     0,      K_LONG,       1, 0, enter_long_key_mode},
+    {HKEY_MIC1MUTE, 0,      K_LONG,       1, 0, pbox_app_key_switch_vocal_or_guitar},
 
     /*长按> 10s */
     {HKEY_MODE,     0,      K_VLONG,      1, 0, enter_recovery_mode},/*10s长按进recovery*/ 
