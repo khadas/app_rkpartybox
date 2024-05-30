@@ -1180,4 +1180,13 @@ static void timer_cb(lv_timer_t * t)
 
 bool is_energy_debug(void);
 
+void _lv_demo_music_destroy(void)
+{
+    if (serdata != NULL)
+        lv_chart_remove_series(chart_obj, serdata);
+    if (sec_counter_timer != NULL)
+        lv_timer_del(sec_counter_timer);
+    if (vocal_toast_timer != NULL)
+        lv_timer_del(vocal_toast_timer);
+}
 #endif /*LV_USE_DEMO_MUSIC*/

@@ -480,6 +480,10 @@ static void *pbox_touchLCD_server(void *arg)
 
         process_pbox_lcd_cmd(msg);
     }
+
+#if LV_USE_DEMO_MUSIC
+    lv_demo_music_destroy();
+#endif
 }
 
 os_task_t* touchLcd_server_task_id;

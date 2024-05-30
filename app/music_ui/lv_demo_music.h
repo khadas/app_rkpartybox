@@ -53,6 +53,7 @@ typedef enum {
 }ui_widget_t;
 
 void lv_demo_music(void);
+void lv_demo_music_destroy(void);
 int _lv_demo_music_get_track_num();
 int _lv_demo_music_get_track_id();
 void _lv_demo_music_update_list(uint32_t trackId);

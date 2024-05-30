@@ -112,6 +112,18 @@ void lv_demo_music(void)
 #endif
 }
 
+void lv_demo_music_destroy(void) {
+    printf("lv_demo_music_destroy\n");
+    _lv_demo_music_destroy();
+    if (ctrl != NULL)
+        lv_obj_del(ctrl);
+    if (list != NULL)
+        lv_obj_del(list);
+    lv_ft_font_destroy(ttf_main_s.font);
+    lv_ft_font_destroy(ttf_main_m.font);
+    lv_ft_font_destroy(ttf_main_l.font);
+}
+
 int _lv_demo_music_get_track_num() {
     return pboxTrackdata->track_num;
 }
