@@ -11,20 +11,28 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/syscall.h>
 #include "os_minor_type.h"
 #include "slog.h"
 
-os_memptr_t os_malloc(uint16_t u16size) {
-    return (os_memptr_t) malloc(u16size);
+pid_t os_gettid(void) {
+  return syscall(SYS_gettid);
 }
 
-bool os_free_osi(os_memptr_t memptr) {
-    if (NULL == memptr) {
-        return true;
-    }
+os_memptr_t os_malloc(uint16_t u16size) {
+  return (os_memptr_t) malloc(u16size);
+}
 
-    free(memptr);
-    return true;
+os_memptr_t os_calloc(uint16_t u16size) {
+  return (os_memptr_t) calloc(1, u16size);
+}
+
+bool os_free(os_memptr_t memptr) {
+  if (NULL == memptr) {
+      return true;
+  }
+  free(memptr);
+  return true;
 }
 
 os_sem_t *os_sem_new(unsigned int value) {

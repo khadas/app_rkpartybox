@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int os_copy_file(const char *src_path, const char *dest_path);
+
 
 #ifdef __cplusplus
 }
