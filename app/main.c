@@ -37,9 +37,13 @@
 #include "pbox_soc_bt.h"
 #include "os_task.h"
 
+#define RKPARTYBOX_CMD_PATH "/tmp/rkpartybox_cmd"
+#define RKPARTYBOX_CMD_SIZE 64
+
 void maintask_timer_fd_process(int timer_fd);
 void pbox_tasks_stop(void);
 void pbox_pipes_close(int pipe_fd[], int size);
+void pbox_main_user_cmd(void);
 
 static int main_loop = 1;
 #if ENABLE_LCD_DISPLAY
@@ -92,7 +96,7 @@ int maintask_read_event(int source, int fd) {
 
 static void sigterm_handler(int sig)
 {
-    fprintf(stderr, "signal %d\n", sig);
+    ALOGW("signal recv:%d\n", sig);
     main_loop = 0;
 }
 
@@ -265,6 +269,7 @@ void main(int argc, char **argv) {
     pbox_pipes_close(pbox_fds, ARRAYSIZE(pbox_fds));
 pbox_main_exit:
     pbox_app_data_deinit();
+    ALOGW("rkpartybox the last exiting code...bye...\n");
 }
 
 void pbox_pipes_close(int pipe_fd[], int size) {
@@ -337,6 +342,7 @@ void maintask_timer_fd_process(int timer_fd) {
 
     if (0 == msTimePassed%100) {
         pbox_app_data_save();
+        pbox_main_user_cmd();
     }
 
     if((0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) && (pboxUIdata->play_status == PLAYING)) {
@@ -374,4 +380,75 @@ void maintask_timer_fd_process(int timer_fd) {
             pbox_app_music_set_main_volume(pboxUIdata->mainVolumeLevel, DISP_All);
         }
     }
+}
+
+typedef struct {
+    const char *cmd;
+    void (*action)(char *data);
+    const char *desc;
+} pb_command_t;
+
+void pbox_main_exit(char *data) {
+    main_loop = 0;
+    ALOGW("Main Exiting...\n");
+}
+
+static pb_command_t pb_command_table[] = {
+    {"quit", pbox_main_exit, "Exit the application"},
+};
+
+static void show_help_cmd(void) {
+    ALOGW("[Usage]: echo xxx > %s\n", RKPARTYBOX_CMD_PATH);
+    for (unsigned int i = 0; i < sizeof(pb_command_table) / sizeof(pb_command_t); i++) {
+        ALOGW("%s\t%s\n", pb_command_table[i].cmd, pb_command_table[i].desc);
+    }
+}
+
+static void handle_command(const char *cmd, char *arg) {
+    if (strcmp("help", cmd) == 0 || strcmp("h", cmd) == 0) {
+        show_help_cmd();
+        return;
+    }
+
+    for (unsigned int i = 0; i < sizeof(pb_command_table) / sizeof(pb_command_t); i++) {
+        if (strcmp(pb_command_table[i].cmd, cmd) == 0) {
+            if (pb_command_table[i].action != NULL) {
+                pb_command_table[i].action(arg);
+            }
+            return;
+        }
+    }
+
+    ALOGE("Unknown command: %s\n", cmd);
+}
+
+void pbox_main_user_cmd(void) {
+    char buff[RKPARTYBOX_CMD_SIZE] = {0};
+    if (access(RKPARTYBOX_CMD_PATH, F_OK) != 0) {
+        return;
+    }
+
+    FILE *fp = fopen(RKPARTYBOX_CMD_PATH, "r");
+    if (fp == NULL) {
+        ALOGE("Failed to open command file: %s (errno: %d)\n", strerror(errno), errno);
+        return;
+    }
+
+    ssize_t bytesRead = fread(buff, 1, sizeof(buff) - 1, fp);
+    fclose(fp);
+    remove(RKPARTYBOX_CMD_PATH);
+
+    if (bytesRead < 2 || buff[bytesRead - 1] != '\n') {
+        return;
+    }
+
+    buff[bytesRead - 1] = '\0';
+
+    char *arg = strchr(buff, ' ');
+    if (arg != NULL) {
+        *arg = '\0';  // Split the command and argument
+        arg++;
+    }
+
+    handle_command(buff, arg);
 }

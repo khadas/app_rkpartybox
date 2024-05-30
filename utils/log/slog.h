@@ -6,6 +6,7 @@
 #define SRC_PBOX_LOGGER_H_
 #include <stdbool.h>
 #include <stdint.h>
+#include "os_minor_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,33 +28,37 @@ uint32_t covert2debugLevel(const char *str);
 
 #define ALOGD(format, ...)                                                      \
   do {                                                                          \
-    if (get_pbox_log_level() < LOG_LEVEL_DEBUG)                                   \
+    unsigned int now = os_get_boot_time_ms();                                 \
+    if (get_pbox_log_level() < LOG_LEVEL_DEBUG)                                  \
       break;                                                                    \
-      fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
+      fprintf(stderr, "[%s][%04d.%03d]:" format, LOG_TAG, now/1000, now%1000,      \
               ##__VA_ARGS__);                                                   \
   } while (0)
 
 #define ALOGI(format, ...)                                                  \
   do {                                                                         \
+    unsigned int now = os_get_boot_time_ms();                                 \
     if (get_pbox_log_level() < LOG_LEVEL_INFO)                                    \
       break;                                                                   \
-      fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
+      fprintf(stderr, "[%s][%04d.%03d]:" format, LOG_TAG, now/1000, now%1000,      \
               ##__VA_ARGS__);                                                  \
   } while (0)
 
 #define ALOGW(format, ...)                                                  \
   do {                                                                         \
+    unsigned int now = os_get_boot_time_ms();                                 \
     if (get_pbox_log_level() < LOG_LEVEL_WARN)                                \
       break;                                                                   \
-      fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
+      fprintf(stderr, "[%s][%04d.%03d]:" format, LOG_TAG, now/1000, now%1000,      \
               ##__VA_ARGS__);                                                  \
   } while (0)
 
 #define ALOGE(format, ...)                                                 \
   do {                                                                         \
+    unsigned int now = os_get_boot_time_ms();                                 \
     if (get_pbox_log_level() < LOG_LEVEL_ERROR)                               \
       break;                                                                   \
-      fprintf(stderr, "[%s]:" format, LOG_TAG,                                  \
+      fprintf(stderr, "[%s][%04d.%03d]:" format, LOG_TAG, now/1000, now%1000,    \
               ##__VA_ARGS__);                                                  \
   } while (0)
 
