@@ -41,6 +41,7 @@ void uac_pbox_notify_host_ppm(uint32_t role, int32_t ppm);
 
 void usb_pbox_notify_audio_file_added(music_format_t format, char *fileName);
 int pbox_create_hotplug_dev_task(void);
+int pbox_stop_hotplug_dev_task(void);
 #ifdef __cplusplus
 }
 #endif

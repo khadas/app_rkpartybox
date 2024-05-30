@@ -36,9 +36,9 @@ struct rockit_pbx_t {
     rc_pb_ctx *pboxCtx;
     int signfd[2];
     os_task_t* auxPlayerTask;
-    os_sem_t* auxplay_stop_sem;
+    //os_sem_t* auxplay_stop_sem;
     os_task_t* uacRecordTask;
-    os_sem_t* rec_stop_sem;
+    //os_sem_t* rec_stop_sem;
     pbox_audioFormat_t audioFormat;
 };
 

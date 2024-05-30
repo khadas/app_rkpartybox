@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "param.h"
-#include "os_file.h"
-
+#include "os_minor_type.h"
 #include "pbox_common.h"
 #include "pbox_app.h"
 #include "rk_utils.h"

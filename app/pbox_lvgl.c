@@ -432,6 +432,7 @@ static void *pbox_touchLCD_server(void *arg)
     int sock_fd;
     char buff[sizeof(pbox_lcd_msg_t)] = {0};
     pbox_lcd_msg_t *msg;
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     pbox_lvgl_init();
     #if ENABLE_LCD_DISPLAY
@@ -447,10 +448,11 @@ static void *pbox_touchLCD_server(void *arg)
     FD_ZERO(&read_fds);
     FD_SET(sock_fd, &read_fds);
 
-    while(true) {
+    while(os_sem_trywait(quit_sem) != 0) {
         fd_set read_set = read_fds;
+        struct timeval tv = {.tv_sec = 0, .tv_usec = 200000};
 
-        int result = select(sock_fd+1, &read_set, NULL, NULL, NULL);
+        int result = select(sock_fd+1, &read_set, NULL, NULL, &tv);
         if (result < 0) {
             if (errno != EINTR) {
                 perror("select failed");
@@ -458,7 +460,7 @@ static void *pbox_touchLCD_server(void *arg)
             }
             continue; // Interrupted by signal, restart select
         } else if (result == 0) {
-            ALOGW("select timeout or no data\n");
+            //ALOGW("select timeout or no data\n");
             continue;
         }
         int ret = recv(sock_fd, buff, sizeof(buff), 0);
@@ -486,7 +488,14 @@ static void *pbox_touchLCD_server(void *arg)
 #endif
 }
 
-os_task_t* touchLcd_server_task_id;
+static os_task_t* touchLcd_server_task_id = NULL;
+int pbox_stop_lvglTask(void) {
+    if (touchLcd_server_task_id != NULL) {
+        os_task_destroy(touchLcd_server_task_id);
+    }
+    /* maybe todo */
+    return 0;
+}
 
 int pbox_create_lvglTask(void)
 {

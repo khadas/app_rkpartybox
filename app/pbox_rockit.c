@@ -367,7 +367,7 @@ int rk_demo_music_create() {
     int ret = pipe(rockitCtx.signfd);
     rockitCtx.pboxCtx = &partyboxCtx;
     ALOGD("%s %d partyboxCtx:%p\n", __func__, __LINE__, &partyboxCtx);
-    rockitCtx.auxplay_stop_sem = os_sem_new(0);
+    //rockitCtx.auxplay_stop_sem = os_sem_new(0);
     auxplay_looplay_sem = os_sem_new(0);
 
     rockitCtx.auxPlayerTask = os_task_create("pbox_aux_player", pbox_rockit_aux_player_routine, 0, &rockitCtx);
@@ -615,9 +615,12 @@ static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFo
     int ret;
     char tid_name[16];
     if(rockitCtx.uacRecordTask && is_os_task_started(rockitCtx.uacRecordTask)) {
-        if(rockitCtx.rec_stop_sem) {os_sem_post(rockitCtx.rec_stop_sem);}
+        //if(rockitCtx.rec_stop_sem) {os_sem_post(rockitCtx.rec_stop_sem);}
         os_task_destroy(rockitCtx.uacRecordTask);
-        if(rockitCtx.rec_stop_sem) {os_sem_free(rockitCtx.rec_stop_sem);}
+        // if(rockitCtx.rec_stop_sem) {
+        //     os_sem_free(rockitCtx.rec_stop_sem);
+        //     rockitCtx.rec_stop_sem = NULL;
+        // }
     }
 
     snprintf(tid_name, sizeof(tid_name), "pbox_%s_rec", getInputSourceString(source));
@@ -626,17 +629,17 @@ static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFo
     snprintf(rockitCtx.audioFormat.cardName, sizeof(rockitCtx.audioFormat.cardName), "%s", audioFormat.cardName);
     ALOGW("%s, rockitCtx:%p, partyboxCtx:%p\n", __func__, &rockitCtx, rockitCtx.pboxCtx);
 
-    rockitCtx.rec_stop_sem = os_sem_new(0);
+    //rockitCtx.rec_stop_sem = os_sem_new(0);
     rockitCtx.uacRecordTask = os_task_create(tid_name, pbox_rockit_record_routine, 0, &rockitCtx);
 }
 
 static void pbox_rockit_music_stop_recorder(input_source_t source) {
     int ret;
     if(rockitCtx.uacRecordTask) {
-        os_sem_post(rockitCtx.rec_stop_sem);
+        // os_sem_post(rockitCtx.rec_stop_sem);
         os_task_destroy(rockitCtx.uacRecordTask);
-        os_sem_free(rockitCtx.rec_stop_sem);
-        rockitCtx.rec_stop_sem = NULL;
+        // os_sem_free(rockitCtx.rec_stop_sem);
+        // rockitCtx.rec_stop_sem = NULL;
         rockitCtx.uacRecordTask = NULL;
     }
 }
@@ -1693,9 +1696,10 @@ static void *pbox_rockit_server(void *arg)
     int ret;
     pbox_rockit_msg_t *msg;
     rockit_tid = syscall(SYS_gettid);
+    os_sem_t* quit_sem = os_task_get_quit_sem(rockit_tid);
 
     if(rk_demo_music_create() < 0)
-        exit(EXIT_FAILURE);
+        return (void *)-1;//exit(EXIT_FAILURE);
 
     int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
 
@@ -1712,12 +1716,16 @@ static void *pbox_rockit_server(void *arg)
             maxfd = rockit_fds[i];
     }
 
-    while(true) {
+    while(os_sem_trywait(quit_sem) != 0) {
         fd_set read_set = read_fds;
+        struct timeval tv = {
+            .tv_sec = 0,
+            .tv_usec = 200000,
+        };
 
-        int result = select(maxfd+1, &read_set, NULL, NULL, NULL);
+        int result = select(maxfd+1, &read_set, NULL, NULL, &tv);
         if ((result == 0) || (result < 0 && (errno != EINTR))) {
-            ALOGE("select timeout");
+            //ALOGE("select timeout");
             continue;
         }
 
@@ -1898,16 +1906,27 @@ static void *pbox_rockit_server(void *arg)
             ALOGW("%s end: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
     }
 
-    pbox_deinit_tuning();
-    os_sem_post(rockitCtx.auxplay_stop_sem);
+    pbox_rockit_music_stop_recorder(SRC_CHIP_UAC);
+    //os_sem_post(rockitCtx.auxplay_stop_sem);
     os_sem_post(auxplay_looplay_sem);
     os_task_destroy(rockitCtx.auxPlayerTask);
-    os_sem_free(rockitCtx.auxplay_stop_sem);
+    //os_sem_free(rockitCtx.auxplay_stop_sem);
     os_sem_free(auxplay_looplay_sem);
     rockitCtx.auxPlayerTask = NULL;
-    rockitCtx.auxplay_stop_sem = NULL;
+    //rockitCtx.auxplay_stop_sem = NULL;
     auxplay_looplay_sem = NULL;
+    pbox_deinit_tuning();
     pbox_rockit_music_destroy();
+    ALOGW("%s rockit the last code, exiting!!!\n", __func__);
+}
+
+int pbox_stop_rockitTask(void)
+{
+    if(rockit_task_id != NULL) {
+        os_task_destroy(rockit_task_id);
+    }
+
+    return 0;
 }
 
 int pbox_create_rockitTask(void)

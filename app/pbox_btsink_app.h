@@ -31,7 +31,8 @@ void pbox_btsink_start_only_aplay(bool only);
 void pbox_btsink_start_only_bluealsa(void);
 void pbox_btsink_a2dp_stop(void);
 void maintask_bt_fd_process(int fd);
-
+int pbox_create_bttask(void);
+int pbox_stop_bttask(void);
 #ifdef __cplusplus
 }
 #endif

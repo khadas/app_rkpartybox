@@ -35,8 +35,11 @@
 #include "slog.h"
 #include "rk_utils.h"
 #include "pbox_soc_bt.h"
+#include "os_task.h"
 
 void maintask_timer_fd_process(int timer_fd);
+void pbox_tasks_stop(void);
+void pbox_pipes_close(int pipe_fd[], int size);
 
 static int main_loop = 1;
 #if ENABLE_LCD_DISPLAY
@@ -202,7 +205,7 @@ void main(int argc, char **argv) {
     pbox_fds[PBOX_MAIN_ROCKIT] = get_client_socketpair_fd(PBOX_SOCKPAIR_ROCKIT);
     #endif
     pbox_fds[PBOX_MAIN_KEYSCAN] = get_client_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
-    pbox_fds[PBOX_MAIN_HOTPLUG] = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+    pbox_fds[PBOX_MAIN_HOTPLUG] = get_client_socketpair_fd(PBOX_SOCKPAIR_HOTPLUG);
     pbox_fds[PBOX_MAIN_FD_TIMER] = create_fd_timer();
     //battery_fd;
 #if ENABLE_LCD_DISPLAY
@@ -257,11 +260,18 @@ void main(int argc, char **argv) {
         }
     }
 
+    pbox_tasks_stop();
+    os_task_deint_all();
+    pbox_pipes_close(pbox_fds, ARRAYSIZE(pbox_fds));
 pbox_main_exit:
     pbox_app_data_deinit();
-    for(i =0; i< ARRAYSIZE(pbox_fds); i++) {
+}
+
+void pbox_pipes_close(int pipe_fd[], int size) {
+    //pbox_pipe_t pbox_pipe_fds
+    for(int i =0; i< size; i++) {
         if(i == PBOX_MAIN_FD_TIMER) {
-            close(pbox_fds[i]);
+            close(pipe_fd[i]);
             continue;
         }
 
@@ -279,6 +289,25 @@ pbox_main_exit:
             pbox_pipe_fds[i].fd[1] = 0;
         }
     }
+}
+
+void pbox_tasks_stop(void) {
+#if ENABLE_EXT_BT_MCU
+    pbox_stop_btsoc_task();
+#else
+    pbox_stop_bttask();
+#endif
+    pbox_stop_hotplug_dev_task();
+    pbox_stop_KeyScanTask();
+#if ENABLE_RK_LED_EFFECT
+    pbox_stop_light_effect();
+#endif
+#if ENABLE_RK_ROCKIT
+    pbox_stop_rockitTask();
+#endif
+#if ENABLE_LCD_DISPLAY
+    pbox_stop_lvglTask();
+#endif
 }
 
 static uint64_t msTimePassed = 0;

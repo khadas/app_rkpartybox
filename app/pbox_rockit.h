@@ -100,7 +100,7 @@ typedef struct {
 
 
 int pbox_create_rockitTask(void);
-
+int pbox_stop_rockitTask(void);
 #ifdef __cplusplus
 }
 #endif

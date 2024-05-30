@@ -246,24 +246,25 @@ void process_pbox_usb_cmd(const pbox_usb_msg_t* msg) {
     ALOGW("Warning: No handler found for event ID %d.\n", msg->msgId);
 }
 
-#define USB_UDP_SOCKET 0
-#define USB_DEV_DETECT 1
-#define USB_DEV_UAC    2
+#define HPD_UDP_SOCKET 0
+#define HPD_DEV_DETECT 1
+#define HPD_DEV_UAC    2
 #define HOTPLUG_FD_NUM     3
 
-os_task_t* hotplug_task_id;
+static os_task_t* hotplug_task_id;
 static void *pbox_hotplug_dev_server(void *arg)
 {
     int hotplug_fds[HOTPLUG_FD_NUM];
     char buff[sizeof(pbox_usb_msg_t)] = {0};
     pbox_usb_msg_t *msg;
     struct udev *udev;
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     PBOX_ARRAY_SET(hotplug_fds, -1, sizeof(hotplug_fds)/sizeof(hotplug_fds[0]));
 
-    hotplug_fds[USB_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+    hotplug_fds[HPD_UDP_SOCKET] = get_server_socketpair_fd(PBOX_SOCKPAIR_HOTPLUG);
 
-    if (hotplug_fds[USB_UDP_SOCKET] < 0) {
+    if (hotplug_fds[HPD_UDP_SOCKET] < 0) {
         perror("Failed to create UDP socket");
         return (void *)-1;
     }
@@ -277,18 +278,18 @@ static void *pbox_hotplug_dev_server(void *arg)
     struct udev_monitor *mon = udev_monitor_new_from_netlink(udev, "udev");
     udev_monitor_filter_add_match_subsystem_devtype(mon, "usb", "usb_device");
     udev_monitor_enable_receiving(mon);
-    hotplug_fds[USB_DEV_DETECT] = udev_monitor_get_fd(mon);
+    hotplug_fds[HPD_DEV_DETECT] = udev_monitor_get_fd(mon);
 
-    hotplug_fds[USB_DEV_UAC] = uac_monitor_get_fd();
+    hotplug_fds[HPD_DEV_UAC] = uac_monitor_get_fd();
     uac_init();
 
     int max_fd = findMax(hotplug_fds, sizeof(hotplug_fds)/sizeof(hotplug_fds[0]));
 
     fd_set read_fds;
     FD_ZERO(&read_fds);
-    FD_SET(hotplug_fds[USB_UDP_SOCKET], &read_fds);
-    FD_SET(hotplug_fds[USB_DEV_DETECT], &read_fds);
-    FD_SET(hotplug_fds[USB_DEV_UAC], &read_fds);
+    FD_SET(hotplug_fds[HPD_UDP_SOCKET], &read_fds);
+    FD_SET(hotplug_fds[HPD_DEV_DETECT], &read_fds);
+    FD_SET(hotplug_fds[HPD_DEV_UAC], &read_fds);
     struct timeval tv = {
         .tv_sec = 1,
         .tv_usec = 0,
@@ -296,7 +297,7 @@ static void *pbox_hotplug_dev_server(void *arg)
     uint32_t pollRetry = 0;
     bool isUsbInsert = 0, isConnectReported = 0;
 
-    while(true) {
+    while(os_sem_trywait(quit_sem) != 0) {
         fd_set read_set = read_fds;
         tv.tv_sec = 1;
         tv.tv_usec = 0;
@@ -324,7 +325,7 @@ static void *pbox_hotplug_dev_server(void *arg)
             if((ret = FD_ISSET(hotplug_fds[i], &read_set)) == 0)
                 continue;
             switch (i) {
-                case USB_UDP_SOCKET: {
+                case HPD_UDP_SOCKET: {
                     int ret = recv(hotplug_fds[i], buff, sizeof(buff), 0);
                     if (ret <= 0) {
                         if (ret == 0) {
@@ -342,7 +343,7 @@ static void *pbox_hotplug_dev_server(void *arg)
                     process_pbox_usb_cmd(msg);
                 } break;
 
-                case USB_DEV_DETECT: {
+                case HPD_DEV_DETECT: {
                     struct udev_device *dev = udev_monitor_receive_device(mon);
                     const char *action = udev_device_get_action(dev);
                     const char *devnode = udev_device_get_devnode(dev);
@@ -367,7 +368,7 @@ static void *pbox_hotplug_dev_server(void *arg)
                     udev_device_unref(dev);
                 } break;
 
-                case USB_DEV_UAC: {
+                case HPD_DEV_UAC: {
                     char buffer[512] = {0};
                     int len = recv(hotplug_fds[i], buffer, sizeof(buffer), 0);
                     if (len <= 0) {
@@ -402,9 +403,17 @@ static void *pbox_hotplug_dev_server(void *arg)
 
     udev_monitor_unref(mon);
     udev_unref(udev);
-    close(hotplug_fds[USB_UDP_SOCKET]);
-    close(hotplug_fds[USB_DEV_DETECT]);
+    close(hotplug_fds[HPD_UDP_SOCKET]);
+    close(hotplug_fds[HPD_DEV_DETECT]);
+    close(hotplug_fds[HPD_DEV_UAC]);
     return NULL;
+}
+
+int pbox_stop_hotplug_dev_task(void) {
+    if (hotplug_task_id != NULL) {
+        os_task_destroy(hotplug_task_id);
+    }
+    return 0;
 }
 
 int pbox_create_hotplug_dev_task(void) {

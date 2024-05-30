@@ -101,7 +101,7 @@ struct dot_key
 int  pbox_create_KeyScanTask(void);
 
 int find_event_dev(int event_type);
-
+int pbox_stop_KeyScanTask(void);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* C++ */

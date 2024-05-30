@@ -165,7 +165,7 @@ static int adckey_deinit_fd(int fd[], int num) {
         if (j == i) {
             close(fd[i]);
         }
-	fd[i] = -1;
+        fd[i] = -1;
     }
     return 0;
 }
@@ -383,6 +383,7 @@ void *pbox_KeyEvent_send(void * arg) {
     int tmp, new;
     uint32_t saraSample[sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)];
     int adckey_fd[sizeof(adcKeyTable)/sizeof(struct _adcKeyTable)];
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     ALOGD("%s hello\n", __func__);
     PBOX_ARRAY_SET(adckey_fd, -1, sizeof(adckey_fd)/sizeof(adckey_fd[0]));
@@ -398,7 +399,7 @@ void *pbox_KeyEvent_send(void * arg) {
     if (rolling_board)
         adckey_init_gpio();
 
-    while(1) {
+    while(os_sem_trywait(quit_sem) != 0) {
         if (key_read.is_key_valid == 1) {
             for(i = 0;  i < support_keys_size; i++){
                 if(key_read.key_code == support_keys[i].key_code && support_keys[i].press_type == K_DQC)
@@ -459,6 +460,11 @@ void *pbox_KeyEvent_send(void * arg) {
 
          usleep(100 * 1000);
     }
+
+    if(rolling_board)
+        adckey_deinit_gpio();
+    if(rolling_board || is_saradc_board())
+        adckey_deinit_fd(adckey_fd, sizeof(adcKeyTable)/sizeof(adcKeyTable[0]));
 }
 
 void *pbox_KeyEventScan(void * arg) {
@@ -470,6 +476,7 @@ void *pbox_KeyEventScan(void * arg) {
     struct timeval sel_timeout_tv;
     int hasLongLongFunc = 0;
     int key_fds_count;
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     if(getuid() != 0) {
         fprintf(stderr, "Not running as root, no devices may be available.\n");
@@ -497,7 +504,7 @@ void *pbox_KeyEventScan(void * arg) {
 
     memset(&key_read, 0, sizeof(struct dot_key));
     memset(&current_dot_key, 0x00 ,sizeof(struct dot_key));
-    while(1) {
+    while(os_sem_trywait(quit_sem) != 0) {
         int ev_signaled = 0;
         sel_timeout_tv.tv_sec = 0;
         sel_timeout_tv.tv_usec = 500000;
@@ -659,22 +666,36 @@ void *pbox_KeyEventScan(void * arg) {
             }
         }
     }
+    for (int i = 0; i < key_fds_count; i++) {
+         close(key_fds[i]);
+    }
+}
+
+os_task_t *key_reader_task, *key_process_task;
+int pbox_stop_KeyScanTask(void) {
+    if (key_reader_task != NULL) {
+        os_task_destroy(key_reader_task);
+    }
+    if (key_process_task != NULL) {
+        os_task_destroy(key_process_task);
+    }
+
+    pthread_mutex_destroy(&ev_mutex);
+    return 0;
 }
 
 int pbox_create_KeyScanTask(void)
 {
-    os_task_t* evt_reader;
-    os_task_t* evt_process;
     int err;
 
     pthread_mutex_init(&ev_mutex, NULL);
-    err = (evt_reader = os_task_create("event_read_thread_ex", &pbox_KeyEventScan, 0, NULL))? 0:-1;
+    err = (key_reader_task = os_task_create("event_read_thread_ex", &pbox_KeyEventScan, 0, NULL))? 0:-1;
     if (err != 0) {
         ALOGE("cant creat thread pbox_KeyEventScan");
         return err;
     }
 
-    err = (evt_process = os_task_create("pbox_keysend", &pbox_KeyEvent_send, 0, NULL))? 0:-1;
+    err = (key_process_task = os_task_create("pbox_keysend", &pbox_KeyEvent_send, 0, NULL))? 0:-1;
     if (err != 0) {
         ALOGE("cant creat thread pbox_KeyEvent_send");
     }

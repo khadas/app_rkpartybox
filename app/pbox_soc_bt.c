@@ -365,8 +365,9 @@ void soc_bt_recv_data(int fd) {
 static void *btsoc_sink_server(void *arg) {
     int btsoc_fds[BTSOC_FD_NUM];
     vendor_data_recv_handler_t  uart_vendor_data_recv_hander = vendor_get_data_recv_func();
-    btsoc_register_vendor_notify_func(pbox_socbt_get_notify_funcs());
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
+    btsoc_register_vendor_notify_func(pbox_socbt_get_notify_funcs());
     PBOX_ARRAY_SET(btsoc_fds, -1, sizeof(btsoc_fds)/sizeof(btsoc_fds[0]));
 
     btsoc_fds[BTSOC_UDP_SOCKET] =   get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
@@ -381,17 +382,19 @@ static void *btsoc_sink_server(void *arg) {
     FD_SET(btsoc_fds[BTSOC_UDP_SOCKET], &read_fds);
     FD_SET(btsoc_fds[BTSOC_UART], &read_fds);
 
-    while (1) {
+    while(os_sem_trywait(quit_sem) != 0) {
         fd_set read_set = read_fds;
-
-        int retval = select(max_fd + 1, &read_set, NULL, NULL, NULL);
-
+        struct timeval tv = {
+            .tv_sec = 0,
+            .tv_usec = 200000,
+        };
+        int retval = select(max_fd + 1, &read_set, NULL, NULL, &tv);
         if (retval == -1) {
             perror("select error");
             //current_state = READ_INIT;
             continue;
         } else if (retval == 0) {
-            ALOGW("select timeout \n");
+            //ALOGW("select timeout \n");
             continue;
         }
 
@@ -418,17 +421,22 @@ static void *btsoc_sink_server(void *arg) {
     return (void*)(0);
 }
 
+static os_task_t* btsoc_task_server;
+int pbox_stop_btsoc_task(void) {
+    if(btsoc_task_server != NULL) {
+        os_task_destroy(btsoc_task_server);
+    }
+    return 0;
+}
+
 int pbox_create_btsoc_task(void)
 {
-    os_task_t* tid_server;
     int ret;
-
-    ret = (tid_server = os_task_create("pbox_btsoc", btsoc_sink_server, 0, NULL))?0:-1;
+    ret = (btsoc_task_server = os_task_create("pbox_btsoc", btsoc_sink_server, 0, NULL))?0:-1;
     if (ret < 0)
     {
         ALOGE("btsink server start failed\n");
     }
-
     return ret;
 }
 

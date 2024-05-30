@@ -113,8 +113,7 @@ typedef struct {
 
 bool isBtA2dpConnected(void);
 bool isBtA2dpStreaming(void);
-void *btsink_watcher(void *arg);
-int pbox_create_bttask(void);
+void *btsink_server(void *arg);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

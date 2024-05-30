@@ -64,12 +64,13 @@ void *pbox_rockit_record_routine(void *arg) {
     snd_pcm_sframes_t frames;
     snd_pcm_sframes_t sent;
     alsa_card_conf_t audioConfig;
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     struct rockit_pbx_t *ctx = arg;
     rc_pb_ctx *ptrboxCtx;
     struct rc_pb_frame_info frame_info;
 
-    rk_setRtPrority(syscall(SYS_gettid), SCHED_RR, 0);
+    rk_setRtPrority(os_gettid(), SCHED_RR, 0);
     assert(ctx != NULL);
     assert(ctx->pboxCtx != NULL);
     ptrboxCtx = ctx->pboxCtx;
@@ -77,7 +78,8 @@ void *pbox_rockit_record_routine(void *arg) {
     ALOGW("%s cardName: %s, freq:%d, chanel:%d\n", 
             __func__, ctx->audioFormat.cardName, ctx->audioFormat.sampingFreq, ctx->audioFormat.channel);
 
-    while(os_sem_trywait(ctx->rec_stop_sem) != 0) {
+    //while(os_sem_trywait(ctx->rec_stop_sem) != 0) {
+    while(os_sem_trywait(quit_sem) != 0) {
         if(pcm_handle == NULL) {
             snprintf(audioConfig.cardName, sizeof(audioConfig.cardName), "%s", ctx->audioFormat.cardName);
             audioConfig.sampingFreq = ctx->audioFormat.sampingFreq;
@@ -160,13 +162,13 @@ retry_alsa_write:
         }
 
 skip_alsa:
-        if(resample) { os_free(buffer);}
+        if(resample) { os_free_marco(buffer);}
         rc_pb_recorder_queue_frame(*ptrboxCtx, RC_PB_REC_SRC_MIC, &frame_info, -1);
         continue;
 
 close_alsa:
         ALOGE("ALSA close_alsa: %d\n", frames);
-        if(resample) { os_free(buffer);}
+        if(resample) { os_free_marco(buffer);}
         rc_pb_recorder_queue_frame(*ptrboxCtx, RC_PB_REC_SRC_MIC, &frame_info, -1);
         pcm_close(&pcm_handle);
     }
@@ -294,6 +296,7 @@ void* pbox_rockit_aux_player_routine(void *arg) {
     int table[5];
     bool loop;
     int fd;
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     ALOGD("hello %s\n", __func__);
     assert(ctx != NULL);
@@ -303,12 +306,17 @@ void* pbox_rockit_aux_player_routine(void *arg) {
     ptrboxCtx = ctx->pboxCtx;
     ALOGD("%s Ctx:%p\n", __func__, ptrboxCtx);
 
-    while (os_sem_trywait(ctx->auxplay_stop_sem) != 0) {
+    //while (os_sem_trywait(ctx->auxplay_stop_sem) != 0) {
+    while(os_sem_trywait(quit_sem) != 0) {
+        struct timeval tv = {
+            .tv_sec = 0,
+            .tv_usec = 200000,
+        };
         fd_set read_fds;
         FD_ZERO(&read_fds);
         FD_SET(fd, &read_fds);
 
-        int result = select(fd + 1, &read_fds, NULL, NULL, NULL);
+        int result = select(fd + 1, &read_fds, NULL, NULL, &tv);
         if (result < 0) {
             if (errno != EINTR) {
                 perror("select failed");
@@ -316,6 +324,9 @@ void* pbox_rockit_aux_player_routine(void *arg) {
             } else {
                 continue;
             }
+        } else if (result == 0) {
+            //ALOGW("select timeout or no data\n");
+            continue;
         }
 
         int stashCount;

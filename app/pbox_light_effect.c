@@ -741,7 +741,8 @@ int led_effect_volume(struct led_effect* effect)
 
 void *pbox_light_effect_draw(void *para)
 {
-	while (true) {
+	os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
+	while(os_sem_trywait(quit_sem) != 0) {
 		//ALOGD("%s:%d leffect->led_effect_type:%d cal_data->steps_time:%d ctrl->soundreactive_mute %d\n", __func__, __LINE__, leffect->led_effect_type, cal_data->steps_time, ctrl->soundreactive_mute);
 		if (foreground_leffect_job) {
 			if(foreground_leffect->led_effect_type == 1 || foreground_leffect->led_effect_type == 2)
@@ -810,6 +811,7 @@ static void *pbox_light_effect_server(void *arg)
 	int maxfd;
 	char buff[sizeof(pbox_light_effect_msg_t)] = {0};
 	pbox_light_effect_msg_t *msg;
+	os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
 
 	int sock_fd = get_server_socketpair_fd(PBOX_SOCKPAIR_LED);
@@ -823,12 +825,12 @@ static void *pbox_light_effect_server(void *arg)
 	FD_ZERO(&read_fds);
 	FD_SET(sock_fd, &read_fds);
 
-	while(true) {
-
+	while(os_sem_trywait(quit_sem) != 0) {
+		struct timeval tv = {.tv_sec = 0, .tv_usec = 200000,};
 		FD_ZERO(&read_fds);
 		FD_SET(sock_fd, &read_fds);
 
-		int result = select(sock_fd + 1, &read_fds, NULL, NULL, NULL);
+		int result = select(sock_fd + 1, &read_fds, NULL, NULL, &tv);
 		if (result < 0) {
 			if (errno != EINTR) {
 				perror("select failed");
@@ -836,7 +838,7 @@ static void *pbox_light_effect_server(void *arg)
 			}
 			continue; // Interrupted by signal, restart select
 		} else if (result == 0) {
-			ALOGW("select timeout or no data\n");
+			//ALOGW("select timeout or no data\n");
 			continue;
 		}
 		int ret = recv(sock_fd, buff, sizeof(buff), 0);
@@ -1089,10 +1091,22 @@ int pbox_light_effect_deinit(struct light_effect_ctrl * ctrl)
 	base_light_config_deinit();
 
 	ctrl = NULL;
+
+	return 0;
 }
 
-os_task_t* light_effect_task_id;
-os_task_t* light_effect_draw_id;
+os_task_t* light_effect_task_id = NULL;
+os_task_t* light_effect_draw_id = NULL;
+
+int pbox_stop_light_effect(void) {
+	if (light_effect_draw_id != NULL) {
+		os_task_destroy(light_effect_draw_id);
+	}
+	if (light_effect_task_id != NULL) {
+		os_task_destroy(light_effect_task_id);
+	}
+	pbox_light_effect_deinit(ctrl);
+}
 
 #if ENABLE_RK_LED_EFFECT
 int pbox_create_lightEffectTask(void)

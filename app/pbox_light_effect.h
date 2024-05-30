@@ -73,6 +73,7 @@ typedef struct {
 } pbox_light_effect_msg_t;
 
 int pbox_create_lightEffectTask(void);
+int pbox_stop_light_effect(void);
 
 int pbox_light_effect_send_cmd(pbox_light_effect_opcode_t command, void *data, int len);
 

@@ -83,6 +83,7 @@ typedef struct {
     };
 } pbox_lcd_msg_t;
 
+int pbox_stop_lvglTask(void);
 int pbox_create_lvglTask(void);
 void lcd_pbox_notifyPlayPause(bool play);
 void lcd_pbox_notifyPlayStop();

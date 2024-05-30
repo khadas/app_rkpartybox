@@ -112,7 +112,7 @@ char* pbox_app_usb_get_title(uint32_t trackId) {
     return NULL;
 }
 
-#define pbox_free(a) do { if(a) {os_free(a);}} while(0)
+#define pbox_free(a) do { if(a) {os_free_marco(a);}} while(0)
 
 bool isUsbDiskConnected(void) {
     return (pboxUsbdata->usbState != USB_DISCONNECTED);

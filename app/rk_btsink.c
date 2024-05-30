@@ -205,7 +205,7 @@ static void bt_sink_notify_volume(uint32_t volume)
 static RkBtContent bt_content;
 static void bt_test_state_cb(RkBtRemoteDev *rdev, RK_BT_STATE state)
 {
-    ALOGD("%s state:%d\n", __func__, state);
+    ALOGD("%s state:%d, tid:%d\n", __func__, state, os_gettid());
     switch (state) {
     //BASE STATE
     case RK_BT_STATE_TURNING_ON:
@@ -764,13 +764,14 @@ static void bt_vendor_set_enable(bool enable) {
     ALOGD("%s enable:%d\n", __func__, enable);
 }
 
-static void *btsink_server(void *arg)
+void *btsink_server(void *arg)
 {
     char buff[sizeof(rk_bt_msg_t)] = {0};
     int sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     //pthread_setname_np(pthread_self(), "pbox_btserver");
-    ALOGW("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
+    ALOGW("%s tid: %d\n", __func__, os_gettid());
     memset(&bt_content, 0, sizeof(RkBtContent));
     btsink_config_name();
     //BLE NAME
@@ -793,15 +794,21 @@ static void *btsink_server(void *arg)
     //default state
     bt_content.init = false;
     rk_bt_init(&bt_content);
-
+    while (!bt_content.init) {
+        msleep(10);
+    }
+    ALOGW("%s inited +++++++++++++++++++++++\n", __func__);
     while(true) {
+        if (os_sem_trywait(quit_sem) != 0 && (!bt_content.init)) {
+            break;
+        }
         memset(buff, 0, sizeof(buff));
         int ret = recv(sockfd, buff, sizeof(buff), 0);
         if (ret <= 0)
             continue;
 
         rk_bt_msg_t *msg = (rk_bt_msg_t *)buff;
-        ALOGD("%s sock recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+        ALOGW("%s sock recv: type: %d, id: %d, tid:%d\n", __func__, msg->type, msg->msgId, os_gettid());
 
         if (msg->type == RK_BT_CMD)
         {
@@ -861,29 +868,11 @@ static void *btsink_server(void *arg)
         }
     }
 
-    close(sockfd);
+    //close(sockfd);
+    //rk_bt_deinit();
 fail:
     return (void*)0;
 }
 
-int pbox_create_bttask(void)
-{
-    os_task_t *tid_server, *tid_watch;
-    int ret;
-
-    ret = (tid_server = os_task_create("pbox_btserv", btsink_server, 0, NULL))?0:-1;
-    if (ret < 0)
-    {
-        ALOGE("btsink server start failed\n");
-    }
-
-    ret = (tid_watch = os_task_create("pbox_btwatch", btsink_watcher, 0, NULL))?0:-1;
-    if (ret < 0)
-    {
-        ALOGE("btsink watcher start failed\n");
-    }
-
-    return ret;
-}
 #undef ENABLE_BLUEZ_UTILS
 #endif

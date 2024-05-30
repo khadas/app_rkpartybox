@@ -17,6 +17,7 @@
 #include "pbox_multi_echo.h"
 #include "pbox_app.h"
 #include "rk_utils.h"
+#include "os_task.h"
 
 int unix_socket_btsink_send(void *info, int length)
 {
@@ -372,13 +373,13 @@ void maintask_bt_fd_process(int fd) {
     return;
 }
 
-void *btsink_watcher(void *arg) {
-    ALOGD("%s thread: %lu\n", __func__, (unsigned long)pthread_self());
-
-    ALOGD("%s \n", __func__);
+static void *btsink_watcher(void *arg) {
     bool btsinkWatcher_track = false;
     pbox_bt_opcode_t btCmd_prev = 0;
-    while (1) {
+    os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
+
+    ALOGD("%s tid: %d\n", __func__, os_gettid());
+    while(os_sem_trywait(quit_sem) != 0) {
         if((getBtSinkState() == APP_BT_NONE) && (btCmd_prev == RK_BT_OFF)) {
             pbox_app_bt_sink_onoff(true, DISP_All);
             btCmd_prev= RK_BT_ON;
@@ -416,3 +417,36 @@ next_round:
         sleep(2);
     }
 }
+
+#if (ENABLE_EXT_BT_MCU==0)
+static os_task_t *btsink_server_task, *btsink_watch_server;
+int pbox_stop_bttask(void) {
+    if (btsink_watch_server != NULL) {
+        os_task_destroy(btsink_watch_server);
+    }
+    if(btsink_server_task != NULL) {
+        pbox_app_bt_sink_onoff(false, DISP_All);
+        os_task_destroy(btsink_server_task);
+    }
+    return 0;
+}
+
+int pbox_create_bttask(void)
+{
+    int ret;
+
+    ret = (btsink_server_task = os_task_create("pbox_btserv", btsink_server, 0, NULL))?0:-1;
+    if (ret < 0)
+    {
+        ALOGE("btsink server start failed\n");
+    }
+
+    ret = (btsink_watch_server = os_task_create("pbox_btwatch", btsink_watcher, 0, NULL))?0:-1;
+    if (ret < 0)
+    {
+        ALOGE("btsink watcher start failed\n");
+    }
+
+    return ret;
+}
+#endif

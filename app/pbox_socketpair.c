@@ -46,7 +46,7 @@ int unix_socket_notify_msg(pb_module_main_t module, void *info, int length)
             sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_KEYSCAN);
         } break;
         case PBOX_MAIN_HOTPLUG: {
-            sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+            sockfd = get_server_socketpair_fd(PBOX_SOCKPAIR_HOTPLUG);
         } break;
 
         default: {
@@ -111,7 +111,7 @@ int unix_socket_send_cmd(pb_module_child_t module, void *info, int length)
         } break;
 #endif
         case PBOX_CHILD_USBDISK: {
-            sockfd = get_client_socketpair_fd(PBOX_SOCKPAIR_USBDISK);
+            sockfd = get_client_socketpair_fd(PBOX_SOCKPAIR_HOTPLUG);
         } break;
 
         default: {
