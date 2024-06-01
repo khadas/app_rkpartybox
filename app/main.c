@@ -46,6 +46,7 @@ void pbox_pipes_close(int pipe_fd[], int size);
 void pbox_main_user_cmd(void);
 
 static int main_loop = 1;
+int main_sch_quit = 0;
 #if ENABLE_LCD_DISPLAY
 #define PBOX_TIMER_INTERVAL 20
 #else
@@ -94,10 +95,27 @@ int maintask_read_event(int source, int fd) {
     return 0;
 }
 
+static void pbox_main_check_quit(void) {
+    if (main_sch_quit == 1) {
+        main_sch_quit = 2;
+        #if ENABLE_EXT_BT_MCU
+        main_loop = 0;
+        #else
+        pbox_app_bt_sink_onoff(false, DISP_All);
+        #endif
+    } else if(main_sch_quit == 2) {
+        if(getBtSinkState() == APP_BT_NONE) {
+            main_loop = 0;
+        }
+    }
+
+    return;
+}
+
 static void sigterm_handler(int sig)
 {
     ALOGW("signal recv:%d\n", sig);
-    main_loop = 0;
+    main_sch_quit = 1;
 }
 
 static const char *log_level_str = "warn";
@@ -343,6 +361,7 @@ void maintask_timer_fd_process(int timer_fd) {
     if (0 == msTimePassed%100) {
         pbox_app_data_save();
         pbox_main_user_cmd();
+        pbox_main_check_quit();
     }
 
     if((0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) && (pboxUIdata->play_status == PLAYING)) {

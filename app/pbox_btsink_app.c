@@ -373,6 +373,7 @@ void maintask_bt_fd_process(int fd) {
     return;
 }
 
+extern int main_sch_quit;
 static void *btsink_watcher(void *arg) {
     bool btsinkWatcher_track = false;
     pbox_bt_opcode_t btCmd_prev = 0;
@@ -380,6 +381,9 @@ static void *btsink_watcher(void *arg) {
 
     ALOGD("%s tid: %d\n", __func__, os_gettid());
     while(os_sem_trywait(quit_sem) != 0) {
+        if (main_sch_quit) {
+            goto next_round;
+        }
         if((getBtSinkState() == APP_BT_NONE) && (btCmd_prev == RK_BT_OFF)) {
             pbox_app_bt_sink_onoff(true, DISP_All);
             btCmd_prev= RK_BT_ON;
@@ -408,7 +412,7 @@ static void *btsink_watcher(void *arg) {
             goto next_round;
         }
 
-        if (!(get_ps_pid_new("bluealsa-aplay"))) {
+        if (!get_ps_pid_new("bluealsa-aplay")) {
             pbox_app_restart_btsink(true, DISP_All);
             goto next_round;
         }
@@ -425,7 +429,6 @@ int pbox_stop_bttask(void) {
         os_task_destroy(btsink_watch_server);
     }
     if(btsink_server_task != NULL) {
-        pbox_app_bt_sink_onoff(false, DISP_All);
         os_task_destroy(btsink_server_task);
     }
     return 0;
