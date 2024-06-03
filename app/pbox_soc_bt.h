@@ -20,6 +20,7 @@ typedef enum {
     PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_CMD,
     PBOX_SOCBT_DSP_SWITCH_SOURCE_CMD,
     PBOX_SOCBT_DSP_MUSIC_VOLUME_CMD,
+    PBOX_SOCBT_DSP_EQ_SWITCH_CMD,
 
     //event
     PBOX_SOCBT_DSP_VERSION_EVT = 0x100,
@@ -46,6 +47,7 @@ typedef struct {
         float volume;
         float musicVolLevel;
         uint32_t poweron;
+        equalizer_t eqmode;
         mic_mux_t micMux;
         placement_t placement;
         inout_door_t outdoor;

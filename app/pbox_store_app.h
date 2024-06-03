@@ -15,6 +15,7 @@ int pbox_app_store_vocalFadeout_switch(bool split);
 int pbox_app_music_store_stereo_mode(stereo_mode_t stereo);
 int pbox_app_music_store_outdoor_mode(inout_door_t outdoor);
 int pbox_app_music_store_placement(placement_t place);
+int pbox_app_music_store_eq_mode(equalizer_t mode);
 
 int pbox_app_music_store_mic_mux(uint8_t index, mic_mux_t mux);
 int pbox_app_music_store_mic_volume(uint8_t index, float volume);

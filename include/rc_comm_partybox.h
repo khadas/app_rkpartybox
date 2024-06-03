@@ -121,18 +121,15 @@ struct rc_pb_param_howling {
     rc_bool bypass;
 };
 
-struct rc_pb_param_eq {
-    rc_s32   ch;
-    rc_s32   filter;
-    rc_s32   enable;
-    rc_s32   type;
-    rc_float fc;
-    rc_float q;
-    rc_float boost;
+struct rc_pb_param_eq  {
+    rc_s32    addr;
+    rc_float *data;
+    rc_s32    cnt;
 };
 
 struct rc_pb_param_eq_drc {
     rc_bool bypass;
+    const char *uri;
     struct rc_pb_param_eq *eq;
 };
 

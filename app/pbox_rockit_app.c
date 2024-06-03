@@ -264,6 +264,17 @@ void pbox_app_rockit_set_placement(input_source_t source, placement_t place) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+void pbox_app_rockit_set_eq_mode(input_source_t source, equalizer_t mode) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_EQ_MODE,
+        .source = source,
+    };
+
+    msg.eqmode = mode;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
 void pbox_app_rockit_get_player_energy(input_source_t source) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,

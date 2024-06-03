@@ -56,6 +56,16 @@ void pbox_app_btsoc_echo_main_volume(float volume) {
     unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
 }
 
+void pbox_app_btsoc_echo_eq_mode(equalizer_t mode) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_SOCBT_DSP_EQ_SWITCH_CMD,
+    };
+
+    msg.eqmode = mode;
+    unix_socket_socbt_send(&msg, sizeof(pbox_socbt_msg_t));
+}
+
 void pbox_app_btsoc_echo_placement(placement_t placement) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_CMD,

@@ -33,15 +33,16 @@ typedef enum {
     PBOX_ROCKIT_SET_STEREO_MODE,
     PBOX_ROCKIT_SET_OUTDOOR_MODE,
     PBOX_ROCKIT_SET_PLACEMENT_MODE,
+    PBOX_ROCKIT_SET_EQ_MODE,
     PBOX_ROCKIT_SET_TUNNING_TOOL,
     PBOX_ROCKIT_GET_SENCE,
-    PBOX_ROCKIT_START_INOUT_DETECT,
-    PBOX_ROCKIT_START_DOA_DETECT,//30
+    PBOX_ROCKIT_START_INOUT_DETECT,//30
+    PBOX_ROCKIT_START_DOA_DETECT,
     PBOX_ROCKIT_STOP_ENV_DETECT,
     PBOX_ROCKIT_NOTICE_NUMBER,
     PBOX_ROCKIT_SET_UAC_STATE,
-    PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,
-    PBOX_ROCKIT_SET_UAC_VOLUME,//35
+    PBOX_ROCKIT_SET_UAC_SAMPLE_RATE,//35
+    PBOX_ROCKIT_SET_UAC_VOLUME,
     PBOX_ROCKIT_SET_UAC_MUTE,
     PBOX_ROCKIT_SET_UAC_PPM,
 
@@ -79,6 +80,7 @@ typedef struct {
         stereo_mode_t   stereo;
         inout_door_t    outdoor;
         placement_t     place;
+        equalizer_t     eqmode;
         struct _wake_up {
             enum rc_pb_wake_up_cmd wakeCmd;
             union {

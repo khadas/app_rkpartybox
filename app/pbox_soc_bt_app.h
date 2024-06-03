@@ -14,6 +14,7 @@ void pbox_app_btsoc_echo_main_volume(float volume);
 void pbox_app_btsoc_echo_music_volume(float level);
 void pbox_app_btsoc_echo_placement(placement_t placement);
 void pbox_app_btsoc_echo_inout_door(inout_door_t inout);
+void pbox_app_btsoc_echo_eq_mode(equalizer_t mode);
 void pbox_app_btsoc_echo_poweron(bool poweron);
 void pbox_app_btsoc_echo_stereo_mode(stereo_mode_t mode);
 void pbox_app_btsoc_echo_human_voice_fadeout(bool fadeout);

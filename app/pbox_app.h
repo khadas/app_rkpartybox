@@ -65,6 +65,7 @@ typedef struct {
         placement_t placement;
         stereo_mode_t stereo;
         inout_door_t outdoor;
+        equalizer_t  eqmode;
         float mainVolumeLevel;//main volume
         float musicVolumeLevel;//music volume
         mic_state_t micData[MIC_NUM];//mMicVolumeLevel
@@ -122,6 +123,7 @@ void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy);
 void pbox_app_music_set_stereo_mode(stereo_mode_t stereo, display_t policy);
 void pbox_app_music_set_outdoor_mode(inout_door_t outdoor, display_t policy);
 void pbox_app_music_set_placement(placement_t place, display_t policy);
+void pbox_app_music_set_eq_mode(equalizer_t mode, display_t policy);
 void pbox_app_music_human_vocal_level_cycle(display_t policy);
 void pbox_app_music_guitar_vocal_level_cycle(display_t policy);
 void pbox_app_switch_vocal_lib(bool vocalib);

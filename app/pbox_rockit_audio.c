@@ -185,24 +185,35 @@ struct _audio_file {
   const char* fileName;
   uint32_t sampleFreq;
   uint32_t channels;
-} prompt_File[PROMPT_NUM] = {
-    {PROMPT_STEREO,     "/oem/Stereo.pcm",              16000, 2},
-    {PROMPT_MONO,       "/oem/Mono.pcm",                16000, 2},
-    {PROMPT_WIDEN,      "/oem/Widen.pcm",               16000, 2},
-    {PROMPT_FADE_ON,    "/oem/vocal_on.pcm",            16000, 2},
-    {PROMPT_FADE_OFF,   "/oem/vocal_off.pcm",           16000, 2},
-    {PROMPT_GUITAR_FADE_ON, "/oem/guitar_on.pcm",       16000, 2},
-    {PROMPT_GUITAR_FADE_OFF,"/oem/guitar_off.pcm",      16000, 2},
-    {PROMPT_INOUT_SENCE,"/oem/Sense.pcm",               16000, 2},
-    {PROMPT_DOA_SENCE,  "/oem/doa.pcm",                 16000, 2},
-    {PROMPT_ANTI_BACK_ON,"/oem/antifeedback_on.pcm",    16000, 2},
-    {PROMPT_ANTI_BACK_OFF,"/oem/antifeedback_off.pcm",  16000, 2},
-    {PROMPT_DIGIT_ZERO, "/oem/zero.pcm",                16000, 2},
-    {PROMPT_DIGIT_ONE,  "/oem/one.pcm",                 16000, 2},
-    {PROMPT_DIGIT_TWO,  "/oem/two.pcm",                 16000, 2},
-    {PROMPT_DIGIT_THREE,"/oem/three.pcm",               16000, 2},
-    {PROMPT_DIGIT_FOUR, "/oem/four.pcm",                16000, 2},
-    {PROMPT_DIGIT_FIVE, "/oem/five.pcm",                16000, 2},
+} const prompt_File[PROMPT_NUM] = {
+    {PROMPT_STEREO,     "/oem/tone/Stereo.pcm",              16000, 2},
+    {PROMPT_MONO,       "/oem/tone/Mono.pcm",                16000, 2},
+    {PROMPT_WIDEN,      "/oem/tone/Widen.pcm",               16000, 2},
+    {PROMPT_FADE_ON,    "/oem/tone/vocal_on.pcm",            16000, 2},
+    {PROMPT_FADE_OFF,   "/oem/tone/vocal_off.pcm",           16000, 2},
+    {PROMPT_GUITAR_FADE_ON, "/oem/tone/guitar_on.pcm",       16000, 2},
+    {PROMPT_GUITAR_FADE_OFF,"/oem/tone/guitar_off.pcm",      16000, 2},
+    {PROMPT_INOUT_SENCE,"/oem/tone/Sense.pcm",               16000, 2},
+    {PROMPT_DOA_SENCE,  "/oem/tone/doa.pcm",                 16000, 2},
+    {PROMPT_ANTI_BACK_ON,"/oem/tone/antifeedback_on.pcm",    16000, 2},
+    {PROMPT_ANTI_BACK_OFF,"/oem/tone/antifeedback_off.pcm",  16000, 2},
+    {PROMPT_DIGIT_ZERO, "/oem/tone/zero.pcm",                16000, 2},
+    {PROMPT_DIGIT_ONE,  "/oem/tone/one.pcm",                 16000, 2},
+    {PROMPT_DIGIT_TWO,  "/oem/tone/two.pcm",                 16000, 2},
+    {PROMPT_DIGIT_THREE,"/oem/tone/three.pcm",               16000, 2},
+    {PROMPT_DIGIT_FOUR, "/oem/tone/four.pcm",                16000, 2},
+    {PROMPT_DIGIT_FIVE, "/oem/tone/five.pcm",                16000, 2},
+
+    {PROMPT_EQ_OFF,     "/oem/tone/eq_offmode.pcm",          16000, 2},
+    {PROMPT_EQ_BALLED,  "/oem/tone/eq_balledmode.pcm",       16000, 2},
+    {PROMPT_EQ_BLUES,   "/oem/tone/eq_bluesmode.pcm",        16000, 2},
+    {PROMPT_EQ_CLASSIC, "/oem/tone/eq_classicmode.pcm",      16000, 2},
+    {PROMPT_EQ_COUNTRY, "/oem/tone/eq_countrymode.pcm",      16000, 2},
+    {PROMPT_EQ_DANCE,   "/oem/tone/eq_dancemode.pcm",        16000, 2},
+    {PROMPT_EQ_ELECT,   "/oem/tone/eq_elecmode.pcm",         16000, 2},
+    {PROMPT_EQ_JAZZ,    "/oem/tone/eq_jazzmode.pcm",         16000, 2},
+    {PROMPT_EQ_POP,     "/oem/tone/eq_popmode.pcm",          16000, 2},
+    {PROMPT_EQ_ROCK,    "/oem/tone/eq_rockmode.pcm",         16000, 2},
 };
 
 void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {

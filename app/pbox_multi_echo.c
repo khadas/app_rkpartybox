@@ -279,6 +279,19 @@ void pbox_multi_echoOutdoorMode(inout_door_t outdoor, display_t policy)
         pbox_app_music_store_outdoor_mode(outdoor);
 }
 
+void pbox_multi_echoEqMode(equalizer_t mode, display_t policy)
+{
+    if (policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayEqMode(mode);
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_MusicPlaceMode(mode);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_eq_mode(mode);
+
+    if (policy & STORAGE_DISP_MASK)
+        pbox_app_music_store_eq_mode(mode);
+}
+
 void pbox_multi_echoPoweron_status(bool status, display_t policy)
 {
     if (policy & BTMCU_DISP_MASK)

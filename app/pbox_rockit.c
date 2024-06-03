@@ -1375,6 +1375,66 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
     }
 }
 
+void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
+    prompt_audio_t dest_audio;
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    struct rc_pb_param param;
+    param.type = RC_PB_PARAM_TYPE_EQDRC;
+    param.eqdrc.bypass = false;
+    param.eqdrc.eq = NULL;
+
+    ALOGW("%s: %d\n", __func__, mode);
+    switch(mode) {
+        case EQ_OFF: {
+            param.eqdrc.uri = NULL;
+            param.eqdrc.bypass = true;
+            dest_audio = PROMPT_EQ_OFF;
+        } break;
+        case EQ_ROCK: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_rock.bin";
+            dest_audio = PROMPT_EQ_ROCK;
+        } break;
+        case EQ_POP: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_pop.bin";
+            dest_audio = PROMPT_EQ_POP;
+        } break;
+        case EQ_JAZZ: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_jazz.bin";
+            dest_audio = PROMPT_EQ_JAZZ;
+        } break;
+        case EQ_ELEC: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_electronic.bin";
+            dest_audio = PROMPT_EQ_ELECT;
+        } break;
+        case EQ_DANCE: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_dance.bin";
+            dest_audio = PROMPT_EQ_DANCE;
+        } break;
+        case EQ_CONTR: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_contry.bin";
+            dest_audio = PROMPT_EQ_COUNTRY;
+        } break;
+        case EQ_CLASS: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_classical.bin";
+            dest_audio = PROMPT_EQ_CLASSIC;
+        } break;
+        case EQ_BLUES: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_blues.bin";
+            dest_audio = PROMPT_EQ_BLUES;
+        } break;
+        case EQ_BALL: {
+            param.eqdrc.uri = "/etc/pbox/eq_drc_player_ballad.bin";
+            dest_audio = PROMPT_EQ_BALLED;
+        } break;
+        default: {
+            ALOGW("%s unkown EQ mode:%d...\n", __func__, mode);
+            return;
+        } break;
+    }
+    rc_pb_player_set_param(partyboxCtx, dest, &param);
+    audio_prompt_send(dest_audio, false);
+}
+
 static void pbox_rockit_music_mic_volume_adjust(uint8_t index, mic_mux_t mux, float micLevel) {
     enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     assert(partyboxCtx);
@@ -1399,23 +1459,14 @@ static void pbox_rockit_set_mic_treble(uint8_t index, mic_mux_t mux, float trebl
     param.type = RC_PB_PARAM_TYPE_EQDRC;
     param.eqdrc.bypass = false;
     param.eqdrc.eq = NULL;
+    param.eqdrc.uri = NULL;
 
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
     ALOGD("%s index:%d, treble:%f\n", __func__, index, treble);
+    ALOGW("%s sorry...this now no effect..we may support it in future...\n", __func__);
 
     if(recs != MIC_IN) return;
-    if (true) {
-        static struct rc_pb_param_eq eq;
-        eq.ch = index;
-        eq.filter = 0;
-        eq.enable = 1;
-        eq.type = 1;
-        eq.fc = 1000;
-        eq.q = 1.7;
-        eq.boost = treble; // tunning
-        param.eqdrc.eq = &eq;
-    }
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 }
 
@@ -1425,23 +1476,14 @@ static void pbox_rockit_set_mic_bass(uint8_t index, mic_mux_t mux, float bass) {
     param.type = RC_PB_PARAM_TYPE_EQDRC;
     param.eqdrc.bypass = false;
     param.eqdrc.eq = NULL;
+    param.eqdrc.uri = NULL;
 
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
     ALOGD("%s index:%d, bass:%f\n", __func__, index, bass);
+    ALOGW("%s sorry...this now no effect..we may support it in future...\n", __func__);
 
     if(recs != MIC_IN) return;
-    if (true) {
-        static struct rc_pb_param_eq eq;
-        eq.ch = index;
-        eq.filter = 0;
-        eq.enable = 1;
-        eq.type = 1;
-        eq.fc = 500;
-        eq.q = 1;
-        eq.boost = bass; // tunning
-        param.eqdrc.eq = &eq;
-    }
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 }
 
@@ -1857,6 +1899,10 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_SET_PLACEMENT_MODE: {
                 pbox_rockit_music_set_placement(msg->source, msg->place);
+            } break;
+
+            case PBOX_ROCKIT_SET_EQ_MODE: {
+                pbox_rockit_music_set_eq_mode(msg->source, msg->place);
             } break;
 
             case PBOX_ROCKIT_SET_TUNNING_TOOL: {

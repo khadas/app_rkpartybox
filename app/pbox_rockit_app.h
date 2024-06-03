@@ -49,6 +49,8 @@ void pbox_app_rockit_set_outdoor_mode(input_source_t source, inout_door_t mode);
 
 void pbox_app_rockit_set_placement(input_source_t source, placement_t mode);
 
+void pbox_app_rockit_set_eq_mode(input_source_t source, equalizer_t mode);
+
 void pbox_app_rockit_get_player_energy(input_source_t source);
 
 void pbox_app_rockit_start_recorder(input_source_t source, int sampleFreq, int channel, const char *cardName);

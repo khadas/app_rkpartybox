@@ -815,6 +815,13 @@ void pbox_app_music_set_placement(placement_t place, display_t policy) {
     pbox_multi_echoPlacement(place, policy);
 }
 
+void pbox_app_music_set_eq_mode(equalizer_t mode, display_t policy) {
+    ALOGD("%s :%d\n", __func__, mode);
+    pboxUIdata->eqmode = mode;
+    pbox_app_rockit_set_eq_mode(pboxData->inputDevice, mode);
+    pbox_multi_echoEqMode(mode, policy);
+}
+
 void pbox_app_tunning_init(display_t policy) {
     pbox_app_rockit_init_tunning();
 }

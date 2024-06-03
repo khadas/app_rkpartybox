@@ -242,7 +242,21 @@ typedef enum {
     PLACE_AUTO,
     PLACE_HORI,
     PLACE_VERT,
-}placement_t;
+} placement_t;
+
+typedef enum {
+    EQ_OFF,
+    EQ_ROCK,
+    EQ_POP,
+    EQ_JAZZ,
+    EQ_ELEC,
+    EQ_DANCE,
+    EQ_CONTR,
+    EQ_CLASS,
+    EQ_BLUES,
+    EQ_BALL,
+    EQ_NUM,
+} equalizer_t;
 
 typedef enum {
     MODE_STEREO = 0,

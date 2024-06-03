@@ -33,6 +33,7 @@ void pbox_app_led_startup_effect(void);
 #define pbox_app_led_revertMode(...)        ((void) 0)
 #define pbox_app_led_usbState(...)          ((void) 0)
 
+#define pbox_app_lcd_displayEqMode(...)     ((void) 0)
 #define pbox_app_led_MusicStereoMode(...)   ((void) 0)
 #define pbox_app_led_MusicPlaceMode(...)    ((void) 0)
 #define pbox_app_led_MusicOutdoorMode(...)  ((void) 0)

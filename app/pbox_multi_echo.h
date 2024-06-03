@@ -51,6 +51,7 @@ void pbox_multi_echoUacPpm(uac_role_t role, int32_t ppm, display_t policy);
 void pbox_multi_echoStereoMode(stereo_mode_t stereo, display_t policy);
 void pbox_multi_echoPlacement(placement_t place, display_t policy);
 void pbox_multi_echoOutdoorMode(inout_door_t outdoor, display_t policy);
+void pbox_multi_echoEqMode(equalizer_t mode, display_t policy);
 void pbox_multi_echoPoweron_status(bool status, display_t policy);
 void pbox_multi_echo_dsp_version(char* version, display_t policy);
 void pbox_multi_echoInputSource(input_source_t inputSource, play_status_t status, display_t policy);

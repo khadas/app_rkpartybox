@@ -42,6 +42,7 @@ static int pbox_app_key_switch_vocal_level(float);
 static int pbox_app_key_switch_guitar_level(float);
 static int pbox_app_key_switch_vocal_or_guitar(float);
 static int pbox_app_key_switch_vocal_sperate(float);
+static int pbox_app_key_switch_eq_mode(float);
 
 const struct dot_key support_keys [] =
 {
@@ -60,7 +61,7 @@ const struct dot_key support_keys [] =
     /*长按> 3s */
     {HKEY_PLAY,     0,      K_LONG,       1, 0, enter_long_playpause_mode},
     {HKEY_VOLDOWN,  0,      K_LONG,       1, 0, long_volume_step_down},/*VOL_DOWN*/
-    {HKEY_VOLUP,    0,      K_LONG,       1, 0, long_volume_step_up},/*VOL_UP*/
+    {HKEY_VOLUP,    0,      K_LONG,       1, 0, pbox_app_key_switch_eq_mode},/*VOL_UP*/
     {HKEY_MODE,     0,      K_LONG,       1, 0, enter_long_key_mode},
     {HKEY_MIC1MUTE, 0,      K_LONG,       1, 0, pbox_app_key_switch_vocal_or_guitar},
 
@@ -161,6 +162,11 @@ int pbox_app_key_switch_vocal_sperate(float reserved) {
         pbox_app_music_human_vocal_level_cycle(DISP_All);
     else
         pbox_app_music_guitar_vocal_level_cycle(DISP_All);
+}
+
+int pbox_app_key_switch_eq_mode(float reserved) {
+    equalizer_t mode = (++pboxUIdata->eqmode)%EQ_NUM;
+    pbox_app_music_set_eq_mode(mode, DISP_All);
 }
 
 int pbox_app_key_switch_guitar_level(float reserved) {

@@ -59,6 +59,11 @@ int pbox_app_music_store_placement(placement_t place) {
     return rk_param_set_int("ui:placement", (int)place);
 }
 
+int pbox_app_music_store_eq_mode(equalizer_t mode) {
+    ramdata_ditry++;
+    return rk_param_set_int("ui:eqmode", (int)mode);
+}
+
 int pbox_app_music_store_mic_mux(uint8_t index, mic_mux_t mux) {
     char param_name[20];
     ramdata_ditry++;
@@ -132,6 +137,7 @@ int pbox_app_ui_load(void) {
     pboxUIdata->placement = (placement_t)rk_param_get_int("ui:placement", PLACE_VERT);
     pboxUIdata->stereo = (stereo_mode_t)rk_param_get_int("ui:stereo", MODE_STEREO);
     pboxUIdata->outdoor = (inout_door_t)rk_param_get_int("ui:outdoor", OUTDOOR);
+    pboxUIdata->eqmode = (equalizer_t)rk_param_get_int("ui:eqmode", EQ_POP);
 
     for(int i = 0; i < MIC_NUM; i++) {
         char param_name[20]; // Make sure this is large enough to hold the full parameter name
