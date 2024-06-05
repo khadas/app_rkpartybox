@@ -73,6 +73,9 @@ int hal_dsp_max_mic_treble(void);
 int hal_dsp_max_mic_bass(void);
 int hal_dsp_max_mic_vol(void);
 
+int hal_max_saradc_val(void);
+int hal_min_saradc_val(void);
+
 char *hal_get_audio_card(input_source_t source);
 char* getInputSourceString(input_source_t source);
 int hal_key_convert_kernel_to_upper(uint32_t value);

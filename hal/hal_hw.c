@@ -142,3 +142,11 @@ int hal_dsp_max_mic_bass(void) {
 int hal_dsp_max_mic_vol(void) {
     return DSP_MIC_MAX_VOL;
 }
+
+int hal_max_saradc_val(void) {
+    return MAX_SARA_ADC;
+}
+
+int hal_min_saradc_val(void) {
+    return MIN_SARA_ADC;
+}

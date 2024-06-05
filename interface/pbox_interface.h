@@ -2,7 +2,7 @@
 #define _PBOX_INTERFACE_H_
 
 #include <stdint.h>
-
+#include <stdbool.h>
 // Enum definition for the abstract layer
 typedef enum
 {
@@ -18,5 +18,8 @@ InterfacePlayStatus map_play_status_to_interface(uint32_t status);
 
 int32_t get_maxMicVolume(void);
 int32_t get_minMicVolume(void);
+
+int adckey_read(int fd);
+bool is_rolling_board(void);
 
 #endif // _PBOX_INTERFACE_H_

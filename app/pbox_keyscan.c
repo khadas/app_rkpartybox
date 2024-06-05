@@ -44,16 +44,11 @@
 #include "os_minor_type.h"
 #include "os_task.h"
 #include "hal_partybox.h"
+#include "pbox_interface.h"
 
 #ifdef RK_VAD
 #include "vad.h"
 #endif
-
-#ifndef MAX_SARA_ADC
-#define MAX_SARA_ADC 1023
-#endif
-
-#define MIN_SARA_ADC 0
 
 #define ADCKEY_MIC1_GPIO 79
 #define ADCKEY_MIC2_GPIO 80
@@ -68,7 +63,6 @@
 #define DEV_MIC2_BUTTON_TREBLE  "/sys/bus/iio/devices/iio:device0/in_voltage4_raw"
 #define DEV_MIC2_BUTTON_REVERB  "/sys/bus/iio/devices/iio:device0/in_voltage5_raw"
 #else
-#define DEV_SARADC3_BUTTON    "/sys/bus/iio/devices/iio:device0/in_voltage3_raw"
 #define DEV_SARADC4_BUTTON    "/sys/bus/iio/devices/iio:device0/in_voltage4_raw"
 #define DEV_SARADC5_BUTTON    "/sys/bus/iio/devices/iio:device0/in_voltage5_raw"
 #endif
@@ -108,26 +102,6 @@ const struct _adcKeyTable adcKeyTable[] = {
 #endif
 
 int adckey_read(int fd);
-bool is_rolling_board() {
-    int fd;
-    int value;
-
-    if (ENABLE_EXT_BT_MCU == 1)
-        return false;
-    fd = open(DEV_SARADC3_BUTTON, O_RDONLY);
-    if(fd <= 0) {
-        ALOGE("%s err: %d\n", __func__, fd);
-        return false;
-    }
-
-    value = adckey_read(fd);
-    close(fd);
-    ALOGE("%s value: %d\n", __func__, value);
-    if (value > 1000)                                 //rolling board is 1004
-        return true;
-    else
-        return false;
-}
 
 bool is_saradc_board() {
     return ENABLE_EXT_BT_MCU == 1;
@@ -187,53 +161,29 @@ void switch_adckey_gpio_chn(int num) {
     os_set_gpio_value(ADCKEY_MIC2_GPIO, adcKeyTable[num].gpio2_value);
 }
 
-int adckey_read(int fd) {
-    char buff[6]= {0};
-    int value;
-    lseek(fd, 0, SEEK_SET);
-    int ret = read(fd, buff, sizeof(buff));
-    if (ret < 0) {
-        char str[32] = {0};
-        snprintf(str, sizeof(str)-1, "%s fd:%02d, ret:%d", __func__, fd, ret);
-        perror(str);
-        return -1;
-    }
-    assert(ret==0);
-
-    buff[strlen(buff)-1] = 0;
-    value = atoi(buff);
-    if(value > (MAX_SARA_ADC-MIN_SARA_ADC)/2) {
-        value = value + (MAX_SARA_ADC-MIN_SARA_ADC)/100;
-    }
-
-    //ALOGD("%s fd:%d buff:%s keyValue=%d\n", __func__, fd, buff, value);
-    if(value > MAX_SARA_ADC) value = MAX_SARA_ADC;
-    return value;
-}
-
 static float convert_sara_to_standard(int group, int value) {
     switch (group) {
         case HKEY_MIC2BASS:
         case HKEY_MIC1BASS: {
-            return ORG2TARGET(value, float, MIN_BASS_VALUE, MAX_BASS_VALUE, 0, MAX_SARA_ADC);
+            return ORG2TARGET(value, float, MIN_BASS_VALUE, MAX_BASS_VALUE, 0, hal_max_saradc_val());
         } break;
 
         case HKEY_MIC1TREB:
         case HKEY_MIC2TREB: {
-            return ORG2TARGET(value, float, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE, 0, MAX_SARA_ADC);
+            return ORG2TARGET(value, float, MIN_TREBLE_VALUE, MAX_TREBLE_VALUE, 0, hal_max_saradc_val());
         } break;
 
         case HKEY_MIC1REVB:
         case HKEY_MIC2REVB: {
-            return ORG2TARGET(value, float, MIN_REVERB_VALUE, MAX_REVERB_VALUE, 0, MAX_SARA_ADC);
+            return ORG2TARGET(value, float, MIN_REVERB_VALUE, MAX_REVERB_VALUE, 0, hal_max_saradc_val());
         } break;
 
         case HKEY_MIC1_VOL: {
-            float vol = ORG2TARGET(value, float, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME, 0, MAX_SARA_ADC);
+            float vol = ORG2TARGET(value, float, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME, 0, hal_max_saradc_val());
             return vol;
         } break;
         case HKEY_MIC2_VOL: {
-            float vol = ORG2TARGET(value, float, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME, 0, MAX_SARA_ADC);
+            float vol = ORG2TARGET(value, float, MIN_MIC_PHONE_VOLUME, MAX_MIC_PHONE_VOLUME, 0, hal_max_saradc_val());
             return vol;
         } break;
     }

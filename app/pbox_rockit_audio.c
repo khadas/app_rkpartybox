@@ -47,8 +47,8 @@ static void dump_out_data(const void* buffer,size_t bytes, int size)
    fwrite(buffer,bytes,1,fd);
    offset += bytes;
    fflush(fd);
-   if(offset >= (size)*1024*1024) {
        fseek(fd, 0, SEEK_SET);
+   if(offset >= (size)*1024*1024) {
        offset = 0;
        ALOGD("TEST playback pcmfile restart\n");
    }
