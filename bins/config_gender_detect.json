@@ -8,7 +8,7 @@
 			"end_freq" : 4000,
 			"lg_num" : 40,
 			"lg_pitch_num" : 1,
-			"threhold" : 5,
+			"threhold" : 250,
 		},
 		"door" : {
 			"status" : "disable",

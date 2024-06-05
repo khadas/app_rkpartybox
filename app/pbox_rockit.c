@@ -727,9 +727,9 @@ int convert_sensed_value_to_upper_space(int env, float value) {
         } break;
         case ENV_DOA:{
             if (value > 90)
-                return DOA_L;
-            else
                 return DOA_R;
+            else
+                return DOA_L;
         } break;
         case ENV_GENDER:{
 
@@ -742,7 +742,7 @@ static void pbox_rockit_render_env_sence(int scenes) {
     float result;
     int ret;
     static int waitcount = 0;
-    static int validcount = 0, invalidcount = 0;
+    static int validcount = 0;
     static int doadir = 0;
     static float doasum;
 
@@ -757,7 +757,7 @@ static void pbox_rockit_render_env_sence(int scenes) {
     #ifdef RK_INOUT_TEST
     if((scenes & BIT(ENV_REVERB)))
     #else
-    if((scenes & BIT(ENV_REVERB))&& (waitcount++ > 10)/* && (waitcount%10 == 0)*/)
+    if((scenes & BIT(ENV_REVERB))&& (waitcount++ > 20) && (waitcount%5 == 0))
     #endif
     {
         ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
@@ -771,11 +771,11 @@ static void pbox_rockit_render_env_sence(int scenes) {
                     doadir--;
                 doasum += result;
 
-                if ((validcount == 5) || (validcount >= 10)) {
-                    ALOGW("%s %u+++++++++++++++++++++++++++++++++++++++++++++++in-outdoor avg=%f, dir=%d valid=%d\n",
+                if (validcount >= 10) {
+                    ALOGW("%s %u+++++++++++++++++++++++++++++++++++++++++++++in-outdoor avg=%f, dir=%d(threshod 10) valid=%d\n",
                         __func__, os_get_boot_time_ms(), doasum/validcount, doadir, validcount);
-                    if (validcount >= 10) {
-                        rockit_pbbox_notify_environment_sence(ENV_REVERB, convert_sensed_value_to_upper_space(ENV_REVERB, doasum/validcount));
+                    if (abs(doadir)>10) {
+                        rockit_pbbox_notify_environment_sence(ENV_REVERB, doadir>0? OUTDOOR:INDOOR);
                         waitcount = 0;
                         validcount = 0;
                         doasum = 0;
@@ -793,7 +793,6 @@ static void pbox_rockit_render_env_sence(int scenes) {
         ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_DOA, &result);
         if (!ret) {
             if(is_env_sensed_value_available(ENV_DOA, result)) {
-                invalidcount = 0;
                 validcount++;
                 ALOGW("%s %ums.................................................validcount:%d doa=%f\n", __func__, os_get_boot_time_ms(), validcount, result);
                 if (result > 90)
@@ -803,8 +802,9 @@ static void pbox_rockit_render_env_sence(int scenes) {
                 doasum += result;
 
                 if ((validcount > DOA_VALID_COUNT)) {
-                    ALOGW("%s %ums+++++++++++++++++++++++++++++++++++++++++++++++ doa avg=%f, dir=%d validcount = %d\n",
+                    ALOGW("%s %ums, +++++++++++++++++++++++++++++++++++++++++doa avg=%f, dir=%d(threshod 10) validcount = %d\n",
                         __func__, os_get_boot_time_ms(), doasum/validcount, doadir, validcount);
+                    if(abs(doadir)>10)
                     {
                         rockit_pbbox_notify_environment_sence(ENV_DOA,  doadir>0? DOA_L: DOA_R);
                         waitcount = 0;
@@ -813,13 +813,6 @@ static void pbox_rockit_render_env_sence(int scenes) {
                         doadir = 0;
                     }
                 }
-            } else {
-                if(invalidcount++ > DOA_VALID_COUNT/2) {
-                    doadir = 0;
-                    doasum = 0;
-                    validcount = 0;
-                }
-                ALOGW("%s %ums.................................................validcount:%d doa=%f\n", __func__, os_get_boot_time_ms(), validcount, result);
             }
         }
     }
@@ -884,11 +877,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
 
     ALOGW("%s \n", __func__);
     scene_detect_playing = 1;
-    #ifdef RK_INOUT_TEST
     audio_prompt_send(PROMPT_INOUT_SENCE, true);
-    #else
-    audio_prompt_send(PROMPT_INOUT_SENCE, false);
-    #endif
     scene_attr.card_name   = hal_get_audio_vad_card();
     scene_attr.sample_rate = 48000;
     scene_attr.channels    = 4;
