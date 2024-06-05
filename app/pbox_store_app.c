@@ -128,7 +128,7 @@ int pbox_app_ui_load(void) {
     float volume;
     os_env_get_float("init_vol", &volume, MAX_MAIN_VOLUME);
     pboxUIdata->mainVolumeLevel = rk_param_get_float("ui:mainVolume", volume);
-    pboxUIdata->musicVolumeLevel = rk_param_get_float("ui:musicVolume", DEFAULT_MAIN_VOLUME);
+    pboxUIdata->musicVolumeLevel = rk_param_get_float("ui:musicVolume", DEFAULT_VOLUME);
     pboxUIdata->accomLevel = (uint32_t)rk_param_get_int("ui:accomLevel", 100);
     pboxUIdata->humanLevel = (uint32_t)rk_param_get_int("ui:humanLevel", DEFAULT_HUMAN_LEVEL);
     pboxUIdata->reservLevel = (uint32_t)rk_param_get_int("ui:reservLevel", 100);

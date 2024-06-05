@@ -262,7 +262,12 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
 
     ALOGD("%s file:%s play start!!!!!\n", __func__, prompt_File[index].fileName);
     rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
-    rc_pb_player_set_volume(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, AuxPlayerVolume);
+
+    float mixVolume = AuxPlayerVolume;
+    if (index == PROMPT_INOUT_SENCE || index == PROMPT_DOA_SENCE) {
+        mixVolume = DEFAULT_VOLUME;
+    }
+    rc_pb_player_set_volume(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, mixVolume);
 
     is_prompt_loop_playing = loop;
     while (true) {
