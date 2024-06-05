@@ -17,11 +17,14 @@
 		},
 		"gender" : {
 			"status" : "enable",
-			"threshold" :  -30,
-			"detect_frame" : 48,
-			"fund_freq_pass" : 80,
-			"fund_freq_low" :  250,
-			"fund_freq_high" :  300,
+			"frm_len" :  90,
+			"nclass" : 3,
+			"male_confirm_len" : 60,
+			"female_confirm_len" :  60,
+			"other_confirm_len" :  60,
+			"male_confirm_prob" :  0.5,
+			"female_confirm_prob" :  0.5,
+			"other_confirm_prob" :  0.5,
 		}
 	}
 }
