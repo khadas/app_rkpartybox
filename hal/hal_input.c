@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include "board_audio_hw.h"
+#include "pbox_interface.h"
 
 typedef struct {
     int kernel_space;
@@ -44,7 +45,12 @@ char *hal_get_audio_card(input_source_t source) {
     switch(source) {
         //case SRC_CHIP_USB:  return AUDIO_CARD_RKCHIP_USB; //no need
         case SRC_CHIP_BT:   return AUDIO_CARD_RKCHIP_BT;
-        case SRC_CHIP_UAC:  return AUDIO_CARD_RKCHIP_UAC;
+        case SRC_CHIP_UAC:{
+            if (is_rolling_board())
+                return "hw:3,0";//todo AUDIO_CARD_RKCHIP_UAC_ROLLING
+            else
+                return AUDIO_CARD_RKCHIP_UAC;
+        }
         case SRC_EXT_BT:    return AUDIO_CARD_EXT_BT;
         case SRC_EXT_USB:   return AUDIO_CARD_EXT_USB;
         case SRC_EXT_AUX:   return AUDIO_CARD_EXT_AUX;

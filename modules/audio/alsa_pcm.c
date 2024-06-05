@@ -97,7 +97,6 @@ fail:
     return err;
 }
 
-const char * device = "hw:2,0";
 int pcm_open(snd_pcm_t **pcm, alsa_card_conf_t* audioConfig, int block) {
     snd_pcm_t *_pcm = NULL;
     char buf[256];
