@@ -30,7 +30,7 @@ typedef enum {
     PBOX_LCD_DISP_ENERGY_INFO,
     PBOX_LCD_DISP_RESERV_LEVEL,
     PBOX_LCD_DISP_REFLASH,
-
+    PBOX_LCD_DISP_GENDER,
 
     //event
     PBOX_LCD_PLAY_PAUSE_EVT = 0x100,
@@ -66,6 +66,7 @@ typedef struct {
         uint32_t        accomp_music_level;//surroundings/environment sound level
         uint32_t        human_music_level;
         uint32_t        reserv_music_level;
+        gender_t        gender;
         pbox_revertb_t      reverbMode;
         pbox_vocal_t        vocalSeparate;
         bool                echo3a;

@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 // Function declarations
+void pbox_multi_echoGender(gender_t gender, display_t policy);
 void pbox_multi_echoIsPlaying(bool play, display_t policy);
 void pbox_multi_echoPrevNext(bool next, display_t policy);
 void pbox_multi_echoTrackInfo(const char* title, const char* artist, display_t policy);

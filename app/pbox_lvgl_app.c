@@ -29,6 +29,16 @@ int unix_socket_lcd_send(void *info, int length)
     #endif
 }
 
+void pbox_app_lcd_displayGender(gender_t gender) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_GENDER,
+    };
+    msg.gender = gender;
+
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
 void pbox_app_lcd_displayPlayPause(bool play) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,

@@ -165,6 +165,7 @@ void pbox_app_btsoc_set_input_source(input_source_t source, play_status_t status
 void pbox_app_btsoc_set_music_volume(float volume, display_t policy);
 
 void pbox_app_echo_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy);
+void pbox_app_echo_gender_info(gender_t gender, display_t policy);
 void pbox_app_echo_tack_info(char *title, char *artist, display_t policy);
 void pbox_app_echo_bt_state(btsink_state_t state, display_t policy);
 void pbox_app_echo_playingStatus(bool play, display_t policy);
@@ -189,6 +190,7 @@ bool is_input_source_automode(void);
 bool is_input_source_configed(input_source_t source);
 int pbox_app_ui_load(void);
 
+void pbox_app_post_get_sence_value(input_source_t source, size_t scenes);
 #ifdef __cplusplus
 }
 #endif

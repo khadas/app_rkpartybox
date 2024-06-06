@@ -31,6 +31,16 @@
 #define BTMCU_DISP_MASK (ENABLE_EXT_BT_MCU << LEFT_SHIFT_COUNT(DISP_BTMCU))
 #define STORAGE_DISP_MASK (DISP_FS)
 
+void pbox_multi_echoGender(gender_t gender, display_t policy)
+{
+    if (policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayGender(gender);
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_displayGender(gender);
+    if (policy & BTMCU_DISP_MASK)
+        pbox_app_btsoc_echo_gender(gender);
+}
+
 void pbox_multi_echoIsPlaying(bool play, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)

@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+void pbox_app_lcd_displayGender(gender_t gender);
 void pbox_app_lcd_displayPlayPause(bool play);
 void pbox_app_lcd_displayPrevNext(bool next);
 void pbox_app_lcd_displayTrackInfo(const char* title, const char* artist);

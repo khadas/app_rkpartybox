@@ -50,6 +50,7 @@ typedef enum {
     UI_WIDGET_DEVICE_STATE,
     UI_WIDGET_MIC_MUTE,
     UI_WIDGET_REVERTB_MODE,
+    UI_WIDGET_GENDER_INFO,
 }ui_widget_t;
 
 void lv_demo_music(void);

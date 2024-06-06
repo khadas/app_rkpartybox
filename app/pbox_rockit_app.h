@@ -63,9 +63,11 @@ void pbox_app_rockit_get_recoder_volume(void);
 
 void pbox_app_rockit_init_tunning(void);
 
-void pbox_app_rockit_post_env_sence(size_t scenes);
+void pbox_app_rockit_post_sence_detect(input_source_t source, size_t scenes);
 
 void pbox_app_rockit_play_notice_number(uint32_t number);
+
+void pbox_app_rockit_reset_gender(input_source_t source);
 
 void pbox_app_rockit_start_inout_detect(void);
 //left, right

@@ -369,10 +369,16 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_rockit_get_player_energy(pboxData->inputDevice);
     }
 
-    if ((0 == msTimePassed%1000) && (pboxUIdata->play_status == PLAYING)) {
+    if ((pboxUIdata->play_status == PLAYING)) {
         //every one second send command to refresh position
-        if(pboxData->inputDevice == SRC_CHIP_USB)
-            pbox_app_rockit_get_music_current_postion(SRC_CHIP_USB);
+        uint32_t scenes = 0;
+        if(pboxData->inputDevice == SRC_CHIP_USB && (0 == msTimePassed%1000))
+            scenes |= BIT(ENV_POSITION);
+        if(0 == msTimePassed%320)
+            scenes |= BIT(ENV_GENDER);
+
+        //pbox_app_rockit_get_music_current_postion(SRC_CHIP_USB);
+        pbox_app_post_get_sence_value(pboxData->inputDevice, scenes);
     }
 
     if((isPoweron == false) /*&& (0 == msTimePassed%100)*/) {

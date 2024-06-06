@@ -90,6 +90,14 @@ void pbox_app_echo_track_position(bool durationOnly, uint32_t current, uint32_t 
     pbox_multi_echoTrackPosition(durationOnly, current, duration, policy);
 }
 
+void pbox_app_echo_gender_info(gender_t gender, display_t policy) {
+    //nothing to notify rockit
+    pbox_multi_echoGender(gender, policy);
+    if(gender == GENDER_TBD) {
+        pbox_app_rockit_reset_gender(pboxData->inputDevice);
+    }
+}
+
 void pbox_app_echo_tack_info(char *title, char *artist, display_t policy) {
     //nothing to notify rockit
     pbox_multi_echoTrackInfo(title, artist, policy);
@@ -369,6 +377,7 @@ void pbox_app_switch_to_input_source(input_source_t source, display_t policy) {
         } break;
     }
     //no ui display now
+    pbox_app_echo_gender_info(GENDER_TBD, policy);
 }
 
 void pbox_app_music_pause(display_t policy)
@@ -422,11 +431,13 @@ void pbox_app_music_start(display_t policy) {
             pbox_app_rockit_start_local_player(track_uri, NULL);
             pbox_app_music_set_music_volume(pboxUIdata->musicVolumeLevel, policy);
             pbox_app_music_original_singer_open(!pboxUIdata->vocalSplit, policy);
-            pbox_multi_echoTrackInfo(track_name, NULL, policy);
+            pbox_app_echo_tack_info(track_name, NULL, policy);
+            pbox_app_echo_gender_info(GENDER_TBD, policy);
         } break;
 
         case SRC_CHIP_UAC: {
-            pbox_multi_echoTrackInfo("", NULL, policy);
+            pbox_app_echo_tack_info("", NULL, policy);
+            pbox_app_echo_gender_info(GENDER_TBD, policy);
             pbox_app_restart_passive_player(SRC_CHIP_UAC, true, policy);
         } break;
         default:
@@ -560,7 +571,9 @@ void pbox_app_music_album_next(bool next, display_t policy)
             }
 
             if(*pId < pboxTrackdata->track_num) {
-                pbox_multi_echoTrackInfo(pboxTrackdata->track_list[*pId].title, NULL,  DISP_All);
+                printf("%s pId:%d total:%d\n", __func__, *pId, pboxTrackdata->track_num);
+                pbox_app_echo_tack_info(pboxTrackdata->track_list[*pId].title, NULL,  DISP_All);
+                pbox_app_echo_gender_info(GENDER_TBD, policy|DISP_LCD);
             }
 
             if(pboxUIdata->play_status == PLAYING) {
@@ -569,13 +582,13 @@ void pbox_app_music_album_next(bool next, display_t policy)
             } else {
                 pboxData->trackchanged = true;
             }
-
         } break;
 
         case SRC_CHIP_UAC: {
             char text[32] = {0};
             snprintf(text, 31, "UAC NO SUPPORT:%s !!!", next? "NEXT":"PREV");
-            pbox_multi_echoTrackInfo(text, NULL,  DISP_All);
+            pbox_app_echo_tack_info(text, NULL,  DISP_All|DISP_LCD);
+            pbox_app_echo_gender_info(GENDER_TBD, policy);
         } break;
 
         default:
@@ -1255,9 +1268,9 @@ void pbox_app_post_stop_detect(void) {
     pbox_app_rockit_stop_env_detect();
 }
 
-void pbox_app_post_get_sence_value(size_t scene) {
-   ALOGW("%s scene:%d\n", __func__, scene);
-   pbox_app_rockit_post_env_sence(scene);
+void pbox_app_post_get_sence_value(input_source_t source, size_t scenes) {
+   //ALOGW("%s source:%s, scene:0x%02x\n", __func__, getInputSourceString(source), scenes);
+   pbox_app_rockit_post_sence_detect(source, scenes);
 }
 
 int get_and_clear_inout_shake(void) {

@@ -11,6 +11,7 @@ extern "C" {
 
 // Function declarations for LED effects
 void pbox_app_led_PlayPause(bool play);
+void pbox_app_led_displayGender(gender_t gender);
 void pbox_app_led_PrevNext(bool next);
 void pbox_app_led_MusicVolumeLevel(uint32_t mVolume);
 void pbox_app_led_MicVolumeLevel(uint32_t micVolume);

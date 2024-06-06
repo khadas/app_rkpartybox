@@ -217,6 +217,11 @@ void handleLcdPrevNextCmd(const pbox_lcd_msg_t* msg) {
     ALOGD("Prev/Next Command: %s\n", next ? "Next" : "Previous");
 }
 
+void handleLcdGenderCmd(const pbox_lcd_msg_t* msg) {
+    //gender_t gender = msg->gender;
+    _lv_demo_music_update_ui_info(UI_WIDGET_GENDER_INFO, msg);
+}
+
 // Function to handle the track info command
 void handleLcdTrackInfoCmd(const pbox_lcd_msg_t* msg) {
     char title[MAX_MUSIC_NAME_LENGTH + 1] = {0};
@@ -402,6 +407,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_ENERGY_INFO, handleLcdEnergyInfoCmd },
     { PBOX_LCD_DISP_RESERV_LEVEL, handleLcdReservLevelCmd },
     { PBOX_LCD_DISP_REFLASH, handleLcdGuiReflushCmd},
+    { PBOX_LCD_DISP_GENDER, handleLcdGenderCmd},
 
     // Add other as needed...
 };

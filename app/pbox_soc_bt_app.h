@@ -36,6 +36,7 @@ void pbox_app_btsoc_echo_input_source_with_playing_status(input_source_t source,
 #define pbox_app_btsoc_echo_mic_volume(...)			((void) 0)
 #define pbox_app_btsoc_echo_PrevNext(...)			((void) 0)
 #define pbox_app_btsoc_echo_playPause(...)			((void) 0)
+#define pbox_app_btsoc_echo_gender(...)				((void) 0)
 
 #ifdef __cplusplus
 }

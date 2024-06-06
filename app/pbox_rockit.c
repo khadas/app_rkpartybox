@@ -96,8 +96,9 @@ os_sem_t* auxplay_looplay_sem = NULL;
 bool is_prompt_loop_playing = false;
 int scene_detect_playing = 0;
 float AuxPlayerVolume = -20;
+static int32_t gender_prev = -1;
 
-int rk_demo_music_create() {
+int rk_demo_music_create(void) {
     //create karaoke recorder && player
     void *mpi_hdl = NULL;
     struct rc_pb_attr attr;
@@ -705,7 +706,7 @@ bool is_env_sensed_value_available(int env, float value) {
                 result = true;
         } break;
         case ENV_GENDER:{
-            if(value >= 0)
+            if(value > 0)
                 result = true;
         } break;
     }
@@ -732,26 +733,41 @@ int convert_sensed_value_to_upper_space(int env, float value) {
                 return DOA_L;
         } break;
         case ENV_GENDER:{
-
+            if (0 == (uint32_t)value) {
+                return GENDER_TBD;
+            } else if (1 == (uint32_t)value) {
+                return GENDER_M;
+            } else if (2 == (uint32_t)value) {
+                return GENDER_F;
+            }
         } break;
     }
+
+    return 0;
+}
+
+static void pbox_rockit_reset_gender(pbox_rockit_msg_t *msg) {
+    gender_prev = -1;
 }
 
 #define DOA_VALID_COUNT 20
-static void pbox_rockit_render_env_sence(int scenes) {
+static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
     float result;
     int ret;
     static int waitcount = 0;
     static int validcount = 0;
     static int doadir = 0;
     static float doasum;
+    uint32_t scenes = msg->scene;
+    input_source_t source = msg->source;
 
     assert(partyboxCtx);
     assert(rc_pb_scene_get_result);
     assert(rc_pb_player_get_param);
 
-    if(scene_detect_playing != 0) {
-        ALOGW("%s prompt is playing :%d\n", __func__, scene_detect_playing);
+    if(scene_detect_playing != 0)
+    {
+        ALOGW("%s scenes:0x%02x prompt is playing :%d\n", __func__, scenes, scene_detect_playing);
     }
 
     #ifdef RK_INOUT_TEST
@@ -819,14 +835,25 @@ static void pbox_rockit_render_env_sence(int scenes) {
 
     if(scenes & BIT(ENV_GENDER)) {
         struct rc_pb_param param;
+        enum rc_pb_play_src dest = covert2rockitSource(source);
         param.type = RC_PB_PARAM_TYPE_SCENE;
         param.scene.scene_mode = RC_PB_SCENE_MODE_GENDER;
-        ret = rc_pb_player_get_param(partyboxCtx, SRC_EXT_BT, &param);//tmp source
-        if (!ret) {
-            ALOGW("%s.................................................. gender:%f\n", __func__, param.scene.result);
-            if(is_env_sensed_value_available(ENV_GENDER, param.scene.result))
-                rockit_pbbox_notify_environment_sence(ENV_GENDER, convert_sensed_value_to_upper_space(ENV_GENDER, param.scene.result));
-        }
+        ret = rc_pb_player_get_param(partyboxCtx, dest, &param);
+        do {
+            if (ret) break;
+            if((gender_prev == (int32_t)(param.scene.result)))
+                break;
+            gender_prev = param.scene.result;
+            ALOGW("%s.................................................. gender:%f, %d\n", __func__, param.scene.result, param.scene.result);
+            if(!is_env_sensed_value_available(ENV_GENDER, param.scene.result))
+                break;
+            rockit_pbbox_notify_environment_sence(ENV_GENDER, convert_sensed_value_to_upper_space(ENV_GENDER, param.scene.result));
+        } while (0);
+    }
+
+    if(scenes & BIT(ENV_POSITION)) {
+        uint32_t position = (uint32_t)(pbox_rockit_music_get_position(source)/1000);
+        rockit_pbbox_notify_current_postion(position);
     }
 }
 
@@ -1769,7 +1796,7 @@ static void *pbox_rockit_server(void *arg)
             break;
 
         pbox_rockit_msg_t *msg = (pbox_rockit_msg_t *)buff;
-        if(msg->msgId != PBOX_ROCKIT_GET_PLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_PLAYERCURRENTPOSITION)
+        if(msg->msgId != PBOX_ROCKIT_GET_PLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_SENCE)
         ALOGE("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
 
         if(msg->type == PBOX_EVT)
@@ -1899,9 +1926,12 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_GET_SENCE: {
-                pbox_rockit_render_env_sence(msg->scene);
+                pbox_rockit_render_env_sence(msg);
             } break;
 
+            case PBOX_ROCKIT_RESET_GENDER: {
+                pbox_rockit_reset_gender(msg);
+            } break;
             case PBOX_ROCKIT_START_INOUT_DETECT: {
                 pbox_rockit_start_inout_detect(msg);
             } break;
@@ -1937,7 +1967,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
         }
 
-        if(msg->msgId != PBOX_ROCKIT_GET_PLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_PLAYERCURRENTPOSITION)
+        if(msg->msgId != PBOX_ROCKIT_GET_PLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_SENCE)
             ALOGW("%s end: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
     }
 

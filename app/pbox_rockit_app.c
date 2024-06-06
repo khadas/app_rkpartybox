@@ -347,10 +347,20 @@ void pbox_app_rockit_init_tunning(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_post_env_sence(size_t scenes) {
+void pbox_app_rockit_reset_gender(input_source_t source) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_RESET_GENDER,
+        .source = source,
+    };
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
+
+void pbox_app_rockit_post_sence_detect(input_source_t source, size_t scenes) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_GET_SENCE,
+        .source = source,
         .scene = scenes,
     };
 
@@ -440,9 +450,19 @@ void pbox_app_rockit_set_ppm(uac_role_t role, int32_t ppm) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+char *get_scene_string(env_scene_t scene) {
+    switch (scene) {
+        case ENV_DOA: return CSTR(DOA);
+        case ENV_REVERB: return CSTR(REVERB);
+        case ENV_GENDER: return CSTR(GENDER);
+        case ENV_POSITION: return CSTR(POSITION);
+    }
+    return NULL;
+}
+
 void pbox_app_handle_env_sences(struct _sense_res sense_res) {
     uint32_t scene = sense_res.scene;
-    ALOGW("%s %s result:%d\n", __func__, scene==ENV_DOA?CSTR(ENV_DOA):(scene==ENV_REVERB?CSTR(ENV_REVERB):CSTR(ENV_GENDER)), sense_res.result);
+    ALOGD("%s %s result:%d\n", __func__, get_scene_string(scene), sense_res.result);
 
     switch (scene) {
         case ENV_DOA: {
@@ -453,6 +473,7 @@ void pbox_app_handle_env_sences(struct _sense_res sense_res) {
         } break;
         case ENV_GENDER: {
             pboxData->gender_sence = sense_res.result;
+            pbox_app_echo_gender_info(pboxData->gender_sence, DISP_All);
         } break;
     }
 }

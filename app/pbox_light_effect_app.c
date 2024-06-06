@@ -9,6 +9,10 @@
 #include "pbox_light_effect_app.h"
 #include "pbox_app.h"
 
+void pbox_app_led_displayGender(gender_t gender) {
+	ALOGD("%s: %d\n", __func__, gender);
+}
+
 void pbox_app_led_PlayPause(bool play) {
 	ALOGD("%s PlayPause: %d\n", __func__, play);
 	//soundreactive_mute_set(!play);// it shouldn't call another thread's func here directly...

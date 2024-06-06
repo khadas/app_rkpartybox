@@ -268,7 +268,8 @@ typedef enum {
     ENV_DOA,    //left, right
     ENV_REVERB, //in, out
     ENV_GENDER,
-} env_sense_t;
+    ENV_POSITION,
+} env_scene_t;
 
 typedef enum {
     R_PARTNER, //slave

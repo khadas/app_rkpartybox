@@ -337,6 +337,19 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             lv_label_set_text(mic_volume_label, buf);
             lv_slider_set_value(mic_volume_slider, micVolume, LV_ANIM_OFF);
         } break;
+        case UI_WIDGET_GENDER_INFO: {
+            gender_t gender = msg->gender;
+            if(gender == GENDER_F) {
+                lv_obj_set_style_text_color(title_label, lv_color_hex(0xD55774), 0);
+                lv_obj_set_style_text_color(artist_label, lv_color_hex(0xD55774), 0);
+            } else if (gender == GENDER_M) {
+                lv_obj_set_style_text_color(title_label, lv_color_hex(0x0000FF), 0);
+                lv_obj_set_style_text_color(artist_label, lv_color_hex(0x0000FF), 0);
+            }  else if (gender == GENDER_TBD) {
+                lv_obj_set_style_text_color(title_label, lv_color_hex(0x504d6d), 0);
+                lv_obj_set_style_text_color(artist_label, lv_color_hex(0x504d6d), 0);
+            }
+        } break;
         case UI_WIDGET_TRACK_INFO: {
             uint32_t track_id = _lv_demo_music_get_track_id();
             char *artist = (char*)(msg->track.artist);
