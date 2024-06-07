@@ -20,10 +20,26 @@ extern "C" {
 #define AUDIO_CARD_EXT_USB      NULL
 #define AUDIO_CARD_EXT_AUX      NULL
 
-#define AUDIO_CARD_CHIP_VAD       "hw:0,0"
+#define AUDIO_CARD_CHIP_KALAOK  "mic"
+#define AUDIO_CARD_CHIP_SCENE   "scene"
 #define AUDIO_CARD_RKCHIP_BT    "hw:7,1,0"
 #define AUDIO_CARD_RKCHIP_UAC   "hw:2,0"
 #define AUDIO_CARD_RKCHIP_UAC_ROLLING   "hw:3,0"
+
+//this is rockchip rockit usage
+//--------------start------------------
+#define KALAOK_REC_CHANNEL      4
+#define KALAOK_POOR_COUNT       2
+#define KALAOK_REF_LAYOUT       0x03
+#define KALAOK_REC_LAYOUT       0x0c
+#define KALAOK_REF_CHN_LAYOUT   0x0f
+#define KALAOK_REF_HARD_MODE    1
+
+#define SCENE_REC_CHANNEL       4
+#define SCENE_REF_LAYOUT        0x03
+#define SCENE_REC_LAYOUT        0x0c
+#define SCENE_REF_HARD_MODE     0
+//--------------end--------------------
 
 #define MAX_SARA_ADC 1023
 #define MIN_SARA_ADC 0

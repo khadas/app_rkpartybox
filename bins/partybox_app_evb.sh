@@ -115,6 +115,12 @@ fi
 if [ ! -e /oem/tone/eq_rockmode.pcm ]; then
 	ln -s /etc/pbox/eq_rockmode.pcm /oem/tone/eq_rockmode.pcm
 fi
+if [ ! -e /oem/tone/res_indoor.pcm ]; then
+	ln -s /etc/pbox/res_indoor.pcm /oem/tone/res_indoor.pcm
+fi
+if [ ! -e /oem/tone/res_outdoor.pcm ]; then
+	ln -s /etc/pbox/res_outdoor.pcm /oem/tone/res_outdoor.pcm
+fi
 
 if [ ! -e /oem/uac_config ]; then
 	echo "Maybe first init, make link /oem/uac_config fisrt!"

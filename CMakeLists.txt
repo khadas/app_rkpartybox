@@ -195,6 +195,8 @@ install(FILES bins/eq_elecmode.pcm DESTINATION /etc/pbox)
 install(FILES bins/eq_jazzmode.pcm DESTINATION /etc/pbox)
 install(FILES bins/eq_popmode.pcm DESTINATION /etc/pbox)
 install(FILES bins/eq_rockmode.pcm DESTINATION /etc/pbox)
+install(FILES bins/res_indoor.pcm DESTINATION /etc/pbox)
+install(FILES bins/res_outdoor.pcm DESTINATION /etc/pbox)
 
 install(FILES bins/pbox-factory.ini DESTINATION /etc/pbox)
 install(PROGRAMS bins/S40-rkpartybox DESTINATION /etc/init.d)

@@ -80,6 +80,21 @@ char *hal_get_audio_card(input_source_t source);
 char* getInputSourceString(input_source_t source);
 int hal_key_convert_kernel_to_upper(uint32_t value);
 char *hal_get_audio_vad_card(void);
+
+char *hal_get_kalaok_mic_card(void);
+uint8_t hal_get_kalaok_mic_ref_layout(void);
+uint8_t hal_get_kalaok_mic_rec_layout(void);
+uint8_t hal_get_kalaok_mic_chn_layout(void);
+uint8_t hal_get_kalaok_mic_rec_channel(void);
+uint8_t hal_get_kalaok_poor_count(void);
+uint8_t hal_get_kalaok_ref_hard_mode(void);
+
+char *hal_get_audio_scene_card(void);
+uint8_t hal_get_scene_mic_ref_layout(void);
+uint8_t hal_get_scene_mic_rec_layout(void);
+uint8_t hal_get_scene_mic_rec_channel(void);
+uint8_t hal_get_scene_ref_hard_mode(void);
+
 input_source_t hal_get_favor_source_order(int index);
 uint32_t hal_get_supported_sources(void);
 

@@ -191,6 +191,11 @@ bool is_input_source_configed(input_source_t source);
 int pbox_app_ui_load(void);
 
 void pbox_app_post_get_sence_value(input_source_t source, size_t scenes);
+void pbox_app_post_inout_detect(display_t policy);
+void pbox_app_post_stereo_detect(int agent_role);
+void pbox_app_post_stop_detect(void);
+int pbox_app_get_and_clear_inout_value(void);
+int pbox_app_get_and_clear_stereo_position(void);
 #ifdef __cplusplus
 }
 #endif

@@ -11,6 +11,8 @@ typedef struct {
     int user_space;
 } key_pair_t;
 
+const input_source_t frozenSrcOrder[SRC_NUM] = FAVOR_SRC_ORDER;
+
 char* getInputSourceString(input_source_t source) {
     switch (source) {
         case SRC_CHIP_USB: return "usb";
@@ -62,15 +64,55 @@ char *hal_get_audio_card(input_source_t source) {
     return NULL;
 }
 
-char *hal_get_audio_vad_card(void) {
-    return AUDIO_CARD_CHIP_VAD;
+//this is kalaok mic
+char *hal_get_kalaok_mic_card(void) {
+    return AUDIO_CARD_CHIP_KALAOK;
 }
 
-const input_source_t frozenSrcOrder[SRC_NUM] = FAVOR_SRC_ORDER;
+uint8_t hal_get_kalaok_mic_ref_layout(void) {
+    return KALAOK_REF_LAYOUT;
+}
+
+uint8_t hal_get_kalaok_mic_rec_layout(void) {
+    return KALAOK_REC_LAYOUT;
+}
+
+uint8_t hal_get_kalaok_mic_chn_layout(void) {
+    return KALAOK_REF_CHN_LAYOUT;
+}
+
+uint8_t hal_get_kalaok_mic_rec_channel(void) {
+    return KALAOK_REC_CHANNEL;
+}
+
+uint8_t hal_get_kalaok_poor_count(void) {
+    return KALAOK_POOR_COUNT;
+}
+
+uint8_t hal_get_kalaok_ref_hard_mode(void) {
+    return KALAOK_REF_HARD_MODE;
+}
+
+//=============scene mic=====================
+char *hal_get_audio_scene_card(void) {
+    return AUDIO_CARD_CHIP_SCENE;
+}
+uint8_t hal_get_scene_mic_ref_layout(void) {
+    return SCENE_REF_LAYOUT;
+}
+uint8_t hal_get_scene_mic_rec_layout(void) {
+    return SCENE_REC_LAYOUT;
+}
+uint8_t hal_get_scene_mic_rec_channel(void) {
+    return SCENE_REC_CHANNEL;
+}
+uint8_t hal_get_scene_ref_hard_mode(void) {
+    return SCENE_REF_HARD_MODE;
+}
+
 input_source_t hal_get_favor_source_order(int index) {
     return frozenSrcOrder[index];
 }
-
 uint32_t hal_get_supported_sources(void) {
     return HW_SUPPORT_SRCS;
 }

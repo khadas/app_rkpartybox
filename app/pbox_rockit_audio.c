@@ -214,6 +214,8 @@ struct _audio_file {
     {PROMPT_EQ_JAZZ,    "/oem/tone/eq_jazzmode.pcm",         16000, 2},
     {PROMPT_EQ_POP,     "/oem/tone/eq_popmode.pcm",          16000, 2},
     {PROMPT_EQ_ROCK,    "/oem/tone/eq_rockmode.pcm",         16000, 2},
+    {PROMPT_INDOOR,     "/oem/tone/res_indoor.pcm",          16000, 2},
+    {PROMPT_OUTDOOR,    "/oem/tone/res_outdoor.pcm",         16000, 2},
 };
 
 void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
