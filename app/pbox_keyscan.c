@@ -157,8 +157,10 @@ void adckey_deinit_gpio() {
 }
 
 void switch_adckey_gpio_chn(int num) {
+    #if !ENABLE_EXT_BT_MCU
     os_set_gpio_value(ADCKEY_MIC1_GPIO, adcKeyTable[num].gpio1_value);
     os_set_gpio_value(ADCKEY_MIC2_GPIO, adcKeyTable[num].gpio2_value);
+    #endif
 }
 
 static float convert_sara_to_standard(int group, int value) {
