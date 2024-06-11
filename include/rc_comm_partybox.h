@@ -40,6 +40,8 @@ typedef double                rc_double;
 typedef void*                 rc_pb_ctx;
 typedef void*                 rc_pb_frame;
 
+#define PB_MAX_AUDIO_CHN_NUM  8
+
 enum rc_pb_play_src {
     RC_PB_PLAY_SRC_LOCAL = 0,
     RC_PB_PLAY_SRC_BT,
@@ -59,6 +61,12 @@ enum rc_pb_event {
     RC_PB_EVENT_PLAYBACK_COMPLETE,
     RC_PB_EVENT_AWAKEN,
     RC_PB_EVENT_BUTT
+};
+
+enum rc_pb_gt_card_type {
+    RC_PB_GUITAR_CARD_TYPE_IND = 0,
+    RC_PB_GUITAR_CARD_TYPE_COMBO,
+    RC_PB_GUITAR_CARD_TYPE_BUTT
 };
 
 enum rc_pb_param_type {
@@ -219,11 +227,23 @@ struct rc_pb_player_attr {
     struct rc_pb_param_level_detect detect;
 };
 
-struct rc_pb_recorder_gt_attr {
+struct rc_pb_gt_attr_ind {
     char   *card_name;
     rc_u32  sample_rate;
     rc_u32  channels;
     rc_u32  bit_width;
+};
+
+struct rc_pb_gt_attr_combo {
+    rc_u32  channel_status[PB_MAX_AUDIO_CHN_NUM];  /* RW; 0:not guitar 1:guitar */
+};
+
+struct rc_pb_recorder_gt_attr {
+    enum rc_pb_gt_card_type type;
+    union {
+        struct rc_pb_gt_attr_ind    independent;
+        struct rc_pb_gt_attr_combo  combo;
+    };
 };
 
 struct rc_pb_recorder_attr {
