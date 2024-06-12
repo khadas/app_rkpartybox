@@ -206,7 +206,7 @@ void update_music_positions(uint32_t current, uint32_t total) {
     if(prev_total != total) {
         prev_total = total;
         pbox_app_restart_passive_player(SRC_CHIP_BT, true, DISP_All);
-        pbox_app_echo_gender_info(GENDER_TBD, DISP_All);
+        pbox_app_reset_gender_info(DISP_All);
     }
 }
 

@@ -280,6 +280,7 @@ typedef enum {
 typedef enum {
     GENDER_M,    //left, right
     GENDER_F, //in, out
+    GENDER_COMBO,
     GENDER_TBD, //other
 } gender_t;
 

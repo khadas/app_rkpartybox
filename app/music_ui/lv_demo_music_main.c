@@ -345,7 +345,10 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             } else if (gender == GENDER_M) {
                 lv_obj_set_style_text_color(title_label, lv_color_hex(0x0000FF), 0);
                 lv_obj_set_style_text_color(artist_label, lv_color_hex(0x0000FF), 0);
-            }  else if (gender == GENDER_TBD) {
+            } else if(gender == GENDER_COMBO) {
+                lv_obj_set_style_text_color(title_label, lv_color_hex(0x7030A0), 0);
+                lv_obj_set_style_text_color(artist_label, lv_color_hex(0x7030A0), 0);
+            } else if (gender == GENDER_TBD) {
                 lv_obj_set_style_text_color(title_label, lv_color_hex(0x504d6d), 0);
                 lv_obj_set_style_text_color(artist_label, lv_color_hex(0x504d6d), 0);
             }
