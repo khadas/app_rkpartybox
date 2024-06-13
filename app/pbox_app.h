@@ -60,6 +60,7 @@ typedef struct {
     int stereo_shake;
     int inout_shake;
     int gender_sence;
+    bool dispMicEngery;
 
     struct _pbox_ui {
         placement_t placement;
@@ -138,6 +139,7 @@ void pbox_app_music_set_mic_treble(uint8_t index, float treble, display_t policy
 void pbox_app_music_set_mic_bass(uint8_t index, float bass, display_t policy);
 void pbox_app_music_set_mic_reverb(uint8_t index, float reverb, display_t policy);
 void pbox_app_music_set_mic_all(uint32_t index, mic_state_t micdata, display_t policy);
+void pbox_app_get_energyinfo(uint8_t destMux, input_source_t source, uint8_t micMux, uint8_t guitarMux);
 
 void pbox_version_print(void);
 void pbox_app_music_init(void);

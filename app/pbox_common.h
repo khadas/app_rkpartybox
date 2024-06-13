@@ -44,6 +44,10 @@ extern "C" {
 
 #define MAX_SHORT_NAME_LENGTH 63
 #define TRACK_MAX_NUM 100
+#define ENERGY_BAND_DETECT 10
+#define BIT(x) (1<<x)
+#define CSTR(x) (#x)
+#define CVAL(x) CSTR(x)
 
 typedef enum {
     PBOX_SOCKPAIR_BT,
@@ -120,14 +124,27 @@ typedef enum {
     PBOX_REVERT_BUTT,
 } pbox_revertb_t;
 
+typedef enum {
+    ENERGY_PLAYER,
+    ENERGY_MIC,
+    ENERGY_GUITAR,
+    ENERGY_ALL,
+} energy_dest_t;
+#define ENERGY_ALL_MUX          BIT(ENERGY_PLAYER)|BIT(ENERGY_MIC)|BIT(ENERGY_GUITAR)
+#define ENERGY_MICGUITAR_MUX    BIT(ENERGY_MIC)|BIT(ENERGY_GUITAR)
+#define ENERGY_MICPLAYER_MUX    BIT(ENERGY_PLAYER)|BIT(ENERGY_MIC)
+#define ENERGY_GUITARPLAYER_MUX BIT(ENERGY_PLAYER)|BIT(ENERGY_GUITAR)
+
 typedef struct {
     int freq;
     int energy;
 }energy_t;
 
 typedef struct energy_info {
+    energy_dest_t dest;
+    uint8_t index;
     int size;
-    energy_t energykeep[10];
+    energy_t energykeep[ENERGY_BAND_DETECT];
 } energy_info_t;
 
 typedef enum
@@ -304,10 +321,6 @@ typedef struct _uac {
 typedef struct _pbox_pipe {
     int fd[2];
 } pbox_pipe_t;
-
-#define BIT(x) (1<<x)
-#define CSTR(x) (#x)
-#define CVAL(x) CSTR(x)
 
 #define PBOX_ARRAY_SET(array, value, size)	\
 do											\

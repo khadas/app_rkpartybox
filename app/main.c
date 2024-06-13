@@ -366,7 +366,7 @@ void maintask_timer_fd_process(int timer_fd) {
 
     if((0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) && (pboxUIdata->play_status == PLAYING)) {
         //send commamd to get engery.
-        pbox_app_rockit_get_player_energy(pboxData->inputDevice);
+        pbox_app_get_energyinfo(ENERGY_ALL_MUX, pboxData->inputDevice, BIT(0), 0);//BIT(0) means mic0
     }
 
     if ((pboxUIdata->play_status == PLAYING)) {

@@ -1161,6 +1161,12 @@ void pbox_app_echo_micdata(uint8_t index, mic_set_kind_t kind, display_t policy)
     }
 }
 
+//micMux: bit0-bit7: mic0-mic7
+//guitarMux: bit0-bit7: guitar0-guitar7
+void pbox_app_get_energyinfo(uint8_t destMux, input_source_t source, uint8_t micMux, uint8_t guitarMux) {
+    pbox_app_rockit_get_player_energy(destMux, source, micMux, guitarMux);
+}
+
 void pbox_app_btsoc_set_volume(float volume, display_t policy) {
     if(pboxUIdata->mainVolumeLevel == volume)
         return;

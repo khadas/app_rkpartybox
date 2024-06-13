@@ -277,7 +277,6 @@ int enter_long_playpause_mode(float arg)
     ALOGD("enter_long_playpause_mode\n");
     return 1;
 }
-
 int long_volume_step_up(float arg)
 {
     ALOGD("---long_volume_step_up--\n");
@@ -286,11 +285,10 @@ int long_volume_step_up(float arg)
 
 int long_volume_step_down(float arg)
 {
-
-    ALOGD("---long_volume_step_down\n");
+    pboxData->dispMicEngery = !pboxData->dispMicEngery;
+    ALOGW("%s---dispMicEngery:%d\n", __func__, pboxData->dispMicEngery);
     return 1;
 }
-
 
 int enter_long_key_mode(float arg) {
     ALOGD("enter_long_key_mode =====!\n");

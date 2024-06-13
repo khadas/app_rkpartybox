@@ -24,7 +24,7 @@ typedef enum {
     PBOX_ROCKIT_GET_MAINVOLUME,
     PBOX_ROCKIT_SET_PLAYER_SEPERATE,//16
     PBOX_ROCKIT_GET_PLAYER_SEPERATE,
-    PBOX_ROCKIT_GET_PLAYERENERGYLEVEL,
+    PBOX_ROCKIT_GET_ENERGYLEVEL,
     PBOX_ROCKIT_RELEASE_PLAYERENERGYLEVEL,
     PBOX_ROCKIT_START_RECORDER,//20
     PBOX_ROCKIT_STOP_RECORDER,
@@ -72,6 +72,11 @@ typedef struct {
         uint32_t        mPosition;
         float        volume;
         pbox_vocal_t    vocalSeperate;
+        struct {
+            energy_dest_t energyDest;
+            uint8_t micMux;
+            uint8_t guitarMux;
+        } energy;
         struct {
             uint8_t         index;
             mic_set_kind_t  kind;

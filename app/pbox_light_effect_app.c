@@ -59,7 +59,6 @@ void pbox_app_led_ReservLevel(uint32_t Reserv_music_level) {
 }
 
 void pbox_app_led_energyInfo(energy_info_t energy) {
-
 	pbox_light_effect_send_cmd(PBOX_LIGHT_EFFECT_SOUNDREACTIVE_EVT, (void*)&energy, sizeof(energy));
 }
 

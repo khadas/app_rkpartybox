@@ -275,12 +275,18 @@ void pbox_app_rockit_set_eq_mode(input_source_t source, equalizer_t mode) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_get_player_energy(input_source_t source) {
+//micMux: bit0-bit7: mic0-mic7
+//guitarMux: bit0-bit7: guitar0-guitar7
+void pbox_app_rockit_get_player_energy(uint8_t destMux, input_source_t source, uint8_t micMux, uint8_t guitarMux) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
-        .msgId = PBOX_ROCKIT_GET_PLAYERENERGYLEVEL,
+        .msgId = PBOX_ROCKIT_GET_ENERGYLEVEL,
         .source = source,
     };
+
+    msg.energy.energyDest = destMux;
+    msg.energy.micMux = micMux;
+    msg.energy.guitarMux = guitarMux;
 
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
@@ -493,8 +499,10 @@ int maintask_rcokit_data_recv(pbox_rockit_msg_t *msg)
                                 __func__, energy_data.energykeep[i].freq,
                                 energy_data.energykeep[i].energy);
             }*/
-            pbox_multi_echoEnergyInfo(energy_data, DISP_All);
-
+            if((pboxData->dispMicEngery && (energy_data.dest == ENERGY_MIC && (energy_data.index == 0)))
+                ||(pboxData->dispMicEngery==0) && (energy_data.dest == ENERGY_PLAYER)) {
+                pbox_multi_echoEnergyInfo(energy_data, DISP_All);
+            }
         } break;
         case PBOX_ROCKIT_MUSIC_POSITION_EVT: {
             //ALOGD("duration: %d", music_duration);

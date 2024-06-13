@@ -60,8 +60,10 @@ enum {
 typedef int rk_light_effect_msg_t;
 
 typedef struct {
+    energy_dest_t dest;
+    uint8_t index;
 	int size;
-	energy_t energykeep[10];
+	energy_t energykeep[ENERGY_BAND_DETECT];
 } energy_data_t;
 
 typedef struct {

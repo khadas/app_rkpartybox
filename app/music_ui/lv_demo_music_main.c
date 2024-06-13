@@ -406,9 +406,17 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
         } break;
         case UI_WIDGET_SPECTRUM_CHART: {
             energy_info_t energyData = msg->energy_data;
-                    for (int i = 0; i < energyData.size; i++) {
+            switch(energyData.dest) {
+                case ENERGY_PLAYER: {
+                    lv_chart_set_series_color(chart_obj, serdata, lv_theme_get_color_primary(chart_obj));
+                } break;
+                case ENERGY_MIC: {
+                    lv_chart_set_series_color(chart_obj, serdata, lv_color_hex(0xff0000));
+                } break;
+            }
+            for (int i = 0; i < energyData.size; i++) {
                 lv_chart_set_next_value(chart_obj, serdata, energyData.energykeep[i].energy);
-                    }
+            }
         } break;
         case UI_WIDGET_3A_SWITCH: {
             bool echo3a = msg->echo3a;
@@ -757,6 +765,7 @@ static void mic_volume_change_event_cb(lv_event_t * e) {
     }
 }
 
+#define NUM_POINTS ENERGY_BAND_DETECT
 static lv_obj_t * create_chart_box(lv_obj_t * parent)
 {
     /* Create the spectrum chart visualizer */
@@ -765,21 +774,13 @@ static lv_obj_t * create_chart_box(lv_obj_t * parent)
     lv_chart_set_axis_tick(obj, LV_CHART_AXIS_PRIMARY_X, 5, 3, 10, 1, true, 50);
     lv_chart_set_type(obj, LV_CHART_TYPE_BAR);
     lv_chart_set_div_line_count(obj, 10, 0);
-    lv_chart_set_point_count(obj, 10);
+    lv_chart_set_point_count(obj, NUM_POINTS);
     lv_chart_set_range(obj, LV_CHART_AXIS_PRIMARY_X, 0, 100);
     lv_chart_set_range(obj, LV_CHART_AXIS_PRIMARY_Y, -90, 0);
     serdata = lv_chart_add_series(obj, lv_theme_get_color_primary(obj), LV_CHART_AXIS_PRIMARY_Y);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    lv_chart_set_next_value(obj, serdata, -90);
-    
+    for (int i=0; i < NUM_POINTS; i++) {
+        lv_chart_set_next_value(obj, serdata, -90);
+    }
     return obj;
 }
 

@@ -30,8 +30,6 @@
 #include "pbox_rockit_audio.h"
 #include "hal_partybox.h"
 
-//#define RK_INOUT_TEST
-//#define RK_DOA_TEST
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
 
@@ -72,6 +70,8 @@ rc_s32 (*rc_pb_recorder_set_volume)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s3
 rc_s32 (*rc_pb_recorder_get_volume)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, rc_float *volume_db);
 rc_s32 (*rc_pb_recorder_set_param)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param);
 rc_s32 (*rc_pb_recorder_get_param)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_recorder_get_energy)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_energy *energy);
+rc_s32 (*rc_pb_recorder_release_energy)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_energy *energy);
 rc_s32 (*rc_pb_recorder_dequeue_frame)(rc_pb_ctx ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms);
 rc_s32 (*rc_pb_recorder_queue_frame)(rc_pb_ctx ctx, enum rc_pb_rec_src src, struct rc_pb_frame_info *frame_info, rc_s32 ms);
 rc_s32 (*rc_pb_scene_detect_start)(rc_pb_ctx ctx, struct rc_pb_scene_detect_attr *attr);
@@ -275,14 +275,28 @@ int rk_demo_music_create(void) {
     rc_pb_recorder_set_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_set_param");
     if (NULL == rc_pb_recorder_set_param) {
-        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
     rc_pb_recorder_get_param = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_param *param))dlsym(mpi_hdl, 
                                         "rc_pb_recorder_get_param");
     if (NULL == rc_pb_recorder_get_param) {
-        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+
+    rc_pb_recorder_get_energy = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_energy *energy))dlsym(mpi_hdl, 
+                                        "rc_pb_recorder_get_energy");
+    if (NULL == rc_pb_recorder_get_energy) {
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+
+    rc_pb_recorder_release_energy = (rc_s32 (*)(rc_pb_ctx ctx, enum rc_pb_rec_src src, rc_s32 idx, struct rc_pb_energy *energy))dlsym(mpi_hdl, 
+                                        "rc_pb_recorder_release_energy");
+    if (NULL == rc_pb_recorder_release_energy) {
+        ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
@@ -339,7 +353,7 @@ int rk_demo_music_create(void) {
     detect.hold_time = 0;
     detect.decay_time = 200;
     detect.detect_per_frm = 2;
-    detect.band_cnt = 10;
+    detect.band_cnt = ENERGY_BAND_DETECT;
     recorder_attr.sample_rate = 48000;
     recorder_attr.bit_width   = 16;
 
@@ -539,7 +553,7 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
     detect.hold_time = 0;
     detect.decay_time = 200;
     detect.detect_per_frm = 2;
-    detect.band_cnt = 10;
+    detect.band_cnt = ENERGY_BAND_DETECT;
 
     assert(partyboxCtx);
     assert(rc_pb_player_start);
@@ -569,7 +583,7 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     detect.hold_time = 0;
     detect.decay_time = 200;
     detect.detect_per_frm = 2;
-    detect.band_cnt = 10;
+    detect.band_cnt = ENERGY_BAND_DETECT;
 
     memset(&playerAttr, 0, sizeof(playerAttr));
     assert(dest != RC_PB_PLAY_SRC_BUTT);
@@ -774,11 +788,7 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
         ALOGW("%s scenes:0x%02x prompt is playing :%d\n", __func__, scenes, scene_detect_playing);
     }
 
-    #ifdef RK_INOUT_TEST
-    if((scenes & BIT(ENV_REVERB)))
-    #else
     if((scenes & BIT(ENV_REVERB))&& (waitcount++ > 20) && (waitcount%5 == 0))
-    #endif
     {
         ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
         if (!ret) {
@@ -1242,58 +1252,86 @@ static void mapDataToNewRange(int energyData[], int length, int nowMin, int nowM
     }
 }
 
-static bool pbox_rockit_music_energyLevel_get(input_source_t source, energy_info_t* pEnergy) {
+static bool pbox_rockit_music_energyLevel_get(pbox_rockit_msg_t *msg) {
+    energy_info_t reportEnergy, *pEnergy;
     struct rc_pb_energy energy;
-    int energyData[10];
-    //static int energyDataPrev[10];
-    static int energykeep[10];
     bool energy_debug = 0;
-    enum rc_pb_play_src dest = covert2rockitSource(source);
+    enum rc_pb_play_src dest = covert2rockitSource(msg->source);
+    energy_dest_t energyDest = msg->energy.energyDest;
+    uint8_t micMux = msg->energy.micMux;
+    uint8_t guitarMux = msg->energy.guitarMux;
 
     assert(dest != RC_PB_PLAY_SRC_BUTT);
-    assert(pEnergy);
     assert(partyboxCtx);
     assert(rc_pb_player_get_energy);
     assert(rc_pb_player_release_energy);
 
-    int ret = rc_pb_player_get_energy(partyboxCtx, dest, &energy);
-    if (!ret) {
-        for (rc_s32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
-            //translate energy range from [-90, 0] to [0, 100]
-            //energyData[i] = energy.energy_vec[10 + i] + 90;
-            //energyData[i] = energyData[i] + energyData[i]/10 + 1; //map to [1, 100]
-            energyData[i] = energy.energy_vec[10 + i];
-            if(energy_debug) {
-                ALOGD("freq[%5.0f]HZ energy[%5.0f]DB energyData[%05d]\n",
-                                energy.energy_vec[i], energy.energy_vec[10 + i], energyData[i]);
+    pEnergy = &reportEnergy;
+    if(energyDest&BIT(ENERGY_PLAYER)) {
+        pEnergy->dest = ENERGY_PLAYER;
+        pEnergy->index = 0;
+        int ret = rc_pb_player_get_energy(partyboxCtx, dest, &energy);
+        if (!ret) {
+            pEnergy->size = ENERGY_BAND_DETECT;
+            for(int i = 0; i < pEnergy->size; i++) {
+                if(energy_debug) {
+                    ALOGD("music freq[%5.0f]HZ energy[%5.0f]DB\n",
+                                    energy.energy_vec[i], energy.energy_vec[ENERGY_BAND_DETECT + i]);
+                }
+                pEnergy->energykeep[i].freq = energy.energy_vec[i];
+                pEnergy->energykeep[i].energy = energy.energy_vec[ENERGY_BAND_DETECT + i];
+            }
+            rc_pb_player_release_energy(partyboxCtx, dest, &energy);
+            rockit_pbbox_notify_energy(*pEnergy);
+        }
+    }
+
+    if(energyDest&BIT(ENERGY_MIC)) {
+        pEnergy->dest = ENERGY_MIC;
+        //assume mic number < 4
+        for(int k= 0; k < 4; k++) {
+            if((micMux&BIT(k)) == 0) continue;
+            int ret = rc_pb_recorder_get_energy(partyboxCtx, RC_PB_REC_SRC_MIC, k, &energy);
+            if (!ret) {
+                pEnergy->size = ENERGY_BAND_DETECT;
+                for(int i = 0; i < pEnergy->size; i++) {
+                    if(energy_debug) {
+                        ALOGD("mic freq[%5.0f]HZ energy[%5.0f]DB energyData[%05d]\n",
+                                        energy.energy_vec[i], energy.energy_vec[ENERGY_BAND_DETECT + i]);
+                    }
+                    pEnergy->energykeep[i].freq = energy.energy_vec[i];
+                    pEnergy->energykeep[i].energy = energy.energy_vec[ENERGY_BAND_DETECT + i];
+                }
+                rc_pb_recorder_release_energy(partyboxCtx, RC_PB_REC_SRC_MIC, k, &energy);
+                pEnergy->index = k;
+                rockit_pbbox_notify_energy(*pEnergy);
             }
         }
-
-        //mapDataToNewRange(energyData, sizeof(energyData)/sizeof(int), 0 , 100);
-
-        //for(rc_s32 i = 0; i < sizeof(energyData)/sizeof(int); i++) {
-        //    if(abs(energyDataPrev[i] - energyData[i]) < 3){
-        //        energykeep[i]++;
-        //    } else {
-        //        energykeep[i]=0;
-        //    }
-
-        //    if(energykeep[i] > 2) {
-        //        energykeep[i]=0;
-        //        energyData[i] = energyData[i]<5 ? energyData[i] : (energyData[i] - rand()%5);
-        //    }
-        //}
-        //memcpy(energyDataPrev, energyData, sizeof(energyData)/sizeof(int) * sizeof(int));
-
-        pEnergy->size = 10;
-        for(int i = 0; i < pEnergy->size; i++) {
-            pEnergy->energykeep[i].freq = energy.energy_vec[i];
-            pEnergy->energykeep[i].energy = energyData[i];
-        }
-
-        rc_pb_player_release_energy(partyboxCtx, dest, &energy);
-        return true;
     }
+
+    if(energyDest&BIT(ENERGY_GUITAR)) {
+        pEnergy->dest = ENERGY_GUITAR;
+        //assume guitar number < 4
+        for(int k= 0; k < 4; k++) {
+            if((guitarMux&BIT(k)) == 0) continue;
+            int ret = rc_pb_recorder_get_energy(partyboxCtx, RC_PB_REC_SRC_GUITAR, k, &energy);
+            if (!ret) {
+                pEnergy->size = ENERGY_BAND_DETECT;
+                for(int i = 0; i < pEnergy->size; i++) {
+                    if(energy_debug) {
+                        ALOGD("guitar freq[%5.0f]HZ energy[%5.0f]DB energyData[%05d]\n",
+                                        energy.energy_vec[i], energy.energy_vec[ENERGY_BAND_DETECT + i]);
+                    }
+                    pEnergy->energykeep[i].freq = energy.energy_vec[i];
+                    pEnergy->energykeep[i].energy = energy.energy_vec[ENERGY_BAND_DETECT + i];
+                }
+                rc_pb_recorder_release_energy(partyboxCtx, RC_PB_REC_SRC_GUITAR, k, &energy);
+                pEnergy->index = k;
+                rockit_pbbox_notify_energy(*pEnergy);
+            }
+        }
+    }
+
     return 0;
 }
 
@@ -1818,8 +1856,9 @@ static void *pbox_rockit_server(void *arg)
             break;
 
         pbox_rockit_msg_t *msg = (pbox_rockit_msg_t *)buff;
-        if(msg->msgId != PBOX_ROCKIT_GET_PLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_SENCE)
-        ALOGE("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+        if(msg->msgId != PBOX_ROCKIT_GET_ENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_SENCE) {
+            ALOGE("%s recv: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
+        }
 
         if(msg->type == PBOX_EVT)
             continue;
@@ -1916,11 +1955,8 @@ static void *pbox_rockit_server(void *arg)
                 //pending
             } break;
 
-            case PBOX_ROCKIT_GET_PLAYERENERGYLEVEL: {
-                energy_info_t energy;
-                if(pbox_rockit_music_energyLevel_get(msg->source, &energy)) {
-                    rockit_pbbox_notify_energy(energy);
-                }
+            case PBOX_ROCKIT_GET_ENERGYLEVEL: {
+                pbox_rockit_music_energyLevel_get(msg);
             } break;
 
             case PBOX_ROCKIT_SET_MIC_STATE: {
@@ -1989,7 +2025,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
         }
 
-        if(msg->msgId != PBOX_ROCKIT_GET_PLAYERENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_SENCE)
+        if(msg->msgId != PBOX_ROCKIT_GET_ENERGYLEVEL && msg->msgId != PBOX_ROCKIT_GET_SENCE)
             ALOGW("%s end: type: %d, id: %d\n", __func__, msg->type, msg->msgId);
     }
 
