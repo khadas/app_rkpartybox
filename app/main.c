@@ -400,7 +400,7 @@ void maintask_timer_fd_process(int timer_fd) {
     }
 
     if(isTunningOn == false && (0 == msTimePassed%5000)) {
-        pbox_app_tunning_init(DISP_All);
+        pbox_app_tunning_set(true, DISP_All);
         isTunningOn = true;
     }
 

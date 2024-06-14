@@ -21,6 +21,7 @@ typedef enum {
     PBOX_USB_UAC_VOLUME_EVT,
     PBOX_USB_UAC_MUTE_EVT,
     PBOX_USB_UAC_PPM_EVT,
+    PBOX_USB_ADB_CONNECTION_EVT,
 } pbox_usb_opcode_t;
 
 typedef struct {
@@ -31,8 +32,10 @@ typedef struct {
         usb_music_file_t usbMusicFile;
         uac_t uac;
     };
+    bool connect;
 } pbox_usb_msg_t;
 
+void adb_pbox_notify_connect_state(bool connect);
 void uac_pbox_notify_role_change(uint32_t role, bool start);
 void uac_pbox_notify_host_sample_rate(uint32_t role, uint32_t rate);
 void uac_pbox_notify_host_volume(uint32_t role, uint32_t volume);

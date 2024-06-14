@@ -17,7 +17,10 @@
 #include "rk_utils.h"
 #include "os_minor_type.h"
 
-//#define PCM_DEVICE "hw:2,0"
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif
+#define LOG_TAG "pbox_rockit_audio"
 
 static unsigned int pcm_buffer_time = 160000;
 static unsigned int pcm_period_time =  20000;

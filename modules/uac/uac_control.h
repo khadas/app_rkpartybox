@@ -28,6 +28,7 @@ struct UACControl {
     void (*uacSetVolume)(uint32_t, uint32_t);
     void (*uacSetMute)(uint32_t, bool);
     void (*uacSetPpm)(uint32_t, int32_t);
+    void (*adbSetConnect)(bool);
 };
 
 void uac_role_change(int mode, bool start);
@@ -35,6 +36,7 @@ void uac_set_sample_rate(int mode, int samplerate);
 void uac_set_volume(int mode, int volume);
 void uac_set_mute(int mode, bool mute);
 void uac_set_ppm(int mode, int ppm);
+void adb_set_connect(bool connect);
 
 void uac_control_create(struct UACControl *uac);
 void uac_control_destory();

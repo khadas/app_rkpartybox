@@ -75,3 +75,7 @@ void uac_set_ppm(int mode, int ppm) {
         } break;
     }
 }
+
+void adb_set_connect(bool connect) {
+    gUAControl->adbSetConnect(connect);
+}

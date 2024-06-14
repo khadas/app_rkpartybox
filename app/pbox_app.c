@@ -838,8 +838,9 @@ void pbox_app_music_set_eq_mode(equalizer_t mode, display_t policy) {
     pbox_multi_echoEqMode(mode, policy);
 }
 
-void pbox_app_tunning_init(display_t policy) {
-    pbox_app_rockit_init_tunning();
+void pbox_app_tunning_set(bool enable, display_t policy) {
+    ALOGW("%s %d\n", __func__, enable);
+    pbox_app_rockit_set_tunning(enable);
 }
 
 void pbox_app_main_volume_up(display_t policy) {
@@ -1056,6 +1057,10 @@ void pbox_app_uac_ppm_change(uac_role_t role, int32_t ppm, display_t policy) {
 
     pbox_app_rockit_set_ppm(role, ppm);
     pbox_multi_echoUacPpm(role, ppm, policy);
+}
+
+void pbox_app_adb_connection(bool connect, display_t policy) {
+    pbox_app_tunning_set(connect, policy);
 }
 
 void pbox_app_usb_start_scan(display_t policy) {

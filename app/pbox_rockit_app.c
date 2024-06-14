@@ -344,12 +344,13 @@ void pbox_app_rockit_get_recoder_volume(void) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
-void pbox_app_rockit_init_tunning(void) {
+void pbox_app_rockit_set_tunning(bool enable) {
     pbox_rockit_msg_t msg = {
         .type = PBOX_CMD,
         .msgId = PBOX_ROCKIT_SET_TUNNING_TOOL,
     };
 
+    msg.enable = enable;
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 

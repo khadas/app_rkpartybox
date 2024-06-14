@@ -57,6 +57,7 @@ struct _uevent {
 };
 
 void audio_event(const struct _uevent *uevent);
+bool isUacEnabled(void);
 #ifdef __cplusplus
 }
 #endif

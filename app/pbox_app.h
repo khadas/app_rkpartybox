@@ -113,7 +113,6 @@ void pbox_app_music_album_loop(uint32_t mode, display_t policy);
 void pbox_app_music_seek_position(uint32_t dest, uint32_t duration, display_t policy);
 char* pbox_app_usb_get_title(uint32_t trackId);
 void pbox_app_music_mics_init(display_t policy);
-void pbox_app_tunning_init(display_t policy);
 void pbox_app_resume_volume_later(int32_t msdelay);
 
 void pbox_app_music_set_main_volume(float volume, display_t policy);
@@ -154,6 +153,8 @@ void pbox_app_start_uac_poll(display_t policy);
 void pbox_app_usb_list_update(uint32_t trackId, display_t policy);
 void pbox_app_show_usb_state(usb_state_t state, display_t policy);
 void pbox_app_usb_start_scan(display_t policy);
+void pbox_app_tunning_set(bool enable, display_t policy);
+void pbox_app_adb_connection(bool connect, display_t policy);
 
 void pbox_app_btsoc_init(void);
 void pbox_app_btsoc_set_volume(float volume, display_t policy);

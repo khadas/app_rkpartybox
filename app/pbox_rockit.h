@@ -34,6 +34,7 @@ typedef enum {
     PBOX_ROCKIT_SET_OUTDOOR_MODE,
     PBOX_ROCKIT_SET_PLACEMENT_MODE,
     PBOX_ROCKIT_SET_EQ_MODE,
+    PBOX_ROCKIT_INIT_TUNNING_TOOL,
     PBOX_ROCKIT_SET_TUNNING_TOOL,
     PBOX_ROCKIT_GET_SENCE,
     PBOX_ROCKIT_START_INOUT_DETECT,//30
@@ -101,6 +102,7 @@ typedef struct {
         uint32_t duration;
         size_t scene;
         uint32_t agentRole;
+        bool    enable;
         energy_info_t energy_data;
         uac_t uac;
     };

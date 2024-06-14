@@ -30,8 +30,14 @@
 #include "pbox_rockit_audio.h"
 #include "hal_partybox.h"
 
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif
+#define LOG_TAG "pbox_rockit"
+
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
+static int pbox_tunning_init(void);
 
 os_task_t* rockit_task_id;
 //void *player_ctx = NULL;
@@ -81,13 +87,15 @@ rc_s32 (*rc_pb_scene_get_result)(rc_pb_ctx ctx, enum rc_pb_scene_detect_mode mod
 //********************rockit end***********************
 
 //********************rkstudio tunning start**************************
-int (*pbox_init_tuning)(core_ipc_callback cb);
-int (*pbox_deinit_tuning)(void);
+int (*pbtool_init_tuning)(core_ipc_callback cb);
+int (*pbtool_deinit_tuning)(void);
 //********************rkstudio tunning end**************************
 
 static pid_t rockit_tid = -1;
 static volatile bool is_rkstudio_tuning = false;
 struct rockit_pbx_t rockitCtx;
+static bool is_tunning_working = false;
+static void *tunning_hdl = NULL;
 
 static bool started_player[RC_PB_PLAY_SRC_BUTT];
 static bool is_scene_detecting = false;
@@ -333,7 +341,7 @@ int rk_demo_music_create(void) {
         return -1;
     }
 
-    ALOGE("%s hello...", __func__);
+    ALOGW("%s hello...\n", __func__);
     attr.card_name              = "hw:0,0";
     attr.sample_rate            = 48000;
 #if ENABLE_EXT_BT_MCU
@@ -385,6 +393,8 @@ int rk_demo_music_create(void) {
         return -1;
     }
     ALOGD("rockit media player created successfully, partyboxCtx=%p\n", partyboxCtx);
+
+    pbox_tunning_init();
 }
 
 int audio_prompt_send(prompt_audio_t prompt, bool loop) {
@@ -1772,36 +1782,65 @@ static int send_core_ipc(uint32_t dst_id, uint32_t msg_id, void *data, uint32_t 
     return 0;
 }
 
-static int pbox_tunning_init(void) {
-    int ret;
-    void *tunning_hdl = NULL;
-
+int pbox_tunning_init(void) {
     tunning_hdl = dlopen("librkstudio_tuning.so", RTLD_LAZY);
     if (NULL == tunning_hdl) {
         ALOGE("%s failed to open librkstudio_tuning.so, err:%s\n", __func__, dlerror());
         return -1;
     }
 
-    pbox_init_tuning = (int (*)(core_ipc_callback cb))dlsym(tunning_hdl, "init_tuning");
-    if (NULL == pbox_init_tuning) {
-            ALOGE("%s failed to open pbox_init_tuning, err=%s\n", __func__, dlerror());
-            return -1;
+    pbtool_init_tuning = (int (*)(core_ipc_callback cb))dlsym(tunning_hdl, "init_tuning");
+    if (NULL == pbtool_init_tuning) {
+        ALOGE("%s failed to open pbtool_init_tuning, err=%s\n", __func__, dlerror());
+        return -1;
     }
 
-    pbox_deinit_tuning = (int (*)(void))dlsym(tunning_hdl, "deinit_tuning");
-    if (NULL == pbox_deinit_tuning) {
-            ALOGE("%s failed to open pbox_deinit_tuning, err=%s\n", __func__, dlerror());
-            return -1;
+    pbtool_deinit_tuning = (int (*)(void))dlsym(tunning_hdl, "deinit_tuning");
+    if (NULL == pbtool_deinit_tuning) {
+        ALOGE("%s failed to open pbtool_deinit_tuning, err=%s\n", __func__, dlerror());
+        return -1;
     }
-    ret = pbox_init_tuning(send_core_ipc);
 
-    ALOGW("%s init ret=%d, %s\n", __func__, ret, ret==0?"OK":"ERROR");
+    ALOGW("%s ok!!!\n", __func__);
+    return 0;
+}
+
+static int pbox_tunning_deinit(void) {
+    int ret = dlclose(tunning_hdl);
+    ALOGW("%s ret: %d\n", __func__, ret);
+    return ret;
+}
+
+static int pbox_tunning_enable(void)
+{
+    int ret;
+    ret = pbtool_init_tuning(send_core_ipc);
+    is_tunning_working = !ret;
+    ALOGW("%s enable ret=%d, %s\n", __func__, ret, ret==0?"OK":"ERROR");
 
     return ret;
 }
 
-static void pbox_rockit_music_init_tunning_tool(pbox_rockit_msg_t *msg) {
-    pbox_tunning_init();
+static int pbox_tunning_disable(void)
+{
+    ALOGW("%s\n", __func__);
+    int ret = pbtool_deinit_tuning();
+    is_tunning_working = false;
+    ALOGW("%s disable ret=%d, %s\n", __func__, ret, ret==0?"OK":"ERROR");
+
+    return ret;
+}
+
+static void pbox_rockit_music_set_tunning_tool(pbox_rockit_msg_t *msg) {
+    ALOGW("%s enable:%d\n", __func__, msg->enable);
+    int ret;
+    if(msg->enable && (!is_tunning_working)) {
+        pbox_tunning_enable();
+    }
+
+    if ((msg->enable == false) && is_tunning_working){
+        pbox_tunning_disable();
+    }
 }
 
 #define MIN_ROCKIT_TIMER_INTER 50
@@ -1980,7 +2019,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SET_TUNNING_TOOL: {
-                pbox_rockit_music_init_tunning_tool(msg);
+                pbox_rockit_music_set_tunning_tool(msg);
             } break;
 
             case PBOX_ROCKIT_GET_SENCE: {
@@ -2038,7 +2077,10 @@ static void *pbox_rockit_server(void *arg)
     rockitCtx.auxPlayerTask = NULL;
     //rockitCtx.auxplay_stop_sem = NULL;
     auxplay_looplay_sem = NULL;
-    pbox_deinit_tuning();
+    if (is_tunning_working){
+        pbox_tunning_disable();
+    }
+    pbox_tunning_deinit();
     pbox_rockit_music_destroy();
     ALOGW("%s rockit the last code, exiting!!!\n", __func__);
 }

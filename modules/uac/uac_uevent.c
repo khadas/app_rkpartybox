@@ -62,7 +62,11 @@
  * strs[4] = STREAM_DIRECTION=IN
  * strs[5] = SAMPLE_RATE=48000
  */
-#define UAC_UEVENT_ADB            "SUBSYSTEM=android_usb"
+#define UAC_UEVENT_ADB              "SUBSYSTEM=android_usb"
+#define UAC_UEVENT_ADB_CONNECTED    "USB_STATE=CONNECTED"
+#define UAC_UEVENT_ADB_CONFIGURED   "USB_STATE=CONFIGURED"
+#define UAC_UEVENT_ADB_DISCONNECTED "USB_STATE=DISCONNECTED"
+
 #define UAC_UEVENT_AUDIO            "SUBSYSTEM=u_audio"
 #define UAC_UEVENT_SET_INTERFACE    "USB_STATE=SET_INTERFACE"
 #define UAC_UEVENT_SET_SAMPLE_RATE  "USB_STATE=SET_SAMPLE_RATE"
@@ -250,9 +254,16 @@ void audio_set_ppm(const struct _uevent *uevent) {
     }
 }
 
+void android_usb_set_connected(bool connect) {
+    adb_set_connect(connect);
+}
+
 void audio_event(const struct _uevent *uevent) {
     char *event, *direct, *status, *keys;
     if(compare(uevent->strs[UAC_KEY_AUDIO], UAC_UEVENT_ADB)) {
+        static bool isAdbConnected = false;
+        bool isAdbDisconnected;
+        bool isAdbConfigured;
         keys = uevent->strs[UAC_KEY_AUDIO];
         event = uevent->strs[UAC_KEY_USB_STATE];
         direct = uevent->strs[UAC_KEY_DIRECTION];
@@ -262,10 +273,25 @@ void audio_event(const struct _uevent *uevent) {
         ALOGD("event = %s\n", event);
         ALOGD("direct = %s\n", direct);
         ALOGD("status = %s\n", status);
+        if(compare(event, UAC_UEVENT_ADB_CONNECTED)) {
+            isAdbConnected = true;
+        }
+        isAdbConfigured = compare(event, UAC_UEVENT_ADB_CONFIGURED);
+        isAdbDisconnected = compare(event, UAC_UEVENT_ADB_DISCONNECTED);
+        ALOGW("%s connected:%d configed:%d disconnect:%d\n", __func__, isAdbConnected, isAdbConfigured, isAdbDisconnected);
+        if(isAdbConnected && isAdbConfigured) {
+            android_usb_set_connected(true);
+        }
+        else if (isAdbDisconnected) {
+            isAdbConnected = 0;
+            android_usb_set_connected(false);
+        }
         return;
     }
 
     if (!compare(uevent->strs[UAC_KEY_AUDIO], UAC_UEVENT_AUDIO))
+        return;
+    if (!isUacEnabled())
         return;
 
     keys = uevent->strs[UAC_KEY_AUDIO];
@@ -306,4 +332,29 @@ void audio_event(const struct _uevent *uevent) {
         ALOGD("uevent---------------setClk\n");
         audio_set_ppm(uevent);
     }
+}
+
+bool isUacEnabled(void) {
+    const char *filename = "/oem/uac_config";
+    const size_t MAX_LENGTH = 100;
+
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        return false;
+    }
+
+    char buffer[MAX_LENGTH + 1];
+    size_t bytesRead = fread(buffer, 1, MAX_LENGTH, file);
+    buffer[bytesRead] = '\0';
+    fclose(file);
+
+    if (bytesRead == 0) {
+        return false;
+    }
+
+    if (strncasecmp(buffer, "enable", strlen("enable")) == 0) {
+        return true;
+    }
+
+    return false;
 }

@@ -61,7 +61,7 @@ void pbox_app_rockit_set_mic_data(uint8_t index, mic_set_kind_t kind, mic_state_
 
 void pbox_app_rockit_get_recoder_volume(void);
 
-void pbox_app_rockit_init_tunning(void);
+void pbox_app_rockit_set_tunning(bool enable);
 
 void pbox_app_rockit_post_sence_detect(input_source_t source, size_t scenes);
 

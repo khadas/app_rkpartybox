@@ -44,6 +44,15 @@ int unix_socket_usb_notify(void *info, int length) {
     return unix_socket_notify_msg(PBOX_MAIN_HOTPLUG, info, length);
 }
 
+void adb_pbox_notify_connect_state(bool connect) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_USB_ADB_CONNECTION_EVT,
+    };
+    msg.connect = connect;
+    unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
+}
+
 void uac_pbox_notify_role_change(uint32_t role, bool start) {
     pbox_usb_msg_t msg = {
         .type = PBOX_EVT,

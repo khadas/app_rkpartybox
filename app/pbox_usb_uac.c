@@ -21,31 +21,6 @@
 #include "uac_uevent.h"
 #include "uac_control.h"
 
-bool isUacEnabled(void) {
-    const char *filename = "/oem/uac_config";
-    const size_t MAX_LENGTH = 100;
-
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        return false;
-    }
-
-    char buffer[MAX_LENGTH + 1];
-    size_t bytesRead = fread(buffer, 1, MAX_LENGTH, file);
-    buffer[bytesRead] = '\0';
-    fclose(file);
-
-    if (bytesRead == 0) {
-        return false;
-    }
-
-    if (strncasecmp(buffer, "enable", strlen("enable")) == 0) {
-        return true;
-    }
-
-    return false;
-}
-
 void uacPboxRoleChange(uint32_t role, bool start) {
     uac_pbox_notify_role_change(role, start);
 }
@@ -66,12 +41,18 @@ void uacPboxSetPpm(uint32_t role, int ppm) {
     uac_pbox_notify_host_ppm(role, ppm);
 }
 
+void adbPboxSetConnect(bool connect) {
+    ALOGW("%s: %d\n", __func__, connect);
+    adb_pbox_notify_connect_state(connect);
+}
+
 struct UACControl uac = {
     .uacRoleChange = uacPboxRoleChange,
     .uacSetSampleRate = uacPboxSetSampleRate,
     .uacSetVolume = uacPboxSetVolume,
     .uacSetMute = uacPboxSetMute,
     .uacSetPpm = uacPboxSetPpm,
+    .adbSetConnect = adbPboxSetConnect,
 };
 
 void parse_event(const struct _uevent *event) {
@@ -87,9 +68,7 @@ void parse_event(const struct _uevent *event) {
     }
     ALOGI("uac event -------------------------\n");
 #endif
-    if(isUacEnabled()) {
-        audio_event(event);
-    }
+    audio_event(event);
 }
 
 void uac_init(void) {
