@@ -1289,14 +1289,14 @@ void pbox_app_post_get_sence_value(input_source_t source, size_t scenes) {
 
 int pbox_app_get_and_clear_inout_value(void) {
     int res = pboxData->inout_shake;
-    printf("%s res:%d %s\n", __func__, res, res == INDOOR? CSTR(INDOOR): (res == OUTDOOR? CSTR(OUTDOOR): "invalid"));
+    ALOGW("%s res:%d %s\n", __func__, res, res == INDOOR? CSTR(INDOOR): (res == OUTDOOR? CSTR(OUTDOOR): "invalid"));
     pboxData->inout_shake = -1;
     return res;
 }
 
 int pbox_app_get_and_clear_stereo_position(void) {
     int res = pboxData->stereo_shake;
-    printf("%s res:%d %s\n", __func__, res, res == DOA_L? CSTR(DOA_L): (res == DOA_R? CSTR(DOA_R): "invalid"));
+    ALOGW("%s res:%d %s\n", __func__, res, res == DOA_L? CSTR(DOA_L): (res == DOA_R? CSTR(DOA_R): "invalid"));
     pboxData->stereo_shake = -1;
     return res;
 }

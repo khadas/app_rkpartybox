@@ -4,11 +4,11 @@
 		"doa" : {
 			"status" : "enable",
 			"rad" : 0.035,
-			"start_freq" : 1000,
-			"end_freq" : 4000,
+			"start_freq" : 600,
+			"end_freq" : 2000,
 			"lg_num" : 40,
 			"lg_pitch_num" : 1,
-			"threhold" : 250,
+			"threhold" : 100,
 		},
 		"door" : {
 			"status" : "enable",

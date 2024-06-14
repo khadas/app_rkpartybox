@@ -778,7 +778,7 @@ static void pbox_rockit_reset_gender(pbox_rockit_msg_t *msg) {
     gender_align_time = os_get_boot_time_ms();
 }
 
-#define DOA_VALID_COUNT 20
+#define DOA_VALID_COUNT 5
 static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
     float result;
     int ret;
@@ -829,7 +829,7 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
     if(scenes & BIT(ENV_DOA))
         ALOGW("%s %u step ENV_DOA, waitcount=%d, validcount=%d\n", __func__, os_get_boot_time_ms(), waitcount, validcount);
 
-    if((scenes & BIT(ENV_DOA)) && (waitcount++ > 100) && (waitcount%5 == 0)) {
+    if((scenes & BIT(ENV_DOA)) && (waitcount++ > 40) && (waitcount%5 == 0)) {
         ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_DOA, &result);
         if (!ret) {
             if(is_env_sensed_value_available(ENV_DOA, result)) {
@@ -841,10 +841,10 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
                     doadir--;
                 doasum += result;
 
-                if ((validcount > DOA_VALID_COUNT)) {
+                if ((validcount >= DOA_VALID_COUNT)) {
                     ALOGW("%s %ums, +++++++++++++++++++++++++++++++++++++++++doa avg=%f, dir=%d(threshod 10) validcount = %d\n",
                         __func__, os_get_boot_time_ms(), doasum/validcount, doadir, validcount);
-                    if(abs(doadir)>10)
+                    if(abs(doadir) >= 10)
                     {
                         rockit_pbbox_notify_environment_sence(ENV_DOA,  doadir>0? DOA_L: DOA_R);
                         waitcount = 0;

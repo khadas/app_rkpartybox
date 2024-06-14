@@ -329,6 +329,12 @@ void pbox_app_rockit_set_mic_data(uint8_t index, mic_set_kind_t kind, mic_state_
         .msgId = PBOX_ROCKIT_SET_MIC_STATE,
     };
 
+    if(kind==MIC_SET_DEST_VOLUME) {
+        if(micState.micVolume <= MIN_MIC_PHONE_VOLUME) {
+            micState.micVolume = -100;
+        }
+    }
+
     msg.micdata.index = index;
     msg.micdata.kind = kind;
     msg.micdata.micState = micState;
