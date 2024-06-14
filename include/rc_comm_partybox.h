@@ -71,7 +71,6 @@ enum rc_pb_gt_card_type {
 
 enum rc_pb_param_type {
     RC_PB_PARAM_TYPE_3A = 0,
-    RC_PB_PARAM_TYPE_EQDRC,
     RC_PB_PARAM_TYPE_REVERB,
     RC_PB_PARAM_TYPE_VOLCAL_SEPARATE,
     RC_PB_PARAM_TYPE_AMIX,
@@ -129,18 +128,6 @@ struct rc_pb_param_howling {
     rc_bool bypass;
 };
 
-struct rc_pb_param_eq  {
-    rc_s32    addr;
-    rc_float *data;
-    rc_s32    cnt;
-};
-
-struct rc_pb_param_eq_drc {
-    rc_bool bypass;
-    const char *uri;
-    struct rc_pb_param_eq *eq;
-};
-
 struct rc_pb_param_reverb {
     rc_bool bypass;
     enum rc_pb_reverb_mode mode;
@@ -169,6 +156,8 @@ struct rc_pb_param_amix {
 };
 
 struct rc_pb_param_rkstudio {
+    rc_bool bypass;
+    const char *uri;
     enum rc_pb_rkstudio_cmd cmd;
     rc_u32    id;
     rc_u32    addr;
@@ -188,7 +177,6 @@ struct rc_pb_param {
     enum rc_pb_param_type type;
     union {
         struct rc_pb_param_howling        howling;
-        struct rc_pb_param_eq_drc         eqdrc;
         struct rc_pb_param_reverb         reverb;
         struct rc_pb_param_vocal_separate vocal;
         struct rc_pb_param_amix           amix;

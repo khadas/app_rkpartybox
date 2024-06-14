@@ -47,6 +47,8 @@ rc_s32 (*rc_pb_create)(rc_pb_ctx *ctx, struct rc_pb_attr *attr);
 rc_s32 (*rc_pb_destroy)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_set_volume)(rc_pb_ctx ctx, rc_float volume_db);
 rc_s32 (*rc_pb_get_volume)(rc_pb_ctx ctx, rc_float *volume_db);
+rc_s32 (*rc_pb_set_param)(rc_pb_ctx ctx, struct rc_pb_param *param);
+rc_s32 (*rc_pb_get_param)(rc_pb_ctx ctx, struct rc_pb_param *param);
 
 rc_s32 (*rc_pb_player_start)(rc_pb_ctx ctx, enum rc_pb_play_src src, struct rc_pb_player_attr *attr);
 rc_s32 (*rc_pb_player_stop)(rc_pb_ctx ctx, enum rc_pb_play_src src);
@@ -107,6 +109,8 @@ float AuxPlayerVolume = -20;
 static int32_t gender_prev = 0;
 static uint32_t gender_statistics = 0;
 static uint32_t gender_align_time = 0;
+static enum rc_pb_rec_src micguitar_recs = 0;
+static enum rc_pb_play_src playerdest = RC_PB_PLAY_SRC_LOCAL;
 
 int rk_demo_music_create(void) {
     //create karaoke recorder && player
@@ -140,6 +144,18 @@ int rk_demo_music_create(void) {
     rc_pb_get_volume = (rc_s32 (*)(rc_pb_ctx ctx, rc_float *volume_db))dlsym(mpi_hdl, "rc_pb_get_volume");
     if (NULL == rc_pb_get_volume) {
             ALOGE("%s %d failed to dlsym rc_pb_get_volume, err=%s\n", __func__, __LINE__, dlerror());
+            return -1;
+    }
+
+    rc_pb_set_param = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_param *param))dlsym(mpi_hdl, "rc_pb_set_param");
+    if (NULL == rc_pb_set_param) {
+            ALOGE("%s %d failed to dlsym rc_pb_set_param, err=%s\n", __func__, __LINE__, dlerror());
+            return -1;
+    }
+
+    rc_pb_get_param = (rc_s32 (*)(rc_pb_ctx ctx, struct rc_pb_param *param))dlsym(mpi_hdl, "rc_pb_get_param");
+    if (NULL == rc_pb_get_param) {
+            ALOGE("%s %d failed to dlsym rc_pb_get_param, err=%s\n", __func__, __LINE__, dlerror());
             return -1;
     }
 
@@ -565,6 +581,7 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
     detect.detect_per_frm = 2;
     detect.band_cnt = ENERGY_BAND_DETECT;
 
+    playerdest = dest;
     assert(partyboxCtx);
     assert(rc_pb_player_start);
     memset(&playerAttr, 0, sizeof(playerAttr));
@@ -595,6 +612,7 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     detect.detect_per_frm = 2;
     detect.band_cnt = ENERGY_BAND_DETECT;
 
+    playerdest = dest;
     memset(&playerAttr, 0, sizeof(playerAttr));
     assert(dest != RC_PB_PLAY_SRC_BUTT);
     switch (sampleFreq) {
@@ -1368,12 +1386,12 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
             param.rkstudio.addr = MUXES_SWITCH_STEREO_0_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
 
             param.rkstudio.addr = MUXES_SWITCH_STEREO_1_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
             dest_audio = PROMPT_WIDEN;
         } break;
 
@@ -1381,12 +1399,12 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
             param.rkstudio.addr = MUXES_SWITCH_STEREO_0_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
 
             param.rkstudio.addr = MUXES_SWITCH_STEREO_1_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
             dest_audio = PROMPT_STEREO;
         } break;
 
@@ -1394,7 +1412,7 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
             param.rkstudio.addr = MUXES_SWITCH_STEREO_1_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
             dest_audio = PROMPT_MONO;
         } break;
         default: break;
@@ -1438,24 +1456,24 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
             param.rkstudio.addr = MUXES_SWITCH_MONO_0_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
 
             param.rkstudio.addr = MUXES_SWITCH_MONO_1_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
         } break;
 
         case PLACE_VERT: {
             param.rkstudio.addr = MUXES_SWITCH_MONO_0_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
 
             param.rkstudio.addr = MUXES_SWITCH_MONO_1_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
-            rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            rc_pb_player_set_param(partyboxCtx, dest, &param);
         } break;
         default: break;
     }
@@ -1465,51 +1483,51 @@ void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
     prompt_audio_t dest_audio;
     enum rc_pb_play_src dest = covert2rockitSource(source);
     struct rc_pb_param param;
-    param.type = RC_PB_PARAM_TYPE_EQDRC;
-    param.eqdrc.bypass = false;
-    param.eqdrc.eq = NULL;
+    param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
+    param.rkstudio.bypass = false;
+    param.rkstudio.data = NULL;
 
     ALOGW("%s: %d\n", __func__, mode);
     switch(mode) {
         case EQ_OFF: {
-            param.eqdrc.uri = NULL;
-            param.eqdrc.bypass = true;
+            param.rkstudio.uri = NULL;
+            param.rkstudio.bypass = true;
             dest_audio = PROMPT_EQ_OFF;
         } break;
         case EQ_ROCK: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_rock.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_rock.bin";
             dest_audio = PROMPT_EQ_ROCK;
         } break;
         case EQ_POP: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_pop.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_pop.bin";
             dest_audio = PROMPT_EQ_POP;
         } break;
         case EQ_JAZZ: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_jazz.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_jazz.bin";
             dest_audio = PROMPT_EQ_JAZZ;
         } break;
         case EQ_ELEC: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_electronic.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_electronic.bin";
             dest_audio = PROMPT_EQ_ELECT;
         } break;
         case EQ_DANCE: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_dance.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_dance.bin";
             dest_audio = PROMPT_EQ_DANCE;
         } break;
         case EQ_CONTR: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_contry.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_contry.bin";
             dest_audio = PROMPT_EQ_COUNTRY;
         } break;
         case EQ_CLASS: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_classical.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_classical.bin";
             dest_audio = PROMPT_EQ_CLASSIC;
         } break;
         case EQ_BLUES: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_blues.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_blues.bin";
             dest_audio = PROMPT_EQ_BLUES;
         } break;
         case EQ_BALL: {
-            param.eqdrc.uri = "/etc/pbox/eq_drc_player_ballad.bin";
+            param.rkstudio.uri = "/etc/pbox/eq_drc_player_ballad.bin";
             dest_audio = PROMPT_EQ_BALLED;
         } break;
         default: {
@@ -1523,6 +1541,7 @@ void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
 
 static void pbox_rockit_music_mic_volume_adjust(uint8_t index, mic_mux_t mux, float micLevel) {
     enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
+    micguitar_recs = recs;
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_volume);
     rc_pb_recorder_set_volume(partyboxCtx, recs, index, micLevel);
@@ -1542,10 +1561,10 @@ static void pbox_rockit_music_mic_mute(uint8_t index, mic_mux_t mux, bool mute) 
 static void pbox_rockit_set_mic_treble(uint8_t index, mic_mux_t mux, float treble) {
     enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
-    param.type = RC_PB_PARAM_TYPE_EQDRC;
-    param.eqdrc.bypass = false;
-    param.eqdrc.eq = NULL;
-    param.eqdrc.uri = NULL;
+    param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
+    param.rkstudio.bypass = false;
+    param.rkstudio.uri = NULL;
+    param.rkstudio.data = NULL;
 
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
@@ -1559,10 +1578,10 @@ static void pbox_rockit_set_mic_treble(uint8_t index, mic_mux_t mux, float trebl
 static void pbox_rockit_set_mic_bass(uint8_t index, mic_mux_t mux, float bass) {
     enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
-    param.type = RC_PB_PARAM_TYPE_EQDRC;
-    param.eqdrc.bypass = false;
-    param.eqdrc.eq = NULL;
-    param.eqdrc.uri = NULL;
+    param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
+    param.rkstudio.bypass = false;
+    param.rkstudio.uri = NULL;
+    param.rkstudio.data = NULL;
 
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
@@ -1719,12 +1738,12 @@ static void pbox_rockit_uac_set_ppm(pbox_rockit_msg_t *msg) {
     param.amix.values = str;
 
     ALOGD("%s ppm:%d\n", __func__, ppm);
-    rc_pb_player_set_param(partyboxCtx, dest, &param);
+    rc_pb_set_param(partyboxCtx, &param);
 }
 
 static int send_core_ipc(uint32_t dst_id, uint32_t msg_id, void *data, uint32_t len) {
     int ret = -1;
-    struct rc_pb_param param;
+    struct rc_pb_param param = {0};
     typedef enum STUDIO_CMD_ {
         CMD_INIT_IMG = 0,
         CMD_SET_PARAM,
@@ -1757,20 +1776,34 @@ static int send_core_ipc(uint32_t dst_id, uint32_t msg_id, void *data, uint32_t 
             param.rkstudio.addr = tunning->addr;
             param.rkstudio.cnt = (tunning->data_size)/sizeof(rc_float);
             param.rkstudio.data = (rc_float *)(tunning->data);
+            param.rkstudio.uri = NULL;
+            param.rkstudio.bypass = 0;
             ALOGW("%s,%d, dst_id:%d msgId:%d addr:%08x, data size:%d\n", 
                     __func__, __LINE__, dst_id, msg_id, tunning->addr, tunning->data_size);
-            ret = rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            if (3 == dst_id)
+                ret = rc_pb_set_param(partyboxCtx, &param);
+            if (4 == dst_id)
+                ret = rc_pb_player_set_param(partyboxCtx, playerdest, &param);
+            if (5 == dst_id)
+                ret = rc_pb_recorder_set_param(partyboxCtx, RC_PB_REC_SRC_MIC, 0, &param);
         } break;
         case CMD_SET_PARAM: {
             param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
             param.rkstudio.cmd = RC_PB_RKSTUDIO_CMD_SET_PARAM;
-            param.rkstudio.id = dst_id;
             param.rkstudio.addr = tunning->addr;
             param.rkstudio.cnt = (tunning->data_size)/sizeof(rc_float);
             param.rkstudio.data = (rc_float *)(tunning->data);
+            param.rkstudio.uri = NULL;
+            param.rkstudio.bypass = 0;
             ALOGW("%s,%d, dst_id:%d msgId:%d addr:%08x, data size:%d\n", 
                     __func__, __LINE__, dst_id, msg_id, tunning->addr, tunning->data_size);
-            ret = rc_pb_player_set_param(partyboxCtx, RC_PB_PLAY_SRC_BT, &param);
+            param.rkstudio.id = dst_id;
+            if (3 == dst_id)
+                ret = rc_pb_set_param(partyboxCtx, &param);
+            if (4 == dst_id)
+                ret = rc_pb_player_set_param(partyboxCtx, playerdest, &param);
+            if (5 == dst_id)
+                ret = rc_pb_recorder_set_param(partyboxCtx, RC_PB_REC_SRC_MIC, 0, &param);
         } break;
 
         case CMD_GET_PARAM: {

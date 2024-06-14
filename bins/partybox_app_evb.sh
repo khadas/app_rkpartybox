@@ -130,8 +130,8 @@ fi
 export rt_cfg_path_3a=/oem/config_howling.json
 export rt_cfg_path_reverb_doa_detect=/oem/config_reverb_doa_detect.json
 export rt_cfg_path_gender_detect=/oem/config_gender_detect.json
-export rt_cfg_path_eqdrc_player=/oem/eq_drc_player.bin
-export rt_cfg_path_eqdrc_recorder=/oem/eq_drc_recorder.bin
+export rt_cfg_path_rkstudio_player=/oem/eq_drc_player.bin
+export rt_cfg_path_rkstudio_recorder=/oem/eq_drc_recorder.bin
 export rt_cfg_path_rkstudio=/oem/rkstudio.bin
 export rt_response_path=/oem/tone/wozai-48k2ch.pcm
 export ref_player_only=0
@@ -147,8 +147,8 @@ export ai_buf=1
 export ao_period=128
 export ao_count=2
 export play_start_threshold=1
-export recorder_eqdrc_bypass=1
-export player_eqdrc_bypass=0
+export recorder_rkstudio_bypass=1
+export player_rkstudio_bypass=0
 export player_gender_bypass=0
 ulimit -c unlimited
 echo "/tmp/core-%p-%e" > /proc/sys/kernel/core_pattern

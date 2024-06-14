@@ -31,7 +31,7 @@ extern "C" {
 #define KALAOK_REC_CHANNEL      4
 #define KALAOK_POOR_COUNT       2
 #define KALAOK_REF_LAYOUT       0x03
-#define KALAOK_REC_LAYOUT       0x0c
+#define KALAOK_REC_LAYOUT       0x04
 #define KALAOK_REF_CHN_LAYOUT   0x0f
 #define KALAOK_REF_HARD_MODE    1
 
