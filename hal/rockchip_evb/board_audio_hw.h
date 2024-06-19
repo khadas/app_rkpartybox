@@ -23,8 +23,7 @@ extern "C" {
 #define AUDIO_CARD_CHIP_KALAOK  "mic"
 #define AUDIO_CARD_CHIP_SCENE   "scene"
 #define AUDIO_CARD_RKCHIP_BT    "hw:7,1,0"
-#define AUDIO_CARD_RKCHIP_UAC   "hw:2,0"
-#define AUDIO_CARD_RKCHIP_UAC_ROLLING   "hw:3,0"
+#define AUDIO_CARD_RKCHIP_UAC   "hw:3,0"
 
 //this is rockchip rockit usage
 //--------------start------------------
