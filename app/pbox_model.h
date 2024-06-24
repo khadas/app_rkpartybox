@@ -7,7 +7,12 @@ extern "C" {
 #endif
 
 #ifndef ENABLE_LCD_DISPLAY
-#define ENABLE_LCD_DISPLAY 1
+#define ENABLE_LCD_DISPLAY 0
+#endif
+
+#if ENABLE_LCD_DISPLAY==0
+#undef LV_USE_DEMO_MUSIC
+#define LV_USE_DEMO_MUSIC 0
 #endif
 
 #ifndef ENABLE_EXT_BT_MCU

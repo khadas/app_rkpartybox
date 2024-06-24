@@ -80,7 +80,7 @@ struct os_task_t* os_task_create(const char* name, task_routine_t routine_func, 
     os_sem_wait(start_arg.start_sem);
     os_sem_free(start_arg.start_sem);
 
-    ALOGW("create task %s success..\n", name);
+    ALOGW("create task %s pid:%d success..\n", name, task->tid);
     return task;
 
 fail:

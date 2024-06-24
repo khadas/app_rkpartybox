@@ -394,10 +394,8 @@ void maintask_timer_fd_process(int timer_fd) {
     }
 
     if(0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) {
-        #if !ENABLE_EXT_BT_MCU
         extern int pbox_app_scene_state_machine(void);
         pbox_app_scene_state_machine();
-        #endif
     }
 
     if(isTunningOn == false && (0 == msTimePassed%5000)) {

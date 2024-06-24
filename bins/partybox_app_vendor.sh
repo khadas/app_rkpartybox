@@ -52,6 +52,9 @@ fi
 if [ ! -e /oem/tone/Mono.pcm ]; then
 	ln -s /etc/pbox/Mono.pcm /oem/tone/Mono.pcm
 fi
+if [ ! -e /oem/tone/Sense.pcm ]; then
+	ln -s /etc/pbox/Sense.pcm /oem/tone/Sense.pcm
+fi
 if [ ! -e /oem/tone/doa.pcm ]; then
 	ln -s /etc/pbox/doa.pcm /oem/tone/doa.pcm
 fi
@@ -109,6 +112,12 @@ if [ ! -e /oem/tone/eq_popmode.pcm ]; then
 fi
 if [ ! -e /oem/tone/eq_rockmode.pcm ]; then
 	ln -s /etc/pbox/eq_rockmode.pcm /oem/tone/eq_rockmode.pcm
+fi
+if [ ! -e /oem/tone/res_indoor.pcm ]; then
+	ln -s /etc/pbox/res_indoor.pcm /oem/tone/res_indoor.pcm
+fi
+if [ ! -e /oem/tone/res_outdoor.pcm ]; then
+	ln -s /etc/pbox/res_outdoor.pcm /oem/tone/res_outdoor.pcm
 fi
 
 export rt_cfg_path_3a=/oem/config_howling.json

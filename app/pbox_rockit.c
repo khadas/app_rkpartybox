@@ -367,7 +367,6 @@ int rk_demo_music_create(void) {
     attr.record_attr            = &recorder_attr;
     attr.volume_db                 = -50;//main volume
 
-
     struct rc_pb_param_level_detect detect;
     detect.rms_tc = 200;
     detect.hold_time = 0;
@@ -839,7 +838,7 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
                     ALOGW("%s %u+++++++++++++++++++++++++++++++++++++++++++++in-outdoor avg=%f, dir=%d(threshod 10) valid=%d\n",
                         __func__, os_get_boot_time_ms(), doasum/validcount, doadir, validcount);
                     if (abs(doadir)>10) {
-                        rockit_pbbox_notify_environment_sence(ENV_REVERB, doadir>0? OUTDOOR:INDOOR);
+                        rockit_pbbox_notify_environment_sence(ENV_REVERB, doadir>0? INDOOR:OUTDOOR);
                         waitcount = 0;
                         validcount = 0;
                         doasum = 0;

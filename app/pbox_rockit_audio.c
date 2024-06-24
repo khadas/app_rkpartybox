@@ -233,7 +233,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     attr.channels = 2;
     attr.sample_rate = 16000;
     attr.pool_size = READ_SIZE;
-    attr.pool_cnt = 1;
+    attr.pool_cnt = 4;
     attr.detect.rms_tc = 200;
     attr.detect.hold_time = 0;
     attr.detect.decay_time = 200;
@@ -294,7 +294,6 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
                 frame_info.size = 0;
                 rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
                                             &frame_info, -1);
-                fclose(file);
                 break;
             }
         }
@@ -306,6 +305,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
         rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &frame_info, -1);
     }
 
+    fclose(file);
     rc_pb_player_stop(*ptrboxCtx, RC_PB_PLAY_SRC_PCM);
     ALOGD("%s file:%s play stop!!!!!\n", __func__, prompt_File[index].fileName);
 }

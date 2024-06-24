@@ -1,7 +1,7 @@
 #ifndef _PTBOX_HARDWARE_BOARD_AUDIO_EVB_H_
 #define _PTBOX_HARDWARE_BOARD_AUDIO_EVB_H_
 /*--------------------attention--------------------------
-* this file is only used in hal dir. 
+* this file is only used in hal dir.
 * for other dir, pls just include hal_partybox.h only
 * -------------------------------------------------------*/
 #include "hal_partybox.h"
