@@ -21,6 +21,7 @@ typedef void (*NotifyInOutDoorFunc)(uint32_t opcode, uint8_t inout);
 typedef void (*NotifyPowerStateFunc)(uint32_t opcode, bool on);
 typedef void (*NotifyStereoModeFunc)(uint32_t opcode, uint8_t stereo);
 typedef void (*NotifyHumanVoiceFadeoutFunc)(uint32_t opcode, bool fadeout);
+typedef void (*NotifyVocalRatioLevelFunc)(uint32_t opcode, uint32_t level);
 typedef void (*NotifySourceSwitchFunc)(uint32_t opcode, uint8_t source, uint8_t status);
 typedef void (*NotifyMusicVolumeFunc)(uint32_t opcode, float volume);
 typedef void (*NotifyMicMuteFunc)(uint32_t opcode, uint8_t index, bool mute);
@@ -42,6 +43,9 @@ struct NotifyFuncs {
     NotifyPowerStateFunc notify_dsp_power_state;
     NotifyStereoModeFunc notify_dsp_stereo_mode;
     NotifyHumanVoiceFadeoutFunc notify_human_voice_fadeout;
+    NotifyVocalRatioLevelFunc notify_vocal_human_level;
+    NotifyVocalRatioLevelFunc notify_vocal_accomp_level;
+    NotifyVocalRatioLevelFunc notify_vocal_reserv_level;
     NotifySourceSwitchFunc notify_dsp_switch_source;
     NotifyMusicVolumeFunc notify_music_volume;
     NotifyMicVolumeFunc notify_mic_volume;

@@ -56,6 +56,9 @@ typedef enum {
     DSP_MIC_GT_MUX = 0x25,
     DSP_MIC_GT_3A = 0x26,
     DSP_MIC_GT_ECHO_MODE = 0x27,
+    DSP_VOLCAL_HUMAN_RATIO= 0x28,
+    DSP_VOLCAL_ACCOMP_RATIO = 0x29,
+    DSP_VOLCAL_RESERV_RATIO = 0x2A,
 } soc_dsp_cmd_t;
 
 static const NotifyFuncs_t* rkdemoNotifyFuncs = NULL;
@@ -371,6 +374,27 @@ void rkdemo_btsoc_notify_dsp_human_voice_fadeout(uint32_t opcode, char *buff, in
     rkdemoNotifyFuncs->notify_human_voice_fadeout(opcode, fadeout);
 }
 
+void rkdemo_btsoc_notify_dsp_vocal_human_level(uint32_t opcode, char *buff, int32_t len) {
+    assert(len>0);
+    uint8_t level = buff[0];
+    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
+    rkdemoNotifyFuncs->notify_vocal_human_level(opcode, level);
+}
+
+void rkdemo_btsoc_notify_dsp_vocal_accomp_level(uint32_t opcode, char *buff, int32_t len) {
+    assert(len>0);
+    uint8_t level = buff[0];
+    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
+    rkdemoNotifyFuncs->notify_vocal_accomp_level(opcode, level);
+}
+
+void rkdemo_btsoc_notify_dsp_vocal_reserv_level(uint32_t opcode, char *buff, int32_t len) {
+    assert(len>0);
+    uint8_t level = buff[0];
+    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
+    rkdemoNotifyFuncs->notify_vocal_reserv_level(opcode, level);
+}
+
 void rkdemo_btsoc_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t len) {
     assert(len>0);
 
@@ -555,6 +579,15 @@ void process_data(unsigned char *buff, int len) {
         } break;
         case DSP_HUMAN_VOICE_FADEOUT: {
             rkdemo_btsoc_notify_dsp_human_voice_fadeout(opcode, &buff[4], para_len);
+        } break;
+        case DSP_VOLCAL_HUMAN_RATIO: {
+            rkdemo_btsoc_notify_dsp_vocal_human_level(opcode, &buff[4], para_len);
+        } break;
+        case DSP_VOLCAL_ACCOMP_RATIO: {
+            rkdemo_btsoc_notify_dsp_vocal_accomp_level(opcode, &buff[4], para_len);
+        } break;
+        case DSP_VOLCAL_RESERV_RATIO: {
+            rkdemo_btsoc_notify_dsp_vocal_reserv_level(opcode, &buff[4], para_len);
         } break;
         case DSP_SWITCH_SOURCE: {
             rkdemo_btsoc_notify_dsp_switch_source(opcode, &buff[4], para_len);//status, source);

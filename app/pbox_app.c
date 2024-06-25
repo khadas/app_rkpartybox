@@ -1251,6 +1251,24 @@ void pbox_app_btsoc_set_human_voice_fadeout(bool fadeout, display_t policy) {
     pbox_app_music_original_singer_open(fadeout? false: true, policy);
 }
 
+void pbox_app_btsoc_set_human_vocal_level(uint32_t level, display_t policy) {
+    if(pboxUIdata->humanLevel == level)
+        return;
+    pbox_app_music_set_human_music_level(level, policy);
+}
+
+void pbox_app_btsoc_set_accomp_vocal_level(uint32_t level, display_t policy) {
+    if(pboxUIdata->accomLevel == level)
+        return;
+    pbox_app_music_set_accomp_music_level(level, policy);
+}
+
+void pbox_app_btsoc_set_reserv_vocal_level(uint32_t level, display_t policy) {
+    if(pboxUIdata->reservLevel == level)
+        return;
+    pbox_app_music_set_reserv_music_level(level, policy);
+}
+
 void pbox_app_btsoc_set_mic_mux(uint8_t index, mic_mux_t micMux, display_t policy) {
     if(index >= MIC_NUM)
         return;

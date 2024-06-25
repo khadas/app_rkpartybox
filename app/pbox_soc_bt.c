@@ -155,11 +155,44 @@ void soc2pbox_notify_dsp_stereo_mode(uint32_t opcode, uint8_t stereo) {
 void soc2pbox_notify_dsp_human_voice_fadeout(uint32_t opcode, bool fadeout) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
-        .msgId = PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,
+        .msgId = PBOX_SOCBT_DSP_VOCAL_FADEOUT_EVT,
     };
     msg.op = opcode;
     msg.fadeout = fadeout;
     ALOGD("%s opcode:%d fadeout:%s\n", __func__, opcode, msg.fadeout? "fade":"org");
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_dsp_human_vocal_level(uint32_t opcode, uint32_t level) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_VOCAL_RATIO_EVT,
+    };
+    msg.op = opcode;
+    msg.vocal.humanLevel = level;
+    ALOGD("%s opcode:%d level:%s\n", __func__, opcode, level);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_dsp_accomp_vocal_level(uint32_t opcode, uint32_t level) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_ACCOMP_RATIO_EVT,
+    };
+    msg.op = opcode;
+    msg.vocal.humanLevel = level;
+    ALOGD("%s opcode:%d level:%s\n", __func__, opcode, level);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_dsp_reserv_vocal_level(uint32_t opcode, uint32_t level) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_RESERV_RATIO_EVT,
+    };
+    msg.op = opcode;
+    msg.vocal.humanLevel = level;
+    ALOGD("%s opcode:%d level:%s\n", __func__, opcode, level);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -450,6 +483,9 @@ const static NotifyFuncs_t notify_funcs = {
     .notify_dsp_power_state = soc2pbox_notify_dsp_power_state,
     .notify_dsp_stereo_mode = soc2pbox_notify_dsp_stereo_mode,
     .notify_human_voice_fadeout = soc2pbox_notify_dsp_human_voice_fadeout,
+    .notify_vocal_human_level = soc2pbox_notify_dsp_human_vocal_level,
+    .notify_vocal_accomp_level = soc2pbox_notify_dsp_accomp_vocal_level,
+    .notify_vocal_reserv_level = soc2pbox_notify_dsp_reserv_vocal_level,
     .notify_dsp_switch_source = soc2pbox_notify_dsp_switch_source,
     .notify_music_volume = soc2pbox_notify_music_volume,
     .notify_mic_mute = soc2pbox_notify_mic_mute,

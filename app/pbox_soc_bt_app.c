@@ -28,6 +28,9 @@ static void handleInOutDoorEvent(const pbox_socbt_msg_t *msg);
 static void handlePowerOnEvent(const pbox_socbt_msg_t *msg);
 static void handleStereoModeEvent(const pbox_socbt_msg_t *msg);
 static void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg);
+static void handleVocalHumanRatioEvent(const pbox_socbt_msg_t *msg);
+static void handleVocalAccompRatioEvent(const pbox_socbt_msg_t *msg);
+static void handleVocalReservRatioEvent(const pbox_socbt_msg_t *msg);
 static void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg);
 static void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg);
 
@@ -194,7 +197,7 @@ void handleInOutDoorEvent(const pbox_socbt_msg_t *msg) {
 
     pbox_app_btsoc_set_outdoor_mode(msg->outdoor, DISP_All_EXCLUDE_BTMCU);
     //tmp coding, for vendor board no human voice button..
-    pbox_app_btsoc_set_human_voice_fadeout(msg->outdoor?false:true, DISP_All_EXCLUDE_BTMCU);
+    //pbox_app_btsoc_set_human_voice_fadeout(msg->outdoor?false:true, DISP_All_EXCLUDE_BTMCU);
 }
 
 void handleMicDataEvent(const pbox_socbt_msg_t *msg) {
@@ -238,6 +241,33 @@ void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_btsoc_set_human_voice_fadeout(msg->fadeout, DISP_All_EXCLUDE_BTMCU);
 }
 
+void handleVocalHumanRatioEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s  human ratio=: %u\n", __func__, msg->vocal.humanLevel);
+    if(msg->op == OP_READ) {
+        return;
+    }
+
+    pbox_app_music_set_human_music_level(msg->vocal.humanLevel, DISP_All);
+}
+
+void handleVocalAccompRatioEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s  accomp ratio=: %u\n", __func__, msg->vocal.accomLevel);
+    if(msg->op == OP_READ) {
+        return;
+    }
+
+    pbox_app_music_set_accomp_music_level(msg->vocal.accomLevel, DISP_All);
+}
+
+void handleVocalReservRatioEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s  reserv ratio=: %u\n", __func__, msg->vocal.reservLevel);
+    if(msg->op == OP_READ) {
+        return;
+    }
+
+    pbox_app_music_set_reserv_music_level(msg->vocal.reservLevel, DISP_All);
+}
+
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Switch Source: Play Status = %d, Input Source = %d\n", 
                 __func__, msg->input_source.status, msg->input_source.input);
@@ -273,10 +303,13 @@ const socbt_event_handle_t socbtEventTable[] = {
     { PBOX_SOCBT_DSP_MIC1_STATE_EVT,    handleMic1MuxEvent    },
     { PBOX_SOCBT_DSP_MIC2_STATE_EVT,    handleMic2MuxEvent    },
     { PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,   handleInOutDoorEvent    },
-    { PBOX_SOCBT_DSP_MIC_DATA_EVT,     handleMicDataEvent     },
+    { PBOX_SOCBT_DSP_MIC_DATA_EVT,      handleMicDataEvent     },
     { PBOX_SOCBT_DSP_POWER_ON_EVT,      handlePowerOnEvent      },
     { PBOX_SOCBT_DSP_STEREO_MODE_EVT,   handleStereoModeEvent   },
-    { PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,   handleHumanVoiceFadeoutEvent   },
+    { PBOX_SOCBT_DSP_VOCAL_FADEOUT_EVT, handleHumanVoiceFadeoutEvent   },
+    { PBOX_SOCBT_DSP_VOCAL_RATIO_EVT,   handleVocalHumanRatioEvent   },
+    { PBOX_SOCBT_DSP_ACCOMP_RATIO_EVT,  handleVocalAccompRatioEvent   },
+    { PBOX_SOCBT_DSP_RESERV_RATIO_EVT,  handleVocalReservRatioEvent   },
     { PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT, handleSwitchSourceEvent },
     { PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,  handleMusicVolumeEvent  },
 };

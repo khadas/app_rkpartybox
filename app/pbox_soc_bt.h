@@ -31,7 +31,10 @@ typedef enum {
     PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,
     PBOX_SOCBT_DSP_POWER_ON_EVT,
     PBOX_SOCBT_DSP_STEREO_MODE_EVT,
-    PBOX_SOCBT_DSP_HUMAN_VOICE_FADEOUT_EVT,
+    PBOX_SOCBT_DSP_VOCAL_FADEOUT_EVT,
+    PBOX_SOCBT_DSP_VOCAL_RATIO_EVT,
+    PBOX_SOCBT_DSP_ACCOMP_RATIO_EVT,
+    PBOX_SOCBT_DSP_RESERV_RATIO_EVT,
     PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT,
     PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,
     PBOX_SOCBT_DSP_MIC_DATA_EVT,
@@ -54,6 +57,7 @@ typedef struct {
         stereo_mode_t stereo;
         bool fadeout;
         mic_data_t micdata;
+        pbox_vocal_t vocal;
         struct socbt_input_source {
             play_status_t status;
             input_source_t input;
