@@ -53,6 +53,14 @@ uint32_t covert2debugLevel(const char *str);
               ##__VA_ARGS__);                                                  \
   } while (0)
 
+#define ALOGW_PURE(format, ...)                                                \
+  do {                                                                         \
+    unsigned int now = os_get_boot_time_ms();                                 \
+    if (get_pbox_log_level() < LOG_LEVEL_WARN)                                \
+      break;                                                                   \
+      fprintf(stderr, format, ##__VA_ARGS__);                                  \
+  } while (0)
+
 #define ALOGE(format, ...)                                                 \
   do {                                                                         \
     unsigned int now = os_get_boot_time_ms();                                 \

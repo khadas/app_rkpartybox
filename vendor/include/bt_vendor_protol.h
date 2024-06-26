@@ -62,7 +62,7 @@ typedef struct NotifyFuncs NotifyFuncs_t;
 typedef void (*vendor_data_recv_handler_t)(int);
 vendor_data_recv_handler_t vendor_get_data_recv_func(void);
 int btsoc_register_vendor_notify_func(const NotifyFuncs_t* notify_funcs);
-
+int btsoc_register_uart_write_fd(int fd);
 #ifdef __cplusplus
 }
 #endif

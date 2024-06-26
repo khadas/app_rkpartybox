@@ -62,6 +62,7 @@ typedef enum {
 } soc_dsp_cmd_t;
 
 static const NotifyFuncs_t* rkdemoNotifyFuncs = NULL;
+static int rkWriteUartfd = -1;
 static void process_data(unsigned char *buff, int len);
 
 static uint8_t calculate_checksum(char buf[], int len) {
@@ -106,7 +107,8 @@ static void dsp2btsoc_notify(uint32_t command, uint8_t* value, uint16_t len) {
     ALOGD("%s command:%d value:%d\n", __func__, command, (uint8_t)(*value));
     ret = vendor_build_cmd(CATE_WRITE, command, value, len, buff, BUF_SIZE);
 
-    userial_send_data(buff, ret);
+    if(rkWriteUartfd != -1)
+        userial_vendor_send_data(rkWriteUartfd, buff, ret);
     os_free(buff);
 }
 
@@ -117,7 +119,8 @@ static void dsp2btsoc_inquiry(uint32_t command, uint8_t* value, uint16_t len) {
     ALOGD("%s sub:%d value:%d\n", __func__, command, value);
     ret = vendor_build_cmd(CATE_READ, command, value, len, buff, BUF_SIZE);
 
-    userial_send_data(buff, ret);
+    if(rkWriteUartfd != -1)
+        userial_vendor_send_data(rkWriteUartfd, buff, ret);
     os_free(buff);
 }
 
@@ -549,7 +552,7 @@ void process_data(unsigned char *buff, int len) {
     command = buff[3];
 
     ALOGD("%s recv ", __func__);
-    dump_data(buff, len);
+    userial_dump_data(buff, len);
     ALOGD("%s opcode:%d, command:[%d]\n", __func__, opcode, command);
 
     switch((soc_dsp_cmd_t)command) {
@@ -628,5 +631,10 @@ vendor_data_recv_handler_t vendor_get_data_recv_func(void) {
 
 int btsoc_register_vendor_notify_func(const NotifyFuncs_t* notify_funcs) {
     rkdemoNotifyFuncs = notify_funcs;
+    return 0;
+}
+
+int btsoc_register_uart_write_fd(int fd) {
+    rkWriteUartfd = fd;
     return 0;
 }

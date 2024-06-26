@@ -36,6 +36,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <stdarg.h>
 
 #include "slog.h"
 #include "userial_vendor.h"
@@ -48,8 +49,6 @@
 #define VNDUSERIAL_DBG FALSE
 #endif
 
-#define BLUETOOTH_UART_DEVICE_PORT "/dev/ttyS0"
-
 #if (VNDUSERIAL_DBG == TRUE)
 #define VNDUSERIALDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
@@ -57,30 +56,6 @@
 #endif
 
 #define VND_PORT_NAME_MAXLEN    256
-
-static const tUSERIAL_CFG userial_init_cfg =
-{
-    (USERIAL_DATABITS_8 | USERIAL_PARITY_NONE | USERIAL_STOPBITS_1),
-    USERIAL_BAUD_38400
-};
-
-/******************************************************************************
-**  Local type definitions
-******************************************************************************/
-
-/* vendor serial control block */
-typedef struct
-{
-    int fd;                     /* fd to Bluetooth device */
-    struct termios termios;     /* serial terminal of BT port */
-    char port_name[VND_PORT_NAME_MAXLEN];
-} vnd_userial_cb_t;
-
-/******************************************************************************
-**  Static variables
-******************************************************************************/
-
-static vnd_userial_cb_t vnd_userial;
 
 /*****************************************************************************
 **   Helper Functions
@@ -96,7 +71,7 @@ static vnd_userial_cb_t vnd_userial;
 ** Returns         TRUE/FALSE
 **
 *******************************************************************************/
-bool userial_to_tcio_baud(uint8_t cfg_baud, uint32_t *baud)
+bool userial_to_tcio_baud(uint32_t cfg_baud, uint32_t *baud)
 {
     if (cfg_baud == USERIAL_BAUD_115200)
         *baud = B115200;
@@ -142,52 +117,37 @@ bool userial_to_tcio_baud(uint8_t cfg_baud, uint32_t *baud)
 **   Userial Vendor API Functions
 *****************************************************************************/
 
-/*******************************************************************************
-**
-** Function        userial_vendor_init
-**
-** Description     Initialize userial vendor-specific control block
-**
-** Returns         None
-**
-*******************************************************************************/
-void userial_vendor_init(void)
-{
-    vnd_userial.fd = -1;
-    snprintf(vnd_userial.port_name, VND_PORT_NAME_MAXLEN, "%s", \
-            BLUETOOTH_UART_DEVICE_PORT);
-}
 
 /*******************************************************************************
 **
-** Function        userial_vendor_open
+** Function        userial_vendor_open_inner
 **
 ** Description     Open the serial port with the given configuration
 **
 ** Returns         device fd
 **
 *******************************************************************************/
-int userial_vendor_open(tUSERIAL_CFG *p_cfg)
+int userial_vendor_open_inner(char *dev, int speed, uint16_t fmt)
 {
+    struct termios termios;
     uint32_t baud;
     uint8_t data_bits;
     uint16_t parity;
     uint8_t stop_bits;
+    int fd;
 
-    vnd_userial.fd = -1;
-
-    if (!userial_to_tcio_baud(p_cfg->baud, &baud))
+    if (!userial_to_tcio_baud(speed, &baud))
     {
         return -1;
     }
 
-    if(p_cfg->fmt & USERIAL_DATABITS_8)
+    if(fmt & USERIAL_DATABITS_8)
         data_bits = CS8;
-    else if(p_cfg->fmt & USERIAL_DATABITS_7)
+    else if(fmt & USERIAL_DATABITS_7)
         data_bits = CS7;
-    else if(p_cfg->fmt & USERIAL_DATABITS_6)
+    else if(fmt & USERIAL_DATABITS_6)
         data_bits = CS6;
-    else if(p_cfg->fmt & USERIAL_DATABITS_5)
+    else if(fmt & USERIAL_DATABITS_5)
         data_bits = CS5;
     else
     {
@@ -195,11 +155,11 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
         return -1;
     }
 
-    if(p_cfg->fmt & USERIAL_PARITY_NONE)
+    if(fmt & USERIAL_PARITY_NONE)
         parity = 0;
-    else if(p_cfg->fmt & USERIAL_PARITY_EVEN)
+    else if(fmt & USERIAL_PARITY_EVEN)
         parity = PARENB;
-    else if(p_cfg->fmt & USERIAL_PARITY_ODD)
+    else if(fmt & USERIAL_PARITY_ODD)
         parity = (PARENB | PARODD);
     else
     {
@@ -207,9 +167,9 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
         return -1;
     }
 
-    if(p_cfg->fmt & USERIAL_STOPBITS_1)
+    if(fmt & USERIAL_STOPBITS_1)
         stop_bits = 0;
-    else if(p_cfg->fmt & USERIAL_STOPBITS_2)
+    else if(fmt & USERIAL_STOPBITS_2)
         stop_bits = CSTOPB;
     else
     {
@@ -217,40 +177,60 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
         return -1;
     }
 
-    ALOGI("userial vendor open: opening %s", vnd_userial.port_name);
+    ALOGI("userial vendor open: opening %s", dev);
 
-    if ((vnd_userial.fd = open(vnd_userial.port_name, O_RDWR)) == -1)
+    if ((fd = open(dev, O_RDWR)) == -1)
     {
-        ALOGE("userial vendor open: unable to open %s", vnd_userial.port_name);
+        ALOGE("userial vendor open: unable to open %s", dev);
         return -1;
     }
 
-    tcflush(vnd_userial.fd, TCIOFLUSH);
+    tcflush(fd, TCIOFLUSH);
 
-    tcgetattr(vnd_userial.fd, &vnd_userial.termios);
-    cfmakeraw(&vnd_userial.termios);
-    vnd_userial.termios.c_cflag |= (stop_bits);
-    vnd_userial.termios.c_cflag &= (~CRTSCTS);
-    tcsetattr(vnd_userial.fd, TCSANOW, &vnd_userial.termios);
-    tcflush(vnd_userial.fd, TCIOFLUSH);
+    tcgetattr(fd, &termios);
+    cfmakeraw(&termios);
+    termios.c_cflag |= (stop_bits);
+    termios.c_cflag &= (~CRTSCTS);
+    tcsetattr(fd, TCSANOW, &termios);
+    tcflush(fd, TCIOFLUSH);
 
-    tcsetattr(vnd_userial.fd, TCSANOW, &vnd_userial.termios);
-    tcflush(vnd_userial.fd, TCIOFLUSH);
-    tcflush(vnd_userial.fd, TCIOFLUSH);
+    tcsetattr(fd, TCSANOW, &termios);
+    tcflush(fd, TCIOFLUSH);
+    tcflush(fd, TCIOFLUSH);
 
     /* set input/output baudrate */
-    cfsetospeed(&vnd_userial.termios, baud);
-    cfsetispeed(&vnd_userial.termios, baud);
-    tcsetattr(vnd_userial.fd, TCSANOW, &vnd_userial.termios);
+    cfsetospeed(&termios, baud);
+    cfsetispeed(&termios, baud);
+    tcsetattr(fd, TCSANOW, &termios);
 
-    ALOGD("device fd = %d open", vnd_userial.fd);
-
-    return vnd_userial.fd;
+    ALOGD("device fd = %d open", fd);
+    return fd;
 }
 
-int open_uart(void) {
-    userial_vendor_init();
-    int fd = userial_vendor_open((tUSERIAL_CFG *) &userial_init_cfg);
+int userial_uart_open_with_opt(char *dev, uint32_t speed, uint16_t fmt) {
+    int fd;
+    ALOGD("%s Device: %s, Speed: %u fmt:0x%04x\n", __func__, dev, speed, fmt);
+    fd = userial_vendor_open_inner(dev, speed, fmt);
+
+    return fd;
+}
+
+int userial_uart_open_without_opt(char *dev, uint32_t speed) {
+    int fd;
+    uint16_t fmt = USERIAL_DATABITS_8 | USERIAL_PARITY_NONE | USERIAL_STOPBITS_1;
+    ALOGD("%s Device: %s, Speed: %u fmt:0x%04x\n", __func__, dev, speed, fmt);
+
+    fd = userial_vendor_open_inner(dev, speed, fmt);
+
+    return fd;
+}
+
+int userial_uart_open_impl(char *dev, uint32_t speed, uint16_t optional_param) {
+    int fd;
+    if(!optional_param)
+        optional_param = USERIAL_DATABITS_8 | USERIAL_PARITY_NONE | USERIAL_STOPBITS_1;
+    fd = userial_vendor_open_inner(dev, speed, optional_param);
+    ALOGD("%s Device: %s, Speed: %u fmt:0x%04x\n", __func__, dev, speed, optional_param);
     return fd;
 }
 
@@ -263,20 +243,18 @@ int open_uart(void) {
 ** Returns         None
 **
 *******************************************************************************/
-void userial_vendor_close(void)
+void userial_vendor_close(int fd)
 {
     int result;
 
-    if (vnd_userial.fd == -1)
+    if (fd == -1)
         return;
 
-    ALOGD("device fd = %d close", vnd_userial.fd);
+    ALOGD("device fd = %d close", fd);
     // flush Tx before close to make sure no chars in buffer
-    tcflush(vnd_userial.fd, TCIOFLUSH);
-    if ((result = close(vnd_userial.fd)) < 0)
-        ALOGE( "close(fd:%d) FAILED result:%d", vnd_userial.fd, result);
-
-    vnd_userial.fd = -1;
+    tcflush(fd, TCIOFLUSH);
+    if ((result = close(fd)) < 0)
+        ALOGE( "close(fd:%d) FAILED result:%d", fd, result);
 }
 
 /*******************************************************************************
@@ -288,43 +266,30 @@ void userial_vendor_close(void)
 ** Returns         None
 **
 *******************************************************************************/
-void userial_vendor_set_baud(uint8_t userial_baud)
+void userial_vendor_set_baud(int fd, uint8_t userial_baud)
 {
+    struct termios termios;
     uint32_t tcio_baud;
+
+    tcgetattr(fd, &termios);
+    cfmakeraw(&termios);
 
     userial_to_tcio_baud(userial_baud, &tcio_baud);
 
-    cfsetospeed(&vnd_userial.termios, tcio_baud);
-    cfsetispeed(&vnd_userial.termios, tcio_baud);
-    tcsetattr(vnd_userial.fd, TCSANOW, &vnd_userial.termios);
+    cfsetospeed(&termios, tcio_baud);
+    cfsetispeed(&termios, tcio_baud);
+    tcsetattr(fd, TCSANOW, &termios);
 }
 
-/*******************************************************************************
-**
-** Function        userial_set_port
-**
-** Description     Configure UART port name
-**
-** Returns         0 : Success
-**                 Otherwise : Fail
-**
-*******************************************************************************/
-int userial_set_port(char *p_conf_name, char *p_conf_value, int param)
-{
-    strcpy(vnd_userial.port_name, p_conf_value);
-
-    return 0;
-}
-
-void dump_data(uint8_t *data, uint16_t total) {
+void userial_dump_data(uint8_t *data, uint16_t total) {
     ALOGW("data[%d]= {", total);
     for(int i= 0; i< total; i++) {
-        ALOGW("%02x ", data[i]);
+        ALOGW_PURE("%02x ", data[i]);
     }
     ALOGW("}\n");
 }
 
-uint16_t userial_send_data(uint8_t *data, uint16_t total) {
+uint16_t userial_vendor_send_data(int fd, uint8_t *data, uint16_t total) {
     int ret;
     assert(data != NULL);
     assert(total > 0);
@@ -332,10 +297,10 @@ uint16_t userial_send_data(uint8_t *data, uint16_t total) {
     uint16_t len = total;
     uint16_t sended = 0;
 
-    dump_data(data, total);
+    userial_dump_data(data, total);
 
     while (len > 0) {
-        OSI_NO_INTR(ret = write(vnd_userial.fd, data + sended, len));
+        OSI_NO_INTR(ret = write(fd, data + sended, len));
         switch (ret) {
             case -1:
             ALOGE("In %s, error writing to the uart serial port: %s", __func__, strerror(errno));
