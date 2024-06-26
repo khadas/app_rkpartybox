@@ -20,6 +20,7 @@ extern "C" {
 #define AUDIO_CARD_EXT_USB      NULL
 #define AUDIO_CARD_EXT_AUX      NULL
 
+#define AUDIO_CARD_SPK_CODEC    "hw:0,0"
 #define AUDIO_CARD_CHIP_KALAOK  "mic"
 #define AUDIO_CARD_CHIP_SCENE   "scene"
 #define AUDIO_CARD_RKCHIP_BT    "hw:7,1,0"
@@ -27,6 +28,8 @@ extern "C" {
 
 //this is rockchip rockit usage
 //--------------start------------------
+#define SPK_CODEC_CHANNEL       2
+
 #define KALAOK_REC_CHANNEL      4
 #define KALAOK_POOR_COUNT       2
 #define KALAOK_REF_LAYOUT       0x03

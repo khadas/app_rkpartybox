@@ -16,6 +16,7 @@ extern "C" {
 #define DSP_MIC_BASS_MAX_VOL    32
 #define DSP_MIC_MAX_VOL         32
 
+#define AUDIO_CARD_SPK_CODEC    "hw:0,0"
 #define AUDIO_CARD_CHIP_KALAOK  "hw:0,0"
 #define AUDIO_CARD_CHIP_SCENE   NULL
 #define AUDIO_CARD_EXT_BT       "hw:1,0"
@@ -28,6 +29,8 @@ extern "C" {
 
 //this is rockchip rockit usage
 //--------------start------------------
+#define SPK_CODEC_CHANNEL       6
+
 #define KALAOK_REC_CHANNEL      8
 #define KALAOK_POOR_COUNT       0
 #define KALAOK_REF_LAYOUT       0xfc

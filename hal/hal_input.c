@@ -59,6 +59,14 @@ char *hal_get_audio_card(input_source_t source) {
     return NULL;
 }
 
+char *hal_get_spk_codec_card(void) {
+    return AUDIO_CARD_SPK_CODEC;
+}
+
+uint8_t hal_get_audio_spk_codec_channel(void) {
+    return SPK_CODEC_CHANNEL;
+}
+
 //this is kalaok mic
 char *hal_get_kalaok_mic_card(void) {
     return AUDIO_CARD_CHIP_KALAOK;

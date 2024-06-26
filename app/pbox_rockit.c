@@ -358,13 +358,9 @@ int rk_demo_music_create(void) {
     }
 
     ALOGW("%s hello...\n", __func__);
-    attr.card_name              = "hw:0,0";
+    attr.card_name              = hal_get_spk_codec_card();
+    attr.channels               = hal_get_audio_spk_codec_channel();
     attr.sample_rate            = 48000;
-#if ENABLE_EXT_BT_MCU
-    attr.channels               = 6;
-#else
-    attr.channels               = 2;
-#endif
     attr.bit_width              = 16;
     attr.notify                 = pb_rockit_notify;
     attr.opaque                 = NULL;
@@ -378,9 +374,9 @@ int rk_demo_music_create(void) {
     detect.decay_time = 200;
     detect.detect_per_frm = 2;
     detect.band_cnt = ENERGY_BAND_DETECT;
+
     recorder_attr.sample_rate = 48000;
     recorder_attr.bit_width   = 16;
-
     recorder_attr.card_name = hal_get_kalaok_mic_card();//"mic";//"hw:0,0";
     recorder_attr.pool_cnt    = hal_get_kalaok_poor_count();
     recorder_attr.channels    = hal_get_kalaok_mic_rec_channel();

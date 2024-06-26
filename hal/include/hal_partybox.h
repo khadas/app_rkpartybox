@@ -81,6 +81,9 @@ char* getInputSourceString(input_source_t source);
 int hal_key_convert_kernel_to_upper(uint32_t value);
 char *hal_get_audio_vad_card(void);
 
+char *hal_get_spk_codec_card(void);
+uint8_t hal_get_audio_spk_codec_channel(void);
+
 char *hal_get_kalaok_mic_card(void);
 uint8_t hal_get_kalaok_mic_ref_layout(void);
 uint8_t hal_get_kalaok_mic_rec_layout(void);
