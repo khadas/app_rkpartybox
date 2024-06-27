@@ -1559,7 +1559,6 @@ static void pbox_rockit_music_mic_mute(uint8_t index, mic_mux_t mux, bool mute) 
     assert(partyboxCtx);
     assert(rc_pb_recorder_mute);
 
-    if(recs != MIC_IN) return;//???
     rc_pb_recorder_mute(partyboxCtx, recs, index, mute);
     ALOGW("%s: %s\n", __func__, mute?"on":"off");
 }

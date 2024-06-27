@@ -58,7 +58,7 @@ usb_disk_info_t *const pboxUsbdata  = &(pbox_data.usbDisk);
 struct _pbox_uac *const pboxUacdata = &(pbox_data.uac);
 
 favor_input_order_t input_order_config[SRC_NUM];
-void pbox_app_set_favor_source_order(void) {
+void pbox_app_init_favor_source_order(void) {
     pboxData->avail_srcs = 0;
     //const input_source_t input_priority[SRC_NUM] = FAVOR_SRC_ORDER;
     for (int i = 0; i < SRC_NUM; i++) {
@@ -83,6 +83,16 @@ bool is_input_source_configed(input_source_t source) {
         }
     }
     return false;
+}
+
+void pbox_app_init_mic_mux_matrix(void) {
+    uint32_t matrix = hal_get_supported_mic_matrix();
+    uint32_t mux;
+    for (int i = 0; i < MIC_NUM; i++) {
+        mux = matrix&(1<<BIT(i));
+        pboxUIdata->micData[i].micMux = mux? MIC_IN:MIC_GT;
+        ALOGW("%s matrix:0x%02x, mic[%d]=%s\n", __func__, matrix, i, mux? CSTR(MIC_IN):CSTR(MIC_GT));
+    }
 }
 
 void pbox_app_echo_track_position(bool durationOnly, uint32_t current, uint32_t duration, display_t policy) {

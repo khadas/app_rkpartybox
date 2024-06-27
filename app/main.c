@@ -203,7 +203,8 @@ void main(int argc, char **argv) {
     pbox_get_opt(argc, argv);
     pbox_debug_init(log_level_str);
 
-    pbox_app_set_favor_source_order();
+    pbox_app_init_favor_source_order();
+    pbox_app_init_mic_mux_matrix();
     pbox_app_ui_init(pbox_ini_path);
     pbox_app_ui_load();
 

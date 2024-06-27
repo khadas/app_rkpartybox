@@ -89,7 +89,8 @@ extern usb_disk_info_t *const pboxUsbdata;
 extern struct _pbox_uac *const pboxUacdata;
 extern favor_input_order_t input_order_config[SRC_NUM];
 
-void pbox_app_set_favor_source_order(void);
+void pbox_app_init_favor_source_order(void);
+void pbox_app_init_mic_mux_matrix(void);
 void pbox_app_restart_passive_player(input_source_t source, bool restart, display_t policy);
 void pbox_app_bt_pair_enable(bool enable, display_t policy);
 void pbox_app_bt_local_update(display_t policy);

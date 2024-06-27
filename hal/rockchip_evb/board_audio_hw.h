@@ -50,6 +50,11 @@ extern "C" {
 #define HW_SUPPORT_SRCS (MASK_SRC_CHIP_USB|MASK_SRC_CHIP_BT|MASK_SRC_CHIP_UAC)
 #define FAVOR_SRC_ORDER {SRC_CHIP_BT, SRC_CHIP_USB, SRC_CHIP_UAC, SRC_EXT_BT, SRC_EXT_USB, SRC_EXT_AUX}
 
+//set BITx_MIC_MUX (MASK_MIC/GUITAR << x) to support mic/guitar
+#define BIT0_MIC_MUX    (MASK_MIC << 0)//index 0 is mic
+#define BIT1_MIC_MUX    (MASK_MIC << 1)//index 1 also is mic.
+#define HW_MIC_MATRIX   (BIT0_MIC_MUX|BIT1_MIC_MUX)
+
 #ifdef __cplusplus
 }
 #endif

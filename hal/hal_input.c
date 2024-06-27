@@ -125,3 +125,7 @@ input_source_t hal_get_favor_source_order(int index) {
 uint32_t hal_get_supported_sources(void) {
     return HW_SUPPORT_SRCS;
 }
+
+uint32_t hal_get_supported_mic_matrix(void) {
+    return HW_MIC_MATRIX;
+}
