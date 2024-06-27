@@ -286,7 +286,7 @@ void userial_dump_data(uint8_t *data, uint16_t total) {
     for(int i= 0; i< total; i++) {
         ALOGW_PURE("%02x ", data[i]);
     }
-    ALOGW("}\n");
+    ALOGW_PURE("}\n");
 }
 
 uint16_t userial_vendor_send_data(int fd, uint8_t *data, uint16_t total) {

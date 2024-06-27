@@ -84,6 +84,7 @@ static bool is_check_sum_ok(unsigned char *buf, int len) {
         return true;
     }
 
+    ALOGD("%s checksum fail\n", __func__);
     return false;
 }
 
@@ -488,7 +489,7 @@ void rkdemo_uart_data_recv_handler(int fd, struct uart_data_recv_class* pMachine
     // static enum State current_state = READ_INIT;
     // static uint32_t index, bytes_to_read = 0;
 
-    //ALOGD("%s current state= %d\n", __func__, current_state);
+    //ALOGD("%s current state= %d\n", __func__, pMachine->current_state);
     switch (pMachine->current_state) {
         case READ_INIT:
             pMachine->index = 0;
@@ -507,7 +508,7 @@ void rkdemo_uart_data_recv_handler(int fd, struct uart_data_recv_class* pMachine
         case READ_LENGTH:
             if (read(fd, &buf[pMachine->index], 1) > 0) {
                 pMachine->bytes_to_read = buf[pMachine->index]; // include checksum value.
-                ALOGD("buf[%d]=[%02x], bytes_to_read:%d\n", pMachine->index, buf[pMachine->index], buf[pMachine->index]);
+                //ALOGD("buf[%d]=[%02x], bytes_to_read:%d\n", pMachine->index, buf[pMachine->index], buf[pMachine->index]);
 
                 pMachine->index++;
                 pMachine->current_state = READ_DATA;
@@ -517,11 +518,11 @@ void rkdemo_uart_data_recv_handler(int fd, struct uart_data_recv_class* pMachine
         case READ_DATA:
             {
                 int nread = read(fd, &buf[pMachine->index], pMachine->bytes_to_read);
-                //ALOGD("index=%d, bytes_to_read=%d, nread=%d\n", index, bytes_to_read, nread);
+                ALOGD("index=%d, bytes_to_read=%d, nread=%d\n", pMachine->index, pMachine->bytes_to_read, nread);
 
                 if (nread > 0) {
                     pMachine->index += nread;
-                    if (pMachine->index == pMachine->bytes_to_read + HEAD_3NOD_LEN) {//2 means head(1 byte) + length(1 byte)
+                    if (pMachine->index >= pMachine->bytes_to_read + HEAD_3NOD_LEN) {//2 means head(1 byte) + length(1 byte)
                         if (is_check_sum_ok(buf, pMachine->index)) {
                             process_data(buf, pMachine->index);
                             pMachine->current_state = READ_INIT;
@@ -558,7 +559,7 @@ void process_data(unsigned char *buff, int len) {
     opcode = buff[2];
     command = buff[3];
 
-    ALOGD("%s recv ", __func__);
+    ALOGD("%s recv\n", __func__);
     userial_dump_data(buff, len);
     ALOGD("%s opcode:%d, command:[%d]\n", __func__, opcode, command);
 
