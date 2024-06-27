@@ -59,12 +59,18 @@ char *hal_get_audio_card(input_source_t source) {
     return NULL;
 }
 
+//this is speaker or codec
 char *hal_get_spk_codec_card(void) {
     return AUDIO_CARD_SPK_CODEC;
 }
 
 uint8_t hal_get_audio_spk_codec_channel(void) {
     return SPK_CODEC_CHANNEL;
+}
+
+//this is guitar
+char *hal_get_kalaok_guitar_card(void) {
+    return AUDIO_CARD_CHIP_GUITAR;
 }
 
 //this is kalaok mic

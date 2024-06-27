@@ -375,6 +375,16 @@ int rk_demo_music_create(void) {
     detect.detect_per_frm = 2;
     detect.band_cnt = ENERGY_BAND_DETECT;
 
+    static struct rc_pb_recorder_gt_attr guitar_attr;
+    if((guitar_attr.independent.card_name = hal_get_kalaok_guitar_card()) != NULL) {
+        guitar_attr.type = RC_PB_GUITAR_CARD_TYPE_IND;
+        guitar_attr.independent.card_name = hal_get_kalaok_guitar_card();
+        guitar_attr.independent.sample_rate = 48000;
+        guitar_attr.independent.channels = 1;
+        guitar_attr.independent.bit_width = 16;
+        recorder_attr.guitar=&guitar_attr;
+    }
+
     recorder_attr.sample_rate = 48000;
     recorder_attr.bit_width   = 16;
     recorder_attr.card_name = hal_get_kalaok_mic_card();//"mic";//"hw:0,0";

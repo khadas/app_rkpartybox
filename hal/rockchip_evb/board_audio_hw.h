@@ -21,6 +21,7 @@ extern "C" {
 #define AUDIO_CARD_EXT_AUX      NULL
 
 #define AUDIO_CARD_SPK_CODEC    "hw:0,0"
+#define AUDIO_CARD_CHIP_GUITAR  NULL
 #define AUDIO_CARD_CHIP_KALAOK  "mic"
 #define AUDIO_CARD_CHIP_SCENE   "scene"
 #define AUDIO_CARD_RKCHIP_BT    "hw:7,1,0"
