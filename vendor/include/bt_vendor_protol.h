@@ -59,10 +59,12 @@ struct NotifyFuncs {
 };
 
 typedef struct NotifyFuncs NotifyFuncs_t;
-typedef void (*vendor_data_recv_handler_t)(int);
+typedef struct uart_data_recv_class uart_data_recv_class_t;
+typedef void (*vendor_data_recv_handler_t)(int, uart_data_recv_class_t*);
 vendor_data_recv_handler_t vendor_get_data_recv_func(void);
 int btsoc_register_vendor_notify_func(const NotifyFuncs_t* notify_funcs);
 int btsoc_register_uart_write_fd(int fd);
+uart_data_recv_class_t* uart_data_recv_init(void);
 #ifdef __cplusplus
 }
 #endif

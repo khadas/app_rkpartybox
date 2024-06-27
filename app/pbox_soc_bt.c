@@ -398,6 +398,7 @@ void soc_bt_recv_data(int fd) {
 static void *btsoc_sink_server(void *arg) {
     int btsoc_fds[BTSOC_FD_NUM];
     vendor_data_recv_handler_t  uart_vendor_data_recv_hander = vendor_get_data_recv_func();
+    uart_data_recv_class_t *bt_major_uart = uart_data_recv_init();
     os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
     btsoc_register_vendor_notify_func(pbox_socbt_get_notify_funcs());
@@ -407,7 +408,8 @@ static void *btsoc_sink_server(void *arg) {
     btsoc_fds[BTSOC_UART] =         userial_vendor_open("/dev/ttyS0", 38400);
     exec_command_system("stty -F /dev/ttyS0 38400 cs8 -cstopb parenb -parodd");
     btsoc_register_uart_write_fd(btsoc_fds[BTSOC_UART]);
-    if (btsoc_fds[BTSOC_UART] < 0) return (void *)-1;
+    if (btsoc_fds[BTSOC_UART] < 0)
+        goto exit;
 
     int max_fd = findMax(btsoc_fds, sizeof(btsoc_fds)/sizeof(btsoc_fds[0]));
 
@@ -446,12 +448,15 @@ static void *btsoc_sink_server(void *arg) {
                         ALOGW("did you implement your uart/i2c data recv func???");
                         return (void*)(-1);
                     }
-                    uart_vendor_data_recv_hander(btsoc_fds[BTSOC_UART]);
+                    uart_vendor_data_recv_hander(btsoc_fds[BTSOC_UART], bt_major_uart);
                 } break;
             }
         }
     }
+
+exit:
     close(btsoc_fds[BTSOC_UART]);
+    os_free(bt_major_uart);
     return (void*)(0);
 }
 

@@ -476,51 +476,58 @@ void search_next_header(unsigned char *buf, int *index, int total_len) {
 }
 
 #define HEAD_3NOD_LEN 2
-void rkdemo_uart_data_recv_handler(int fd) {
+struct uart_data_recv_class {
+    enum State current_state;
+    uint32_t index;
+    uint32_t bytes_to_read;
+};
+
+void rkdemo_uart_data_recv_handler(int fd, struct uart_data_recv_class* pMachine) {
     unsigned char buf[BUF_SIZE];
-    static enum State current_state = READ_INIT;
-    static uint32_t index, bytes_to_read = 0;
+    assert(pMachine != NULL);
+    // static enum State current_state = READ_INIT;
+    // static uint32_t index, bytes_to_read = 0;
 
     //ALOGD("%s current state= %d\n", __func__, current_state);
-    switch (current_state) {
+    switch (pMachine->current_state) {
         case READ_INIT:
-            index = 0;
-            current_state = READ_HEADER;
+            pMachine->index = 0;
+            pMachine->current_state = READ_HEADER;
             break;
 
         case READ_HEADER:
-            if (read(fd, &buf[index], 1) > 0) {
-                if (buf[index] == 0xCC) {
-                    index++;
-                    current_state = READ_LENGTH;
+            if (read(fd, &buf[pMachine->index], 1) > 0) {
+                if (buf[pMachine->index] == 0xCC) {
+                    pMachine->index++;
+                    pMachine->current_state = READ_LENGTH;
                 }
             }
             break;
 
         case READ_LENGTH:
-            if (read(fd, &buf[index], 1) > 0) {
-                bytes_to_read = buf[index]; // include checksum value.
-                ALOGD("buf[%d]=[%02x], bytes_to_read:%d\n", index, buf[index], buf[index]);
+            if (read(fd, &buf[pMachine->index], 1) > 0) {
+                pMachine->bytes_to_read = buf[pMachine->index]; // include checksum value.
+                ALOGD("buf[%d]=[%02x], bytes_to_read:%d\n", pMachine->index, buf[pMachine->index], buf[pMachine->index]);
 
-                index++;
-                current_state = READ_DATA;
+                pMachine->index++;
+                pMachine->current_state = READ_DATA;
             }
             break;
 
         case READ_DATA:
             {
-                int nread = read(fd, &buf[index], bytes_to_read);
+                int nread = read(fd, &buf[pMachine->index], pMachine->bytes_to_read);
                 //ALOGD("index=%d, bytes_to_read=%d, nread=%d\n", index, bytes_to_read, nread);
 
                 if (nread > 0) {
-                    index += nread;
-                    if (index == bytes_to_read + HEAD_3NOD_LEN) {//2 means head(1 byte) + length(1 byte)
-                        if (is_check_sum_ok(buf, index)) {
-                            process_data(buf, index);
-                            current_state = READ_INIT;
+                    pMachine->index += nread;
+                    if (pMachine->index == pMachine->bytes_to_read + HEAD_3NOD_LEN) {//2 means head(1 byte) + length(1 byte)
+                        if (is_check_sum_ok(buf, pMachine->index)) {
+                            process_data(buf, pMachine->index);
+                            pMachine->current_state = READ_INIT;
                         } else {
-                            search_next_header(buf, &index, index);
-                            current_state = (index > 1) ? READ_HEADER_COMPLETE : READ_INIT;
+                            search_next_header(buf, &pMachine->index, pMachine->index);
+                            pMachine->current_state = (pMachine->index > 1) ? READ_HEADER_COMPLETE : READ_INIT;
                         }
                     }
                 }
@@ -528,11 +535,11 @@ void rkdemo_uart_data_recv_handler(int fd) {
             break;
 
         case READ_HEADER_COMPLETE:
-            if (index > 1) {  // header and len data already exsist.
-                bytes_to_read = buf[1]; //include checksum byte.
-                current_state = READ_DATA;
+            if (pMachine->index > 1) {  // header and len data already exsist.
+                pMachine->bytes_to_read = buf[1]; //include checksum byte.
+                pMachine->current_state = READ_DATA;
             } else {
-                current_state = READ_LENGTH;
+                pMachine->current_state = READ_LENGTH;
             }
             break;
     }
@@ -627,6 +634,13 @@ void process_data(unsigned char *buff, int len) {
 
 vendor_data_recv_handler_t vendor_get_data_recv_func(void) {
     return rkdemo_uart_data_recv_handler;
+}
+
+uart_data_recv_class_t* uart_data_recv_init(void) {
+    uart_data_recv_class_t *ctx = os_malloc(sizeof(uart_data_recv_class_t));
+    assert(ctx != MULL);
+    memset(ctx, 0, sizeof(struct uart_data_recv_class));
+    return ctx;
 }
 
 int btsoc_register_vendor_notify_func(const NotifyFuncs_t* notify_funcs) {
