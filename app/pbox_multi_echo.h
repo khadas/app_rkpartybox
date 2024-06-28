@@ -53,6 +53,14 @@ void pbox_multi_echoStereoMode(stereo_mode_t stereo, display_t policy);
 void pbox_multi_echoPlacement(placement_t place, display_t policy);
 void pbox_multi_echoOutdoorMode(inout_door_t outdoor, display_t policy);
 void pbox_multi_echoEqMode(equalizer_t mode, display_t policy);
+
+void pbox_multi_echo_lightbar_volume(uint8_t level, display_t policy);
+void pbox_multi_echo_lightbar_mode(uint8_t mode, display_t policy);
+void pbox_multi_echo_lightbar_power_onoff(uint8_t poweron, display_t policy);
+void pbox_multi_echo_strobe_ctrl(uint8_t strobe, display_t policy);
+void pbox_multi_echo_party_light_mode(uint8_t party, display_t policy);
+void pbox_multi_echo_eq_bass_onoff(uint8_t bass, display_t policy);
+
 void pbox_multi_echoPoweron_status(bool status, display_t policy);
 void pbox_multi_echo_dsp_version(char* version, display_t policy);
 void pbox_multi_echoInputSource(input_source_t inputSource, play_status_t status, display_t policy);

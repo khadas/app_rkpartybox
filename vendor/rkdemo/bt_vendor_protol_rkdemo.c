@@ -59,6 +59,13 @@ typedef enum {
     DSP_VOLCAL_HUMAN_RATIO= 0x28,
     DSP_VOLCAL_ACCOMP_RATIO = 0x29,
     DSP_VOLCAL_RESERV_RATIO = 0x2A,
+
+    DSP_LIGHT_BAR_VOLUME    = 0x2B,
+    DSP_LIGHT_BAR_MODE      = 0x2C,
+    DSP_LIGHT_BAR_POWER_ONOFF   = 0x2D,
+    DSP_LIGHT_STROBE_CTRL       = 0x2E,
+    DSP_LIGHT_PARTY_ONOFF       = 0x2f,
+    DSP_EQ_BASS_ONOFF           = 0x30,
 } soc_dsp_cmd_t;
 
 static const NotifyFuncs_t* rkdemoNotifyFuncs = NULL;
@@ -399,6 +406,66 @@ void rkdemo_btsoc_notify_dsp_vocal_reserv_level(uint32_t opcode, char *buff, int
     rkdemoNotifyFuncs->notify_vocal_reserv_level(opcode, level);
 }
 
+void rkdemo_btsoc_notify_dsp_light_bar_volume(uint32_t opcode, char *buff, int32_t len) {
+    uint8_t level;
+    float volume;
+    assert(len > 0);
+
+    level = VND_ORG2TARGET(buff[0], uint8_t, 0, 32, 0, 30);
+    volume = hw_music_gain(level)/10;
+    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
+    rkdemoNotifyFuncs->notify_light_bar_volume(opcode, volume);
+}
+
+void rkdemo_btsoc_notify_dsp_light_bar_mode(uint32_t opcode, char *buff, int32_t len) {
+    assert(len > 0);
+    uint8_t mode = buff[0];
+    ALOGD("%s opcode:%d mode:%d\n", __func__, opcode, mode);
+    rkdemoNotifyFuncs->notify_light_bar_mode(opcode, mode);
+}
+
+void rkdemo_btsoc_notify_dsp_light_bar_power_onoff(uint32_t opcode, char *buff, int32_t len) {
+    assert(len > 0);
+    uint8_t power_state = buff[0];
+    ALOGD("%s opcode:%d power_state:%d\n", __func__, opcode, power_state);
+    rkdemoNotifyFuncs->notify_light_bar_power_onoff(opcode, power_state);
+}
+
+void rkdemo_btsoc_notify_dsp_strobe_ctrl(uint32_t opcode, char *buff, int32_t len) {
+    assert(len > 0);
+    uint8_t strobe_ctrl = buff[0];
+    ALOGD("%s opcode:%d strobe_ctrl:%d\n", __func__, opcode, strobe_ctrl);
+    rkdemoNotifyFuncs->notify_strobe_ctrl(opcode, strobe_ctrl);
+}
+
+void rkdemo_btsoc_notify_dsp_light_party_onoff(uint32_t opcode, char *buff, int32_t len) {
+    assert(len > 0);
+    uint8_t party_state = buff[0];
+    ALOGD("%s opcode:%d party_state:%d\n", __func__, opcode, party_state);
+    rkdemoNotifyFuncs->notify_light_party_onoff(opcode, party_state);
+}
+
+void rkdemo_btsoc_notify_dsp_eq_bass_onoff(uint32_t opcode, char *buff, int32_t len) {
+    assert(len > 0);
+    uint8_t bass_state = buff[0];
+    ALOGD("%s opcode:%d bass_state:%d\n", __func__, opcode, bass_state);
+    rkdemoNotifyFuncs->notify_eq_bass_onoff(opcode, bass_state);
+}
+
+// 0x2b	DSP_LIGHT_BAR_VOLUME
+// "byte0:0~1E"
+// 0x2c	DSP_LIGHT_BAR_MODE	"byte0:    // default: mode1
+// mode1:0x00 mode2:0x01 mode3:0x02 mode4:0x03 mode5:0x04 mode6:0x05 off :0x06"
+// 0x2d	DSP_LIGHT_BAR_POWER_ONOFF
+// "byte0:power on :0x00 power off: 0x01"
+// 0x2e	DSP_LIGHT_STROBE_CTRL
+// "byte0:      default : on
+// off: 0x00 on:  0x01"
+// 0x2f	DSP_LIGHT_PARTY_ONOFF
+// "byte0:       default: off
+// off: 0x00 on:  0x01"
+// 0x30	DSP_EQ_BASS_ONOFF	"byte0:  // default : normal
+// bass off /bass on：0,1"
 void rkdemo_btsoc_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t len) {
     assert(len>0);
 

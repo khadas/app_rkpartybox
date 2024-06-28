@@ -42,6 +42,14 @@ void pbox_app_led_startup_effect(void);
 #define pbox_app_led_MicTreble(...)         ((void) 0)
 #define pbox_app_led_MicBass(...)           ((void) 0)
 #define pbox_app_led_MicReverb(...)         ((void) 0)
+
+#define pbox_app_led_lightbar_volume(...)       ((void) 0)
+#define pbox_app_led_lightbar_mode(...)         ((void) 0)
+#define pbox_app_led_lightbar_power_onoff(...)  ((void) 0)
+#define pbox_app_led_strobe_ctrl(...)           ((void) 0)
+#define pbox_app_led_party_light_enable(...)    ((void) 0)
+#define pbox_app_led_eq_bass_onoff(...)       ((void) 0)
+
 #ifdef __cplusplus
 }
 #endif

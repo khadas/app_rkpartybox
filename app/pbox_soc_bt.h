@@ -38,6 +38,12 @@ typedef enum {
     PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT,
     PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,
     PBOX_SOCBT_DSP_MIC_DATA_EVT,
+    PBOX_SOCBT_DSP_LIGHT_BAR_VOLUME_EVT,
+    PBOX_SOCBT_DSP_LIGHT_BAR_MODE_EVT,
+    PBOX_SOCBT_DSP_LIGHT_BAR_POWER_ONOFF_EVT,
+    PBOX_SOCBT_DSP_LIGHT_STROBE_CTRL_EVT,
+    PBOX_SOCBT_DSP_LIGHT_PARTY_ONOFF_EVT,
+    PBOX_SOCBT_DSP_EQ_BASS_ONOFF_EVT,
 } pbox_socbt_opcode_t;
 
 typedef struct {
@@ -58,6 +64,11 @@ typedef struct {
         bool fadeout;
         mic_data_t micdata;
         pbox_vocal_t vocal;
+        uint8_t level;
+        uint8_t mode;
+        uint8_t strobe;
+        uint8_t bass;
+        uint8_t party;
         struct socbt_input_source {
             play_status_t status;
             input_source_t input;

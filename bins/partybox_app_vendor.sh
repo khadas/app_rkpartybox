@@ -147,4 +147,4 @@ export player_rkstudio_bypass=1
 export player_gender_bypass=0
 ulimit -c unlimited
 echo "/tmp/core-%p-%e" > /proc/sys/kernel/core_pattern
-rkpartybox
+rkpartybox --init-volume -10

@@ -848,6 +848,32 @@ void pbox_app_music_set_eq_mode(equalizer_t mode, display_t policy) {
     pbox_multi_echoEqMode(mode, policy);
 }
 
+void pbox_app_light_bar_set_mode(uint8_t mode, display_t policy) {
+    ALOGD("%s: %d\n", __func__, mode);
+    pbox_multi_echo_lightbar_mode(mode, policy);
+}
+
+void pbox_app_light_bar_set_power_onoff(uint8_t poweron, display_t policy) {
+    ALOGD("%s: %d\n", __func__, poweron);
+    pbox_multi_echo_lightbar_power_onoff(poweron, policy);
+}
+
+void pbox_app_light_strobe_ctrl(uint8_t strobe, display_t policy) {
+    ALOGD("%s: %d\n", __func__, strobe);
+    pbox_multi_echo_strobe_ctrl(strobe, policy);
+}
+
+void pbox_app_party_light_enable(uint8_t party, display_t policy) {
+    ALOGD("%s: %d\n", __func__, party);
+    pbox_multi_echo_party_light_mode(party, policy);
+}
+
+void pbox_app_eq_bass_set_onoff(uint8_t bass, display_t policy) {
+    ALOGD("%s: %d\n", __func__, bass);
+    pbox_multi_echo_eq_bass_onoff(bass, policy);
+}
+
+
 void pbox_app_tunning_set(bool enable, display_t policy) {
     ALOGW("%s %d\n", __func__, enable);
     pbox_app_rockit_set_tunning(enable);

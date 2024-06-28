@@ -196,6 +196,72 @@ void soc2pbox_notify_dsp_reserv_vocal_level(uint32_t opcode, uint32_t level) {
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
+void soc2pbox_notify_light_bar_volume(uint32_t opcode, float level) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_LIGHT_BAR_VOLUME_EVT,
+        .op = opcode,
+        .volume = level,
+    };
+    ALOGD("%s: opcode=%d, level=%f\n", __func__, opcode, level);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_light_bar_mode(uint32_t opcode, uint8_t mode) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_LIGHT_BAR_MODE_EVT,
+        .op = opcode,
+        .mode = mode,
+    };
+    ALOGD("%s: opcode=%d, mode=%d\n", __func__, opcode, mode);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_light_bar_power_onoff(uint32_t opcode, uint8_t on) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_LIGHT_BAR_POWER_ONOFF_EVT,
+        .op = opcode,
+        .poweron = on,
+    };
+    ALOGD("s%s: opcode=%d, on=%d\n", __func__, opcode, on);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_strobe_ctrl(uint32_t opcode, uint8_t strobe) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_LIGHT_STROBE_CTRL_EVT,
+        .op = opcode,
+        .strobe = strobe,
+    };
+    ALOGD("%s: opcode=%d, strobe=%d\n", __func__, opcode, strobe);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_light_party_onoff(uint32_t opcode, uint8_t party) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_LIGHT_PARTY_ONOFF_EVT,
+        .op = opcode,
+        .party = party,
+    };
+    ALOGD("%s: opcode=%d, party=%d\n", __func__, opcode, party);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
+void soc2pbox_notify_eq_bass_onoff(uint32_t opcode, uint8_t bass) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_SOCBT_DSP_EQ_BASS_ONOFF_EVT,
+        .op = opcode,
+        .bass = bass,
+    };
+    ALOGD("%s: opcode=%d, bass=%d\n", __func__, opcode, bass);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
 void soc2pbox_notify_dsp_switch_source(uint32_t opcode, uint8_t source, uint8_t status) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
@@ -503,6 +569,12 @@ const static NotifyFuncs_t notify_funcs = {
     .notify_mic_reverb = soc2pbox_notify_mic_reverb,
     .notify_mic_bass = soc2pbox_notify_mic_bass,
     .notify_mic_treble = soc2pbox_notify_mic_treble,
+    .notify_light_bar_volume = soc2pbox_notify_light_bar_volume,
+    .notify_light_bar_mode = soc2pbox_notify_light_bar_mode,
+    .notify_light_bar_power_onoff = soc2pbox_notify_light_bar_power_onoff,
+    .notify_strobe_ctrl = soc2pbox_notify_strobe_ctrl,
+    .notify_light_party_onoff = soc2pbox_notify_light_party_onoff,
+    .notify_eq_bass_onoff = soc2pbox_notify_eq_bass_onoff,
 };
 
 const NotifyFuncs_t* pbox_socbt_get_notify_funcs(void) {

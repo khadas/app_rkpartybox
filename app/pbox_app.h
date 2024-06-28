@@ -125,6 +125,13 @@ void pbox_app_music_set_stereo_mode(stereo_mode_t stereo, display_t policy);
 void pbox_app_music_set_outdoor_mode(inout_door_t outdoor, display_t policy);
 void pbox_app_music_set_placement(placement_t place, display_t policy);
 void pbox_app_music_set_eq_mode(equalizer_t mode, display_t policy);
+
+void pbox_app_light_bar_set_mode(uint8_t mode, display_t policy);
+void pbox_app_light_bar_set_power_onoff(uint8_t poweron, display_t policy);
+void pbox_app_light_strobe_ctrl(uint8_t strobe, display_t policy);
+void pbox_app_party_light_enable(uint8_t party, display_t policy);
+void pbox_app_eq_bass_set_onoff(uint8_t bass, display_t policy);
+
 void pbox_app_music_human_vocal_level_cycle(display_t policy);
 void pbox_app_music_guitar_vocal_level_cycle(display_t policy);
 void pbox_app_switch_vocal_lib(bool vocalib);

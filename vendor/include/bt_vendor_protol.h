@@ -32,6 +32,12 @@ typedef void (*NotifyMicReverbFunc)(uint32_t opcode, uint8_t index, float micRev
 typedef void (*NotifyMicBassFunc)(uint32_t opcode, uint8_t index, float micBass);
 typedef void (*NotifyMicTrebleFunc)(uint32_t opcode, uint8_t index, float micTreble);
 typedef void (*NotifyMicVolumeFunc)(uint32_t opcode, uint8_t index, float micVolume);
+typedef void (*NotifyLightBarVolumeFunc)(uint32_t opcode, float level);
+typedef void (*NotifyLightBarModeFunc)(uint32_t opcode, uint8_t mode);
+typedef void (*NotifyLightBarPowerOnoffFunc)(uint32_t opcode, uint8_t state);
+typedef void (*NotifyStrobeCtrlFunc)(uint32_t opcode, uint8_t ctrl);
+typedef void (*NotifyLightPartyOnoffFunc)(uint32_t opcode, uint8_t state);
+typedef void (*NotifyEqBassOnoffFunc)(uint32_t opcode, uint8_t state);
 
 struct NotifyFuncs {
     NotifyDSPVersionFunc notify_dsp_version;
@@ -56,6 +62,12 @@ struct NotifyFuncs {
     NotifyMicReverbFunc notify_mic_reverb;
     NotifyMicBassFunc notify_mic_bass;
     NotifyMicTrebleFunc notify_mic_treble;
+    NotifyLightBarVolumeFunc notify_light_bar_volume;
+    NotifyLightBarModeFunc notify_light_bar_mode;
+    NotifyLightBarPowerOnoffFunc notify_light_bar_power_onoff;
+    NotifyStrobeCtrlFunc notify_strobe_ctrl;
+    NotifyLightPartyOnoffFunc notify_light_party_onoff;
+    NotifyEqBassOnoffFunc notify_eq_bass_onoff;
 };
 
 typedef struct NotifyFuncs NotifyFuncs_t;

@@ -33,6 +33,12 @@ static void handleVocalAccompRatioEvent(const pbox_socbt_msg_t *msg);
 static void handleVocalReservRatioEvent(const pbox_socbt_msg_t *msg);
 static void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg);
 static void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg);
+static void handleLightBarVolumeEvent(const pbox_socbt_msg_t *msg);
+static void handleLightBarModeEvent(const pbox_socbt_msg_t *msg);
+static void handleLightBarPowerOnoffEvent(const pbox_socbt_msg_t *msg);
+static void handleStrobeCtrlEvent(const pbox_socbt_msg_t *msg);
+static void handleLightPartyOnoffEvent(const pbox_socbt_msg_t *msg);
+static void handleEqBassOnoffEvent(const pbox_socbt_msg_t *msg);
 
 int unix_socket_socbt_send(void *info, int length)
 {
@@ -289,6 +295,54 @@ void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_btsoc_set_music_volume(msg->musicVolLevel, DISP_All_EXCLUDE_BTMCU|DISP_FS);
 }
 
+void handleLightBarVolumeEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s Light Bar Volume: %d\n", __func__, msg->volume);
+    if (msg->op == OP_READ) {
+        return;
+    }
+    pbox_app_btsoc_set_music_volume(msg->volume, DISP_All);
+}
+
+void handleLightBarModeEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s Light Bar Mode: %d\n", __func__, msg->mode);
+    if (msg->op == OP_READ) {
+        return;
+    }
+    pbox_app_light_bar_set_mode(msg->mode, DISP_All);
+}
+
+void handleLightBarPowerOnoffEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s Light Bar Power On/Off: %d\n", __func__, msg->poweron);
+    if (msg->op == OP_READ) {
+        return;
+    }
+    pbox_app_light_bar_set_power_onoff(msg->poweron, DISP_All);
+}
+
+void handleStrobeCtrlEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s Strobe Control: %d\n", __func__, msg->strobe);
+    if (msg->op == OP_READ) {
+        return;
+    }
+    pbox_app_light_strobe_ctrl(msg->strobe, DISP_All);
+}
+
+void handleLightPartyOnoffEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s Light Party On/Off: %d\n", __func__, msg->party);
+    if (msg->op == OP_READ) {
+        return;
+    }
+    pbox_app_party_light_enable(msg->party, DISP_All);
+}
+
+void handleEqBassOnoffEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s EQ Bass On/Off: %d\n", __func__, msg->bass);
+    if (msg->op == OP_READ) {
+        return;
+    }
+    pbox_app_eq_bass_set_onoff(msg->bass, DISP_All);
+}
+
 // Define a struct to associate opcodes with handles
 typedef struct {
     pbox_socbt_opcode_t opcode;
@@ -298,20 +352,25 @@ typedef struct {
 const socbt_event_handle_t socbtEventTable[] = {
     { PBOX_SOCBT_DSP_VERSION_EVT,       handleDspVersionEvent   },
     { PBOX_SOCBT_DSP_MAIN_VOLUME_EVT,   handleMainVolumeEvent   },
-
     { PBOX_SOCBT_DSP_PLACEMENT_EVT,     handlePlacementEvent    },
-    { PBOX_SOCBT_DSP_MIC1_STATE_EVT,    handleMic1MuxEvent    },
-    { PBOX_SOCBT_DSP_MIC2_STATE_EVT,    handleMic2MuxEvent    },
+    { PBOX_SOCBT_DSP_MIC1_STATE_EVT,    handleMic1MuxEvent      },
+    { PBOX_SOCBT_DSP_MIC2_STATE_EVT,    handleMic2MuxEvent      },
     { PBOX_SOCBT_DSP_IN_OUT_DOOR_EVT,   handleInOutDoorEvent    },
-    { PBOX_SOCBT_DSP_MIC_DATA_EVT,      handleMicDataEvent     },
+    { PBOX_SOCBT_DSP_MIC_DATA_EVT,      handleMicDataEvent      },
     { PBOX_SOCBT_DSP_POWER_ON_EVT,      handlePowerOnEvent      },
     { PBOX_SOCBT_DSP_STEREO_MODE_EVT,   handleStereoModeEvent   },
-    { PBOX_SOCBT_DSP_VOCAL_FADEOUT_EVT, handleHumanVoiceFadeoutEvent   },
+    { PBOX_SOCBT_DSP_VOCAL_FADEOUT_EVT, handleHumanVoiceFadeoutEvent },
     { PBOX_SOCBT_DSP_VOCAL_RATIO_EVT,   handleVocalHumanRatioEvent   },
-    { PBOX_SOCBT_DSP_ACCOMP_RATIO_EVT,  handleVocalAccompRatioEvent   },
-    { PBOX_SOCBT_DSP_RESERV_RATIO_EVT,  handleVocalReservRatioEvent   },
+    { PBOX_SOCBT_DSP_ACCOMP_RATIO_EVT,  handleVocalAccompRatioEvent  },
+    { PBOX_SOCBT_DSP_RESERV_RATIO_EVT,  handleVocalReservRatioEvent  },
     { PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT, handleSwitchSourceEvent },
     { PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,  handleMusicVolumeEvent  },
+    { PBOX_SOCBT_DSP_LIGHT_BAR_VOLUME_EVT, handleLightBarVolumeEvent },
+    { PBOX_SOCBT_DSP_LIGHT_BAR_MODE_EVT, handleLightBarModeEvent },
+    { PBOX_SOCBT_DSP_LIGHT_BAR_POWER_ONOFF_EVT, handleLightBarPowerOnoffEvent },
+    { PBOX_SOCBT_DSP_LIGHT_STROBE_CTRL_EVT, handleStrobeCtrlEvent },
+    { PBOX_SOCBT_DSP_LIGHT_PARTY_ONOFF_EVT, handleLightPartyOnoffEvent },
+    { PBOX_SOCBT_DSP_EQ_BASS_ONOFF_EVT, handleEqBassOnoffEvent }
 };
 
 void btsoc_main_data_recv(const pbox_socbt_msg_t* msg) {

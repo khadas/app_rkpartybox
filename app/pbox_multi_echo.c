@@ -302,6 +302,36 @@ void pbox_multi_echoEqMode(equalizer_t mode, display_t policy)
         pbox_app_music_store_eq_mode(mode);
 }
 
+void pbox_multi_echo_lightbar_volume(uint8_t level, display_t policy) {
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_lightbar_volume(level);
+}
+
+void pbox_multi_echo_lightbar_mode(uint8_t mode, display_t policy) {
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_lightbar_mode(mode);
+}
+
+void pbox_multi_echo_lightbar_power_onoff(uint8_t poweron, display_t policy) {
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_lightbar_power_onoff((bool)poweron);
+}
+
+void pbox_multi_echo_strobe_ctrl(uint8_t strobe, display_t policy) {
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_strobe_ctrl((bool)strobe);
+}
+
+void pbox_multi_echo_party_light_mode(uint8_t party, display_t policy) {
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_party_light_enable((bool)party);
+}
+
+void pbox_multi_echo_eq_bass_onoff(uint8_t bass, display_t policy) {
+    if (policy & LED_DISPLAY_MASK)
+        pbox_app_led_eq_bass_onoff(bass);
+}
+
 void pbox_multi_echoPoweron_status(bool status, display_t policy)
 {
     if (policy & BTMCU_DISP_MASK)
