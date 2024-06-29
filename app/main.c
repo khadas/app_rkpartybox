@@ -424,8 +424,19 @@ void pbox_main_exit(char *data) {
     ALOGW("Main Exiting...\n");
 }
 
+void pbox_main_simlate_playing(char *data) {
+    if (pboxUIdata->play_status == PLAYING) {
+        ALOGW("simlate to stop...\n");
+        pboxUIdata->play_status = _STOP;
+    } else {
+        ALOGW("simlate to playing...\n");
+        pboxUIdata->play_status = PLAYING;
+    }
+}
+
 static pb_command_t pb_command_table[] = {
     {"quit", pbox_main_exit, "Exit the application"},
+    {"status", pbox_main_simlate_playing, "simlate playing or not"},
 };
 
 static void show_help_cmd(void) {

@@ -370,8 +370,41 @@ void pbox_multi_echoRevertMode(uint8_t index, pbox_revertb_t mode, display_t pol
         pbox_app_music_store_recoder_revert(index, mode);
 }
 
+#define THRESHOLD -1780
+#define COUNT_THRESHOLD 5
+
+int energy_detect(energy_info_t energy)
+{
+    int i;
+    int energy_sum = 0;
+
+    for (i = 0; i < ENERGY_BAND_DETECT; i++) {
+        energy_sum += energy.energykeep[i].energy;
+    }
+
+    //ALOGW("%s: %d\n", __func__, energy_sum);
+    return energy_sum;
+}
+
 void pbox_multi_echoEnergyInfo(energy_info_t energy, display_t policy)
 {
+    static int audio_pause_threshold = 0;
+    static int audio_pause_send = 0;
+
+    if (energy_detect(energy) < THRESHOLD) {
+        audio_pause_threshold++;
+        if (audio_pause_threshold >= COUNT_THRESHOLD) {
+            if(audio_pause_send == 0) {
+                pbox_app_led_PlayPause(false);
+                audio_pause_send = 1;
+            }
+            return;
+        }
+    } else {
+        audio_pause_threshold = 0;
+        audio_pause_send = 0;
+    }
+
     if (policy & LCD_DISPLAY_MASK)
         pbox_app_lcd_dispplayEnergy(energy);
 
