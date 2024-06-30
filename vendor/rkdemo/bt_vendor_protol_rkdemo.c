@@ -66,6 +66,8 @@ typedef enum {
     DSP_LIGHT_STROBE_CTRL       = 0x2E,
     DSP_LIGHT_PARTY_ONOFF       = 0x2f,
     DSP_EQ_BASS_ONOFF           = 0x30,
+
+    DSP_VOCAL_FADEOUT_MODE      = 0x40,
 } soc_dsp_cmd_t;
 
 static const NotifyFuncs_t* rkdemoNotifyFuncs = NULL;
@@ -406,6 +408,13 @@ void rkdemo_btsoc_notify_dsp_vocal_reserv_level(uint32_t opcode, char *buff, int
     rkdemoNotifyFuncs->notify_vocal_reserv_level(opcode, level);
 }
 
+void rkdemo_btsoc_notify_dsp_vocal_fadeout_mode(uint32_t opcode, char *buff, int32_t len) {
+    assert(len > 0);
+    uint8_t mode = buff[0];
+    ALOGD("%s opcode:%d vocal mode:%d[1:human 0:guitar]\n", __func__, opcode, mode);
+    rkdemoNotifyFuncs->notify_switch_vocal_mode(opcode, mode);
+}
+
 void rkdemo_btsoc_notify_dsp_light_bar_volume(uint32_t opcode, char *buff, int32_t len) {
     uint8_t level;
     float volume;
@@ -452,20 +461,6 @@ void rkdemo_btsoc_notify_dsp_eq_bass_onoff(uint32_t opcode, char *buff, int32_t 
     rkdemoNotifyFuncs->notify_eq_bass_onoff(opcode, bass_state);
 }
 
-// 0x2b	DSP_LIGHT_BAR_VOLUME
-// "byte0:0~1E"
-// 0x2c	DSP_LIGHT_BAR_MODE	"byte0:    // default: mode1
-// mode1:0x00 mode2:0x01 mode3:0x02 mode4:0x03 mode5:0x04 mode6:0x05 off :0x06"
-// 0x2d	DSP_LIGHT_BAR_POWER_ONOFF
-// "byte0:power on :0x00 power off: 0x01"
-// 0x2e	DSP_LIGHT_STROBE_CTRL
-// "byte0:      default : on
-// off: 0x00 on:  0x01"
-// 0x2f	DSP_LIGHT_PARTY_ONOFF
-// "byte0:       default: off
-// off: 0x00 on:  0x01"
-// 0x30	DSP_EQ_BASS_ONOFF	"byte0:  // default : normal
-// bass off /bass on：0,1"
 void rkdemo_btsoc_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t len) {
     assert(len>0);
 

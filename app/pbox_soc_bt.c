@@ -196,6 +196,17 @@ void soc2pbox_notify_dsp_reserv_vocal_level(uint32_t opcode, uint32_t level) {
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
+void soc2pbox_notify_dsp_switch_vocal_mode(uint32_t opcode, uint8_t mode) {
+    pbox_socbt_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId =  PBOX_SOCBT_DSP_SWITCH_VOCAL_EVT,
+    };
+    msg.op = opcode;
+    msg.mode = mode;
+    ALOGD("%s opcode:%d vocal mode:%d\n", __func__, opcode, mode);
+    unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
+}
+
 void soc2pbox_notify_light_bar_volume(uint32_t opcode, float level) {
     pbox_socbt_msg_t msg = {
         .type = PBOX_EVT,
@@ -558,6 +569,7 @@ const static NotifyFuncs_t notify_funcs = {
     .notify_vocal_human_level = soc2pbox_notify_dsp_human_vocal_level,
     .notify_vocal_accomp_level = soc2pbox_notify_dsp_accomp_vocal_level,
     .notify_vocal_reserv_level = soc2pbox_notify_dsp_reserv_vocal_level,
+    .notify_switch_vocal_mode = soc2pbox_notify_dsp_switch_vocal_mode,
     .notify_dsp_switch_source = soc2pbox_notify_dsp_switch_source,
     .notify_music_volume = soc2pbox_notify_music_volume,
     .notify_mic_mute = soc2pbox_notify_mic_mute,

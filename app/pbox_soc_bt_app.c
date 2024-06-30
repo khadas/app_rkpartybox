@@ -31,6 +31,7 @@ static void handleHumanVoiceFadeoutEvent(const pbox_socbt_msg_t *msg);
 static void handleVocalHumanRatioEvent(const pbox_socbt_msg_t *msg);
 static void handleVocalAccompRatioEvent(const pbox_socbt_msg_t *msg);
 static void handleVocalReservRatioEvent(const pbox_socbt_msg_t *msg);
+static void handleSwitchVocalModeEvent(const pbox_socbt_msg_t *msg);
 static void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg);
 static void handleMusicVolumeEvent(const pbox_socbt_msg_t *msg);
 static void handleLightBarVolumeEvent(const pbox_socbt_msg_t *msg);
@@ -274,6 +275,15 @@ void handleVocalReservRatioEvent(const pbox_socbt_msg_t *msg) {
     pbox_app_music_set_reserv_music_level(msg->vocal.reservLevel, DISP_All);
 }
 
+void handleSwitchVocalModeEvent(const pbox_socbt_msg_t *msg) {
+    ALOGD("%s  switch to vocal mode=: %u\n", __func__, msg->mode);
+    if(msg->op == OP_READ) {
+        return;
+    }
+
+    pbox_app_switch_vocal_lib(msg->mode);
+}
+
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
     ALOGD("%s Switch Source: Play Status = %d, Input Source = %d\n", 
                 __func__, msg->input_source.status, msg->input_source.input);
@@ -363,6 +373,7 @@ const socbt_event_handle_t socbtEventTable[] = {
     { PBOX_SOCBT_DSP_VOCAL_RATIO_EVT,   handleVocalHumanRatioEvent   },
     { PBOX_SOCBT_DSP_ACCOMP_RATIO_EVT,  handleVocalAccompRatioEvent  },
     { PBOX_SOCBT_DSP_RESERV_RATIO_EVT,  handleVocalReservRatioEvent  },
+    { PBOX_SOCBT_DSP_SWITCH_VOCAL_EVT,  handleSwitchVocalModeEvent  },
     { PBOX_SOCBT_DSP_SWITCH_SOURCE_EVT, handleSwitchSourceEvent },
     { PBOX_SOCBT_DSP_MUSIC_VOLUME_EVT,  handleMusicVolumeEvent  },
     { PBOX_SOCBT_DSP_LIGHT_BAR_VOLUME_EVT, handleLightBarVolumeEvent },

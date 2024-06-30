@@ -38,6 +38,7 @@ typedef void (*NotifyLightBarPowerOnoffFunc)(uint32_t opcode, uint8_t state);
 typedef void (*NotifyStrobeCtrlFunc)(uint32_t opcode, uint8_t ctrl);
 typedef void (*NotifyLightPartyOnoffFunc)(uint32_t opcode, uint8_t state);
 typedef void (*NotifyEqBassOnoffFunc)(uint32_t opcode, uint8_t state);
+typedef void (*NotifyDSPGerneralModeFunc)(uint32_t opcode, uint8_t mode);
 
 struct NotifyFuncs {
     NotifyDSPVersionFunc notify_dsp_version;
@@ -52,6 +53,7 @@ struct NotifyFuncs {
     NotifyVocalRatioLevelFunc notify_vocal_human_level;
     NotifyVocalRatioLevelFunc notify_vocal_accomp_level;
     NotifyVocalRatioLevelFunc notify_vocal_reserv_level;
+    NotifyDSPGerneralModeFunc notify_switch_vocal_mode;
     NotifySourceSwitchFunc notify_dsp_switch_source;
     NotifyMusicVolumeFunc notify_music_volume;
     NotifyMicVolumeFunc notify_mic_volume;
