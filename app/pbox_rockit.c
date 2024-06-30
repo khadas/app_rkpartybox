@@ -1447,6 +1447,7 @@ static void pbox_rockit_music_set_inout_door(input_source_t source, inout_door_t
 }
 
 static void pbox_rockit_music_set_placement(input_source_t source, placement_t place) {
+    prompt_audio_t dest_audio;
     enum rc_pb_play_src dest = covert2rockitSource(source);
     struct rc_pb_param param;
 
@@ -1474,6 +1475,7 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
             rc_pb_set_param(partyboxCtx, &param);
+            dest_audio = PROMPT_HORIZON;
         } break;
 
         case PLACE_VERT: {
@@ -1486,9 +1488,11 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
             rc_pb_set_param(partyboxCtx, &param);
+            dest_audio = PROMPT_VERTICAL;
         } break;
-        default: break;
+        default: return;
     }
+    audio_prompt_send(dest_audio, false);
 }
 
 void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {

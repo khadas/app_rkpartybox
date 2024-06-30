@@ -119,6 +119,12 @@ fi
 if [ ! -e /oem/tone/res_outdoor.pcm ]; then
 	ln -s /etc/pbox/res_outdoor.pcm /oem/tone/res_outdoor.pcm
 fi
+if [ ! -e /oem/tone/horizon_placement.pcm ]; then
+	ln -s /etc/pbox/horizon_placement.pcm /oem/tone/horizon_placement.pcm
+fi
+if [ ! -e /oem/tone/vertical_placement.pcm ]; then
+	ln -s /etc/pbox/vertical_placement.pcm /oem/tone/vertical_placement.pcm
+fi
 
 export rt_cfg_path_3a=/oem/config_howling.json
 export rt_cfg_path_reverb_doa_detect=/oem/config_reverb_doa_detect.json

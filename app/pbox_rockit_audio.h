@@ -41,6 +41,8 @@ typedef enum {
     PROMPT_EQ_ROCK,
     PROMPT_INDOOR,
     PROMPT_OUTDOOR,
+    PROMPT_HORIZON,
+    PROMPT_VERTICAL,
     PROMPT_NUM
 } prompt_audio_t;
 

@@ -26,6 +26,7 @@ static void handleUacVolumeEvent(const pbox_usb_msg_t* msg);
 static void handleUacMuteEvent(const pbox_usb_msg_t* msg);
 static void handleUsbPpmEvent(const pbox_usb_msg_t* msg);
 static void handleAdbConnectionEvent(const pbox_usb_msg_t* msg);
+static void handleHpdPlacementEvent(const pbox_usb_msg_t* msg);
 
 int unix_socket_usb_send(void *info, int length)
 {
@@ -75,6 +76,7 @@ const usb_event_handle_t usbEventTable[] = {
     { PBOX_USB_UAC_MUTE_EVT,        handleUacMuteEvent          },
     { PBOX_USB_UAC_PPM_EVT,         handleUsbPpmEvent           },
     { PBOX_USB_ADB_CONNECTION_EVT,  handleAdbConnectionEvent    },
+    { PBOX_HPD_PLACEMENT_EVT,       handleHpdPlacementEvent    },
     // Add other as needed...
 };
 
@@ -110,6 +112,10 @@ void handleUsbPpmEvent(const pbox_usb_msg_t* msg) {
 
 void handleAdbConnectionEvent(const pbox_usb_msg_t* msg) {
     pbox_app_adb_connection(msg->connect, DISP_All);
+}
+
+void handleHpdPlacementEvent(const pbox_usb_msg_t* msg) {
+    pbox_app_music_set_placement(msg->placement, DISP_All);
 }
 
 char* pbox_app_usb_get_title(uint32_t trackId) {

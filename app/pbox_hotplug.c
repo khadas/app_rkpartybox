@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <mntent.h>
 #include <libudev.h>
+#include <linux/input.h>
 
 #include "uac_uevent.h"
 #include "pbox_common.h"
@@ -26,6 +27,7 @@
 #include "os_task.h"
 #include "os_minor_type.h"
 
+//#define ENABLE_GSENSOR_DETECT
 static void handleUsbStartScanCmd(const pbox_usb_msg_t* msg);
 static void handleUsbPollStateCmd(const pbox_usb_msg_t* msg);
 
@@ -132,6 +134,17 @@ void usb_pbox_notify_audio_file_added(music_format_t format, char *fileName) {
     strncpy(msg.usbMusicFile.fileName, fileName, MAX_MUSIC_NAME_LENGTH);
     msg.usbMusicFile.fileName[MAX_MUSIC_NAME_LENGTH] = 0;
     ALOGD("%s format:%d, name:%s\n", __func__, format, fileName);
+    unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
+}
+
+//state: 0, horizition, 1: vertical
+void hpd_pbox_notify_placement(placement_t placement) {
+    pbox_usb_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_HPD_PLACEMENT_EVT,
+    };
+
+    msg.placement = placement;
     unix_socket_usb_notify(&msg, sizeof(pbox_usb_msg_t));
 }
 
@@ -255,10 +268,15 @@ void process_pbox_usb_cmd(const pbox_usb_msg_t* msg) {
     ALOGW("Warning: No handler found for event ID %d.\n", msg->msgId);
 }
 
-#define HPD_UDP_SOCKET 0
-#define HPD_DEV_DETECT 1
-#define HPD_DEV_UAC    2
-#define HOTPLUG_FD_NUM     3
+enum {
+    HPD_UDP_SOCKET,
+    HPD_DEV_DETECT,
+    HPD_DEV_UAC,
+#ifdef ENABLE_GSENSOR_DETECT
+    HPD_GSENSOR_DET,
+#endif
+    HOTPLUG_FD_NUM
+};
 
 static os_task_t* hotplug_task_id;
 static void *pbox_hotplug_dev_server(void *arg)
@@ -291,7 +309,9 @@ static void *pbox_hotplug_dev_server(void *arg)
 
     hotplug_fds[HPD_DEV_UAC] = uac_monitor_get_fd();
     uac_init();
-
+#ifdef ENABLE_GSENSOR_DETECT
+    hotplug_fds[HPD_GSENSOR_DET] = open("/dev/input/by-path/platform-ff070000.i2c-event", O_RDONLY);
+#endif
     int max_fd = findMax(hotplug_fds, sizeof(hotplug_fds)/sizeof(hotplug_fds[0]));
 
     fd_set read_fds;
@@ -299,6 +319,9 @@ static void *pbox_hotplug_dev_server(void *arg)
     FD_SET(hotplug_fds[HPD_UDP_SOCKET], &read_fds);
     FD_SET(hotplug_fds[HPD_DEV_DETECT], &read_fds);
     FD_SET(hotplug_fds[HPD_DEV_UAC], &read_fds);
+#ifdef ENABLE_GSENSOR_DETECT
+    FD_SET(hotplug_fds[HPD_GSENSOR_DET], &read_fds);
+#endif
     struct timeval tv = {
         .tv_sec = 1,
         .tv_usec = 0,
@@ -406,6 +429,81 @@ static void *pbox_hotplug_dev_server(void *arg)
                         parse_event(&event);
                     } while(0);
                 } break;
+ #ifdef ENABLE_GSENSOR_DETECT
+                case HPD_GSENSOR_DET: {
+                    #define ABS_X_AXIS      0
+                    #define ABS_Y_AXIS      1
+                    #define ABS_Z_AXIS      2
+                    int rd, ret;
+                    struct input_event ev[64];
+                    static int x_axis, y_axis, z_axis;
+                    static int x_sync, y_sync, z_sync;
+                    static bool x_change = 1, y_change = 1, z_change = 1;
+                    static placement_t last_placement = PLACE_AUTO;
+                    rd = read(hotplug_fds[i], ev, sizeof(ev));
+                    if(rd < (int) sizeof(struct input_event)) {
+                        ALOGD("[key]expected %d bytes, got %d, ignore the value\n", (int) sizeof(struct input_event), rd);
+                        continue;
+                    }
+
+                    for(int k = 0; k < rd/sizeof(struct input_event); k++) {
+                        int type, code, value;
+                        type = ev[k].type;
+                        code = ev[k].code;
+                        value = ev[k].value;
+                        if(type == EV_SYN) {
+                            //ALOGW("%s -------------- SYN_REPORT ------------\n", __func__);
+                        }
+                        else if(type == EV_ABS) {
+                            switch (code) {
+                                case ABS_X_AXIS: {
+                                    if((abs(value - x_sync) > 5000)) {
+                                        ALOGW("%s----\033[32m axis X, value:[%d->%d] \033[0m \n", __func__, x_sync, value);
+                                        x_sync = value;
+                                        x_change = true;
+                                    }
+                                    x_axis = value;
+                                } break;
+
+                                case ABS_Y_AXIS: {
+                                    if((abs(value - y_sync) > 5000)) {
+                                        ALOGW("%s----\033[34m axis Y, value:[%d->%d] \033[0m\n", __func__, y_sync, value);
+                                        y_sync = value;
+                                        y_change = true;
+                                    }
+                                    y_axis = value;
+                                } break;
+
+                                case ABS_Z_AXIS: {
+                                    if((abs(value - z_sync) > 5000)) {
+                                        ALOGW("%s----\033[36m axis Z, value:[%d->%d] \033[0m\n", __func__, z_sync, value);
+                                        z_sync = value;
+                                        z_change = true;
+                                    }
+                                    if(x_change||y_change||z_change) {
+                                        ALOGW("%s----\033[33m axis X,Y,Z =[%05d, %05d, %05d], last place=%d\033[0m\n", __func__, x_axis, y_axis, value, last_placement);
+                                        x_change = y_change = z_change = false;
+                                        if (abs(z_sync) > 10000 || abs(y_sync) > 10000) {
+                                            if (last_placement != PLACE_HORI) {
+                                                ALOGW("%s \033[31m----horizion.............\033[0m\n", __func__);
+                                                last_placement = PLACE_HORI;
+                                                hpd_pbox_notify_placement(PLACE_HORI);
+                                            }
+                                        } else if (abs(x_sync) > 10000){
+                                            if (last_placement != PLACE_VERT) {
+                                                ALOGW("%s \033[31m----vertical...........\033[0m\n", __func__);
+                                                last_placement = PLACE_VERT;
+                                                hpd_pbox_notify_placement(PLACE_VERT);
+                                            }
+                                        }
+                                    }
+                                    z_axis = value;
+                                } break;
+                            }
+                        }
+                    }
+                } break;
+#endif
             }
         }
     }
@@ -415,6 +513,9 @@ static void *pbox_hotplug_dev_server(void *arg)
     close(hotplug_fds[HPD_UDP_SOCKET]);
     close(hotplug_fds[HPD_DEV_DETECT]);
     close(hotplug_fds[HPD_DEV_UAC]);
+#ifdef ENABLE_GSENSOR_DETECT
+    close(hotplug_fds[HPD_GSENSOR_DET]);
+#endif
     return NULL;
 }
 

@@ -22,6 +22,7 @@ typedef enum {
     PBOX_USB_UAC_MUTE_EVT,
     PBOX_USB_UAC_PPM_EVT,
     PBOX_USB_ADB_CONNECTION_EVT,
+    PBOX_HPD_PLACEMENT_EVT,
 } pbox_usb_opcode_t;
 
 typedef struct {
@@ -33,6 +34,7 @@ typedef struct {
         uac_t uac;
     };
     bool connect;
+    placement_t placement;
 } pbox_usb_msg_t;
 
 void adb_pbox_notify_connect_state(bool connect);
