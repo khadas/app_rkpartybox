@@ -537,7 +537,7 @@ void pbox_app_music_set_main_volume(float volume, display_t policy) {
 }
 
 void pbox_app_music_set_music_volume(float volume, display_t policy) {
-    ALOGD("%s music volume: %f\n", __func__, volume);
+    ALOGW("%s music volume: %f\n", __func__, volume);
     pboxUIdata->musicVolumeLevel = volume;
     pbox_app_rockit_set_music_volume(pboxData->inputDevice, volume);
     pbox_multi_echoMusicVolumeLevel(volume, policy);

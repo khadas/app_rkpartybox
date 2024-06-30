@@ -161,7 +161,7 @@ int dsp2btsoc_notify_main_volume(float volume) {
     //covert the float volume to customer disered range..
     volume = volume*10;
     uint8_t value = get_vendor_table_index(volume, ptable, size);
-    dsp2btsoc_notify(DSP_MUSIC_VOLUME, &value, 1);
+    dsp2btsoc_notify(DSP_MASTER_VOLUME, &value, 1);
     return 0;
 }
 
@@ -256,7 +256,7 @@ void rkdemo_btsoc_notify_music_volume_level(uint32_t opcode, uint8_t *buff, int3
 
     //covert to rockchip standard volume db(max: 0db)
     volume = hw_music_gain(buff[0])/10;
-    ALOGD("%s opcode:%d musicVolLevel:%f\n", __func__, opcode, volume);
+    ALOGW("%s opcode:%d musicVolLevel:%f\n", __func__, opcode, volume);
     rkdemoNotifyFuncs->notify_music_volume(opcode, volume);
 }
 
@@ -413,7 +413,7 @@ void rkdemo_btsoc_notify_dsp_light_bar_volume(uint32_t opcode, char *buff, int32
 
     level = VND_ORG2TARGET(buff[0], uint8_t, 0, 32, 0, 30);
     volume = hw_music_gain(level)/10;
-    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
+    ALOGW("%s opcode:%d level:%d\n", __func__, opcode, level);
     rkdemoNotifyFuncs->notify_light_bar_volume(opcode, volume);
 }
 
@@ -489,47 +489,47 @@ void rkdemo_btsoc_notify_dsp_switch_source(uint32_t opcode, char *buff, int32_t 
 
 void rkdemo_btsoc_notify_dsp_power(uint32_t opcode, char *buff, int32_t len) {
     rkdemo_btsoc_notify_dsp_power_state(opcode);
-    if(opcode == CATE_WRITE) {
-        char temp;
-        assert(len>=8);
-        temp = buff[0] & 0xf;
-        rkdemoNotifyFuncs->notify_dsp_stereo_mode(opcode, temp);
-        temp = buff[0] >> 4;
-        rkdemoNotifyFuncs->notify_inout_door(opcode, temp);
+    // if(opcode == CATE_WRITE) {
+    //     char temp;
+    //     assert(len>=8);
+    //     temp = buff[0] & 0xf;
+    //     rkdemoNotifyFuncs->notify_dsp_stereo_mode(opcode, temp);
+    //     temp = buff[0] >> 4;
+    //     rkdemoNotifyFuncs->notify_inout_door(opcode, temp);
 
-        float volume;
-        assert(buff[1] <= hal_dsp_max_main_vol());
-        //covert to rockchip standard volume input db(max: 0db)
-        volume = hw_main_gain(buff[1])/10;
-        rkdemoNotifyFuncs->notify_master_volume(opcode, volume);
+    //     float volume;
+    //     assert(buff[1] <= hal_dsp_max_main_vol());
+    //     //covert to rockchip standard volume input db(max: 0db)
+    //     volume = hw_main_gain(buff[1])/10;
+    //     rkdemoNotifyFuncs->notify_master_volume(opcode, volume);
 
-        assert(buff[2] <= hal_dsp_max_music_vol());
-        //covert to rockchip standard volume input db(max: 0db)
-        volume = hw_music_gain(buff[2])/10;
-        rkdemoNotifyFuncs->notify_music_volume(opcode, volume);
+    //     assert(buff[2] <= hal_dsp_max_music_vol());
+    //     //covert to rockchip standard volume input db(max: 0db)
+    //     volume = hw_music_gain(buff[2])/10;
+    //     rkdemoNotifyFuncs->notify_music_volume(opcode, volume);
 
-        rkdemoNotifyFuncs->notify_mic1_mux(opcode, buff[3]);
-        rkdemoNotifyFuncs->notify_mic2_mux(opcode, buff[4]);
-        rkdemoNotifyFuncs->notify_placement(opcode, buff[5]);
-        //rkdemoNotifyFuncs->notify_human_voice_fadeout(opcode, buff[6]);
-        rkdemoNotifyFuncs->notify_human_voice_fadeout(opcode, buff[6]);
+    //     rkdemoNotifyFuncs->notify_mic1_mux(opcode, buff[3]);
+    //     rkdemoNotifyFuncs->notify_mic2_mux(opcode, buff[4]);
+    //     rkdemoNotifyFuncs->notify_placement(opcode, buff[5]);
+    //     //rkdemoNotifyFuncs->notify_human_voice_fadeout(opcode, buff[6]);
+    //     rkdemoNotifyFuncs->notify_human_voice_fadeout(opcode, buff[6]);
 
-        input_source_t source;
-        uint8_t status = ((buff[7]>>7)&0x01) ? INTERFACE_STOP:INTERFACE_PLAYING;
+    //     input_source_t source;
+    //     uint8_t status = ((buff[7]>>7)&0x01) ? INTERFACE_STOP:INTERFACE_PLAYING;
 
-        switch(buff[0]&0x1F) {
-            case 0: {
-                source = SRC_EXT_BT;
-            } break;
-            case 1: {
-                source = SRC_EXT_AUX;
-            } break;
-            case 2: {
-                source = SRC_EXT_USB;
-            } break;
-        }
-        rkdemoNotifyFuncs->notify_dsp_switch_source(opcode, source, status);
-    }
+    //     switch(buff[0]&0x1F) {
+    //         case 0: {
+    //             source = SRC_EXT_BT;
+    //         } break;
+    //         case 1: {
+    //             source = SRC_EXT_AUX;
+    //         } break;
+    //         case 2: {
+    //             source = SRC_EXT_USB;
+    //         } break;
+    //     }
+    //     rkdemoNotifyFuncs->notify_dsp_switch_source(opcode, source, status);
+    // }
 }
 
 void search_next_header(unsigned char *buf, int *index, int total_len) {
@@ -696,6 +696,24 @@ void process_data(unsigned char *buff, int len) {
         } break;
         case DSP_MIC_GT_ECHO_MODE: {
             rkdemo_btsoc_notify_echo_mode(opcode, &buff[4], para_len);
+        } break;
+        case DSP_LIGHT_BAR_VOLUME: {
+            rkdemo_btsoc_notify_dsp_light_bar_volume(opcode, &buff[4], para_len);
+        } break;
+        case DSP_LIGHT_BAR_MODE: {
+            rkdemo_btsoc_notify_dsp_light_bar_mode(opcode, &buff[4], para_len);
+        } break;
+        case DSP_LIGHT_BAR_POWER_ONOFF: {
+            rkdemo_btsoc_notify_dsp_light_bar_power_onoff(opcode, &buff[4], para_len);
+        } break;
+        case DSP_LIGHT_STROBE_CTRL: {
+            rkdemo_btsoc_notify_dsp_strobe_ctrl(opcode, &buff[4], para_len);
+        } break;
+        case DSP_LIGHT_PARTY_ONOFF: {
+            rkdemo_btsoc_notify_dsp_light_party_onoff(opcode, &buff[4], para_len);
+        } break;
+        case DSP_EQ_BASS_ONOFF: {
+            rkdemo_btsoc_notify_dsp_eq_bass_onoff(opcode, &buff[4], para_len);
         } break;
     }
 }

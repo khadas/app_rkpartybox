@@ -183,6 +183,7 @@ void pbox_get_opt(int argc, char *argv[]) {
             break;
         case 'v':
             os_env_set_str("init_vol", optarg);
+            printf("%s init_vol:%s\n", __func__, optarg);
             break;
         case 'h':
             usage_tip(stdout, argc, argv);
@@ -387,9 +388,8 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_usb_pollState();
         #if ENABLE_EXT_BT_MCU
         pbox_app_btsoc_init();
-        #else
-        pbox_app_music_mics_init(DISP_All);
         #endif
+        pbox_app_music_mics_init(DISP_All);
         pbox_app_music_init();
     }
 

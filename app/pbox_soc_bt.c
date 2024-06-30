@@ -170,7 +170,7 @@ void soc2pbox_notify_dsp_human_vocal_level(uint32_t opcode, uint32_t level) {
     };
     msg.op = opcode;
     msg.vocal.humanLevel = level;
-    ALOGD("%s opcode:%d level:%s\n", __func__, opcode, level);
+    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -181,7 +181,7 @@ void soc2pbox_notify_dsp_accomp_vocal_level(uint32_t opcode, uint32_t level) {
     };
     msg.op = opcode;
     msg.vocal.humanLevel = level;
-    ALOGD("%s opcode:%d level:%s\n", __func__, opcode, level);
+    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 
@@ -192,7 +192,7 @@ void soc2pbox_notify_dsp_reserv_vocal_level(uint32_t opcode, uint32_t level) {
     };
     msg.op = opcode;
     msg.vocal.humanLevel = level;
-    ALOGD("%s opcode:%d level:%s\n", __func__, opcode, level);
+    ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
 

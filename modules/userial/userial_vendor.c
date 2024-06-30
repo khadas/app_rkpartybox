@@ -282,7 +282,7 @@ void userial_vendor_set_baud(int fd, uint8_t userial_baud)
 }
 
 void userial_dump_data(uint8_t *data, uint16_t total) {
-    ALOGW("data[%d]= {", total);
+    ALOGW_PURE("raw data[%d]= {", total);
     for(int i= 0; i< total; i++) {
         ALOGW_PURE("%02x ", data[i]);
     }
@@ -297,6 +297,7 @@ uint16_t userial_vendor_send_data(int fd, uint8_t *data, uint16_t total) {
     uint16_t len = total;
     uint16_t sended = 0;
 
+    ALOGD("%s sending\n", __func__);
     userial_dump_data(data, total);
 
     while (len > 0) {

@@ -1461,24 +1461,24 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
             param.rkstudio.addr = MUXES_SWITCH_MONO_0_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
-            rc_pb_player_set_param(partyboxCtx, dest, &param);
+            rc_pb_set_param(partyboxCtx, &param);
 
             param.rkstudio.addr = MUXES_SWITCH_MONO_1_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 0;
-            rc_pb_player_set_param(partyboxCtx, dest, &param);
+            rc_pb_set_param(partyboxCtx, &param);
         } break;
 
         case PLACE_VERT: {
             param.rkstudio.addr = MUXES_SWITCH_MONO_0_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
-            rc_pb_player_set_param(partyboxCtx, dest, &param);
+            rc_pb_set_param(partyboxCtx, &param);
 
             param.rkstudio.addr = MUXES_SWITCH_MONO_1_IDX_ADDR;
             param.rkstudio.cnt = 1;
             param.rkstudio.data[0] = 1;
-            rc_pb_player_set_param(partyboxCtx, dest, &param);
+            rc_pb_set_param(partyboxCtx, &param);
         } break;
         default: break;
     }
