@@ -91,7 +91,8 @@ enum rc_pb_reverb_mode {
 enum rc_pb_ref_mode {
     RC_PB_REF_MODE_NONE = 0,
     RC_PB_REF_MODE_SOFT,
-    RC_PB_REF_MODE_HARD
+    RC_PB_REF_MODE_HARD_COMBO,
+    RC_PB_REF_MODE_HARD_IND
 };
 
 enum rc_pb_rkstudio_cmd {
@@ -234,6 +235,13 @@ struct rc_pb_recorder_gt_attr {
     };
 };
 
+struct rc_pb_recorder_ref_ind_attr {
+    char   *card_name;
+    rc_u32  sample_rate;
+    rc_u32  channels;
+    rc_u32  bit_width;
+};
+
 struct rc_pb_recorder_attr {
     char   *card_name;
     rc_u32  sample_rate;
@@ -246,6 +254,7 @@ struct rc_pb_recorder_attr {
     struct rc_pb_param_level_detect detect;
     enum rc_pb_ref_mode ref_mode;
     struct rc_pb_recorder_gt_attr *guitar;
+    struct rc_pb_recorder_ref_ind_attr *ref;
 };
 
 struct rc_pb_scene_detect_attr {
