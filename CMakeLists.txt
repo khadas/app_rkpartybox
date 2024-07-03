@@ -166,6 +166,7 @@ install(FILES bins/eq_drc_player_electronic.bin DESTINATION /etc/pbox)
 install(FILES bins/eq_drc_player_jazz.bin DESTINATION /etc/pbox)
 install(FILES bins/eq_drc_player_pop.bin DESTINATION /etc/pbox)
 install(FILES bins/eq_drc_player_rock.bin DESTINATION /etc/pbox)
+install(FILES bins/eq_drc_bass_boost.bin DESTINATION /etc/pbox)
 
 install(FILES bins/wozai-48k2ch.pcm DESTINATION /etc/pbox)
 install(FILES bins/Mono.pcm DESTINATION /etc/pbox)

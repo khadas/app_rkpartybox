@@ -1559,6 +1559,31 @@ void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
     audio_prompt_send(dest_audio, false);
 }
 
+
+void pbox_rockit_music_set_bassboost(input_source_t source, uint8_t value) {
+    enum rc_pb_play_src dest = covert2rockitSource(source);
+    struct rc_pb_param param;
+    param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
+    param.rkstudio.bypass = false;
+    param.rkstudio.data = NULL;
+
+    ALOGW("%s: %d\n", __func__, value);
+    switch(value) {
+        case 0: {
+            param.rkstudio.uri = NULL;
+            param.rkstudio.bypass = true;
+        } break;
+        case 1: {
+            param.rkstudio.uri = "/oem/eq_drc_bass_boost.bin";
+        } break;
+        default: {
+            ALOGW("%s unkown bassboost:%d...\n", __func__, value);
+            return;
+        } break;
+    }
+    rc_pb_player_set_param(partyboxCtx, dest, &param);
+}
+
 static void pbox_rockit_music_mic_volume_adjust(uint8_t index, mic_mux_t mux, float micLevel) {
     enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     micguitar_recs = recs;
@@ -2068,6 +2093,10 @@ static void *pbox_rockit_server(void *arg)
 
             case PBOX_ROCKIT_SET_EQ_MODE: {
                 pbox_rockit_music_set_eq_mode(msg->source, msg->place);
+            } break;
+
+            case PBOX_ROCKIT_SET_BASS_BOOST_MODE: {
+                pbox_rockit_music_set_bassboost(msg->source, msg->value);
             } break;
 
             case PBOX_ROCKIT_SET_TUNNING_TOOL: {

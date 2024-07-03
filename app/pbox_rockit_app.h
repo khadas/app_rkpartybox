@@ -51,6 +51,8 @@ void pbox_app_rockit_set_placement(input_source_t source, placement_t mode);
 
 void pbox_app_rockit_set_eq_mode(input_source_t source, equalizer_t mode);
 
+void pbox_app_rockit_set_bassboost(input_source_t source, uint8_t mode);
+
 void pbox_app_rockit_get_player_energy(uint8_t destMux, input_source_t source, uint8_t micMux, uint8_t guitarMux);
 
 void pbox_app_rockit_start_recorder(input_source_t source, int sampleFreq, int channel, const char *cardName);

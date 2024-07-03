@@ -359,7 +359,12 @@ void handleEqBassOnoffEvent(const pbox_socbt_msg_t *msg) {
     if (msg->op == OP_READ) {
         return;
     }
-    pbox_app_eq_bass_set_onoff(msg->bass, DISP_All);
+
+    if(msg->bass == 2) {
+        pbox_app_music_set_outdoor_mode(OUTDOOR, DISP_All);
+        return;
+    }
+    pbox_app_eq_set_bassboost_onoff(msg->bass, DISP_All);
 }
 
 // Define a struct to associate opcodes with handles

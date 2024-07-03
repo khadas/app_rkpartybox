@@ -884,9 +884,10 @@ void pbox_app_party_light_enable(uint8_t party, display_t policy) {
     pbox_multi_echo_party_light_mode(party, policy);
 }
 
-void pbox_app_eq_bass_set_onoff(uint8_t bass, display_t policy) {
+void pbox_app_eq_set_bassboost_onoff(uint8_t bass, display_t policy) {
     ALOGD("%s: %d\n", __func__, bass);
     pbox_multi_echo_eq_bass_onoff(bass, policy);
+    pbox_app_rockit_set_bassboost(pboxData->inputDevice, bass);
 }
 
 

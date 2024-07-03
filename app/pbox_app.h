@@ -130,7 +130,7 @@ void pbox_app_light_bar_set_mode(uint8_t mode, display_t policy);
 void pbox_app_light_bar_set_power_onoff(uint8_t poweron, display_t policy);
 void pbox_app_light_strobe_ctrl(uint8_t strobe, display_t policy);
 void pbox_app_party_light_enable(uint8_t party, display_t policy);
-void pbox_app_eq_bass_set_onoff(uint8_t bass, display_t policy);
+void pbox_app_eq_set_bassboost_onoff(uint8_t bass, display_t policy);
 
 void pbox_app_music_human_vocal_level_cycle(display_t policy);
 void pbox_app_music_guitar_vocal_level_cycle(display_t policy);

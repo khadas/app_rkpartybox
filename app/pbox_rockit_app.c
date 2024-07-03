@@ -275,6 +275,16 @@ void pbox_app_rockit_set_eq_mode(input_source_t source, equalizer_t mode) {
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
 }
 
+void pbox_app_rockit_set_bassboost(input_source_t source, uint8_t mode) {
+    pbox_rockit_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_ROCKIT_SET_BASS_BOOST_MODE,
+        .source = source,
+    };
+
+    msg.value = mode;
+    unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
+}
 //micMux: bit0-bit7: mic0-mic7
 //guitarMux: bit0-bit7: guitar0-guitar7
 void pbox_app_rockit_get_player_energy(uint8_t destMux, input_source_t source, uint8_t micMux, uint8_t guitarMux) {

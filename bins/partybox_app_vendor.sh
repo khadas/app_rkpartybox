@@ -16,6 +16,10 @@ fi
 if [ ! -e /oem/config_gender_detect.json ]; then
 	ln -s /etc/pbox/config_gender_detect.json /oem/config_gender_detect.json
 fi
+
+if [ ! -e /oem/eq_drc_bass_boost.bin ]; then
+	ln -s /etc/pbox/eq_drc_bass_boost.bin /oem/eq_drc_bass_boost.bin
+fi
 if [ ! -e /oem/eq_drc_player.bin ]; then
 	ln -s /etc/pbox/eq_drc_player.bin /oem/eq_drc_player.bin
 fi
