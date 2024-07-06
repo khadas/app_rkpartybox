@@ -33,7 +33,7 @@ extern rc_s32 (*rc_pb_player_queue_frame)(rc_pb_ctx, enum rc_pb_play_src, struct
 extern rc_s32 (*rc_pb_player_set_volume)(rc_pb_ctx ctx, enum rc_pb_play_src src, rc_float volume_db);
 extern os_sem_t* auxplay_looplay_sem;
 extern bool is_prompt_loop_playing;
-extern int scene_detect_playing;
+extern int inout_detect_playing;
 extern float AuxPlayerVolume;
 
 static void dump_out_data(const void* buffer,size_t bytes, int size)
@@ -223,8 +223,10 @@ struct _audio_file {
     {PROMPT_VERTICAL,   "/oem/tone/vertical_placement.pcm",  16000, 2},
 };
 
+#define INOUT_PLAY_COUNT 2
 void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     int32_t size = 0;
+    int32_t loopCount = 0;
     FILE *file = NULL;
     struct rc_pb_player_attr attr;
     struct rc_pb_frame_info frame_info;
@@ -267,36 +269,57 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
         return;
     }
 
-    ALOGD("%s file:%s play start!!!!!\n", __func__, prompt_File[index].fileName);
+    ALOGW("%s file:%s play start!!!!!\n", __func__, prompt_File[index].fileName);
     rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
 
     float mixVolume = AuxPlayerVolume;
     if (index == PROMPT_INOUT_SENCE || index == PROMPT_DOA_SENCE) {
-        mixVolume = DEFAULT_VOLUME;
+        mixVolume = -15;//DEFAULT_VOLUME;
     }
     rc_pb_player_set_volume(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, mixVolume);
 
     is_prompt_loop_playing = loop;
+    if (index == PROMPT_INOUT_SENCE) {
+        loop = true;
+    }
     while (true) {
         if(os_sem_trywait(auxplay_looplay_sem) == 0) {
             loop = 0;
             frame_info.size = 0;
             is_prompt_loop_playing = 0;
+            if (index==PROMPT_INOUT_SENCE) { 
+                inout_detect_playing = 0;
+            }
+            loopCount = 0;
+            ALOGW("%s index:%d quit\n", __func__, index);
             break;
         }
         rc_pb_player_dequeue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
                                     &frame_info, -1);
         memset(frame_info.data, 0, READ_SIZE);
         size = fread(frame_info.data, 1, READ_SIZE, file);
+        if ((index != PROMPT_INOUT_SENCE) && (index != PROMPT_DOA_SENCE) && inout_detect_playing) {
+            memset(frame_info.data, 0, size);
+        }
+
         if (size <= 0) {
-            ALOGW("eof\n");
-            if(loop) {
-                fseek(file, 0, SEEK_SET);
-            } else {
+            ALOGW("%s index:%d loopCount:%d, eof\n", __func__, index, loopCount);
+            if((!loop)||((index==PROMPT_INOUT_SENCE)&&(loopCount >= (INOUT_PLAY_COUNT-1)))) {
+                if (index == PROMPT_INOUT_SENCE) {
+                    loopCount++;
+                    if((loopCount >= INOUT_PLAY_COUNT)) {
+                        inout_detect_playing = 0;
+                    }
+                }
+
+                loopCount = 0;
                 frame_info.size = 0;
                 rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
                                             &frame_info, -1);
                 break;
+            } else {
+                loopCount++;
+                fseek(file, 0, SEEK_SET);
             }
         }
 
@@ -371,13 +394,26 @@ void* pbox_rockit_aux_player_routine(void *arg) {
         stashCount = stashCount / sizeof(int);
         assert(stashCount > 0);
 
-        result = table[stashCount - 1];
-        loop = (result < 0)? true:false;
-        unsigned int mask = ~(unsigned int)0 >> 1;//clear the highest bit.
-        result &= mask;
+        for (int i = 0; i < stashCount; i++) {
+            result = table[i];
+            loop = (result < 0)? true:false;
+            unsigned int mask = ~(unsigned int)0 >> 1;//clear the highest bit.
+            result &= mask;
 
-        ALOGD("%s total:%d, last = %u, loop:%d\n", __func__, stashCount, (prompt_audio_t)result, loop);
-        audio_sound_prompt(ptrboxCtx, result, loop);
-        scene_detect_playing = 0;
+            if (i < stashCount -1) {
+                switch(result) {
+                    case PROMPT_INOUT_SENCE:
+                    case PROMPT_DOA_SENCE:
+                    case PROMPT_INDOOR:
+                    case PROMPT_OUTDOOR: {
+                        goto play_propmt;
+                    } break;
+                    default: continue; 
+                }
+            }
+play_propmt:
+            ALOGW("%s total:%d, last = %u, loop:%d\n", __func__, stashCount, (prompt_audio_t)result, loop);
+            audio_sound_prompt(ptrboxCtx, result, loop);
+        }
     }
 }

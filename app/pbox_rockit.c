@@ -104,7 +104,7 @@ static bool is_scene_detecting = false;
 
 os_sem_t* auxplay_looplay_sem = NULL;
 bool is_prompt_loop_playing = false;
-int scene_detect_playing = 0;
+int inout_detect_playing = 0;
 float AuxPlayerVolume = -20;
 static int32_t gender_prev = 0;
 static uint32_t gender_statistics = 0;
@@ -429,6 +429,7 @@ int audio_prompt_send(prompt_audio_t prompt, bool loop) {
     int highBit = (loop?1:0) << (sizeof(int) * 8 - 1);
     int id = prompt|highBit;
 
+    ALOGW("%s prompt=%d\n", __func__, prompt);
     if(is_prompt_loop_playing&&loop)
         os_sem_post(auxplay_looplay_sem);
 
@@ -745,7 +746,7 @@ bool is_env_sensed_value_available(int env, float value) {
     bool result = false;
     switch(env) {
         case ENV_REVERB:{
-            if(value > 0)
+            if(value >= 0)
                 result = true;
         } break;
         case ENV_DOA:{
@@ -823,38 +824,50 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
     assert(rc_pb_scene_get_result);
     assert(rc_pb_player_get_param);
 
-    if(scene_detect_playing != 0)
-    {
-        ALOGW("%s scenes:0x%02x prompt is playing :%d\n", __func__, scenes, scene_detect_playing);
-    }
-
-    if((scenes & BIT(ENV_REVERB))&& (waitcount++ > 20) && (waitcount%5 == 0))
-    {
-        ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
-        if (!ret) {
-            if(is_env_sensed_value_available(ENV_REVERB, result)) {
-                ALOGW("%s %u..............................................validcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), validcount, result);
-                validcount++;
-                if (result > 0.5)
-                    doadir++;
-                else
-                    doadir--;
-                doasum += result;
-
-                if (validcount >= 10) {
-                    ALOGW("%s %u+++++++++++++++++++++++++++++++++++++++++++++in-outdoor avg=%f, dir=%d(threshod 10) valid=%d\n",
-                        __func__, os_get_boot_time_ms(), doasum/validcount, doadir, validcount);
-                    if (abs(doadir)>10) {
-                        rockit_pbbox_notify_environment_sence(ENV_REVERB, doadir>0? INDOOR:OUTDOOR);
-                        waitcount = 0;
-                        validcount = 0;
-                        doasum = 0;
-                        doadir = 0;
-                    }
-                }
+    if((scenes & BIT(ENV_REVERB))) {
+        waitcount++;
+        if(inout_detect_playing != 0)
+        {
+            //ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
+            //ALOGW("%s %u ret:%d,playing:%d.....waitcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), ret, waitcount, result);
+        } else {
+            ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
+            ALOGW("%s %u ret:%d,stopped:%d.....waitcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), ret, waitcount, result);
+            if (!ret && is_env_sensed_value_available(ENV_REVERB, result)) {
+                rockit_pbbox_notify_environment_sence(ENV_REVERB, result<1? OUTDOOR:INDOOR);
+            } else {
+                rockit_pbbox_notify_environment_sence(ENV_REVERB, INDOOR);
             }
         }
     }
+
+    // if((scenes & BIT(ENV_REVERB))&& (waitcount++ > 20) && (waitcount%5 == 0))
+    // {
+    //     ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
+    //     if (!ret) {
+    //         if(is_env_sensed_value_available(ENV_REVERB, result)) {
+    //             ALOGW("%s %u..............................................validcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), validcount, result);
+    //             validcount++;
+    //             if (result > 0.5)
+    //                 doadir++;
+    //             else
+    //                 doadir--;
+    //             doasum += result;
+
+    //             if (validcount >= 10) {
+    //                 ALOGW("%s %u+++++++++++++++++++++++++++++++++++++++++++++in-outdoor avg=%f, dir=%d(threshod 10) valid=%d\n",
+    //                     __func__, os_get_boot_time_ms(), doasum/validcount, doadir, validcount);
+    //                 if (abs(doadir)>10) {
+    //                     rockit_pbbox_notify_environment_sence(ENV_REVERB, doadir>0? INDOOR:OUTDOOR);
+    //                     waitcount = 0;
+    //                     validcount = 0;
+    //                     doasum = 0;
+    //                     doadir = 0;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     if(scenes & BIT(ENV_DOA))
         ALOGW("%s %u step ENV_DOA, waitcount=%d, validcount=%d\n", __func__, os_get_boot_time_ms(), waitcount, validcount);
@@ -973,9 +986,8 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
     static struct rc_pb_scene_detect_attr scene_attr;
     assert(partyboxCtx);
 
+    audio_prompt_send(PROMPT_INOUT_SENCE, false);
     ALOGW("%s \n", __func__);
-    scene_detect_playing = 1;
-    audio_prompt_send(PROMPT_INOUT_SENCE, true);
     scene_attr.sample_rate = hal_get_scene_rec_sample_rate();
     scene_attr.bit_width   = 16;
     scene_attr.card_name   = hal_get_audio_scene_card();//"scene"
@@ -990,6 +1002,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
         ALOGE("%s fail:%d\n", ret);
         return;
     }
+    inout_detect_playing = 1;
 }
 
 //stereo left/right
@@ -1015,7 +1028,6 @@ static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
 
     if (msg->agentRole == R_PARTNER) {
         ALOGW("role: R_PARTNER\n");
-        //scene_detect_playing = 2;
         audio_prompt_send(PROMPT_DOA_SENCE, true);
     }
 }
@@ -1581,7 +1593,7 @@ void pbox_rockit_music_set_bassboost(input_source_t source, uint8_t value) {
             return;
         } break;
     }
-    rc_pb_player_set_param(partyboxCtx, dest, &param);
+    rc_pb_set_param(partyboxCtx, &param);
 }
 
 static void pbox_rockit_music_mic_volume_adjust(uint8_t index, mic_mux_t mux, float micLevel) {
