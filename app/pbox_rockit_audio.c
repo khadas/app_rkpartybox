@@ -35,7 +35,9 @@ extern os_sem_t* auxplay_looplay_sem;
 extern bool is_prompt_loop_playing;
 extern int inout_detect_playing;
 extern float AuxPlayerVolume;
+static int32_t follow_music_vol;
 
+static int32_t pbox_rockit_get_auxplayer_volume(void);
 static void dump_out_data(const void* buffer,size_t bytes, int size)
 {
    static FILE* fd;
@@ -274,7 +276,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
 
     float mixVolume = AuxPlayerVolume;
     if (index == PROMPT_INOUT_SENCE || index == PROMPT_DOA_SENCE) {
-        mixVolume = -15;//DEFAULT_VOLUME;
+        mixVolume = pbox_rockit_get_auxplayer_volume();//DEFAULT_VOLUME;
     }
     rc_pb_player_set_volume(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, mixVolume);
 
@@ -352,7 +354,7 @@ void* pbox_rockit_aux_player_routine(void *arg) {
     ptrboxCtx = ctx->pboxCtx;
     ALOGD("%s Ctx:%p\n", __func__, ptrboxCtx);
 
-    //while (os_sem_trywait(ctx->auxplay_stop_sem) != 0) {
+     //while (os_sem_trywait(ctx->auxplay_stop_sem) != 0) {
     while(os_sem_trywait(quit_sem) != 0) {
         struct timeval tv = {
             .tv_sec = 0,
@@ -416,4 +418,29 @@ play_propmt:
             audio_sound_prompt(ptrboxCtx, result, loop);
         }
     }
+}
+
+#define RKPARTYBOX_PROPMT_PATH "/data/rkpartybox_propmt"
+int32_t pbox_rockit_get_auxplayer_volume() {
+    char buff[32] = {0};
+    follow_music_vol = -15;
+
+    if (access(RKPARTYBOX_PROPMT_PATH, F_OK) != 0) {
+        goto music_vol_policy;
+    }
+    FILE *fp = fopen(RKPARTYBOX_PROPMT_PATH, "r");
+    if (fp == NULL) {
+        goto music_vol_policy;
+    }
+
+    ssize_t bytesRead = fread(buff, 1, sizeof(buff) - 1, fp);
+    fclose(fp);
+    follow_music_vol = strtol(buff, NULL, 0);
+
+music_vol_policy:
+    if (follow_music_vol == 0) {
+        follow_music_vol = AuxPlayerVolume;
+    }
+    ALOGW("%s, propmt vol:%d\n", __func__, follow_music_vol);
+    return follow_music_vol;
 }
