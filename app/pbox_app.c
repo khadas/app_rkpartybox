@@ -26,7 +26,7 @@ pbox_data_t pbox_data = {
         #endif
         .reservLevel = 100,
         .vocalSplit = false,
-        .vocallib = true,
+        .vocallib = VOCAL_DEF,
         .play_status = IDLE,
         .play_status_prev = IDLE,
         .autoSource = true,
@@ -609,21 +609,38 @@ void pbox_app_music_album_next(bool next, display_t policy)
     }
 }
 
-void pbox_app_switch_vocal_lib(bool vocalib) {
+void pbox_app_switch_vocal_lib(void) {//(bool vocalib) {
     pbox_vocal_t vocal = {
         .enable = pboxUIdata->vocalSplit,
         .humanLevel = pboxUIdata->humanLevel,
         .accomLevel = pboxUIdata->accomLevel,
         .reservLevel = pboxUIdata->reservLevel,
-        .vocallib = 0,
     };
 
-    if (vocalib == true) {
-        vocal.vocallib = 1;
+    // if (vocalib == true) {
+    //     vocal.vocallib = 1;
+    // } else {
+    //     vocal.vocallib = 2;
+    // }
+    if(pboxUIdata->vocallib < VOCAL_GUITAR) {
+        vocal.vocallib = pboxUIdata->vocallib = VOCAL_GUITAR;
     } else {
-        vocal.vocallib = 2;
+        vocal.vocallib = pboxUIdata->vocallib = VOCAL_HUMAN;
     }
 
+    pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
+    //pbox_app_echo_vocal_lib(vocalib);
+}
+
+void pbox_app_set_dest_vocal_lib(bool vocalib) {
+    pbox_vocal_t vocal = {
+        .enable = pboxUIdata->vocalSplit,
+        .humanLevel = pboxUIdata->humanLevel,
+        .accomLevel = pboxUIdata->accomLevel,
+        .reservLevel = pboxUIdata->reservLevel,
+    };
+
+    pboxUIdata->vocallib = vocal.vocallib = vocalib? VOCAL_HUMAN: VOCAL_GUITAR;
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
     //pbox_app_echo_vocal_lib(vocalib);
 }
@@ -635,7 +652,7 @@ void pbox_app_music_original_singer_open(bool orignal, display_t policy)
         .humanLevel = pboxUIdata->humanLevel,
         .accomLevel = pboxUIdata->accomLevel,
         .reservLevel = pboxUIdata->reservLevel,
-        .vocallib = 0,
+        .vocallib = pboxUIdata->vocallib,
     };
 
     pboxUIdata->vocalSplit = !orignal;
@@ -650,7 +667,7 @@ void pbox_app_music_vocal_seperate_open(bool seperate, display_t policy)
         .humanLevel = pboxUIdata->humanLevel,
         .accomLevel = pboxUIdata->accomLevel,
         .reservLevel = pboxUIdata->reservLevel,
-        .vocallib = 0,
+        .vocallib = pboxUIdata->vocallib,
     };
 
     pboxUIdata->vocalSplit = seperate;
@@ -760,11 +777,11 @@ void pbox_app_music_set_accomp_music_level(uint32_t volume, display_t policy) {
         .humanLevel = pboxUIdata->humanLevel,
         .accomLevel = volume,
         .reservLevel = pboxUIdata->reservLevel,
-        .vocallib = 0,
+        .vocallib = pboxUIdata->vocallib,
     };
     pboxUIdata->accomLevel = volume;
 
-    ALOGD("%s alevel: %d, seperate:%d\n", __func__, volume, vocal.enable);
+    ALOGW("%s alevel: %d, lib:%d, seperate:%d\n", __func__, volume, pboxUIdata->vocallib, vocal.enable);
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
 
     pbox_multi_echoAccompMusicLevel(volume, policy);
@@ -780,11 +797,11 @@ void pbox_app_music_set_human_music_level(uint32_t volume, display_t policy) {
         .humanLevel = volume,
         .accomLevel = pboxUIdata->accomLevel,
         .reservLevel = pboxUIdata->reservLevel,
-        .vocallib = 0,
+        .vocallib = pboxUIdata->vocallib,
     };
     pboxUIdata->humanLevel = volume;
 
-    ALOGD("%s hlevel: %d, seperate:%d\n", __func__, volume, pboxUIdata->vocalSplit);
+    ALOGW("%s hlevel: %d, lib:%d, seperate:%d\n", __func__, volume, pboxUIdata->vocallib, pboxUIdata->vocalSplit);
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
     pbox_multi_echoHumanMusicLevel(volume, policy);
 }
@@ -795,11 +812,10 @@ void pbox_app_music_set_reserv_music_level(uint32_t volume, display_t policy) {
         .humanLevel = pboxUIdata->humanLevel,
         .accomLevel = pboxUIdata->accomLevel,
         .reservLevel = volume,
-        .vocallib = 0,
+        .vocallib = pboxUIdata->vocallib,
     };
     pboxUIdata->reservLevel = volume;
-
-    ALOGD("%s rlevel:%d, seperate:%d\n", __func__, volume, pboxUIdata->vocalSplit);
+    ALOGW("%s rlevel:%d, lib:%d, seperate:%d\n", __func__, volume, pboxUIdata->vocallib, pboxUIdata->vocalSplit);
     pbox_app_rockit_set_player_seperate(pboxData->inputDevice, vocal);
     pbox_multi_echoReservLevel(volume, policy);
 }

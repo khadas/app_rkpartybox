@@ -100,6 +100,13 @@ typedef enum {
     PBOX_EVT = 2,
 } pbox_msg_t;
 
+typedef enum {
+    VOCAL_DEF,
+    VOCAL_HUMAN,
+    VOCAL_GUITAR,
+    VOCAL_LIB_NUM,
+} vocal_lib_t;
+
 typedef struct {
     int sampingFreq;
     int channel;
@@ -111,7 +118,7 @@ typedef struct {
     unsigned int  humanLevel;    /* RW; Range: [0, 100];*/
     unsigned int  accomLevel;    /* RW; Range: [0, 100];*/
     unsigned int  reservLevel;   /* RW; Range: [0, 100];*/
-    unsigned int vocallib;
+    vocal_lib_t vocallib;
 } pbox_vocal_t;
 
 typedef enum {

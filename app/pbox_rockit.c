@@ -1100,7 +1100,7 @@ static void pbox_rockit_music_echo_reduction(uint8_t index, mic_mux_t mux, bool 
 }
 
 static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t vocal) {
-    static int vocal_or_guitar = 1;
+    static vocal_lib_t vocal_old = VOCAL_DEF;
     bool enable = vocal.enable;
     uint32_t hLevel = vocal.humanLevel;
     uint32_t aLevel = vocal.accomLevel;
@@ -1121,8 +1121,7 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
     hLevel = hLevel>100?15 :hLevel;
     aLevel = aLevel>100?100:aLevel;
     rLevel = rLevel>100?100:rLevel;
-    ALOGD("%s hLevel:%d, aLevel:%d rLevel:%d , on:%d\n",__func__, hLevel, aLevel, rLevel, enable);
-
+    ALOGW("%s hLevel:%d, aLevel:%d rLevel:%d, lib:%d, on:%d\n",__func__, hLevel, aLevel, rLevel, vocallib, enable);
     int ret = rc_pb_player_get_param(partyboxCtx, dest, &param);
 
     if (enable) {
@@ -1136,26 +1135,31 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
     param.vocal.other_level = aLevel;
     param.vocal.reserve_level[0] = rLevel;
 
-    if(vocallib == 1) {
-        vocal_or_guitar = 1;
+    if((vocallib == VOCAL_HUMAN) && (vocal_old == VOCAL_GUITAR)) {
+        //vocal_old = 1;
         param.vocal.lib_name = "librkaudio_effect_vocal.so";
-    } else if(vocallib == 2) {
-        vocal_or_guitar = 2;
+    } else if((vocallib == VOCAL_GUITAR) && (vocal_old != VOCAL_GUITAR)) {
+        //vocal_old = 2;
         param.vocal.lib_name = "librkaudio_effect_guitar.so";
     } else {
         param.vocal.lib_name = NULL;
     }
 
+    if(vocallib == VOCAL_GUITAR) {
+        param.vocal.human_level = rLevel;
+    }
+
     ret = rc_pb_player_set_param(partyboxCtx, dest, &param);
     ALOGD("%s rc_pb_player_set_param res:%d\n" ,__func__, ret);
 
-    if ((powered_seperate && oldstate!= enable) || vocallib) {
-        if (vocal_or_guitar == 2)
+    if ((powered_seperate && (oldstate!= enable)) || (vocallib != vocal_old)) {
+        if (vocallib == VOCAL_GUITAR)
             dest_audio = enable? PROMPT_GUITAR_FADE_ON:PROMPT_GUITAR_FADE_OFF;
         else
             dest_audio = enable? PROMPT_FADE_ON:PROMPT_FADE_OFF;
         audio_prompt_send(dest_audio, false);
     }
+    vocal_old = vocallib;
     oldstate = enable;
     powered_seperate = true;
 }

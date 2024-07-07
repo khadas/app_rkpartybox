@@ -150,15 +150,14 @@ int pbox_app_key_set_volume_down(float reserved)
     return 1;
 }
 
-static bool vocal = 1;
 int pbox_app_key_switch_vocal_or_guitar(float reserved) {
-    ALOGD("---%s %u=====!\n", __func__, vocal);
-    vocal = !vocal;
-    pbox_app_switch_vocal_lib(vocal);
+    ALOGD("---%s =====!\n", __func__);
+    //pboxData.vocal = !pboxData.vocal;
+    pbox_app_switch_vocal_lib();
 }
 
 int pbox_app_key_switch_vocal_sperate(float reserved) {
-    if(vocal)
+    if(pboxUIdata->vocallib != VOCAL_GUITAR)
         pbox_app_music_human_vocal_level_cycle(DISP_All);
     else
         pbox_app_music_guitar_vocal_level_cycle(DISP_All);

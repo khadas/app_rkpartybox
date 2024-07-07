@@ -254,6 +254,9 @@ void handleVocalHumanRatioEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
+    if(pboxUIdata->vocallib != VOCAL_HUMAN) {
+        pboxUIdata->vocallib = VOCAL_HUMAN;
+    }
     pbox_app_music_set_human_music_level(msg->vocal.humanLevel, DISP_All);
 }
 
@@ -263,6 +266,9 @@ void handleVocalAccompRatioEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
+    if(pboxUIdata->vocallib != VOCAL_HUMAN) {
+        pboxUIdata->vocallib = VOCAL_HUMAN;
+    }
     pbox_app_music_set_accomp_music_level(msg->vocal.accomLevel, DISP_All);
 }
 
@@ -272,6 +278,9 @@ void handleVocalReservRatioEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
+    if(pboxUIdata->vocallib != VOCAL_GUITAR) {
+        pboxUIdata->vocallib = VOCAL_GUITAR;
+    }
     pbox_app_music_set_reserv_music_level(msg->vocal.reservLevel, DISP_All);
 }
 
@@ -281,7 +290,7 @@ void handleSwitchVocalModeEvent(const pbox_socbt_msg_t *msg) {
         return;
     }
 
-    pbox_app_switch_vocal_lib(msg->mode);
+    pbox_app_set_dest_vocal_lib(msg->mode);
 }
 
 void handleSwitchSourceEvent(const pbox_socbt_msg_t *msg) {
