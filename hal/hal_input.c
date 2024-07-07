@@ -102,6 +102,10 @@ uint8_t hal_get_kalaok_ref_hard_mode(void) {
     return KALAOK_REF_HARD_MODE;
 }
 
+uint32_t hal_get_kalaok_rec_sample_rate(void) {
+    return KALAOK_REC_SAMPLE_RATE;
+}
+
 //=============scene mic=====================
 char *hal_get_audio_scene_card(void) {
     return AUDIO_CARD_CHIP_SCENE;
@@ -117,6 +121,9 @@ uint8_t hal_get_scene_mic_rec_channel(void) {
 }
 uint8_t hal_get_scene_ref_hard_mode(void) {
     return SCENE_REF_HARD_MODE;
+}
+uint32_t hal_get_scene_rec_sample_rate(void) {
+    return SCENE_REC_SAMPLE_RATE;
 }
 
 input_source_t hal_get_favor_source_order(int index) {

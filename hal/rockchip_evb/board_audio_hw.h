@@ -37,11 +37,13 @@ extern "C" {
 #define KALAOK_REC_LAYOUT       0x04
 #define KALAOK_REF_CHN_LAYOUT   0x0f
 #define KALAOK_REF_HARD_MODE    1
+#define KALAOK_REC_SAMPLE_RATE  48000
 
 #define SCENE_REC_CHANNEL       4
 #define SCENE_REF_LAYOUT        0x03
 #define SCENE_REC_LAYOUT        0x0c
 #define SCENE_REF_HARD_MODE     0
+#define SCENE_REC_SAMPLE_RATE  48000
 //--------------end--------------------
 
 #define MAX_SARA_ADC 1023

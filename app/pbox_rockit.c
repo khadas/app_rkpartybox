@@ -378,7 +378,7 @@ int rk_demo_music_create(void) {
     if((guitar_attr.independent.card_name = hal_get_kalaok_guitar_card()) != NULL) {
         guitar_attr.type = RC_PB_GUITAR_CARD_TYPE_IND;
         guitar_attr.independent.card_name = hal_get_kalaok_guitar_card();
-        guitar_attr.independent.sample_rate = 48000;
+        guitar_attr.independent.sample_rate = hal_get_kalaok_rec_sample_rate();
         guitar_attr.independent.channels = 1;
         guitar_attr.independent.bit_width = 16;
         recorder_attr.guitar=&guitar_attr;
@@ -391,7 +391,7 @@ int rk_demo_music_create(void) {
     // ref_ind_attr.bit_width   = 16;
     recorder_attr.ref         = NULL;
 
-    recorder_attr.sample_rate = 48000;
+    recorder_attr.sample_rate = hal_get_kalaok_rec_sample_rate();
     recorder_attr.bit_width   = 16;
     recorder_attr.card_name = hal_get_kalaok_mic_card();//"mic";//"hw:0,0";
     recorder_attr.pool_cnt    = hal_get_kalaok_poor_count();
@@ -976,7 +976,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
     ALOGW("%s \n", __func__);
     scene_detect_playing = 1;
     audio_prompt_send(PROMPT_INOUT_SENCE, true);
-    scene_attr.sample_rate = 48000;
+    scene_attr.sample_rate = hal_get_scene_rec_sample_rate();
     scene_attr.bit_width   = 16;
     scene_attr.card_name   = hal_get_audio_scene_card();//"scene"
     scene_attr.channels    = hal_get_scene_mic_rec_channel();
@@ -997,7 +997,7 @@ static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
     ALOGW("%s role: %s \n", __func__, msg->agentRole == R_AGENT?CSTR(R_AGENT):CSTR(R_PARTNER));
     if(msg->agentRole == R_AGENT) {
         static struct rc_pb_scene_detect_attr doa_scene_attr;
-        doa_scene_attr.sample_rate = 48000;
+        doa_scene_attr.sample_rate = hal_get_scene_rec_sample_rate();
         doa_scene_attr.bit_width   = 16;
         doa_scene_attr.card_name   = hal_get_audio_scene_card();//"scene";
         doa_scene_attr.channels    = hal_get_scene_mic_rec_channel();

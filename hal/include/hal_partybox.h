@@ -98,12 +98,15 @@ uint8_t hal_get_kalaok_mic_rec_channel(void);
 uint8_t hal_get_kalaok_poor_count(void);
 uint8_t hal_get_kalaok_ref_hard_mode(void);
 uint32_t hal_get_supported_mic_matrix(void);
+uint32_t hal_get_kalaok_rec_sample_rate(void);
+
 //scene
 char *hal_get_audio_scene_card(void);
 uint8_t hal_get_scene_mic_ref_layout(void);
 uint8_t hal_get_scene_mic_rec_layout(void);
 uint8_t hal_get_scene_mic_rec_channel(void);
 uint8_t hal_get_scene_ref_hard_mode(void);
+uint32_t hal_get_scene_rec_sample_rate(void);
 
 //input source
 input_source_t hal_get_favor_source_order(int index);
