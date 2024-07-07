@@ -67,7 +67,7 @@ typedef enum {
     DSP_LIGHT_PARTY_ONOFF       = 0x2f,
     DSP_EQ_BASS_ONOFF           = 0x30,
 
-    DSP_VOCAL_FADEOUT_MODE      = 0x40,
+    DSP_VOCAL_SWITCH_MODE      = 0x40,
 } soc_dsp_cmd_t;
 
 static const NotifyFuncs_t* rkdemoNotifyFuncs = NULL;
@@ -408,7 +408,7 @@ void rkdemo_btsoc_notify_dsp_vocal_reserv_level(uint32_t opcode, char *buff, int
     rkdemoNotifyFuncs->notify_vocal_reserv_level(opcode, level);
 }
 
-void rkdemo_btsoc_notify_dsp_vocal_fadeout_mode(uint32_t opcode, char *buff, int32_t len) {
+void rkdemo_btsoc_notify_dsp_vocal_switch_mode(uint32_t opcode, char *buff, int32_t len) {
     assert(len > 0);
     uint8_t mode = buff[0];
     ALOGD("%s opcode:%d vocal mode:%d[1:human 0:guitar]\n", __func__, opcode, mode);
@@ -661,6 +661,9 @@ void process_data(unsigned char *buff, int len) {
         } break;
         case DSP_VOLCAL_RESERV_RATIO: {
             rkdemo_btsoc_notify_dsp_vocal_reserv_level(opcode, &buff[4], para_len);
+        } break;
+        case DSP_VOCAL_SWITCH_MODE: {
+            rkdemo_btsoc_notify_dsp_vocal_switch_mode(opcode, &buff[4], para_len);
         } break;
         case DSP_SWITCH_SOURCE: {
             rkdemo_btsoc_notify_dsp_switch_source(opcode, &buff[4], para_len);//status, source);

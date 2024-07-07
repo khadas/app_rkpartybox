@@ -180,7 +180,7 @@ void soc2pbox_notify_dsp_accomp_vocal_level(uint32_t opcode, uint32_t level) {
         .msgId = PBOX_SOCBT_DSP_ACCOMP_RATIO_EVT,
     };
     msg.op = opcode;
-    msg.vocal.humanLevel = level;
+    msg.vocal.accomLevel = level;
     ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
@@ -191,7 +191,7 @@ void soc2pbox_notify_dsp_reserv_vocal_level(uint32_t opcode, uint32_t level) {
         .msgId = PBOX_SOCBT_DSP_RESERV_RATIO_EVT,
     };
     msg.op = opcode;
-    msg.vocal.humanLevel = level;
+    msg.vocal.reservLevel = level;
     ALOGD("%s opcode:%d level:%d\n", __func__, opcode, level);
     unix_socket_socbt_notify(&msg, sizeof(pbox_socbt_msg_t));
 }
