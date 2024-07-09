@@ -89,7 +89,7 @@ void pbox_app_init_mic_mux_matrix(void) {
     uint32_t matrix = hal_get_supported_mic_matrix();
     uint32_t mux;
     for (int i = 0; i < MIC_NUM; i++) {
-        mux = matrix&(1<<BIT(i));
+        mux = matrix&BIT(i);
         pboxUIdata->micData[i].micMux = mux? MIC_IN:MIC_GT;
         ALOGW("%s matrix:0x%02x, mic[%d]=%s\n", __func__, matrix, i, mux? CSTR(MIC_IN):CSTR(MIC_GT));
     }

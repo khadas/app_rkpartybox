@@ -434,9 +434,21 @@ void pbox_main_simlate_playing(char *data) {
     }
 }
 
+void pbox_main_simlate_placement(char *data) {
+    if (pboxUIdata->placement == PLACE_AUTO || pboxUIdata->placement == PLACE_HORI) {
+        ALOGW("simlate placement to vertical...\n");
+        pboxUIdata->placement = PLACE_VERT;
+    } else {
+        ALOGW("simlate placement to horizion...\n");
+        pboxUIdata->placement = PLACE_HORI;
+    }
+    pbox_app_music_set_placement(pboxUIdata->placement, DISP_All);
+}
+
 static pb_command_t pb_command_table[] = {
     {"quit", pbox_main_exit, "Exit the application"},
     {"status", pbox_main_simlate_playing, "simlate playing or not"},
+    {"placement", pbox_main_simlate_placement, "simlate placement vertical or horizion"},
 };
 
 static void show_help_cmd(void) {

@@ -491,7 +491,7 @@ static void rockit_pbbox_notify_environment_sence(uint32_t scene, uint32_t resul
 
     msg.sence_res.scene = scene;
     msg.sence_res.result = result;
-    printf("%s, scene:%d, result:%d............................\n", __func__, scene, result);
+    ALOGW("%s, scene:%d, result:%d............................\n", __func__, scene, result);
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
     #endif
 }
@@ -782,18 +782,18 @@ int convert_sensed_value_to_upper_space(int env, float value) {
         } break;
         case ENV_GENDER:{
             if (gender_statistics == (BIT(GENDER_F)|BIT(GENDER_M))) {
-                printf("%s\n", "BIT(GENDER_F)|BIT(GENDER_M)");
+                ALOGW("%s %s\n", __func__, "BIT(GENDER_F)|BIT(GENDER_M)");
                 return GENDER_COMBO;
             }
 
             if (0 == (uint32_t)value) {
-                printf("%s\n", "GENDER_TBD");
+                ALOGW("%s %s\n", __func__, "GENDER_TBD");
                 return GENDER_TBD;
             } else if (1 == (uint32_t)value) {
-                printf("%s\n", "GENDER_M");
+                ALOGW("%s %s\n", __func__, "GENDER_M");
                 return GENDER_M;
             } else if (2 == (uint32_t)value) {
-                printf("%s\n", "GENDER_F");
+                ALOGW("%s %s\n", __func__, "GENDER_F");
                 return GENDER_F;
             }
         } break;
@@ -832,11 +832,11 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
             //ALOGW("%s %u ret:%d,playing:%d.....waitcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), ret, waitcount, result);
         } else {
             ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
-            ALOGW("%s %u ret:%d,stopped:%d.....waitcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), ret, waitcount, result);
+            ALOGW("%s %u ret:%d.....waitcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), ret, waitcount, result);
             if (!ret && is_env_sensed_value_available(ENV_REVERB, result)) {
                 rockit_pbbox_notify_environment_sence(ENV_REVERB, result<1? OUTDOOR:INDOOR);
             } else {
-                rockit_pbbox_notify_environment_sence(ENV_REVERB, INDOOR);
+                rockit_pbbox_notify_environment_sence(ENV_REVERB, OUTDOOR);
             }
         }
     }
@@ -999,7 +999,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
 
     int ret = pbox_rockit_start_scene_detect(&scene_attr);
     if(ret) {
-        ALOGE("%s fail:%d\n", ret);
+        ALOGE("%s fail:%d\n", __func__, ret);
         return;
     }
     inout_detect_playing = 1;
@@ -1072,14 +1072,12 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, mic_mux_t mux, pbox_rev
         default: break;
     }
 
-    #if ENABLE_EXT_BT_MCU
-        param.reverb.mode = RC_PB_REVERB_MODE_KTV;
-    #endif
-
     if (mode == RC_PB_REVERB_MODE_USER) 
         param.reverb.bypass = true;
     else 
         param.reverb.bypass = false;
+
+    ALOGW("%s mode:%d as %d, bypass:%d\n" ,__func__, mode, param.reverb.mode, param.reverb.bypass);
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 
     if (powered_reverb) {
@@ -1625,7 +1623,6 @@ static void pbox_rockit_set_mic_treble(uint8_t index, mic_mux_t mux, float trebl
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
     ALOGD("%s index:%d, treble:%f\n", __func__, index, treble);
-    ALOGW("%s sorry...this now no effect..we may support it in future...\n", __func__);
 
     if(recs != MIC_IN) return;
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
@@ -1642,7 +1639,6 @@ static void pbox_rockit_set_mic_bass(uint8_t index, mic_mux_t mux, float bass) {
     assert(partyboxCtx);
     assert(rc_pb_recorder_set_param);
     ALOGD("%s index:%d, bass:%f\n", __func__, index, bass);
-    ALOGW("%s sorry...this now no effect..we may support it in future...\n", __func__);
 
     if(recs != MIC_IN) return;
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
@@ -1668,12 +1664,8 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, mic_mux_t mux, float rever
     if (param.reverb.mode != RC_PB_REVERB_MODE_STUDIO && \
         param.reverb.mode != RC_PB_REVERB_MODE_KTV && \
         param.reverb.mode != RC_PB_REVERB_MODE_CONCERT) {
-        param.reverb.mode = RC_PB_REVERB_MODE_KTV;
+        //param.reverb.mode = RC_PB_REVERB_MODE_KTV;
     }
-
-    #if ENABLE_EXT_BT_MCU
-        param.reverb.mode = RC_PB_REVERB_MODE_KTV;
-    #endif
 
     param.type = RC_PB_PARAM_TYPE_REVERB;
     param.reverb.bypass = false;
@@ -1696,7 +1688,7 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
 
     ALOGD("%s: index:%d, kind:%d, micMux:%d, volume: %f, treble:%f, bass:%f, reverb:%f \n",
         __func__, index, kind, micMux, micVolume, micTreble, micBass, micReverb);
-
+    index = 0;
     if (MIC_SET_DEST_ALL == kind) {
         pbox_rockit_music_echo_reduction(index, micMux, echo3a);
         pbox_rockit_music_mic_mute(index, micMux, micmute);

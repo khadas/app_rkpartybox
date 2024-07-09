@@ -146,7 +146,7 @@ int pbox_app_ui_load(void) {
 
         // Apply similar fix for the rest of the parameters
         sprintf(param_name, "mic%d:micMux", i);
-        pboxUIdata->micData[i].micMux = rk_param_get_int(param_name, MIC_IN);
+        pboxUIdata->micData[i].micMux = rk_param_get_int(param_name, pboxUIdata->micData[i].micMux);
 
         sprintf(param_name, "mic%d:micVolume", i);
         pboxUIdata->micData[i].micVolume = rk_param_get_float(param_name, 0);

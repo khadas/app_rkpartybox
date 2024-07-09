@@ -35,7 +35,6 @@ extern os_sem_t* auxplay_looplay_sem;
 extern bool is_prompt_loop_playing;
 extern int inout_detect_playing;
 extern float AuxPlayerVolume;
-static int32_t follow_music_vol;
 
 static int32_t pbox_rockit_get_auxplayer_volume(void);
 static void dump_out_data(const void* buffer,size_t bytes, int size)
@@ -277,6 +276,8 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
     float mixVolume = AuxPlayerVolume;
     if (index == PROMPT_INOUT_SENCE || index == PROMPT_DOA_SENCE) {
         mixVolume = pbox_rockit_get_auxplayer_volume();//DEFAULT_VOLUME;
+    } else if (index == PROMPT_HORIZON || index == PROMPT_VERTICAL) {
+        mixVolume = pbox_rockit_get_auxplayer_volume()-15;
     }
     rc_pb_player_set_volume(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, mixVolume);
 
@@ -423,7 +424,7 @@ play_propmt:
 #define RKPARTYBOX_PROPMT_PATH "/data/rkpartybox_propmt"
 int32_t pbox_rockit_get_auxplayer_volume() {
     char buff[32] = {0};
-    follow_music_vol = -15;
+    int32_t follow_music_vol = -15;
 
     if (access(RKPARTYBOX_PROPMT_PATH, F_OK) != 0) {
         goto music_vol_policy;
