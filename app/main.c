@@ -371,17 +371,17 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_get_energyinfo(ENERGY_ALL_MUX, pboxData->inputDevice, BIT(0), 0);//BIT(0) means mic0
     }
 
-    if ((pboxUIdata->play_status == PLAYING)) {
-        //every one second send command to refresh position
+    do {
         uint32_t scenes = 0;
-        if(pboxData->inputDevice == SRC_CHIP_USB && (0 == msTimePassed%1000))
-            scenes |= BIT(ENV_POSITION);
+        //every one second send command to refresh position
+        if(pboxData->inputDevice == SRC_CHIP_USB && (0 == msTimePassed%1000) && (pboxUIdata->play_status == PLAYING))
+           scenes |= BIT(ENV_POSITION);
         if(0 == msTimePassed%320)
             scenes |= BIT(ENV_GENDER);
 
-        //pbox_app_rockit_get_music_current_postion(SRC_CHIP_USB);
+        if(scenes)
         pbox_app_post_get_sence_value(pboxData->inputDevice, scenes);
-    }
+    } while (0);
 
     if((isPoweron == false) /*&& (0 == msTimePassed%100)*/) {
         isPoweron = true;

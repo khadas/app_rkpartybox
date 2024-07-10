@@ -872,37 +872,33 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
         }
     }
 
-    if(scenes & BIT(ENV_GENDER)) {
+    if (scenes & BIT(ENV_GENDER)) {
         struct rc_pb_param param;
         enum rc_pb_play_src dest = covert2rockitSource(source);
         param.type = RC_PB_PARAM_TYPE_SCENE;
         param.scene.scene_mode = RC_PB_SCENE_MODE_GENDER;
         ret = rc_pb_player_get_param(partyboxCtx, dest, &param);
+        static int32_t last_reported_gender = 0;
         do {
-            if (ret || (gender_statistics == (BIT(GENDER_M) | BIT(GENDER_F))) \
-                || !is_env_sensed_value_available(ENV_GENDER, param.scene.result)) {
+            if (ret || !is_env_sensed_value_available(ENV_GENDER, param.scene.result)) {
                 break;
             }
 
             int32_t current_gender = (int32_t)param.scene.result;
-            if (gender_prev == current_gender) {
-                if (os_get_boot_time_ms() - gender_align_time > 5000) {
-                    if (current_gender == 1 || current_gender == 2) {
-                        uint32_t mask = (current_gender == 1) ? BIT(GENDER_M) : BIT(GENDER_F);
-                        if (!(gender_statistics & mask)) {
-                            gender_statistics |= mask;
-                            goto gender_report;
-                        }
-                    }
+            uint32_t current_time = os_get_boot_time_ms();
+
+            if (gender_prev != current_gender) {
+                ALOGW("%s instant.....gender:[%d->%d]\n", __func__, gender_prev, current_gender);
+                gender_prev = current_gender;
+                gender_align_time = current_time;
+            } else if ((current_time - gender_align_time > 1000) && (current_gender != last_reported_gender) && (current_gender == 1 || current_gender == 2)) {
+                ALOGW("%s ....time[%u->%u], gender:[%d->%d]\n", __func__, gender_align_time, current_time, last_reported_gender, current_gender);
+                last_reported_gender = current_gender;
+                gender_align_time = current_time;
+                if (current_gender != 0) {
+                    rockit_pbbox_notify_environment_sence(ENV_GENDER, convert_sensed_value_to_upper_space(ENV_GENDER, current_gender));
                 }
                 break;
-            }
-            gender_prev = current_gender;
-            gender_align_time = os_get_boot_time_ms();
-        gender_report:
-            ALOGW("%s...............gender:%d, statistics:0x%02x\n", __func__, current_gender, gender_statistics);
-            if(current_gender != 0) {
-                rockit_pbbox_notify_environment_sence(ENV_GENDER, convert_sensed_value_to_upper_space(ENV_GENDER, current_gender));
             }
         } while (0);
     }
