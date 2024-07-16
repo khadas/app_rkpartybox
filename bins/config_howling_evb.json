@@ -1,6 +1,7 @@
 {
 	"howling_configs": {
 		"drop_ref_chan" : 0,
+		"pre_gain" : 0,
 		"notch" : {
 			"status" : "disable",
 			"div_num" : 3,

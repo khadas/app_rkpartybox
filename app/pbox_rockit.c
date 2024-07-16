@@ -841,34 +841,6 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
         }
     }
 
-    // if((scenes & BIT(ENV_REVERB))&& (waitcount++ > 20) && (waitcount%5 == 0))
-    // {
-    //     ret = rc_pb_scene_get_result(partyboxCtx, RC_PB_SCENE_MODE_REVERB, &result);
-    //     if (!ret) {
-    //         if(is_env_sensed_value_available(ENV_REVERB, result)) {
-    //             ALOGW("%s %u..............................................validcount=%d, in-outdoor=%f\n", __func__, os_get_boot_time_ms(), validcount, result);
-    //             validcount++;
-    //             if (result > 0.5)
-    //                 doadir++;
-    //             else
-    //                 doadir--;
-    //             doasum += result;
-
-    //             if (validcount >= 10) {
-    //                 ALOGW("%s %u+++++++++++++++++++++++++++++++++++++++++++++in-outdoor avg=%f, dir=%d(threshod 10) valid=%d\n",
-    //                     __func__, os_get_boot_time_ms(), doasum/validcount, doadir, validcount);
-    //                 if (abs(doadir)>10) {
-    //                     rockit_pbbox_notify_environment_sence(ENV_REVERB, doadir>0? INDOOR:OUTDOOR);
-    //                     waitcount = 0;
-    //                     validcount = 0;
-    //                     doasum = 0;
-    //                     doadir = 0;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
     if(scenes & BIT(ENV_DOA))
         ALOGW("%s %u step ENV_DOA, waitcount=%d, validcount=%d\n", __func__, os_get_boot_time_ms(), waitcount, validcount);
 
