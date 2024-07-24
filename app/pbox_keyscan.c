@@ -104,7 +104,7 @@ const struct _adcKeyTable adcKeyTable[] = {
 int adckey_read(int fd);
 
 bool is_saradc_board() {
-    return ENABLE_EXT_BT_MCU == 1;
+    return hal_get_sara_adc_usage();
 }
 
 static int adckey_init_fd(int fd[], int num) {

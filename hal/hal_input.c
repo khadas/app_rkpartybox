@@ -136,3 +136,7 @@ uint32_t hal_get_supported_sources(void) {
 uint32_t hal_get_supported_mic_matrix(void) {
     return HW_MIC_MATRIX;
 }
+
+bool hal_get_sara_adc_usage(void) {
+    return USE_SARA_ADC_KEY;
+}

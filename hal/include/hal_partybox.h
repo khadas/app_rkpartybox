@@ -118,6 +118,7 @@ uint32_t hal_get_scene_rec_sample_rate(void);
 input_source_t hal_get_favor_source_order(int index);
 uint32_t hal_get_supported_sources(void);
 
+bool hal_get_sara_adc_usage(void);
 #ifdef __cplusplus
 }
 #endif
