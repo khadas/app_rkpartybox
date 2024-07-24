@@ -27,6 +27,12 @@ typedef enum {
 #define MASK_GUITAR 0
 #define MASK_MIC    1
 
+//sync this define to enum rc_pb_ref_mode
+#define ECHO_REF_MODE_NONE       0
+#define ECHO_REF_MODE_SOFT       1
+#define ECHO_REF_MODE_HARD_COMBO 2
+#define ECHO_REF_MODE_HARD_IND   3
+
 typedef enum {
     HKEY_IDLE,
     HKEY_PLAY,//KEY APP PLAY

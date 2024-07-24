@@ -399,8 +399,7 @@ int rk_demo_music_create(void) {
     recorder_attr.ref_layout = hal_get_kalaok_mic_ref_layout();
     recorder_attr.rec_layout = hal_get_kalaok_mic_rec_layout();
     recorder_attr.chn_layout  = hal_get_kalaok_mic_chn_layout();
-    recorder_attr.ref_mode = RC_PB_REF_MODE_HARD_COMBO;//hal_get_kalaok_ref_hard_mode()?RC_PB_REF_MODE_HARD:RC_PB_REF_MODE_SOFT;
-
+    recorder_attr.ref_mode = (enum rc_pb_ref_mode)hal_get_kalaok_ref_hard_mode();
     recorder_attr.detect      = detect;
     if (rc_pb_create(&partyboxCtx, &attr) != 0) {
         ALOGE("rc_pb_create failed, err!!!\n");
@@ -962,7 +961,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
     scene_attr.channels    = hal_get_scene_mic_rec_channel();
     scene_attr.ref_layout  = hal_get_scene_mic_ref_layout();
     scene_attr.rec_layout  = hal_get_scene_mic_rec_layout();
-    scene_attr.ref_mode    = RC_PB_REF_MODE_HARD_COMBO;//hal_get_scene_ref_hard_mode()?RC_PB_REF_MODE_HARD:RC_PB_REF_MODE_SOFT;
+    scene_attr.ref_mode    = (enum rc_pb_ref_mode)hal_get_scene_ref_hard_mode();
     scene_attr.scene_mode   = RC_PB_SCENE_MODE_REVERB;
 
     int ret = pbox_rockit_start_scene_detect(&scene_attr);
@@ -984,7 +983,7 @@ static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
         doa_scene_attr.channels    = hal_get_scene_mic_rec_channel();
         doa_scene_attr.ref_layout  = hal_get_scene_mic_ref_layout();
         doa_scene_attr.rec_layout  = hal_get_scene_mic_rec_layout();
-        doa_scene_attr.ref_mode    = RC_PB_REF_MODE_HARD_COMBO;//hal_get_scene_ref_hard_mode()?RC_PB_REF_MODE_HARD:RC_PB_REF_MODE_SOFT;
+        doa_scene_attr.ref_mode    = (enum rc_pb_ref_mode)hal_get_scene_ref_hard_mode();
         doa_scene_attr.scene_mode   = RC_PB_SCENE_MODE_DOA;
 
         int ret = pbox_rockit_start_scene_detect(&doa_scene_attr);

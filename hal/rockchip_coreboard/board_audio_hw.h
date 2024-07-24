@@ -37,7 +37,7 @@ extern "C" {
 #define KALAOK_REF_LAYOUT       0xfc
 #define KALAOK_REC_LAYOUT       0x03
 #define KALAOK_REF_CHN_LAYOUT   0xff
-#define KALAOK_REF_HARD_MODE    0
+#define KALAOK_REF_HARD_MODE    ECHO_REF_MODE_SOFT
 #define KALAOK_REC_SAMPLE_RATE  48000
 //--------------end--------------------
 
@@ -45,7 +45,7 @@ extern "C" {
 #define SCENE_REC_CHANNEL       4
 #define SCENE_REF_LAYOUT        0x0c
 #define SCENE_REC_LAYOUT        0x03
-#define SCENE_REF_HARD_MODE     0
+#define SCENE_REF_HARD_MODE     ECHO_REF_MODE_SOFT
 #define SCENE_REC_SAMPLE_RATE  48000
 //--------------end----------------------
 
