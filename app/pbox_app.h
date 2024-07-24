@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+#define MAX_MIC_NUM 4
 typedef enum {
     DISP_NONE = 0,
     DISP_LED = 1<<0,
@@ -69,7 +70,7 @@ typedef struct {
         equalizer_t  eqmode;
         float mainVolumeLevel;//main volume
         float musicVolumeLevel;//music volume
-        mic_state_t micData[MIC_NUM];//mMicVolumeLevel
+        mic_state_t micData[MAX_MIC_NUM];//mMicVolumeLevel
         uint32_t accomLevel;
         uint32_t humanLevel;
         uint32_t reservLevel;

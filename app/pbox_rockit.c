@@ -1642,7 +1642,7 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, mic_mux_t mux, float rever
 }
 
 static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
-    uint8_t index = msg->micdata.index;
+    int8_t index = msg->micdata.index;
     mic_set_kind_t  kind = msg->micdata.kind;
     mic_mux_t micMux = msg->micdata.micState.micMux;
     float micVolume = msg->micdata.micState.micVolume;
@@ -1655,7 +1655,10 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
 
     ALOGD("%s: index:%d, kind:%d, micMux:%d, volume: %f, treble:%f, bass:%f, reverb:%f \n",
         __func__, index, kind, micMux, micVolume, micTreble, micBass, micReverb);
-    index = 0;
+
+    if(micMux == MIC_GT) index -= hal_get_mic_num();
+    assert(index>=0);
+
     if (MIC_SET_DEST_ALL == kind) {
         pbox_rockit_music_echo_reduction(index, micMux, echo3a);
         pbox_rockit_music_mic_mute(index, micMux, micmute);

@@ -140,3 +140,31 @@ uint32_t hal_get_supported_mic_matrix(void) {
 bool hal_get_sara_adc_usage(void) {
     return USE_SARA_ADC_KEY;
 }
+
+uint32_t hal_get_mic_guitar_num(void) {
+    return HW_MIC_GUITAR_NUM;
+}
+
+uint32_t hal_get_mic_num(void) {
+    uint32_t num;
+    // for (int i < 0; i< HW_MIC_GUITAR_NUM; i++) {
+    //     if(HW_MIC_MATRIX&(1<<i)) {
+    //         num++;
+    //     }
+    // }
+    // return num;
+    switch(HW_MIC_MATRIX) {
+        case 1: {
+            num = 1;
+        } break;
+        case 3: {
+            num = 2;
+        } break;
+        case 7: {
+            num = 3;
+        } break;
+        default: return 0;
+    }
+    assert(num <= HW_MIC_GUITAR_NUM);
+    return num;
+}

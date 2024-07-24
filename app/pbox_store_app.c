@@ -139,7 +139,7 @@ int pbox_app_ui_load(void) {
     pboxUIdata->outdoor = (inout_door_t)rk_param_get_int("ui:outdoor", OUTDOOR);
     pboxUIdata->eqmode = (equalizer_t)rk_param_get_int("ui:eqmode", EQ_POP);
 
-    for(int i = 0; i < MIC_NUM; i++) {
+    for(int i = 0; i < hal_get_mic_guitar_num(); i++) {
         char param_name[20]; // Make sure this is large enough to hold the full parameter name
         sprintf(param_name, "mic%d:micmute", i);
         pboxUIdata->micData[i].micmute = rk_param_get_bool(param_name, false);

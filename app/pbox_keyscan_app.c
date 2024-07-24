@@ -198,7 +198,7 @@ int pbox_app_key_set_negative(float reserved)
 
 int pbox_app_key_set_echo_3a(float reserved) {
     ALOGD("%s now:%d=====!\n", __func__, pboxUIdata->micData[0].echo3a);
-    for(int i = 0; i < MIC_NUM; i++) {
+    for(int i = 0; i < hal_get_mic_guitar_num(); i++) {
         if (pboxUIdata->micData[0].echo3a)
             pbox_app_music_set_echo_3a(i, false, DISP_All);
         else

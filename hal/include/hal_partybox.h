@@ -119,6 +119,8 @@ input_source_t hal_get_favor_source_order(int index);
 uint32_t hal_get_supported_sources(void);
 
 bool hal_get_sara_adc_usage(void);
+uint32_t hal_get_mic_guitar_num(void);
+uint32_t hal_get_mic_num(void);
 #ifdef __cplusplus
 }
 #endif
