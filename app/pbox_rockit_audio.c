@@ -224,10 +224,8 @@ struct _audio_file {
     {PROMPT_VERTICAL,   "/oem/tone/vertical_placement.pcm",  16000, 2},
 };
 
-#define INOUT_PLAY_COUNT 2
-void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
+void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, uint8_t loopcount) {
     int32_t size = 0;
-    int32_t loopCount = 0;
     FILE *file = NULL;
     struct rc_pb_player_attr attr;
     struct rc_pb_frame_info frame_info;
@@ -270,30 +268,22 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
         return;
     }
 
-    ALOGW("%s file:%s play start!!!!!\n", __func__, prompt_File[index].fileName);
+    ALOGW("%s file:%s loopcount:%d, play start!!!!!\n", __func__, prompt_File[index].fileName, loopcount);
     rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
 
     float mixVolume = AuxPlayerVolume;
     if (index == PROMPT_INOUT_SENCE || index == PROMPT_DOA_SENCE) {
-        mixVolume = pbox_rockit_get_auxplayer_volume();//DEFAULT_VOLUME;
+        mixVolume = pbox_rockit_get_auxplayer_volume();
     } else if (index == PROMPT_HORIZON || index == PROMPT_VERTICAL) {
-        mixVolume = pbox_rockit_get_auxplayer_volume()-15;
+        if((mixVolume<-40) || (mixVolume>-20)) mixVolume = -30;
     }
     rc_pb_player_set_volume(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, mixVolume);
 
-    is_prompt_loop_playing = loop;
-    if (index == PROMPT_INOUT_SENCE) {
-        loop = true;
-    }
-    while (true) {
+    loopcount = loopcount==0 ? 255:loopcount;
+    is_prompt_loop_playing = (loopcount == 1)? false:true;
+
+    while(true) {
         if(os_sem_trywait(auxplay_looplay_sem) == 0) {
-            loop = 0;
-            frame_info.size = 0;
-            is_prompt_loop_playing = 0;
-            if (index==PROMPT_INOUT_SENCE) { 
-                inout_detect_playing = 0;
-            }
-            loopCount = 0;
             ALOGW("%s index:%d quit\n", __func__, index);
             break;
         }
@@ -306,22 +296,12 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
         }
 
         if (size <= 0) {
-            ALOGW("%s index:%d loopCount:%d, eof\n", __func__, index, loopCount);
-            if((!loop)||((index==PROMPT_INOUT_SENCE)&&(loopCount >= (INOUT_PLAY_COUNT-1)))) {
-                if (index == PROMPT_INOUT_SENCE) {
-                    loopCount++;
-                    if((loopCount >= INOUT_PLAY_COUNT)) {
-                        inout_detect_playing = 0;
-                    }
-                }
-
-                loopCount = 0;
+            ALOGW("%s index:%d loopcount:%d, eof\n", __func__, index, loopcount);
+            if(--loopcount == 0) {
                 frame_info.size = 0;
-                rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM,
-                                            &frame_info, -1);
+                rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &frame_info, -1);
                 break;
             } else {
-                loopCount++;
                 fseek(file, 0, SEEK_SET);
             }
         }
@@ -333,6 +313,13 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, bool loop) {
         rc_pb_player_queue_frame(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &frame_info, -1);
     }
 
+    if (index == PROMPT_INOUT_SENCE) {
+        inout_detect_playing = 0;
+    }
+    if(is_prompt_loop_playing) {
+        os_sem_trywait(auxplay_looplay_sem);
+        is_prompt_loop_playing = 0;
+    }
     fclose(file);
     rc_pb_player_stop(*ptrboxCtx, RC_PB_PLAY_SRC_PCM);
     ALOGD("%s file:%s play stop!!!!!\n", __func__, prompt_File[index].fileName);
@@ -343,7 +330,7 @@ void* pbox_rockit_aux_player_routine(void *arg) {
     struct rockit_pbx_t *ctx = arg;
     rc_pb_ctx *ptrboxCtx;
     int table[5];
-    bool loop;
+    uint8_t loopcount;
     int fd;
     os_sem_t* quit_sem = os_task_get_quit_sem(os_gettid());
 
@@ -399,8 +386,8 @@ void* pbox_rockit_aux_player_routine(void *arg) {
 
         for (int i = 0; i < stashCount; i++) {
             result = table[i];
-            loop = (result < 0)? true:false;
-            unsigned int mask = ~(unsigned int)0 >> 1;//clear the highest bit.
+            loopcount = result>>((sizeof(int)-1)*8);
+            unsigned int mask = 0xff;
             result &= mask;
 
             if (i < stashCount -1) {
@@ -415,8 +402,8 @@ void* pbox_rockit_aux_player_routine(void *arg) {
                 }
             }
 play_propmt:
-            ALOGW("%s total:%d, last = %u, loop:%d\n", __func__, stashCount, (prompt_audio_t)result, loop);
-            audio_sound_prompt(ptrboxCtx, result, loop);
+            ALOGW("%s total:%d, last = %u, loopcount:%d\n", __func__, stashCount, (prompt_audio_t)result, loopcount);
+            audio_sound_prompt(ptrboxCtx, result, loopcount);
         }
     }
 }

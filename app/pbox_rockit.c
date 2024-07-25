@@ -424,13 +424,12 @@ int rk_demo_music_create(void) {
     pbox_tunning_init();
 }
 
-int audio_prompt_send(prompt_audio_t prompt, bool loop) {
-    int highBit = (loop?1:0) << (sizeof(int) * 8 - 1);
-    int id = prompt|highBit;
+//loopcount: 0: means loop; 1-255: play counts
+int audio_prompt_send(prompt_audio_t prompt, uint8_t loopcount) {
+    int highByte = loopcount << ((sizeof(int)-1) * 8 );
+    int id = prompt|highByte;
 
     ALOGW("%s prompt=%d\n", __func__, prompt);
-    if(is_prompt_loop_playing&&loop)
-        os_sem_post(auxplay_looplay_sem);
 
     int ret = write(rockitCtx.signfd[1], &id, sizeof(int));
 
@@ -911,7 +910,7 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
 static void pbox_rockit_start_play_notice_number(pbox_rockit_msg_t *msg) {
     uint32_t num = msg->number;
     num += PROMPT_DIGIT_ZERO;
-    audio_prompt_send(num, false);
+    audio_prompt_send(num, 1);
 }
 
 static void pbox_rockit_stop_env_detect(pbox_rockit_msg_t *msg) {
@@ -953,7 +952,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
     static struct rc_pb_scene_detect_attr scene_attr;
     assert(partyboxCtx);
 
-    audio_prompt_send(PROMPT_INOUT_SENCE, false);
+    audio_prompt_send(PROMPT_INOUT_SENCE, 2);
     ALOGW("%s \n", __func__);
     scene_attr.sample_rate = hal_get_scene_rec_sample_rate();
     scene_attr.bit_width   = 16;
@@ -995,7 +994,7 @@ static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
 
     if (msg->agentRole == R_PARTNER) {
         ALOGW("role: R_PARTNER\n");
-        audio_prompt_send(PROMPT_DOA_SENCE, true);
+        audio_prompt_send(PROMPT_DOA_SENCE, 0);
     }
 }
 
@@ -1048,7 +1047,7 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, mic_mux_t mux, pbox_rev
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 
     if (powered_reverb) {
-        //audio_prompt_send(mode, false);
+        //audio_prompt_send(mode, 1);
     }
     powered_reverb = true;
 }
@@ -1071,7 +1070,7 @@ static void pbox_rockit_music_echo_reduction(uint8_t index, mic_mux_t mux, bool 
     ALOGD("%s rc_pb_recorder_set_param 3a:%s res:%d\n" ,__func__, on?"on":"off", ret);
 
     if (powered_3aecho) {
-        audio_prompt_send(echo3a? PROMPT_ANTI_BACK_ON:PROMPT_ANTI_BACK_OFF, false);
+        audio_prompt_send(echo3a? PROMPT_ANTI_BACK_ON:PROMPT_ANTI_BACK_OFF, 1);
     }
     powered_3aecho = true;
 }
@@ -1134,7 +1133,7 @@ static void pbox_rockit_music_voice_seperate(input_source_t source, pbox_vocal_t
             dest_audio = enable? PROMPT_GUITAR_FADE_ON:PROMPT_GUITAR_FADE_OFF;
         else
             dest_audio = enable? PROMPT_FADE_ON:PROMPT_FADE_OFF;
-        audio_prompt_send(dest_audio, false);
+        audio_prompt_send(dest_audio, 1);
     }
     vocal_old = vocallib;
     oldstate = enable;
@@ -1412,7 +1411,7 @@ static void pbox_rockit_music_set_stereo_mode(input_source_t source, stereo_mode
     }
 
     if (powered_stereo) {
-        audio_prompt_send(dest_audio, false);
+        audio_prompt_send(dest_audio, 1);
     }
     powered_stereo = true;
 }
@@ -1424,7 +1423,7 @@ static void pbox_rockit_music_set_inout_door(input_source_t source, inout_door_t
     assert(partyboxCtx);
     ALOGD("%s dest:%d, outdoor:%d\n", __func__, dest, outdoor);
 
-    audio_prompt_send(outdoor?PROMPT_OUTDOOR:PROMPT_INDOOR, false);
+    audio_prompt_send(outdoor?PROMPT_OUTDOOR:PROMPT_INDOOR, 1);
 }
 
 static void pbox_rockit_music_set_placement(input_source_t source, placement_t place) {
@@ -1473,7 +1472,7 @@ static void pbox_rockit_music_set_placement(input_source_t source, placement_t p
         } break;
         default: return;
     }
-    audio_prompt_send(dest_audio, false);
+    audio_prompt_send(dest_audio, 1);
 }
 
 void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
@@ -1533,7 +1532,7 @@ void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
         } break;
     }
     rc_pb_player_set_param(partyboxCtx, dest, &param);
-    audio_prompt_send(dest_audio, false);
+    audio_prompt_send(dest_audio, 1);
 }
 
 
