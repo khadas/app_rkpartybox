@@ -799,7 +799,8 @@ void *btsink_server(void *arg)
     }
     ALOGW("%s inited +++++++++++++++++++++++\n", __func__);
     while(true) {
-        if (os_sem_trywait(quit_sem) != 0 && (!bt_content.init)) {
+        if (os_sem_trywait(quit_sem) == 0 && (!bt_content.init)) {
+            ALOGW("%s quiting +++++++++++++++++++++++\n", __func__);
             break;
         }
         memset(buff, 0, sizeof(buff));

@@ -41,9 +41,9 @@ static void* thread_wrapper(void *arg) {
     assert(task->user_func);
     prctl(PR_SET_NAME, (unsigned long)task->name);
     task->started = true;
+    task->tid = syscall(SYS_gettid);
     os_sem_post(start->start_sem);
 
-    task->tid = syscall(SYS_gettid);
     task->user_func(task->context);
 
     return NULL;
@@ -80,7 +80,7 @@ struct os_task_t* os_task_create(const char* name, task_routine_t routine_func, 
     os_sem_wait(start_arg.start_sem);
     os_sem_free(start_arg.start_sem);
 
-    ALOGW("create task %s pid:%d success..\n", name, task->tid);
+    ALOGW("%s create task %s pid:%ld success..\n", __func__, name, task->tid);
     return task;
 
 fail:

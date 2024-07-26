@@ -393,7 +393,7 @@ void maintask_timer_fd_process(int timer_fd) {
         pbox_app_music_init();
     }
 
-    if(0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) {
+    if(msTimePassed > 3000 && 0 == msTimePassed%(PBOX_TIMER_INTERVAL*5)) {
         extern int pbox_app_scene_state_machine(void);
         pbox_app_scene_state_machine();
     }

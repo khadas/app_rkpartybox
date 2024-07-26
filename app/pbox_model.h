@@ -36,7 +36,11 @@ extern "C" {
 #endif
 
 #ifndef DEFAULT_SAMPLE_FREQ
+#if ENABLE_EXT_BT_MCU
 #define DEFAULT_SAMPLE_FREQ 48000
+#else
+#define DEFAULT_SAMPLE_FREQ 44100
+#endif
 #endif
 
 #ifndef DEFAULT_MIC_3A
