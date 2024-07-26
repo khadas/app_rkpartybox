@@ -108,6 +108,7 @@ int inout_detect_playing = 0;
 float AuxPlayerVolume = -20;
 static int32_t gender_prev = 0;
 static uint32_t gender_statistics = 0;
+static int32_t last_reported_gender = 0;
 static uint32_t gender_align_time = 0;
 static enum rc_pb_rec_src micguitar_recs = 0;
 static enum rc_pb_play_src playerdest = RC_PB_PLAY_SRC_LOCAL;
@@ -804,6 +805,7 @@ static void pbox_rockit_reset_gender(pbox_rockit_msg_t *msg) {
     ALOGW("%s.......................................................................\n", __func__);
     gender_prev = 0;
     gender_statistics = 0;
+    last_reported_gender = 0;
     gender_align_time = os_get_boot_time_ms();
 }
 
@@ -876,7 +878,6 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
         param.type = RC_PB_PARAM_TYPE_SCENE;
         param.scene.scene_mode = RC_PB_SCENE_MODE_GENDER;
         ret = rc_pb_player_get_param(partyboxCtx, dest, &param);
-        static int32_t last_reported_gender = 0;
         do {
             if (ret || !is_env_sensed_value_available(ENV_GENDER, param.scene.result)) {
                 break;
@@ -889,7 +890,7 @@ static void pbox_rockit_render_env_sence(pbox_rockit_msg_t *msg) {
                 ALOGW("%s instant.....gender:[%d->%d]\n", __func__, gender_prev, current_gender);
                 gender_prev = current_gender;
                 gender_align_time = current_time;
-            } else if ((current_time - gender_align_time > 1000) && (current_gender != last_reported_gender) && (current_gender == 1 || current_gender == 2)) {
+            } else if ((current_time - gender_align_time > 0) && (current_gender != last_reported_gender) && (current_gender == 1 || current_gender == 2)) {
                 ALOGW("%s ....time[%u->%u], gender:[%d->%d]\n", __func__, gender_align_time, current_time, last_reported_gender, current_gender);
                 last_reported_gender = current_gender;
                 gender_align_time = current_time;
