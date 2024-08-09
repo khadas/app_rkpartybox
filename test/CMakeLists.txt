@@ -7,3 +7,5 @@ set(INPUTKEY_FILES
 add_definitions("")
 add_executable(inputkey ${INPUTKEY_FILES})
 install(TARGETS inputkey DESTINATION bin)
+
+#add_subdirectory("testlib")

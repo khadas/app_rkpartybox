@@ -106,6 +106,7 @@ target_link_libraries(${PROJECT_NAME} ${UDEV_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}
 	pthread m asound
 )
+#target_link_libraries(${PROJECT_NAME} mytest)
 
 if (LV_USE_DEMO_MUSIC)
 target_link_libraries(${PROJECT_NAME} lvgl lv_drivers drm freetype)
