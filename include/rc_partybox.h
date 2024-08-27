@@ -25,6 +25,8 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 #if 0
+rc_s32 rc_pb_register_filter(enum rc_pb_filter_pos pos, struct rc_pb_filter *filter, void *arg);
+rc_s32 rc_pb_unregister_filter(enum rc_pb_filter_pos pos);
 rc_s32 rc_pb_create(rc_pb_ctx *ctx, struct rc_pb_attr *attr);
 rc_s32 rc_pb_destroy(rc_pb_ctx ctx);
 rc_s32 rc_pb_set_volume(rc_pb_ctx ctx, rc_float volume_db);

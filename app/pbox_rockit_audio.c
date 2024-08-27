@@ -242,6 +242,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, uint8_t loop
     attr.detect.decay_time = 200;
     attr.detect.detect_per_frm = 2;
     attr.detect.band_cnt = 10;
+    //attr.detect.basic = false;
 
     static int old = -1;
 

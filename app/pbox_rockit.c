@@ -43,6 +43,8 @@ os_task_t* rockit_task_id;
 //void *player_ctx = NULL;
 rc_pb_ctx partyboxCtx;
 
+rc_s32 (*rc_pb_register_filter)(enum rc_pb_filter_pos pos, struct rc_pb_filter *filter, void *arg);
+rc_s32 (*rc_pb_unregister_filter)(enum rc_pb_filter_pos pos);
 rc_s32 (*rc_pb_create)(rc_pb_ctx *ctx, struct rc_pb_attr *attr);
 rc_s32 (*rc_pb_destroy)(rc_pb_ctx ctx);
 rc_s32 (*rc_pb_set_volume)(rc_pb_ctx ctx, rc_float volume_db);
@@ -125,14 +127,25 @@ int rk_demo_music_create(void) {
         return -1;
     }
 
+    rc_pb_register_filter = (rc_s32 (*)(enum rc_pb_filter_pos pos, struct rc_pb_filter *filter, void *arg))dlsym(mpi_hdl, "rc_pb_register_filter");
+    if (NULL == rc_pb_register_filter) {
+        ALOGE("%s %d failed to open rc_pb_register_filter, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+    rc_pb_unregister_filter = (rc_s32 (*)(enum rc_pb_filter_pos pos))dlsym(mpi_hdl, "rc_pb_unregister_filter");
+    if (NULL == rc_pb_unregister_filter) {
+        ALOGE("%s %d failed to open rc_pb_unregister_filter, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
+    }
+
     rc_pb_create = (rc_s32 (*)(rc_pb_ctx *ctx, struct rc_pb_attr *attr))dlsym(mpi_hdl, "rc_pb_create");
     if (NULL == rc_pb_create) {
-            ALOGE("%s %d failed to open func, err=%s\n", __func__, __LINE__, dlerror());
-            return -1;
+        ALOGE("%s %d failed to open rc_pb_create, err=%s\n", __func__, __LINE__, dlerror());
+        return -1;
     }
     rc_pb_destroy = (rc_s32 (*)(rc_pb_ctx ctx))dlsym(mpi_hdl, "rc_pb_destroy");
     if (NULL == rc_pb_destroy) {
-        ALOGE("%s %d failed to open  func, err=%s\n", __func__, __LINE__, dlerror());
+        ALOGE("%s %d failed to open rc_pb_destroy, err=%s\n", __func__, __LINE__, dlerror());
         return -1;
     }
 
@@ -410,7 +423,7 @@ int rk_demo_music_create(void) {
     memset(started_player, 0 , sizeof(started_player));
     int ret = pipe(rockitCtx.signfd);
     rockitCtx.pboxCtx = &partyboxCtx;
-    ALOGD("%s %d partyboxCtx:%p\n", __func__, __LINE__, &partyboxCtx);
+    ALOGD("%s %d partyboxCtx:%p, pool_cnt=%d\n", __func__, __LINE__, &partyboxCtx, recorder_attr.pool_cnt);
     //rockitCtx.auxplay_stop_sem = os_sem_new(0);
     auxplay_looplay_sem = os_sem_new(0);
 
@@ -602,6 +615,7 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
     playerAttr.detect = detect;
     playerAttr.valid_bit_width = 16;
     playerAttr.valid_start_bit = 0;
+    playerAttr.basic = rc_false;
 
     ALOGD("%s :%s, ctx=%p\n", __func__, track_uri, partyboxCtx);
     pbox_rockit_music_stop(SRC_CHIP_USB);
@@ -609,7 +623,7 @@ static void pbox_rockit_music_local_start(const char *track_uri, const char *hea
 
     started_player[dest] = true;
 }
-static bool vendor_started = false;
+
 static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioFormat_t audioFormat)
 {
     struct rc_pb_player_attr playerAttr;
@@ -650,6 +664,7 @@ static void pbox_rockit_music_start_audiocard(input_source_t source, pbox_audioF
     playerAttr.detect = detect;
     playerAttr.valid_bit_width = 16;
     playerAttr.valid_start_bit = 0;
+    playerAttr.basic = rc_false;
 
     assert(partyboxCtx);
     assert(rc_pb_player_start);
@@ -1638,6 +1653,7 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, mic_mux_t mux, float rever
     param.reverb.bypass = false;
     param.reverb.dry_level = 80;
     param.reverb.wet_level = reverb;
+    param.reverb.mode   = RC_PB_REVERB_MODE_USER;
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 }
 

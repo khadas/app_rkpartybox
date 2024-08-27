@@ -25,13 +25,13 @@
 		},
 		"gender" : {
 			"status" : "enable",
-			"frm_len" :  240,
+			"frm_len" :  45,
 			"nclass" : 3,
-			"male_confirm_len" : 150,
-			"female_confirm_len" :  150,
-			"other_confirm_len" :  150,
-			"male_confirm_prob" :  0.6,
-			"female_confirm_prob" :  0.7,
+			"male_confirm_len" : 30,
+			"female_confirm_len" :  30,
+			"other_confirm_len" :  30,
+			"male_confirm_prob" :  0.5,
+			"female_confirm_prob" :  0.5,
 			"other_confirm_prob" :  0.5,
 		}
 	}

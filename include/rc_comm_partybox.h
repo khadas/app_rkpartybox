@@ -42,6 +42,13 @@ typedef void*                 rc_pb_frame;
 
 #define PB_MAX_AUDIO_CHN_NUM  8
 
+enum rc_pb_filter_pos {
+    RC_PB_FILTER_POS_AFTER_CORE0 = 0,
+    RC_PB_FILTER_POS_AFTER_CORE1,
+    RC_PB_FILTER_POS_AFTER_CORE2,
+    RC_PB_FILTER_POS_BUTT
+};
+
 enum rc_pb_play_src {
     RC_PB_PLAY_SRC_LOCAL = 0,
     RC_PB_PLAY_SRC_BT,
@@ -213,6 +220,7 @@ struct rc_pb_player_attr {
     rc_u32      valid_start_bit;
     rc_u32      pool_size;
     rc_u32      pool_cnt;
+    rc_bool     basic;
     struct rc_pb_param_level_detect detect;
 };
 
@@ -278,6 +286,31 @@ struct rc_pb_attr {
     void                       *opaque;
     rc_float                    volume_db;
     struct rc_pb_recorder_attr *record_attr;
+};
+
+struct rc_pb_filter_attr {
+    rc_u32 in_bit_width;
+    rc_u32 in_sample_rate;
+    rc_u32 in_channels;
+    rc_u32 out_bit_width;
+    rc_u32 out_sample_rate;
+    rc_u32 out_channels;
+    rc_u32 frame_cnt;
+};
+
+struct rc_pb_filter_param {
+    void   *in_data;
+    rc_u32  in_len;
+
+    void   *out_data;
+    rc_u32  out_len;
+};
+
+struct rc_pb_filter {
+    rc_s32 (*open)(struct rc_pb_filter_attr *attr, void *filter);
+    rc_s32 (*process)(void *filter, struct rc_pb_filter_param *param);
+    rc_s32 (*flush)(void *filter);
+    rc_s32 (*close)(void *filter);
 };
 
 #ifdef __cplusplus
