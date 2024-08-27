@@ -483,7 +483,7 @@ static void *btsoc_sink_server(void *arg) {
 
     btsoc_fds[BTSOC_UDP_SOCKET] =   get_server_socketpair_fd(PBOX_SOCKPAIR_BT);
     btsoc_fds[BTSOC_UART] =         userial_vendor_open("/dev/ttyS0", 38400);
-    exec_command_system("stty -F /dev/ttyS0 38400 cs8 -cstopb parenb -parodd");
+    //exec_command_system("stty -F /dev/ttyS0 38400 cs8 -cstopb parenb -parodd");
     btsoc_register_uart_write_fd(btsoc_fds[BTSOC_UART]);
     if (btsoc_fds[BTSOC_UART] < 0)
         goto exit;

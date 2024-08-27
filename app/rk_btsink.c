@@ -797,12 +797,32 @@ void *btsink_server(void *arg)
     while (!bt_content.init) {
         msleep(10);
     }
+
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(sockfd, &read_fds);
     ALOGW("%s inited +++++++++++++++++++++++\n", __func__);
     while(true) {
         if (os_sem_trywait(quit_sem) == 0 && (!bt_content.init)) {
             ALOGW("%s quiting +++++++++++++++++++++++\n", __func__);
             break;
         }
+
+        fd_set read_set = read_fds;
+        struct timeval tv = {
+            .tv_sec = 0,
+            .tv_usec = 200000,
+        };
+        int retval = select(sockfd + 1, &read_set, NULL, NULL, &tv);
+        if (retval == -1) {
+            perror("select error");
+            //current_state = READ_INIT;
+            continue;
+        } else if (retval == 0) {
+            //ALOGW("select timeout \n");
+            continue;
+        }
+
         memset(buff, 0, sizeof(buff));
         int ret = recv(sockfd, buff, sizeof(buff), 0);
         if (ret <= 0)

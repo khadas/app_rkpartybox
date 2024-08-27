@@ -1895,14 +1895,12 @@ static int pbox_tunning_disable(void)
     return ret;
 }
 
-static void pbox_rockit_music_set_tunning_tool(pbox_rockit_msg_t *msg) {
-    ALOGW("%s enable:%d\n", __func__, msg->enable);
+static void pbox_rockit_music_set_tunning_tool(bool enable) {
+    ALOGW("%s enable:%d\n", __func__, enable);
     int ret;
-    if(msg->enable && (!is_tunning_working)) {
+    if(enable && (!is_tunning_working)) {
         pbox_tunning_enable();
-    }
-
-    if ((msg->enable == false) && is_tunning_working){
+    } else if ((enable == false) && is_tunning_working){
         pbox_tunning_disable();
     }
 }
@@ -2087,7 +2085,7 @@ static void *pbox_rockit_server(void *arg)
             } break;
 
             case PBOX_ROCKIT_SET_TUNNING_TOOL: {
-                pbox_rockit_music_set_tunning_tool(msg);
+                pbox_rockit_music_set_tunning_tool(msg->enable);
             } break;
 
             case PBOX_ROCKIT_GET_SENCE: {
@@ -2148,7 +2146,7 @@ static void *pbox_rockit_server(void *arg)
     if (is_tunning_working){
         pbox_tunning_disable();
     }
-    pbox_tunning_deinit();
+    //pbox_tunning_deinit();
     pbox_rockit_music_destroy();
     ALOGW("%s rockit the last code, exiting!!!\n", __func__);
 }

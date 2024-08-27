@@ -76,16 +76,17 @@ int main(int argc, char **argv)
 	"for example:\n" 
 	"inputkey 373\n"
 	);
-
+    close(fd);
 	return -1;
     }
 
-    fprintf(stderr, "keycode is %s", argv[1]);
+    fprintf(stderr, "keycode is %s\n", argv[1]);
 
     keycode = atoi(argv[1]); 
 
     simulate_key(fd, keycode);
 
     close(fd);
+
     return 0;
 }

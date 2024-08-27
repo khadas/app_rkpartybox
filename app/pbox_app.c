@@ -162,7 +162,6 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
         } break;
     }
 
-    //pbox_app_music_set_music_volume(pboxUIdata->musicVolumeLevel, policy);
     pbox_app_music_original_singer_open(!pboxUIdata->vocalSplit, policy);
     pbox_app_resume_volume_later(650);
 }
