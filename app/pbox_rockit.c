@@ -38,6 +38,7 @@
 //static void karaoke_callback(RK_VOID *pPrivateData, KARAOKE_EVT_E event, rc_s32 ext1, RK_VOID *ptr);
 static void pb_rockit_notify(enum rc_pb_event event, rc_s32 cmd, void *opaque);
 static int pbox_tunning_init(void);
+static void pbox_rockit_set_mic_reverb(uint8_t index, mic_mux_t mux, float reverb);
 
 os_task_t* rockit_task_id;
 //void *player_ctx = NULL;
@@ -1022,7 +1023,8 @@ enum rc_pb_rec_src covert2rockitRecSource(mic_mux_t mux) {
     }
     return RC_PB_REC_SRC_BUTT;
 }
-static void pbox_rockit_music_reverb_mode(uint8_t index, mic_mux_t mux, pbox_revertb_t mode) {
+
+static void pbox_rockit_music_reverb_mode(uint8_t index, mic_mux_t mux, pbox_revertb_t mode, float reverb) {
     enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
     static bool powered_reverb = false;
@@ -1035,9 +1037,15 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, mic_mux_t mux, pbox_rev
     if(recs != MIC_IN) return;
     rc_pb_recorder_get_param(partyboxCtx, recs, index, &param);
 
+    param.reverb.bypass = false;
     switch (mode) {
+        case PBOX_REVERT_OFF: {
+            param.reverb.bypass = true;
+            param.reverb.mode %=RC_PB_REVERB_MODE_BUTT;
+        } break;
         case PBOX_REVERT_USER: {
-            param.reverb.mode = RC_PB_REVERB_MODE_USER;
+            pbox_rockit_set_mic_reverb(index, mux, reverb);
+            goto reverb_label;
         } break;
         case PBOX_REVERT_STUDIO: {
             param.reverb.mode = RC_PB_REVERB_MODE_STUDIO;
@@ -1054,14 +1062,10 @@ static void pbox_rockit_music_reverb_mode(uint8_t index, mic_mux_t mux, pbox_rev
         default: break;
     }
 
-    if (mode == RC_PB_REVERB_MODE_USER) 
-        param.reverb.bypass = true;
-    else 
-        param.reverb.bypass = false;
-
     ALOGW("%s mode:%d as %d, bypass:%d\n" ,__func__, mode, param.reverb.mode, param.reverb.bypass);
     rc_pb_recorder_set_param(partyboxCtx, recs, index, &param);
 
+reverb_label:
     if (powered_reverb) {
         //audio_prompt_send(mode, 1);
     }
@@ -1629,7 +1633,6 @@ static void pbox_rockit_set_mic_bass(uint8_t index, mic_mux_t mux, float bass) {
 static void pbox_rockit_set_mic_reverb(uint8_t index, mic_mux_t mux, float reverb) {
     enum rc_pb_rec_src recs = covert2rockitRecSource(mux);
     struct rc_pb_param param;
-    param.type = RC_PB_PARAM_TYPE_REVERB;
 
     assert(partyboxCtx);
     assert(rc_pb_player_set_param);
@@ -1642,12 +1645,6 @@ static void pbox_rockit_set_mic_reverb(uint8_t index, mic_mux_t mux, float rever
     rc_pb_recorder_get_param(partyboxCtx, recs, index, &param);
     ALOGD("%s got type:%d, bypass:%d, dry:%d, wet:%d\n", \
                 __func__, param.type, param.reverb.bypass, param.reverb.dry_level, param.reverb.wet_level);
-
-    if (param.reverb.mode != RC_PB_REVERB_MODE_STUDIO && \
-        param.reverb.mode != RC_PB_REVERB_MODE_KTV && \
-        param.reverb.mode != RC_PB_REVERB_MODE_CONCERT) {
-        //param.reverb.mode = RC_PB_REVERB_MODE_KTV;
-    }
 
     param.type = RC_PB_PARAM_TYPE_REVERB;
     param.reverb.bypass = false;
@@ -1682,8 +1679,7 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
         pbox_rockit_music_mic_volume_adjust(index, micMux, micVolume);
         pbox_rockit_set_mic_treble(index, micMux, micTreble);
         pbox_rockit_set_mic_bass(index, micMux, micBass);
-        pbox_rockit_set_mic_reverb(index, micMux, micReverb);
-        pbox_rockit_music_reverb_mode(index, micMux, reverbMode);//keep it after pbox_rockit_set_mic_reverb.
+        pbox_rockit_music_reverb_mode(index, micMux, reverbMode, micReverb);
         return;
     }
 
@@ -1698,7 +1694,7 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
 
         } break;
         case MIC_SET_DEST_REVERB_MODE: {
-            pbox_rockit_music_reverb_mode(index, micMux, reverbMode);
+            pbox_rockit_music_reverb_mode(index, micMux, reverbMode, micReverb);
         } break;
         case MIC_SET_DEST_VOLUME: {
             pbox_rockit_music_mic_volume_adjust(index, micMux, micVolume);
@@ -1710,6 +1706,7 @@ static void pbox_rockit_music_mic_set_parameter(pbox_rockit_msg_t *msg) {
             pbox_rockit_set_mic_bass(index, micMux, micBass);
         } break;
         case MIC_SET_DEST_REVERB: {
+            if(reverbMode == PBOX_REVERT_USER)
             pbox_rockit_set_mic_reverb(index, micMux, micReverb);
         } break;
         default: break;

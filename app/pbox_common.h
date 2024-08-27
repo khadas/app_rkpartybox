@@ -123,7 +123,7 @@ typedef struct {
 
 typedef enum {
     PBOX_REVERT_OFF = 0,
-    PBOX_REVERT_USER = 0,
+    PBOX_REVERT_USER,
     PBOX_REVERT_STUDIO,
     PBOX_REVERT_KTV,
     PBOX_REVERT_CONCERT,

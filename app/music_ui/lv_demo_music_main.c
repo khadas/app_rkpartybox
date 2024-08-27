@@ -647,8 +647,10 @@ static void reverb_event_handler(lv_event_t *e) {
         mode = PBOX_REVERT_CONCERT;
     else if (!strcmp(buf, "ECHO"))
         mode = PBOX_REVERT_ECHO;
+    else if (!strcmp(buf, "USER"))
+        mode = PBOX_REVERT_USER;
     else 
-         mode = PBOX_REVERT_USER;
+         mode = PBOX_REVERT_OFF;
 
     printf("'%s' is selected\n", buf);
     lcd_pbox_notifyReverbMode(mode);
@@ -817,7 +819,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     reverb_dd_obj = lv_dropdown_create(cont);
     lv_obj_set_grid_cell(reverb_dd_obj, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_START, 9, 1);
     lv_obj_set_style_text_font(reverb_dd_obj, font_small, 0);
-    lv_dropdown_set_options_static(reverb_dd_obj, "OFF\nSTUDIO\nKTV\nCONCERT\nECHO");
+    lv_dropdown_set_options_static(reverb_dd_obj, "OFF\nSTUDIO\nKTV\nCONCERT\nECHO\nUSER");
     lv_dropdown_set_dir(reverb_dd_obj, LV_DIR_BOTTOM);
     lv_dropdown_set_selected(reverb_dd_obj, PBOX_REVERT_KTV);//0,1,2,3 so 3 means CONCERT
     lv_obj_add_event_cb(reverb_dd_obj, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
