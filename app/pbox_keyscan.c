@@ -548,7 +548,8 @@ void *pbox_KeyEventScan(void * arg) {
                         ALOGD("-------------- SYN_REPORT ------------\n");
                     }
                     else if(type == EV_KEY) {               //only process EV_KEY,skip EV_REL,EV_ABS,EV_MSC which may introduct errors
-                        ALOGD("input: keytype=%d %d,type=%x,code=%x,key %s, current key event code=%x\n", k, key_types[k], type, code, ev[i].value ? "down" : "up", current_dot_key.key_code);
+                        ALOGW("input: keytype=%d %d,type=%x,code=%x, %s, keycode[kernel-app]=[%03d-%02d]\n", 
+                                k, key_types[k], type, code, ev[i].value ? "down" : "up", ev[i].code, current_dot_key.key_code);
                         if(ev[i].value == 1) {                   //press down
                             //cmcc_interrupt_remind(100);
                             if (0 == current_dot_key.key_code && current_dot_key.key_code != code ) {
@@ -592,12 +593,7 @@ void *pbox_KeyEventScan(void * arg) {
                                 } else if (repeat_time < (KEY_DOUBLE_CLICK_PERIOD / 1000)) {
                                     key_read.press_type = K_DQC;
                                 }
-                                if (key_types[k] == support_event[1].key_type) {
-                                    if (key_read.key_code == HKEY_IDLE)
-                                        key_read.key_code = HKEY_GPIO_KEY1;
-                                    else if (key_read.key_code == HKEY_MODE)
-                                        key_read.key_code = HKEY_GPIO_KEY2;
-                                }
+
                                 ALOGD("key up, keycode1=%x,keycode2=%x,valid=%d,longtype=%d, combain=%d\n", key_read.key_code, key_read.key_code_b, key_read.is_key_valid, key_read.press_type, key_read.is_combain_key);
                                 hasLongLongFunc = 0;
                             //}

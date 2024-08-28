@@ -53,10 +53,11 @@ const struct dot_key support_keys [] =
     {HKEY_VOLDOWN,  0,      K_SHORT,      1, 0, pbox_app_key_set_volume_down},/*VOL_DOWN*/
     {HKEY_MODE,     0,      K_SHORT,      1, 0, pbox_app_key_switch_input_source},
     {HKEY_MIC1MUTE, 0,      K_SHORT,      1, 0, pbox_app_key_switch_vocal_sperate},
-    {HKEY_GPIO_KEY1, 0,     K_SHORT,      1, 0, pbox_app_key_set_echo_3a},
-    {HKEY_GPIO_KEY2, 0,     K_SHORT,      1, 0, pbox_app_key_set_mic},/*MIC_MUTE*/
+    {HKEY_GPIO_BOOST, 0,    K_SHORT,      1, 0, pbox_app_key_set_echo_3a},
+    {HKEY_GPIO_LIGHTS, 0,   K_SHORT,      1, 0, pbox_app_key_set_mic},/*MIC_MUTE*/
     {HKEY_ROTARY_POS, 0,    K_SHORT,      1, 0, pbox_app_key_set_positive},
     {HKEY_ROTARY_NEG, 0,    K_SHORT,      1, 0, pbox_app_key_set_negative},
+
 
     /*长按> 3s */
     {HKEY_PLAY,     0,      K_LONG,       1, 0, enter_long_playpause_mode},

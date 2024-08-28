@@ -29,9 +29,11 @@ static const key_pair_t KEY_TABLE[] = {
     /*kernel    user*/
     {373,       HKEY_MODE}, //KEY_MODE
     {207,       HKEY_PLAY}, //KEY_PLAY
+    {209,       HKEY_GPIO_BOOST},
     {115,       HKEY_VOLUP}, //KEY_VOLUMEUP
     {114,       HKEY_VOLDOWN}, //HKEY_VOLDOWN
     {248,       HKEY_MIC1MUTE}, //KEY_MICMUTE
+    {0x21e,     HKEY_GPIO_LIGHTS},
 };
 
 int hal_key_convert_kernel_to_upper(uint32_t value) {
