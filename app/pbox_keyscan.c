@@ -329,7 +329,7 @@ int find_multi_event_dev(int event_type, int *fds, int *types) {
     return count;
 }
 
-void *pbox_KeyEvent_send(void * arg) {
+void *pbox_KeyEvent_server(void * arg) {
     int i;
     bool sara_init = false;
     int tmp, new;
@@ -643,9 +643,9 @@ int pbox_create_KeyScanTask(void)
         return err;
     }
 
-    err = (key_process_task = os_task_create("pbox_keysend", &pbox_KeyEvent_send, 0, NULL))? 0:-1;
+    err = (key_process_task = os_task_create("pbox_keysend", &pbox_KeyEvent_server, 0, NULL))? 0:-1;
     if (err != 0) {
-        ALOGE("cant creat thread pbox_KeyEvent_send");
+        ALOGE("cant creat thread pbox_KeyEvent_server");
     }
     return err;
 }
