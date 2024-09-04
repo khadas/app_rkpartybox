@@ -10,8 +10,6 @@ if [ ! -x "$ACODEC_FILE_PATH" ]; then
 	fi
 fi
 
-amixer -c 0 cset numid=12 3
-amixer -c 0 cset numid=13 3
 amixer -c 0 cset numid=34 12
 amixer -c 0 cset numid=40 1
 amixer -c 0 cset numid=41 1

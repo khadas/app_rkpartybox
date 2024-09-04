@@ -193,6 +193,10 @@ void pbox_app_rockit_set_music_volume(input_source_t source, float volume) {
         .source = source,
     };
 
+    if(volume == MIN_MAIN_VOLUME) {
+        volume = MIN_MAIN_VOLUME_MUTE;
+    }
+
     msg.volume = volume;
     ALOGD("%s music vol:%f\n", __func__, msg.volume);
     unix_socket_rockit_send(&msg, sizeof(pbox_rockit_msg_t));
