@@ -205,6 +205,5 @@ install(FILES bins/vertical_placement.pcm DESTINATION /etc/pbox)
 
 install(FILES bins/pbox-factory.ini DESTINATION /etc/pbox)
 install(PROGRAMS bins/S40-rkpartybox DESTINATION /etc/init.d)
-install(PROGRAMS bins/partybox_play.sh DESTINATION bin)
 
 add_subdirectory("test")

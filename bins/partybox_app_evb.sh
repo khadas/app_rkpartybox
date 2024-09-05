@@ -159,6 +159,15 @@ export recorder_reverb_bypass=0
 export recorder_rkstudio_bypass=1
 export player_rkstudio_bypass=0
 export player_gender_bypass=0
+
+amixer -c 0 cset numid=34 12
+amixer -c 0 cset numid=40 1
+amixer -c 0 cset numid=41 1
+amixer -c 0 cset numid=44 3
+amixer -c 0 cset numid=45 3
+amixer -c 0 cset numid=46 30
+amixer -c 0 cset numid=47 30
+
 ulimit -c unlimited
 echo "/tmp/core-%p-%e" > /proc/sys/kernel/core_pattern
 rkpartybox
