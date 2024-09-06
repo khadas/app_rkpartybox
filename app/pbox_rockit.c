@@ -1502,6 +1502,7 @@ void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
     param.type = RC_PB_PARAM_TYPE_RKSTUDIO;
     param.rkstudio.bypass = false;
     param.rkstudio.data = NULL;
+    static bool powered_eq_mode = false;
 
     ALOGW("%s: %d\n", __func__, mode);
     switch(mode) {
@@ -1552,7 +1553,10 @@ void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
         } break;
     }
     rc_pb_player_set_param(partyboxCtx, dest, &param);
-    audio_prompt_send(dest_audio, 1);
+
+    if(powered_eq_mode)
+        audio_prompt_send(dest_audio, 1);
+    powered_eq_mode = true;
 }
 
 

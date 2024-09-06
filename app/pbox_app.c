@@ -724,6 +724,7 @@ void pbox_app_music_init(void) {
     //pbox_app_music_set_accomp_music_level(pboxUIdata->accomLevel, DISP_All);
     //pbox_app_music_set_human_music_level(pboxUIdata->humanLevel, DISP_All);
     pbox_app_music_original_singer_open(!(pboxUIdata->vocalSplit), DISP_All);
+    pbox_app_music_set_eq_mode(pboxUIdata->eqmode, DISP_All);
     #if ENABLE_EXT_BT_MCU
         pbox_app_music_set_placement(pboxUIdata->placement, DISP_All);
         pbox_app_music_set_stereo_mode(pboxUIdata->stereo, DISP_All);

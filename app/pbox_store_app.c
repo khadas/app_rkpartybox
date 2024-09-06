@@ -137,7 +137,7 @@ int pbox_app_ui_load(void) {
     pboxUIdata->placement = (placement_t)rk_param_get_int("ui:placement", PLACE_VERT);
     pboxUIdata->stereo = (stereo_mode_t)rk_param_get_int("ui:stereo", MODE_STEREO);
     pboxUIdata->outdoor = (inout_door_t)rk_param_get_int("ui:outdoor", OUTDOOR);
-    pboxUIdata->eqmode = (equalizer_t)rk_param_get_int("ui:eqmode", EQ_POP);
+    pboxUIdata->eqmode = (equalizer_t)rk_param_get_int("ui:eqmode", EQ_OFF);
 
     for(int i = 0; i < hal_get_mic_guitar_num(); i++) {
         char param_name[20]; // Make sure this is large enough to hold the full parameter name
