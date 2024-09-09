@@ -43,14 +43,6 @@ extern "C" {
 #endif
 #endif
 
-#ifndef DEFAULT_MIC_3A
-#define DEFAULT_MIC_3A      true
-#endif
-
-#ifndef MIC_NUM
-#define MIC_NUM             1
-#endif
-
 #ifndef MAX_MAIN_VOLUME
 #define MAX_MAIN_VOLUME   0
 #endif
