@@ -9,7 +9,7 @@ The music player demo shows what kind of modern, smartphone-like user interfaces
 ## Run the demo
 - In `lv_conf.h` or equivalent places set `LV_USE_DEMO_MUSIC 1`
 - With `LV_DEMO_MUSIC_AUTO_PLAY` enabled a ~60 sec demo will be played.
-- After `lv_init()` and initializing the drivers call `lv_demo_music()`
+- After `lv_init()` and initializing the drivers call `lv_demo_music_create()`
 
 ## How the spectrum animation works
 - `assets/spectrum.py` creates an array of spectrum values from a music. 4 band are created with 33 samples/sec: bass, bass-mid, mid, mid-treble.

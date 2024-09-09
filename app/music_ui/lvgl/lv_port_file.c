@@ -102,10 +102,9 @@ static lv_fs_res_t fs_tell(struct _lv_fs_drv_t *drv, void *file_p, uint32_t *pos
     return res;
 }
 
+static lv_fs_drv_t fs_drv = {0};
 void lv_port_fs_init(void)
 {
-    static lv_fs_drv_t fs_drv = {0};
-
     lv_fs_drv_init(&fs_drv);
 
     /*Set up fields...*/
@@ -118,5 +117,10 @@ void lv_port_fs_init(void)
     fs_drv.tell_cb = fs_tell;
 
     lv_fs_drv_register(&fs_drv);
+}
+
+void lv_port_fs_deinit(void)
+{
+    lv_fs_drv_unregister(&fs_drv);
 }
 #endif

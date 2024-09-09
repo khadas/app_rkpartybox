@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 void lv_port_indev_init(int rot);
+void lv_port_indev_deinit(int rot);
 lv_group_t *lv_port_indev_group_create(void);
 void lv_port_indev_group_destroy(lv_group_t *group);
 

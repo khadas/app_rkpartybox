@@ -55,7 +55,7 @@ typedef enum {
     UI_WIDGET_EQ_INFO,
 }ui_widget_t;
 
-void lv_demo_music(void);
+void lv_demo_music_create(void);
 void lv_demo_music_destroy(void);
 int _lv_demo_music_get_track_num();
 int _lv_demo_music_get_track_id();

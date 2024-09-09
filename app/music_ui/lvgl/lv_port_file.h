@@ -4,5 +4,5 @@
 #include "lvgl.h"
 
 void lv_port_fs_init(void);
-
+void lv_port_fs_deinit(void);
 #endif

@@ -55,6 +55,7 @@ extern "C" {
  * Initialize the evdev
  */
 void evdev_init(int rot);
+void evdev_deinit(int rot);
 /**
  * reconfigure the device file for evdev
  * @param dev_name set the evdev device filename

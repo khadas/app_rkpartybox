@@ -128,3 +128,11 @@ void lv_port_indev_init(int rot)
     lv_port_indev_group_create();
 #endif
 }
+
+void lv_port_indev_deinit(int rot) {
+#if USE_KEY
+    #warning "deinit not implemented.....todo"
+#endif
+    lv_indev_delete(indev_touchpad);
+    evdev_deinit(rot);
+}

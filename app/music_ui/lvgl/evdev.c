@@ -150,6 +150,14 @@ void evdev_init(int rot)
     evdev_key_val = 0;
     evdev_button = LV_INDEV_STATE_REL;
 }
+
+void evdev_deinit(int rot) {
+    if (evdev_fd != -1) {
+        close(evdev_fd);
+        evdev_fd = -1;
+    }
+}
+
 /**
  * reconfigure the device file for evdev
  * @param dev_name set the evdev device filename

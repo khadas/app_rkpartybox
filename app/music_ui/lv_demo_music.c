@@ -70,7 +70,7 @@ lv_ft_info_t ttf_main_l;
  **********************/
 static void font_init(void)
 {
-    lv_freetype_init(64, 1, 0);
+    //lv_freetype_init(64, 1, 0);
 
     ttf_main_s.name = MAIN_FONT;
     ttf_main_s.weight = 26;
@@ -88,6 +88,22 @@ static void font_init(void)
     lv_ft_font_init(&ttf_main_l);
 }
 
+static void font_deinit(void)
+{
+    lv_ft_font_destroy(ttf_main_s.font);
+    lv_ft_font_destroy(ttf_main_m.font);
+    lv_ft_font_destroy(ttf_main_l.font);
+   // lv_freetype_destroy();
+}
+
+static void lvgl_deinit(void)
+{
+    lv_port_indev_deinit(0);
+    lv_port_fs_deinit();
+    hal_drm_deinit();
+    lv_deinit();
+}
+
 static void lvgl_init(void) {
     lv_init();
     hal_drm_init(0, 0, LV_DISP_ROT_NONE);
@@ -95,7 +111,7 @@ static void lvgl_init(void) {
     lv_port_indev_init(0);
 }
 
-void lv_demo_music(void)
+void lv_demo_music_create(void)
 {
     lvgl_init();
     font_init();
@@ -119,9 +135,8 @@ void lv_demo_music_destroy(void) {
         lv_obj_del(ctrl);
     if (list != NULL)
         lv_obj_del(list);
-    lv_ft_font_destroy(ttf_main_s.font);
-    lv_ft_font_destroy(ttf_main_m.font);
-    lv_ft_font_destroy(ttf_main_l.font);
+    font_deinit();
+    lvgl_deinit();
 }
 
 int _lv_demo_music_get_track_num() {

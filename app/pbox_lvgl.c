@@ -210,7 +210,7 @@ void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level) {
 void pbox_lvgl_init(void) {
     //lvgl init. it leed to display the lvgl UI.
 #if LV_USE_DEMO_MUSIC
-    lv_demo_music();
+    lv_demo_music_create();
 #endif
 }
 
