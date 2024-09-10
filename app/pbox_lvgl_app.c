@@ -182,6 +182,16 @@ void pbox_app_lcd_displayRevertbMode(pbox_revertb_t mode) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
+void pbox_app_lcd_displayEqMode(equalizer_t eq) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_EQ_MODE,
+    };
+    msg.eqMode = eq;
+
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
 void pbox_app_lcd_dispplayReflash(void) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,
@@ -316,6 +326,11 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
             pbox_revertb_t revertb = msg->reverbMode;
             if(revertb == pboxUIdata->micData[0].reverbMode) break;
             pbox_app_music_set_recoder_revert(0, revertb, DISP_LED|DISP_FS);
+        } break;
+        case PBOX_LCD_EQ_MODE_EVT: {
+            equalizer_t mode = msg->eqMode;
+            if(mode == pboxUIdata->eqmode) break;
+            pbox_app_music_set_eq_mode(mode, DISP_LED);
         } break;
         default: break;
     } //end switch (msg->msgId)

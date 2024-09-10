@@ -186,6 +186,16 @@ void lcd_pbox_notifyReverbMode(pbox_revertb_t reverbMode) {
     unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
 }
 
+void lcd_pbox_notifyEqMode(equalizer_t mode) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_EVT,
+        .msgId = PBOX_LCD_EQ_MODE_EVT,
+    };
+    msg.eqMode = mode;
+
+    unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
+}
+
 // Notify function for the reserv music level event
 void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level) {
     pbox_lcd_msg_t msg = {
@@ -344,6 +354,13 @@ void handleLcdReverbModeCmd(const pbox_lcd_msg_t* msg) {
     _lv_demo_music_update_ui_info(UI_WIDGET_REVERTB_MODE, msg);
 }
 
+void handleLcdEqModeCmd(const pbox_lcd_msg_t* msg) {
+    equalizer_t mode = msg->eqMode;
+    ALOGD("EQ Mode Command: %d\n", mode);
+
+    _lv_demo_music_update_ui_info(UI_WIDGET_EQ_INFO, msg);
+}
+
 // Function to handle the loop mode command
 void handleLcdLoopModeCmd(const pbox_lcd_msg_t* msg) {
     bool loop = msg->loop;
@@ -403,6 +420,8 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH, handleLcdMusicSeparateSwitchCmd },
     { PBOX_LCD_DISP_ECHO_3A_SWITCH, handleLcdEcho3ASwitchCmd },
     { PBOX_LCD_DISP_REVERT_MODE, handleLcdReverbModeCmd },
+    { PBOX_LCD_DISP_EQ_MODE, handleLcdEqModeCmd },
+
     { PBOX_LCD_DISP_LOOP_MODE, handleLcdLoopModeCmd },
     { PBOX_LCD_DISP_ENERGY_INFO, handleLcdEnergyInfoCmd },
     { PBOX_LCD_DISP_RESERV_LEVEL, handleLcdReservLevelCmd },

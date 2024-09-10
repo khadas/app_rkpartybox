@@ -22,6 +22,7 @@ void pbox_app_lcd_dispplayEnergy(energy_info_t energy);
 void pbox_app_lcd_displayEcho3A(bool on);
 void pbox_app_lcd_displayRevertbMode(pbox_revertb_t mode);
 void pbox_app_lcd_dispplayReflash(void);
+void pbox_app_lcd_displayEqMode(equalizer_t eq);
 
 void pbox_app_lcd_dispplaybtState(btsink_state_t state);
 
@@ -35,7 +36,6 @@ void maintask_lvgl_fd_process(int fd);
 #define pbox_app_lcd_displayMusicStereoMode(...)    ((void) 0)
 #define pbox_app_lcd_displayMusicPlaceMode(...)     ((void) 0)
 #define pbox_app_lcd_displayMusicOutdoorMode(...)   ((void) 0)
-#define pbox_app_lcd_displayEqMode(...)             ((void) 0)
 #define pbox_app_lcd_displayMicMux(...)             ((void) 0)
 #define pbox_app_lcd_displayMicBass(...)            ((void) 0)
 #define pbox_app_lcd_displayMicTreble(...)          ((void) 0)

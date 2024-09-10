@@ -71,6 +71,7 @@ static lv_obj_t * play_obj;
 static lv_obj_t * voice_obj;
 static lv_obj_t * vocal_toast;
 static lv_obj_t * reverb_dd_obj;
+static lv_obj_t * eq_mode_obj;
 static lv_timer_t  * vocal_toast_timer;
 
 //karaoke control
@@ -489,6 +490,11 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             printf("%s revertb_mode:%d\n", __func__, mode);
             lv_dropdown_set_selected(reverb_dd_obj, mode);
         } break;
+        case UI_WIDGET_EQ_INFO: {
+            equalizer_t mode = msg->eqMode;
+            printf("%s eq_mode:%d\n", __func__, mode);
+            lv_dropdown_set_selected(eq_mode_obj, mode);
+        } break;
         default:
             break;
     };
@@ -654,6 +660,39 @@ static void reverb_event_handler(lv_event_t *e) {
 
     printf("'%s' is selected\n", buf);
     lcd_pbox_notifyReverbMode(mode);
+}
+
+static void eqmode_event_handler(lv_event_t *e) {
+    lv_obj_t * dropdown = lv_event_get_target(e);
+    equalizer_t mode;
+    char buf[64];
+    lv_dropdown_get_selected_str(dropdown, buf, sizeof(buf));
+
+    if (!strcmp(buf, "OFF"))
+        mode = EQ_OFF;
+    else if (!strcmp(buf, "ROCK"))
+        mode = EQ_ROCK;
+    else if (!strcmp(buf, "POP"))
+        mode = EQ_POP;
+    else if (!strcmp(buf, "JAZZ"))
+        mode = EQ_JAZZ;
+    else if (!strcmp(buf, "ELEC"))
+        mode = EQ_ELEC;
+    else if (!strcmp(buf, "DANCE"))
+        mode = EQ_DANCE;
+    else if (!strcmp(buf, "CONTR"))
+        mode = EQ_CONTR;
+    else if (!strcmp(buf, "CLASSIC"))
+        mode = EQ_CLASS;
+    else if (!strcmp(buf, "BLUES"))
+        mode = EQ_BLUES;
+    else if (!strcmp(buf, "BALL"))
+        mode = EQ_BALL;
+    else
+         mode = EQ_OFF;
+
+    printf("'%s' is selected\n", buf);
+    lcd_pbox_notifyEqMode(mode);
 }
 
 void echol_3a_seperate_event_handler(lv_event_t * e) {
@@ -825,6 +864,31 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_add_event_cb(reverb_dd_obj, reverb_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_width(reverb_dd_obj, 20*8+5);
 
+    lv_obj_t * eqmode_label = lv_label_create(cont);
+    lv_label_set_text(eqmode_label, "EQ");
+    lv_obj_set_style_text_color(eqmode_label, lv_color_hex(0x1F2DA8), 0);
+    lv_obj_set_style_text_font(eqmode_label, ttf_main_s.font, 0);
+    lv_obj_set_grid_cell(eqmode_label, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_START, 8, 1);
+    eq_mode_obj = lv_dropdown_create(cont);
+    lv_obj_set_grid_cell(eq_mode_obj, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_set_style_text_font(eq_mode_obj, font_small, 0);
+    lv_dropdown_set_options_static(eq_mode_obj, "OFF\nROCK\nPOP\nJAZZ\nELEC\nDANCE\nCONTR\nCLASSIC\nBLUES\nBALL");
+    lv_dropdown_set_dir(eq_mode_obj, LV_DIR_BOTTOM);
+    lv_dropdown_set_selected(eq_mode_obj, EQ_OFF);
+    lv_obj_add_event_cb(eq_mode_obj, eqmode_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_set_width(eq_mode_obj, 20*8+5);
+
+    //原唱与伴奏切换
+    lv_obj_t * origin_label = lv_label_create(cont);
+    lv_label_set_text(origin_label, "SPLIT");
+    lv_obj_set_style_text_color(origin_label, lv_color_hex(0x1F2DA8), 0);
+    lv_obj_set_style_text_font(origin_label, ttf_main_s.font, 0);
+    lv_obj_set_grid_cell(origin_label, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_START, 8, 1);
+    origin_switch = lv_switch_create(cont);
+    lv_obj_set_grid_cell(origin_switch, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_add_event_cb(origin_switch, vocal_seperate_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
+
     lv_obj_t * echo_3a_label = lv_label_create(cont);
     lv_label_set_text(echo_3a_label, "3A");
     lv_obj_set_style_text_color(echo_3a_label, lv_color_hex(0x1F2DA8), 0);
@@ -834,17 +898,6 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_set_grid_cell(echo_3a_switch, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 9, 1);
     lv_obj_add_event_cb(echo_3a_switch, echol_3a_seperate_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_state(echo_3a_switch, LV_STATE_CHECKED);
-
-    //原唱与伴奏切换
-    lv_obj_t * origin_label = lv_label_create(cont);
-    lv_label_set_text(origin_label, "SPLIT");
-    lv_obj_set_style_text_color(origin_label, lv_color_hex(0x1F2DA8), 0);
-    lv_obj_set_style_text_font(origin_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(origin_label, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 8, 1);
-    origin_switch = lv_switch_create(cont);
-    lv_obj_set_grid_cell(origin_switch, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 9, 1);
-    lv_obj_add_event_cb(origin_switch, vocal_seperate_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
-    lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
 
     //volume control
     volume_label = lv_label_create(cont);

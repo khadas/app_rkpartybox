@@ -26,6 +26,7 @@ typedef enum {
     PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH,
     PBOX_LCD_DISP_ECHO_3A_SWITCH,
     PBOX_LCD_DISP_REVERT_MODE,
+    PBOX_LCD_DISP_EQ_MODE,
     PBOX_LCD_DISP_LOOP_MODE,
     PBOX_LCD_DISP_ENERGY_INFO,
     PBOX_LCD_DISP_RESERV_LEVEL,
@@ -46,6 +47,7 @@ typedef enum {
     PBOX_LCD_SEPERATE_SWITCH_EVT,
     PBOX_LCD_ECHO_3A_EVT,
     PBOX_LCD_REVERT_MODE_EVT,
+    PBOX_LCD_EQ_MODE_EVT,
     PBOX_LCD_RESERV_MUSIC_LEVEL_EVT,
 } pbox_lcd_opcode_t;
 
@@ -68,6 +70,7 @@ typedef struct {
         uint32_t        reserv_music_level;
         gender_t        gender;
         pbox_revertb_t      reverbMode;
+        equalizer_t         eqMode;
         pbox_vocal_t        vocalSeparate;
         bool                echo3a;
         bool                enable;
@@ -99,6 +102,7 @@ void lcd_pbox_notifyHumanMusicLevel(uint32_t human_music_level);
 void lcd_pbox_notifySeparateSwitch(bool enable);
 void lcd_pbox_notifyEcho3A(bool echo3a);
 void lcd_pbox_notifyReverbMode(pbox_revertb_t reverbMode);
+void lcd_pbox_notifyEqMode(equalizer_t mode);
 void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level);
 #ifdef __cplusplus
 }
