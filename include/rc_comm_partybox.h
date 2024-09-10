@@ -220,6 +220,7 @@ struct rc_pb_player_attr {
     rc_u32      valid_start_bit;
     rc_u32      pool_size;
     rc_u32      pool_cnt;
+    rc_u32      mute_ms;
     rc_bool     basic;
     struct rc_pb_param_level_detect detect;
 };
@@ -229,6 +230,7 @@ struct rc_pb_gt_attr_ind {
     rc_u32  sample_rate;
     rc_u32  channels;
     rc_u32  bit_width;
+    rc_u32  mute_ms;
 };
 
 struct rc_pb_gt_attr_combo {
@@ -248,6 +250,7 @@ struct rc_pb_recorder_ref_ind_attr {
     rc_u32  sample_rate;
     rc_u32  channels;
     rc_u32  bit_width;
+    rc_u32  mute_ms;
 };
 
 struct rc_pb_recorder_attr {
@@ -259,6 +262,7 @@ struct rc_pb_recorder_attr {
     rc_u32  ref_layout;
     rc_u32  rec_layout;
     rc_u32  pool_cnt;  /* RW; 0 means no need get frame, can reduce cpu usage */
+    rc_u32  mute_ms;
     struct rc_pb_param_level_detect detect;
     enum rc_pb_ref_mode ref_mode;
     struct rc_pb_recorder_gt_attr *guitar;
@@ -272,6 +276,7 @@ struct rc_pb_scene_detect_attr {
     rc_u32  bit_width;
     rc_u32  ref_layout;
     rc_u32  rec_layout;
+    rc_u32  mute_ms;
     enum rc_pb_ref_mode ref_mode;
     enum rc_pb_scene_detect_mode scene_mode;
 };

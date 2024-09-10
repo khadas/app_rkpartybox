@@ -396,6 +396,7 @@ int rk_demo_music_create(void) {
         guitar_attr.independent.sample_rate = hal_get_kalaok_rec_sample_rate();
         guitar_attr.independent.channels = 1;
         guitar_attr.independent.bit_width = 16;
+        guitar_attr.independent.mute_ms = 2000;
         recorder_attr.guitar=&guitar_attr;
     }
 
@@ -404,6 +405,7 @@ int rk_demo_music_create(void) {
     // ref_ind_attr.sample_rate = 48000;
     // ref_ind_attr.channels    = 4;
     // ref_ind_attr.bit_width   = 16;
+    // ref_ind_attr.mute_ms     = 0;
     recorder_attr.ref         = NULL;
 
     recorder_attr.sample_rate = hal_get_kalaok_rec_sample_rate();
@@ -415,6 +417,7 @@ int rk_demo_music_create(void) {
     recorder_attr.rec_layout = hal_get_kalaok_mic_rec_layout();
     recorder_attr.chn_layout  = hal_get_kalaok_mic_chn_layout();
     recorder_attr.ref_mode = (enum rc_pb_ref_mode)hal_get_kalaok_ref_hard_mode();
+    recorder_attr.mute_ms     = 2000;
     recorder_attr.detect      = detect;
     if (rc_pb_create(&partyboxCtx, &attr) != 0) {
         ALOGE("rc_pb_create failed, err!!!\n");
@@ -977,6 +980,7 @@ static void pbox_rockit_start_inout_detect(pbox_rockit_msg_t *msg) {
     scene_attr.channels    = hal_get_scene_mic_rec_channel();
     scene_attr.ref_layout  = hal_get_scene_mic_ref_layout();
     scene_attr.rec_layout  = hal_get_scene_mic_rec_layout();
+    scene_attr.mute_ms     = 0;
     scene_attr.ref_mode    = (enum rc_pb_ref_mode)hal_get_scene_ref_hard_mode();
     scene_attr.scene_mode   = RC_PB_SCENE_MODE_REVERB;
 
@@ -999,6 +1003,7 @@ static void pbox_rockit_start_doa_detect(pbox_rockit_msg_t *msg) {
         doa_scene_attr.channels    = hal_get_scene_mic_rec_channel();
         doa_scene_attr.ref_layout  = hal_get_scene_mic_ref_layout();
         doa_scene_attr.rec_layout  = hal_get_scene_mic_rec_layout();
+        doa_scene_attr.mute_ms     = 0;
         doa_scene_attr.ref_mode    = (enum rc_pb_ref_mode)hal_get_scene_ref_hard_mode();
         doa_scene_attr.scene_mode   = RC_PB_SCENE_MODE_DOA;
 
