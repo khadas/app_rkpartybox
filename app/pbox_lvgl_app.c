@@ -95,6 +95,16 @@ void pbox_app_lcd_displayMusicVolumeLevel(uint32_t volume) {
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
+void pbox_app_lcd_displayMainVolumeLevel(uint32_t volume) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_MAIN_VOL_LEVEL,
+    };
+    msg.mVolume = volume;
+
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
+
 void pbox_app_lcd_displayMicVolumeLevel(uint32_t micVolume) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_CMD,

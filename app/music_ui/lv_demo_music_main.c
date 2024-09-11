@@ -90,8 +90,9 @@ lv_obj_t * vocal_text = NULL;
 lv_obj_t * vocal_label = NULL;
 lv_obj_t * accomp_text = NULL;
 lv_obj_t * accomp_label = NULL;
-lv_obj_t * guitar_text = NULL;
-lv_obj_t * guitar_label = NULL;
+lv_obj_t * mainVol_text = NULL;
+lv_obj_t * mainVol_label = NULL;
+lv_obj_t * mainVol_slider = NULL;
 lv_obj_t * volume_text = NULL;
 lv_obj_t * volume_label = NULL;
 lv_obj_t * volume_slider = NULL;
@@ -99,7 +100,6 @@ lv_obj_t * micVol_text = NULL;
 lv_obj_t * micVol_label = NULL;
 lv_obj_t * mic_volume_slider = NULL;
 lv_obj_t * accomp_slider = NULL;
-lv_obj_t * guitar_slider = NULL;
 lv_obj_t * vocal_slider = NULL;
 lv_obj_t *origin_switch = NULL;
 lv_obj_t *echo_3a_switch = NULL;
@@ -336,6 +336,13 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             lv_label_set_text(volume_label, buf);
             lv_slider_set_value(volume_slider, mVolume, LV_ANIM_OFF);
         } break;
+        case UI_WIDGET_MAIN_VOLUME: {
+            uint32_t mVolume = msg->mVolume;
+            char buf[16];
+            lv_snprintf(buf, sizeof(buf), "%3d", mVolume);
+            lv_label_set_text(mainVol_label, buf);
+            lv_slider_set_value(mainVol_slider, mVolume, LV_ANIM_OFF);
+        } break;
         case UI_WIDGET_MIC_VOLUME: {
             uint32_t micVolume = msg->micVolume;
             char buf[16];
@@ -397,8 +404,8 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_add_state(origin_switch, LV_STATE_CHECKED);
                 lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
                 lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
-                if (guitar_slider != NULL)
-                    lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
+                if (mainVol_slider != NULL)
+                    lv_obj_clear_state(mainVol_slider, LV_STATE_DISABLED);
                 if (getBtSinkState() == APP_BT_CONNECTED)
                     create_toast(main_cont, TOAST_TEXT, 5000);
             }
@@ -406,8 +413,8 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
                 lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
                 lv_obj_add_state(vocal_slider, LV_STATE_DISABLED);
-                if (guitar_slider != NULL)
-                    lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
+                if (mainVol_slider != NULL)
+                    lv_obj_add_state(mainVol_slider, LV_STATE_DISABLED);
             }
         } break;
         case UI_WIDGET_SPECTRUM_CHART: {
@@ -711,7 +718,7 @@ void echol_3a_seperate_event_handler(lv_event_t * e) {
 
 }
 
-static void guitar_slider_event_cb(lv_event_t *e) {
+static void mainVolume_slider_event_cb(lv_event_t *e) {
     lv_obj_t * slider = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
     char buf[16];
@@ -719,8 +726,8 @@ static void guitar_slider_event_cb(lv_event_t *e) {
 
     if (code == LV_EVENT_RELEASED) {
         printf("last slider value%s\n", buf);
-        if (guitar_label != NULL) {
-            lv_label_set_text(guitar_label, buf);
+        if (mainVol_label != NULL) {
+            lv_label_set_text(mainVol_label, buf);
             mGuitarLevel = (int)lv_slider_get_value(slider);
             lcd_pbox_notifyReservMusicLevel(mGuitarLevel);
         }
@@ -738,16 +745,16 @@ static void vocal_seperate_event_handler(lv_event_t * e) {
     if(mVocalSplit) {
         lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
         lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
-        if (guitar_slider != NULL)
-            lv_obj_clear_state(guitar_slider, LV_STATE_DISABLED);
+        if (mainVol_slider != NULL)
+            lv_obj_clear_state(mainVol_slider, LV_STATE_DISABLED);
 	if (getBtSinkState() == APP_BT_CONNECTED)
 		create_toast(main_cont, TOAST_TEXT, 5000);
     }
     else {
         lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
         lv_obj_add_state(vocal_slider, LV_STATE_DISABLED);
-        if (guitar_slider != NULL)
-            lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
+        if (mainVol_slider != NULL)
+            lv_obj_add_state(mainVol_slider, LV_STATE_DISABLED);
     }
 
     lcd_pbox_notifySeparateSwitch(mVocalSplit);
@@ -832,10 +839,7 @@ static lv_obj_t * create_chart_box(lv_obj_t * parent)
 
 static lv_obj_t * create_misc_box(lv_obj_t * parent)
 {
-    char *guitar_mode = getenv("GUITAR_MODE");
     int mode = 0;
-    if (guitar_mode)
-        mode = atoi(guitar_mode);
     /* Create the misc control box */
     lv_obj_t * cont = lv_obj_create(parent);
     lv_obj_remove_style_all(cont);
@@ -913,8 +917,27 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_add_state(echo_3a_switch, LV_STATE_CHECKED);
 
     //volume control
+    mainVol_text = lv_label_create(cont);
+    lv_label_set_text(mainVol_text, " MainVol:");
+    //lv_obj_add_style(voice_label, &style_text_muted, 0);
+    lv_obj_set_style_text_font(mainVol_text, ttf_main_s.font, 0);
+    lv_obj_set_grid_cell(mainVol_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
+
+    mainVol_label = lv_label_create(cont);
+    lv_label_set_text(mainVol_label, "100");
+    //lv_obj_add_style(voice_label, &style_text_muted, 0);
+    //lv_obj_set_style_text_font(mainVol_label, ttf_main_s.font, 0);
+    lv_obj_set_grid_cell(mainVol_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 0, 1);
+    mainVol_slider = lv_slider_create(cont);
+    lv_obj_set_width(mainVol_slider, LV_PCT(50));
+    lv_obj_set_grid_cell(mainVol_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 0, 1);
+    lv_obj_add_event_cb(mainVol_slider, mainVolume_slider_event_cb, LV_EVENT_RELEASED, NULL);
+    lv_slider_set_mode(mainVol_slider, LV_SLIDER_MODE_NORMAL);
+    lv_slider_set_range(mainVol_slider, 0, 100);
+    lv_slider_set_value(mainVol_slider, 100, LV_ANIM_OFF);
+
     volume_text = lv_label_create(cont);
-    lv_label_set_text(volume_text, " Volume:");
+    lv_label_set_text(volume_text, " MusicVol:");
     lv_obj_set_style_text_font(volume_text, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(volume_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 2, 1);
 
@@ -954,35 +977,6 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_add_style(mic_volume_slider, &mic_style_disabled, LV_PART_MAIN | LV_STATE_DISABLED);
     lv_obj_add_style(mic_volume_slider, &mic_style_disabled, LV_PART_KNOB | LV_STATE_DISABLED);
     lv_obj_clear_state(mic_volume_slider, LV_STATE_DISABLED);
-
-    //mGuitarLevel = 100;
-    if (mode == 1) {
-        guitar_text = lv_label_create(cont);
-        lv_label_set_text(guitar_text, "Guitar:");
-        //lv_obj_add_style(voice_label, &style_text_muted, 0);
-        lv_obj_set_style_text_font(guitar_text, ttf_main_s.font, 0);
-        lv_obj_set_grid_cell(guitar_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 4, 1);
-
-        guitar_label = lv_label_create(cont);
-        lv_label_set_text(guitar_label, "100");
-        //lv_obj_add_style(voice_label, &style_text_muted, 0);
-        //lv_obj_set_style_text_font(guitar_label, ttf_main_s.font, 0);
-        lv_obj_set_grid_cell(guitar_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 4, 1);
-        guitar_slider = lv_slider_create(cont);
-        lv_obj_set_width(guitar_slider, LV_PCT(50));
-        lv_obj_set_grid_cell(guitar_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 4, 1);
-        lv_obj_add_event_cb(guitar_slider, guitar_slider_event_cb, LV_EVENT_RELEASED, NULL);
-        lv_slider_set_mode(guitar_slider, LV_SLIDER_MODE_NORMAL);
-        lv_slider_set_range(guitar_slider, 0, 100);
-
-        lv_slider_set_value(guitar_slider, 100, LV_ANIM_OFF);
-        lv_style_init(&guitar_style_disabled);
-        lv_style_set_bg_color(&guitar_style_disabled, lv_color_hex(0xCCCCCC));
-        lv_obj_add_style(guitar_slider, &guitar_style_disabled, LV_PART_INDICATOR | LV_STATE_DISABLED);
-        lv_obj_add_style(guitar_slider, &guitar_style_disabled, LV_PART_MAIN | LV_STATE_DISABLED);
-        lv_obj_add_style(guitar_slider, &guitar_style_disabled, LV_PART_KNOB | LV_STATE_DISABLED);
-        lv_obj_add_state(guitar_slider, LV_STATE_DISABLED);
-    }
 
     //accompaniment and vocal control
     accomp_text = lv_label_create(cont);

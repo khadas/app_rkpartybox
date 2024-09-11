@@ -299,8 +299,14 @@ void handleLcdUacStateUpdateCmd(const pbox_lcd_msg_t *msg) {
 // Function to handle the main volume level command
 void handleLcdMusicVolLevelCmd(const pbox_lcd_msg_t* msg) {
     uint32_t volume = msg->mVolume;
-    ALOGD("Main Volume Level Command: Level - %u\n", volume);
+    ALOGD("Music Volume Level Command: Level - %u\n", volume);
     _lv_demo_music_update_ui_info(UI_WIDGET_MUSIC_VOLUME, msg);
+}
+
+void handleLcdMainVolLevelCmd(const pbox_lcd_msg_t* msg) {
+    uint32_t volume = msg->mVolume;
+    ALOGD("Main Volume Level Command: Level - %u\n", volume);
+    _lv_demo_music_update_ui_info(UI_WIDGET_MAIN_VOLUME, msg);
 }
 
 // Function to handle the mic volume level command
@@ -413,6 +419,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_BT_STATE, handleLcdBtStateUpdateCmd },
     { PBOX_LCD_DISP_UAC_STATE, handleLcdUacStateUpdateCmd},
     { PBOX_LCD_DISP_MUSIC_VOL_LEVEL, handleLcdMusicVolLevelCmd },
+    { PBOX_LCD_DISP_MAIN_VOL_LEVEL, handleLcdMainVolLevelCmd },
     { PBOX_LCD_DISP_MIC_VOL_LEVEL, handleLcdMicVolLevelCmd },
     { PBOX_LCD_DISP_MIC_MUTE, handleLcdMicmuteCmd },
     { PBOX_LCD_DISP_ACCOMP_MUSIC_LEVEL, handleLcdAccompMusicLevelCmd },

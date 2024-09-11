@@ -98,7 +98,8 @@ void pbox_multi_echoMainVolumeLevel(float mVolume, display_t policy)
     int32_t volume = TARGET2PERCENT(mVolume, MIN_MAIN_VOLUME, MAX_MAIN_VOLUME);
     volume = volume > 100 ? 100 : volume;
     volume = volume < 0 ? 0 : volume;
-
+    if (policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayMainVolumeLevel(volume);
     if (policy & BTMCU_DISP_MASK)
         pbox_app_btsoc_echo_main_volume(volume);
     if (policy & STORAGE_DISP_MASK)
