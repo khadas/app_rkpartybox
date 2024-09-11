@@ -353,6 +353,9 @@ void pbox_multi_echoInputSource(input_source_t inputSource, play_status_t status
 
 void pbox_multi_echoEcho3A(uint8_t index, bool enable, display_t policy)
 {
+    if (policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayEcho3A(enable);
+
     if (policy & BTMCU_DISP_MASK)
         pbox_app_btsoc_echo_music_echo3A(index, enable);
 }

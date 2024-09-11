@@ -839,7 +839,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     /* Create the misc control box */
     lv_obj_t * cont = lv_obj_create(parent);
     lv_obj_remove_style_all(cont);
-    lv_obj_set_height(cont, 320);//LV_SIZE_CONTENT);
+    lv_obj_set_height(cont, 360);//LV_SIZE_CONTENT);
 #if LV_DEMO_MUSIC_LARGE
     lv_obj_set_style_pad_bottom(cont, 17, 0);
 #else
@@ -850,25 +850,26 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
         // | vol     |  bar----|---------|--value--|
         // | reverb--|--select-|  split  |  on/off |
         // |   1st   |   3st   |   5st   |  7st    |
-        LV_GRID_FR(1), LV_GRID_CONTENT, LV_GRID_FR(2), LV_GRID_CONTENT, LV_GRID_FR(2), LV_GRID_CONTENT,
-        LV_GRID_FR(2), LV_GRID_CONTENT, LV_GRID_FR(1),
+        LV_GRID_FR(0), LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_CONTENT,
+        LV_GRID_FR(1), LV_GRID_CONTENT, LV_GRID_FR(1),
         LV_GRID_TEMPLATE_LAST
     };
 
-    static const lv_coord_t misc_grid_row[] = {LV_GRID_CONTENT, LV_GRID_FR(4), LV_GRID_CONTENT, LV_GRID_FR(4),LV_GRID_CONTENT,
-                                                                LV_GRID_FR(4), LV_GRID_CONTENT, LV_GRID_FR(4), LV_GRID_CONTENT,
-                                                                LV_GRID_CONTENT, LV_GRID_FR(0), LV_GRID_TEMPLATE_LAST};
+    static const lv_coord_t misc_grid_row[] = {
+        LV_GRID_CONTENT, LV_GRID_FR(4), LV_GRID_CONTENT, LV_GRID_FR(4), LV_GRID_CONTENT, LV_GRID_FR(4),
+        LV_GRID_CONTENT, LV_GRID_FR(4), LV_GRID_CONTENT, LV_GRID_FR(5), LV_GRID_CONTENT, LV_GRID_FR(2),
+        LV_GRID_CONTENT, LV_GRID_FR(0), LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(cont, misc_grid_col, misc_grid_row);
     lv_obj_set_style_grid_row_align(cont, LV_GRID_ALIGN_SPACE_BETWEEN, 0);
 
     //reverb control
     lv_obj_t * reverb_label = lv_label_create(cont);
-    lv_label_set_text(reverb_label, "REVERB:");
+    lv_label_set_text(reverb_label, " REVERB:");
     lv_obj_set_style_text_color(reverb_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(reverb_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(reverb_label, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_START, 8, 1);
+    lv_obj_set_grid_cell(reverb_label, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_START, 10, 1);
     reverb_dd_obj = lv_dropdown_create(cont);
-    lv_obj_set_grid_cell(reverb_dd_obj, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 8, 1);
+    lv_obj_set_grid_cell(reverb_dd_obj, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 10, 1);
     lv_obj_set_style_text_font(reverb_dd_obj, font_small, 0);
     lv_dropdown_set_options_static(reverb_dd_obj, "OFF\nSTUDIO\nKTV\nCONCERT\nECHO\nUSER");
     lv_dropdown_set_dir(reverb_dd_obj, LV_DIR_BOTTOM);
@@ -877,12 +878,12 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_set_width(reverb_dd_obj, 20*8+5);
 
     lv_obj_t * eqmode_label = lv_label_create(cont);
-    lv_label_set_text(eqmode_label, "EQ:");
+    lv_label_set_text(eqmode_label, " EQ:");
     lv_obj_set_style_text_color(eqmode_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(eqmode_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(eqmode_label, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_set_grid_cell(eqmode_label, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_START, 12, 1);
     eq_mode_obj = lv_dropdown_create(cont);
-    lv_obj_set_grid_cell(eq_mode_obj, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_set_grid_cell(eq_mode_obj, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_START, 12, 1);
     lv_obj_set_style_text_font(eq_mode_obj, font_small, 0);
     lv_dropdown_set_options_static(eq_mode_obj, "OFF\nROCK\nPOP\nJAZZ\nELEC\nDANCE\nCOUNTRY\nCLASSIC\nBLUES\nBALL");
     lv_dropdown_set_dir(eq_mode_obj, LV_DIR_BOTTOM);
@@ -895,9 +896,9 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_label_set_text(origin_label, "SPLIT:");
     lv_obj_set_style_text_color(origin_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(origin_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(origin_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 8, 1);
+    lv_obj_set_grid_cell(origin_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 10, 1);
     origin_switch = lv_switch_create(cont);
-    lv_obj_set_grid_cell(origin_switch, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 8, 1);
+    lv_obj_set_grid_cell(origin_switch, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 10, 1);
     lv_obj_add_event_cb(origin_switch, vocal_seperate_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
 
@@ -905,25 +906,25 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_label_set_text(echo_3a_label, "3A:");
     lv_obj_set_style_text_color(echo_3a_label, lv_color_hex(0x1F2DA8), 0);
     lv_obj_set_style_text_font(echo_3a_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(echo_3a_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_set_grid_cell(echo_3a_label, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_START, 12, 1);
     echo_3a_switch = lv_switch_create(cont);
-    lv_obj_set_grid_cell(echo_3a_switch, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 9, 1);
+    lv_obj_set_grid_cell(echo_3a_switch, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 12, 1);
     lv_obj_add_event_cb(echo_3a_switch, echol_3a_seperate_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_state(echo_3a_switch, LV_STATE_CHECKED);
 
     //volume control
     volume_text = lv_label_create(cont);
-    lv_label_set_text(volume_text, "Volume:");
+    lv_label_set_text(volume_text, " Volume:");
     lv_obj_set_style_text_font(volume_text, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(volume_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
+    lv_obj_set_grid_cell(volume_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 2, 1);
 
     volume_label = lv_label_create(cont);
-    lv_label_set_text(volume_label, " 50");
+    lv_label_set_text(volume_label, "50");
     //lv_obj_set_style_text_font(volume_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(volume_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 0, 1);
+    lv_obj_set_grid_cell(volume_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 2, 1);
     volume_slider = lv_slider_create(cont);
     lv_obj_set_width(volume_slider, LV_PCT(50));
-    lv_obj_set_grid_cell(volume_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 0, 1);
+    lv_obj_set_grid_cell(volume_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 2, 1);
     lv_obj_add_event_cb(volume_slider, master_volume_change_event_cb, LV_EVENT_RELEASED, NULL);
     lv_slider_set_mode(volume_slider, LV_SLIDER_MODE_NORMAL);
     lv_slider_set_range(volume_slider, 0, 100);
@@ -931,17 +932,17 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //mic volume control
     micVol_text = lv_label_create(cont);
-    lv_label_set_text(micVol_text, "Mic:");
+    lv_label_set_text(micVol_text, " Mic:");
     lv_obj_set_style_text_font(micVol_text, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(micVol_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 2, 1);
+    lv_obj_set_grid_cell(micVol_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 4, 1);
 
     micVol_label = lv_label_create(cont);
     lv_label_set_text(micVol_label, "100");
     //lv_obj_set_style_text_font(micVol_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(micVol_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 2, 1);
+    lv_obj_set_grid_cell(micVol_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 4, 1);
     mic_volume_slider = lv_slider_create(cont);
     lv_obj_set_width(mic_volume_slider, LV_PCT(50));
-    lv_obj_set_grid_cell(mic_volume_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 2, 1);
+    lv_obj_set_grid_cell(mic_volume_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 4, 1);
     lv_obj_add_event_cb(mic_volume_slider, mic_volume_change_event_cb, LV_EVENT_RELEASED, NULL);
     lv_slider_set_mode(mic_volume_slider, LV_SLIDER_MODE_NORMAL);
     lv_slider_set_range(mic_volume_slider, 0, 100);
@@ -985,19 +986,19 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //accompaniment and vocal control
     accomp_text = lv_label_create(cont);
-    lv_label_set_text(accomp_text, "Accom:");
+    lv_label_set_text(accomp_text, " Accom:");
     //lv_obj_add_style(voice_label, &style_text_muted, 0);
     lv_obj_set_style_text_font(accomp_text, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(accomp_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 6 - (mode?0:1) * 2, 1);
+    lv_obj_set_grid_cell(accomp_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 6, 1);
 
     accomp_label = lv_label_create(cont);
     lv_label_set_text(accomp_label, "100");
     //lv_obj_add_style(voice_label, &style_text_muted, 0);
     //lv_obj_set_style_text_font(accomp_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(accomp_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 6 - (mode?0:1) * 2, 1);
+    lv_obj_set_grid_cell(accomp_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 6, 1);
     accomp_slider = lv_slider_create(cont);
     lv_obj_set_width(accomp_slider, LV_PCT(50));
-    lv_obj_set_grid_cell(accomp_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 6 - (mode?0:1) * 2, 1);
+    lv_obj_set_grid_cell(accomp_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 6, 1);
     lv_obj_add_event_cb(accomp_slider, accomp_slider_event_cb, LV_EVENT_RELEASED, NULL);
     lv_slider_set_mode(accomp_slider, LV_SLIDER_MODE_NORMAL);
     lv_slider_set_range(accomp_slider, 0, 100);
@@ -1012,16 +1013,16 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
 
     vocal_text = lv_label_create(cont);
-    lv_label_set_text(vocal_text, "Origin:");
+    lv_label_set_text(vocal_text, " Origin:");
     lv_obj_set_style_text_font(vocal_text, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(vocal_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 8 - (mode?0:1) * 2, 1);
+    lv_obj_set_grid_cell(vocal_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 8, 1);
     vocal_label = lv_label_create(cont);
     lv_label_set_text(vocal_label, " 15");
     //lv_obj_set_style_text_font(vocal_label, ttf_main_s.font, 0);
-    lv_obj_set_grid_cell(vocal_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 8 - (mode?0:1) * 2, 1);
+    lv_obj_set_grid_cell(vocal_label, LV_GRID_ALIGN_START, 7, 1, LV_GRID_ALIGN_START, 8, 1);
     vocal_slider = lv_slider_create(cont);
     lv_obj_set_width(vocal_slider, LV_PCT(50));
-    lv_obj_set_grid_cell(vocal_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 8 - (mode?0:1) * 2, 1);
+    lv_obj_set_grid_cell(vocal_slider, LV_GRID_ALIGN_END, 3, 3, LV_GRID_ALIGN_CENTER, 8, 1);
     lv_obj_add_event_cb(vocal_slider, vocal_slider_event_cb, LV_EVENT_RELEASED, NULL);
     lv_slider_set_mode(vocal_slider, LV_SLIDER_MODE_NORMAL);
     lv_slider_set_range(vocal_slider, 0, 100);
