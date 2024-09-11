@@ -88,8 +88,10 @@ bool lv_uacstate;
 bool mVocalSplit = false;
 lv_obj_t * vocal_text = NULL;
 lv_obj_t * vocal_label = NULL;
+lv_obj_t * vocal_slider = NULL;
 lv_obj_t * accomp_text = NULL;
 lv_obj_t * accomp_label = NULL;
+lv_obj_t * accomp_slider = NULL;
 lv_obj_t * mainVol_text = NULL;
 lv_obj_t * mainVol_label = NULL;
 lv_obj_t * mainVol_slider = NULL;
@@ -99,8 +101,7 @@ lv_obj_t * volume_slider = NULL;
 lv_obj_t * micVol_text = NULL;
 lv_obj_t * micVol_label = NULL;
 lv_obj_t * mic_volume_slider = NULL;
-lv_obj_t * accomp_slider = NULL;
-lv_obj_t * vocal_slider = NULL;
+
 lv_obj_t *origin_switch = NULL;
 lv_obj_t *echo_3a_switch = NULL;
 lv_style_t accomp_style_disabled;
@@ -397,15 +398,37 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
             lv_slider_set_value(slider_obj, current, LV_ANIM_ON);
             }
         } break;
+
+            uint32_t mVolume = msg->mVolume;
+            char buf[16];
+            lv_snprintf(buf, sizeof(buf), "%3d", mVolume);
+            lv_label_set_text(volume_label, buf);
+            lv_slider_set_value(volume_slider, mVolume, LV_ANIM_OFF);
+
         case UI_WIDGET_VOCAL_SEPERATE: {
-            pbox_vocal_t vocalSeperate = msg->vocalSeparate;
-            bool seperateEnable = vocalSeperate.enable;
+            char buf[16];
+            pbox_vocal_t vocal = msg->vocalSeparate;
+            bool seperateEnable = vocal.enable;
+            vocal_lib_t lib = vocal.vocaltype;
+
+            if(lib == VOCAL_GUITAR) {
+                lv_snprintf(buf, sizeof(buf), "%7s", " Guitar");
+                lv_label_set_text(vocal_text, buf);
+                lv_snprintf(buf, sizeof(buf), "%3d", vocal.reservLevel);
+                lv_label_set_text(vocal_label, buf);
+                lv_slider_set_value(vocal_slider, vocal.reservLevel, LV_ANIM_OFF);
+            } else {
+                lv_snprintf(buf, sizeof(buf), "%7s", " Vocal");
+                lv_label_set_text(vocal_text, buf);
+                lv_snprintf(buf, sizeof(buf), "%3d", vocal.humanLevel);
+                lv_label_set_text(vocal_label, buf);
+                lv_slider_set_value(vocal_slider, vocal.humanLevel, LV_ANIM_OFF);
+            }
+
             if(seperateEnable) {
                 lv_obj_add_state(origin_switch, LV_STATE_CHECKED);
                 lv_obj_clear_state(accomp_slider, LV_STATE_DISABLED);
                 lv_obj_clear_state(vocal_slider, LV_STATE_DISABLED);
-                if (mainVol_slider != NULL)
-                    lv_obj_clear_state(mainVol_slider, LV_STATE_DISABLED);
                 if (getBtSinkState() == APP_BT_CONNECTED)
                     create_toast(main_cont, TOAST_TEXT, 5000);
             }
@@ -413,8 +436,6 @@ void _lv_demo_music_update_ui_info(ui_widget_t widget, const pbox_lcd_msg_t *msg
                 lv_obj_clear_state(origin_switch, LV_STATE_CHECKED);
                 lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
                 lv_obj_add_state(vocal_slider, LV_STATE_DISABLED);
-                if (mainVol_slider != NULL)
-                    lv_obj_add_state(mainVol_slider, LV_STATE_DISABLED);
             }
         } break;
         case UI_WIDGET_SPECTRUM_CHART: {
@@ -918,7 +939,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //volume control
     mainVol_text = lv_label_create(cont);
-    lv_label_set_text(mainVol_text, " MainVol:");
+    lv_label_set_text(mainVol_text, " Main Vol");
     //lv_obj_add_style(voice_label, &style_text_muted, 0);
     lv_obj_set_style_text_font(mainVol_text, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(mainVol_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
@@ -937,7 +958,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_slider_set_value(mainVol_slider, 100, LV_ANIM_OFF);
 
     volume_text = lv_label_create(cont);
-    lv_label_set_text(volume_text, " MusicVol:");
+    lv_label_set_text(volume_text, " Music Vol");
     lv_obj_set_style_text_font(volume_text, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(volume_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 2, 1);
 
@@ -955,7 +976,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //mic volume control
     micVol_text = lv_label_create(cont);
-    lv_label_set_text(micVol_text, " Mic:");
+    lv_label_set_text(micVol_text, " Mic Vol");
     lv_obj_set_style_text_font(micVol_text, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(micVol_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 4, 1);
 
@@ -980,7 +1001,7 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
 
     //accompaniment and vocal control
     accomp_text = lv_label_create(cont);
-    lv_label_set_text(accomp_text, " Accom:");
+    lv_label_set_text(accomp_text, " Accom");
     //lv_obj_add_style(voice_label, &style_text_muted, 0);
     lv_obj_set_style_text_font(accomp_text, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(accomp_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 6, 1);
@@ -1005,9 +1026,8 @@ static lv_obj_t * create_misc_box(lv_obj_t * parent)
     lv_obj_add_style(accomp_slider, &accomp_style_disabled, LV_PART_KNOB | LV_STATE_DISABLED);
     lv_obj_add_state(accomp_slider, LV_STATE_DISABLED);
 
-
     vocal_text = lv_label_create(cont);
-    lv_label_set_text(vocal_text, " Origin:");
+    lv_label_set_text(vocal_text, " Vocal");
     lv_obj_set_style_text_font(vocal_text, ttf_main_s.font, 0);
     lv_obj_set_grid_cell(vocal_text, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 8, 1);
     vocal_label = lv_label_create(cont);
