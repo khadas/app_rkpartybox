@@ -338,11 +338,12 @@ void handleLcdHumanMusicLevelCmd(const pbox_lcd_msg_t* msg) {
 // Function to handle the music separate switch command
 void handleLcdMusicSeparateSwitchCmd(const pbox_lcd_msg_t* msg) {
     pbox_vocal_t vocalSeparate = msg->vocalSeparate;
-    ALOGD("Music Separate Switch Command: Enable - %s, Human Level - %u, Music Level - %u, Reserv Level - %u\n",
-           vocalSeparate.enable ? "Enabled" : "Disabled", 
+    ALOGD("Music Separate Switch Command:%s, Human:%u, Music:%u, Reserv:%u, type:%s\n",
+           vocalSeparate.enable ? "Enable" : "Disable", 
            vocalSeparate.humanLevel,
             vocalSeparate.accomLevel,
-           vocalSeparate.reservLevel);
+           vocalSeparate.reservLevel,
+           (vocalSeparate.vocaltype == VOCAL_GUITAR)? "guitar":"vocal");
     _lv_demo_music_update_ui_info(UI_WIDGET_VOCAL_SEPERATE, msg);
 }
 
@@ -425,6 +426,7 @@ const LcdCmdHandler_t lcdEventHandlers[] = {
     { PBOX_LCD_DISP_ACCOMP_MUSIC_LEVEL, handleLcdAccompMusicLevelCmd },
     { PBOX_LCD_DISP_HUMAN_MUSIC_LEVEL, handleLcdHumanMusicLevelCmd },
     { PBOX_LCD_DISP_MUSIC_SEPERATE_SWITCH, handleLcdMusicSeparateSwitchCmd },
+    { PBOX_LCD_DISP_VOCAL_GUITAR_INFO, handleLcdMusicSeparateSwitchCmd },
     { PBOX_LCD_DISP_ECHO_3A_SWITCH, handleLcdEcho3ASwitchCmd },
     { PBOX_LCD_DISP_REVERT_MODE, handleLcdReverbModeCmd },
     { PBOX_LCD_DISP_EQ_MODE, handleLcdEqModeCmd },

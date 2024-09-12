@@ -11,6 +11,7 @@ int pbox_app_music_store_accomp_music_level(uint32_t volume);
 int pbox_app_music_store_human_music_level(uint32_t volume);
 int pbox_app_music_store_reserv_music_level(uint32_t volume);
 int pbox_app_store_vocalFadeout_switch(bool split);
+int pbox_app_store_GuitarVocal_switch(vocal_lib_t lib);
 
 int pbox_app_music_store_stereo_mode(stereo_mode_t stereo);
 int pbox_app_music_store_outdoor_mode(inout_door_t outdoor);

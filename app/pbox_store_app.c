@@ -49,6 +49,11 @@ int pbox_app_store_vocalFadeout_switch(bool split) {
     return rk_param_set_bool("ui:vocalSplit", split);
 }
 
+int pbox_app_store_GuitarVocal_switch(vocal_lib_t lib) {
+    ramdata_ditry++;
+    return rk_param_set_bool("ui:vocalGuitar", lib);
+}
+
 int pbox_app_music_store_outdoor_mode(inout_door_t outdoor) {
     ramdata_ditry++;
     return rk_param_set_int("ui:outdoor", (int)outdoor);
@@ -131,7 +136,7 @@ int pbox_app_ui_load(void) {
     pboxUIdata->musicVolumeLevel = rk_param_get_float("ui:musicVolume", volume);
     pboxUIdata->accomLevel = (uint32_t)rk_param_get_int("ui:accomLevel", 100);
     pboxUIdata->humanLevel = (uint32_t)rk_param_get_int("ui:humanLevel", DEFAULT_HUMAN_LEVEL);
-    pboxUIdata->reservLevel = (uint32_t)rk_param_get_int("ui:reservLevel", 100);
+    pboxUIdata->reservLevel = (uint32_t)rk_param_get_int("ui:reservLevel", 5);
     pboxUIdata->vocalSplit = (bool)rk_param_get_bool("ui:vocalSplit", false);
 
     pboxUIdata->placement = (placement_t)rk_param_get_int("ui:placement", PLACE_VERT);

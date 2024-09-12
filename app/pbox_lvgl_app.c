@@ -165,10 +165,20 @@ void pbox_app_lcd_displayVocalFadeoutSwitch(bool enable, uint32_t hlevel, uint32
         .humanLevel = hlevel,
         .accomLevel = alevel,
         .reservLevel = rlevel,
+        .vocaltype = pboxUIdata->vocaltype,
     };
 
     msg.vocalSeparate = vocalSeparate;
+    unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
+}
 
+void pbox_app_lcd_displayGuitarVocalInfo(pbox_vocal_t vocal) {
+    pbox_lcd_msg_t msg = {
+        .type = PBOX_CMD,
+        .msgId = PBOX_LCD_DISP_VOCAL_GUITAR_INFO,
+    };
+
+    msg.vocalSeparate = vocal;
     unix_socket_lcd_send(&msg, sizeof(pbox_lcd_msg_t));
 }
 
@@ -314,8 +324,13 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
         } break;
         case PBOX_LCD_HUMAN_MUSIC_LEVEL_EVT: {
             int32_t humanLevel = msg->human_music_level;
-            if(humanLevel == pboxUIdata->humanLevel) break;
-            pbox_app_music_set_human_music_level(humanLevel, DISP_LED);
+            if(pboxUIdata->vocaltype == VOCAL_GUITAR) {
+                if(humanLevel == pboxUIdata->reservLevel) break;
+                pbox_app_music_set_reserv_music_level(humanLevel, DISP_LED);
+            } else {
+                if(humanLevel == pboxUIdata->humanLevel) break;
+                pbox_app_music_set_human_music_level(humanLevel, DISP_LED);
+            }
         } break;
         case PBOX_LCD_RESERV_MUSIC_LEVEL_EVT: {
             int32_t reserv_level = msg->reserv_music_level;

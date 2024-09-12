@@ -411,7 +411,7 @@ void rkdemo_btsoc_notify_dsp_vocal_reserv_level(uint32_t opcode, char *buff, int
 void rkdemo_btsoc_notify_dsp_vocal_switch_mode(uint32_t opcode, char *buff, int32_t len) {
     assert(len > 0);
     uint8_t mode = buff[0];
-    ALOGD("%s opcode:%d vocal mode:%d[1:human 0:guitar]\n", __func__, opcode, mode);
+    ALOGD("%s opcode:%d vocal mode:%d[0:human 1:guitar]\n", __func__, opcode, mode);
     rkdemoNotifyFuncs->notify_switch_vocal_mode(opcode, mode);
 }
 

@@ -75,7 +75,7 @@ typedef struct {
         uint32_t humanLevel;
         uint32_t reservLevel;
         bool vocalSplit;
-        vocal_lib_t vocallib;
+        vocal_lib_t vocaltype;
         play_status_t play_status;
         play_status_t play_status_prev;
         bool autoSource;
@@ -135,8 +135,8 @@ void pbox_app_eq_set_bassboost_onoff(uint8_t bass, display_t policy);
 
 void pbox_app_music_human_vocal_level_cycle(display_t policy);
 void pbox_app_music_guitar_vocal_level_cycle(display_t policy);
-void pbox_app_switch_vocal_lib(void);
-void pbox_app_set_dest_vocal_lib(bool vocalib);
+void pbox_app_switch_vocal_lib(display_t policy);
+void pbox_app_set_dest_vocal_lib(vocal_lib_t vocalib, display_t policy);
 void pbox_app_music_play_notice_number(uint8_t number, display_t policy);
 
 void pbox_app_music_set_mic_volume(uint32_t index, float volume, display_t policy);

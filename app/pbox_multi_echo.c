@@ -251,6 +251,14 @@ void pbox_multi_echoVocalFadeoutSwitch(bool enable, uint32_t hlevel, uint32_t al
         pbox_app_store_vocalFadeout_switch(enable);
 }
 
+void pbox_multi_echoGuitarVocalib(pbox_vocal_t vocal, display_t policy)
+{
+    if (policy & LCD_DISPLAY_MASK)
+        pbox_app_lcd_displayGuitarVocalInfo(vocal);
+    if (policy & STORAGE_DISP_MASK)
+        pbox_app_store_GuitarVocal_switch(vocal.vocaltype);
+}
+
 void pbox_multi_echoStereoMode(stereo_mode_t stereo, display_t policy)
 {
     if (policy & LCD_DISPLAY_MASK)

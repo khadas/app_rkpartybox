@@ -27,6 +27,7 @@ void pbox_multi_echoAccompMusicLevel(uint32_t accomp_music_level, display_t poli
 void pbox_multi_echoHumanMusicLevel(uint32_t human_music_level, display_t policy);
 void pbox_multi_echoReservLevel(uint32_t reserv_music_level, display_t policy);
 void pbox_multi_echoVocalFadeoutSwitch(bool enable, uint32_t hlevel, uint32_t alevel, uint32_t rlevel, display_t policy);
+void pbox_multi_echoGuitarVocalib(pbox_vocal_t vocal, display_t policy);
 void pbox_multi_echoEnergyInfo(energy_info_t energy, display_t policy);
 
 void pbox_multi_echoMicVolumeLevel(uint8_t index, float micVolume, display_t policy);
