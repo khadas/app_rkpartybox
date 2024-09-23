@@ -25,7 +25,7 @@ include_directories(
 include_directories(${GLIB2_INCLUDE_DIRS})
 include_directories(${DBUS_INCLUDE_DIRS})
 
-if(RK3308_PBOX_CORE_BOARD)
+if(RK3308_PBOX_BTMCU)
 include_directories(${PROJECT_SOURCE_DIR}/hal/rockchip_coreboard/)
 else()
 include_directories(${PROJECT_SOURCE_DIR}/hal/rockchip_evb/)
@@ -56,7 +56,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
 message("CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
 message("CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
 
-if (LV_USE_DEMO_MUSIC)
+if (ENABLE_LVGL_DISPLAY)
 add_definitions(-DENABLE_LCD_DISPLAY=1)
 add_definitions(-DDEFAULT_HUMAN_LEVEL=15)
 add_definitions(-DLV_USE_DEMO_MUSIC=1)
@@ -100,14 +100,13 @@ target_link_libraries(${PROJECT_NAME}
 )
 #target_link_libraries(${PROJECT_NAME} mytest)
 
-if (LV_USE_DEMO_MUSIC)
+if (ENABLE_LVGL_DISPLAY)
 target_link_libraries(${PROJECT_NAME} lvgl lv_drivers drm freetype)
 endif()
 
-if(RK3308_PBOX_CORE_BOARD)
+if(RK3308_PBOX_BTMCU)
 	message("RK3308_PBOX_CORE_BOARD: building....")
 	add_definitions(-DENABLE_EXT_BT_MCU=1)
-	install(FILES ./lib64/librkaudio_effect_howling.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
 	install(FILES ./bins/eq_drc_recorder_vendor_2chn.bin DESTINATION /etc/pbox RENAME "eq_drc_recorder.bin")
 	install(FILES ./bins/rkstudio_vendor_2in6out.bin DESTINATION /etc/pbox RENAME "rkstudio.bin")
 	install(FILES ./bins/config_howling_vendor.json DESTINATION /etc/pbox RENAME "config_howling.json")
@@ -116,7 +115,6 @@ if(RK3308_PBOX_CORE_BOARD)
 else()
 	target_link_libraries(${PROJECT_NAME} rkwifibt)
 	add_definitions(-DENABLE_EXT_BT_MCU=0)
-	install(FILES ./lib64/librkaudio_effect_howling.so DESTINATION "lib" RENAME "librkaudio_effect_howling.so")
 	install(FILES ./bins/eq_drc_recorder_evb_1chn.bin DESTINATION /etc/pbox RENAME "eq_drc_recorder.bin")
 	install(FILES ./bins/eq_drc_recorder_evb_2chn.bin DESTINATION /etc/pbox)
 	install(FILES ./bins/rkstudio_evb_2in2out.bin DESTINATION /etc/pbox RENAME "rkstudio.bin")
@@ -128,6 +126,7 @@ endif()
 
 set(ROCKIT_FILE_LIBS
        ./lib64/libaec_bf_process.so
+       ./lib64/librkaudio_effect_howling.so
        ./lib64/libavutil.so.56
        ./lib64/libavcodec.so.58
        ./lib64/libswresample.so.3
