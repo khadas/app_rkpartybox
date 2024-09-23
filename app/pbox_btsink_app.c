@@ -179,18 +179,29 @@ bool isBtA2dpStreaming(void)
     return false;
 }
 
-void update_bt_karaoke_playing_status(bool playing)
+void update_bt_karaoke_playing_status(play_status_t status)
 {
-    ALOGD("%s :%d\n", __func__, playing);
-    if(playing) {
-        //pbox_app_rockit_set_player_volume(pboxData->inputDevice, MIN_MAIN_VOLUME);
-        pbox_app_rockit_resume_player(pboxData->inputDevice);
-        //pbox_app_resume_volume_later(350);
-    } else {
-        pbox_app_rockit_pause_player(pboxData->inputDevice);
+    ALOGD("%s :%d\n", __func__, status);
+    switch (status) {
+        case PLAYING: {
+            //pbox_app_rockit_set_player_volume(pboxData->inputDevice, MIN_MAIN_VOLUME);
+            pbox_app_rockit_resume_player(pboxData->inputDevice);
+            //pbox_app_resume_volume_later(350);
+            pbox_app_echo_playingStatus(true, DISP_All_EXCLUDE_BTMCU);
+        } break;
+
+        case _PAUSE: {
+            pbox_app_rockit_pause_player(pboxData->inputDevice);
+            pbox_app_echo_playingStatus(false, DISP_All_EXCLUDE_BTMCU);
+        } break;
+
+        case IDLE:
+        case _STOP: {
+            pbox_app_rockit_stop_player(pboxData->inputDevice);
+            pbox_app_echo_playingStatus(false, DISP_All_EXCLUDE_BTMCU);
+        } break;
     }
-    pboxUIdata->play_status = playing ? PLAYING:_PAUSE;
-    pbox_app_echo_playingStatus(playing, DISP_All);
+    pboxUIdata->play_status = status;
 }
 
 void update_music_track_info(char *title, char *artist) {
@@ -286,12 +297,16 @@ void bt_sink_data_recv(pbox_bt_msg_t *msg) {
                 if(!is_input_source_selected(SRC_CHIP_BT, ANY))
                     break;
 
-                if(pboxBtSinkdata->a2dpState == A2DP_STREAMING) {
-                    update_bt_karaoke_playing_status(true);
-                } else {
-                    update_bt_karaoke_playing_status(false);
-                    //if (getBtSinkState() == APP_BT_DISCONNECT)
-                    //    pbox_app_music_stop(DISP_All);
+                switch (pboxBtSinkdata->a2dpState) {
+                    case A2DP_STREAMING: {
+                        update_bt_karaoke_playing_status(PLAYING);
+                    } break;
+                    case A2DP_CONNECTED: {
+                        update_bt_karaoke_playing_status(_PAUSE);
+                    } break;
+                    default: {
+                        update_bt_karaoke_playing_status(_STOP);
+                    } break;
                 }
             }
         } break;

@@ -401,6 +401,7 @@ void pbox_app_music_pause(display_t policy)
             if (isBtA2dpConnected()) {
                 pbox_btsink_playPause(false);
             }
+            return;
         } break;
 
         case SRC_CHIP_USB: {
@@ -464,6 +465,7 @@ void pbox_app_music_resume(display_t policy) {
             if (isBtA2dpConnected()&&(!isBtA2dpStreaming())) {
                 pbox_btsink_playPause(true);
             }
+            return;
         } break;
 
         case SRC_CHIP_USB: {
@@ -499,7 +501,7 @@ void pbox_app_music_stop(display_t policy)
         case SRC_CHIP_BT: {
             if (isBtA2dpConnected())
                 pbox_btsink_a2dp_stop();
-            pbox_app_rockit_stop_player(SRC_CHIP_BT);
+            return;//pbox_app_rockit_stop_player(SRC_CHIP_BT);
         } break;
 
         case SRC_EXT_AUX: {
@@ -555,11 +557,8 @@ void pbox_app_music_album_next(bool next, display_t policy)
                 else {
                     pbox_btsink_music_next(false);;
                 }
-                //resume the volume in the pistion update...
-                if(pboxUIdata->play_status == PLAYING) {
-                    //pbox_app_music_pause(policy);
-                    //pbox_app_music_resume(policy);
-                }
+
+                return;
             }
         } break;
 
