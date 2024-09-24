@@ -78,7 +78,7 @@ static lv_timer_t  * vocal_toast_timer;
 extern lv_ft_info_t ttf_main_s;
 extern lv_ft_info_t ttf_main_m;
 extern lv_ft_info_t ttf_main_l;
-int32_t mHumanLevel=15, mAccomLevel=100, mGuitarLevel = 100;
+int32_t mHumanLevel=15, mAccomLevel=100, mMainVolLevel = 100;
 int32_t mVolumeLevel=50, mMicVolumeLevel=50;
 //bool mEchoReductionEnable = true;
 usb_state_t lv_usbstate;
@@ -749,8 +749,8 @@ static void mainVolume_slider_event_cb(lv_event_t *e) {
         printf("last slider value%s\n", buf);
         if (mainVol_label != NULL) {
             lv_label_set_text(mainVol_label, buf);
-            mGuitarLevel = (int)lv_slider_get_value(slider);
-            lcd_pbox_notifyReservMusicLevel(mGuitarLevel);
+            mMainVolLevel = (int)lv_slider_get_value(slider);
+            lcd_pbox_notifyMainVolumeLevel(mMainVolLevel);
         }
     }
 }

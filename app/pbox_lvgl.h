@@ -50,7 +50,7 @@ typedef enum {
     PBOX_LCD_ECHO_3A_EVT,
     PBOX_LCD_REVERT_MODE_EVT,
     PBOX_LCD_EQ_MODE_EVT,
-    PBOX_LCD_RESERV_MUSIC_LEVEL_EVT,
+    PBOX_LCD_MAIN_VOL_LEVEL_EVT,
 } pbox_lcd_opcode_t;
 
 typedef struct {
@@ -105,7 +105,7 @@ void lcd_pbox_notifySeparateSwitch(bool enable);
 void lcd_pbox_notifyEcho3A(bool echo3a);
 void lcd_pbox_notifyReverbMode(pbox_revertb_t reverbMode);
 void lcd_pbox_notifyEqMode(equalizer_t mode);
-void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level);
+void lcd_pbox_notifyMainVolumeLevel(uint32_t volume);
 #ifdef __cplusplus
 }
 #endif

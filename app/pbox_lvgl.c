@@ -196,13 +196,13 @@ void lcd_pbox_notifyEqMode(equalizer_t mode) {
     unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
 }
 
-// Notify function for the reserv music level event
-void lcd_pbox_notifyReservMusicLevel(uint32_t reserv_music_level) {
+// Notify function for the main volume level event
+void lcd_pbox_notifyMainVolumeLevel(uint32_t volume) {
     pbox_lcd_msg_t msg = {
         .type = PBOX_EVT,
-        .msgId = PBOX_LCD_RESERV_MUSIC_LEVEL_EVT,
+        .msgId = PBOX_LCD_MAIN_VOL_LEVEL_EVT,
     };
-    msg.reserv_music_level = reserv_music_level;
+    msg.mVolume = volume;
 
     unix_socket_lcd_notify(&msg, sizeof(pbox_lcd_msg_t));
 }

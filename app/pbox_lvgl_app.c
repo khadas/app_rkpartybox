@@ -311,6 +311,12 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
             if(volume == pboxUIdata->musicVolumeLevel) break;
             pbox_app_music_set_music_volume(volume, DISP_LED|DISP_FS);
         } break;
+        case PBOX_LCD_MAIN_VOL_LEVEL_EVT: {
+            float volume = msg->mVolume;
+            volume = (MAX_MAIN_VOLUME-MIN_MAIN_VOLUME)*volume/100 + MIN_MAIN_VOLUME; //covert to real db volume.
+            if(volume == pboxUIdata->mainVolumeLevel) break;
+            pbox_app_music_set_main_volume(volume, DISP_LED);
+        } break;
         case PBOX_LCD_MIC_VOL_LEVEL_EVT: {
             float mic_volume = msg->micVolume;
             mic_volume = (MAX_MIC_PHONE_VOLUME-MIN_MIC_PHONE_VOLUME)*mic_volume/100 + MIN_MIC_PHONE_VOLUME; //covert to real db volume.
@@ -332,11 +338,7 @@ int maintask_touch_lcd_data_recv(pbox_lcd_msg_t *msg)
                 pbox_app_music_set_human_music_level(humanLevel, DISP_LED);
             }
         } break;
-        case PBOX_LCD_RESERV_MUSIC_LEVEL_EVT: {
-            int32_t reserv_level = msg->reserv_music_level;
-            if(reserv_level == pboxUIdata->reservLevel) break;
-            pbox_app_music_set_reserv_music_level(reserv_level, DISP_LED);
-        } break;
+
         case PBOX_LCD_SEPERATE_SWITCH_EVT: {
             bool enable = msg->enable;
             if(enable == pboxUIdata->vocalSplit) break;
