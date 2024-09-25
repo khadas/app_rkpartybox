@@ -408,10 +408,13 @@ int rk_demo_music_create(void) {
     // ref_ind_attr.mute_ms     = 0;
     recorder_attr.ref         = NULL;
 
+    bool uacRecEnable;
+    os_env_get_bool("uac_rec_enable", &uacRecEnable, false);
     recorder_attr.sample_rate = hal_get_kalaok_rec_sample_rate();
     recorder_attr.bit_width   = 16;
     recorder_attr.card_name = hal_get_kalaok_mic_card();//"mic";//"hw:0,0";
-    recorder_attr.pool_cnt    = hal_get_kalaok_poor_count();
+
+    recorder_attr.pool_cnt    = uacRecEnable? hal_get_kalaok_poor_count():0;
     recorder_attr.channels    = hal_get_kalaok_mic_rec_channel();
     recorder_attr.ref_layout = hal_get_kalaok_mic_ref_layout();
     recorder_attr.rec_layout = hal_get_kalaok_mic_rec_layout();

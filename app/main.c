@@ -139,10 +139,11 @@ static void pbox_debug_init(const char *debugStr) {
     set_pbox_log_level(MAX(loglevel, covert2debugLevel(envStr)));
 }
 
-static const char short_options[] = "c:l:v:";
+static const char short_options[] = "c:l:v:rh";
 static const struct option long_options[] = {{"config", required_argument, NULL, 'c'},
                                              {"loglevel", required_argument, NULL, 'l'},
                                              {"init-volume", required_argument, NULL, 'v'},
+                                             {"uac-record", no_argument, NULL, 'r'},
                                              {"help", no_argument, NULL, 'h'},
                                              {0, 0, 0, 0}};
 
@@ -150,12 +151,13 @@ static void usage_tip(FILE *fp, int argc, char **argv) {
     fprintf(fp,
             "Usage: %s [options]\n"
             "Version %s\n"
-            "Options:\n"
-            "-c | --config      partybox ini file, default is "
+            "Options belows, \":\" means it need a arg\n"
+            "-c: | --config          partybox ini file, default is "
             "/userdata/rkpartybox.ini, need to be writable\n"
-            "-l | --loglevel   loglevel [error/warn/info/debug], default is debug\n"
-            "-v | --init-volume        init volume \n"
-            "-h | --help        for help \n\n"
+            "-l: | --loglevel        loglevel [error/warn/info/debug], default is debug\n"
+            "-v: | --init-volume     init volume\n"
+            "-r  | --uac-record      enable uac record\n"
+            "-h  | --help            for help\n\n"
             "\n",
             argv[0], "v1.0");
     pbox_version_print();
@@ -184,6 +186,10 @@ void pbox_get_opt(int argc, char *argv[]) {
         case 'v':
             os_env_set_str("init_vol", optarg);
             printf("%s init_vol:%s\n", __func__, optarg);
+            break;
+        case 'r':
+            os_env_set_bool("uac_rec_enable", true);
+            printf("%s env uac_rec_enable=true\n", __func__);
             break;
         case 'h':
             usage_tip(stdout, argc, argv);

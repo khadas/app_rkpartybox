@@ -79,6 +79,7 @@ typedef struct {
         play_status_t play_status;
         play_status_t play_status_prev;
         bool autoSource;
+        bool uacRecEnable;
     } ui;
 } pbox_data_t;
 

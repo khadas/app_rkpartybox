@@ -131,7 +131,10 @@ int pbox_app_music_store_mic_reverb(uint8_t index, float reverb) {
 
 int pbox_app_ui_load(void) {
     float volume;
+    bool uacRecEnable;
     os_env_get_float("init_vol", &volume, DEFAULT_VOLUME);
+    os_env_get_bool("uac_rec_enable", &uacRecEnable, false);
+
     pboxUIdata->mainVolumeLevel = rk_param_get_float("ui:mainVolume", MAX_MAIN_VOLUME);
     pboxUIdata->musicVolumeLevel = rk_param_get_float("ui:musicVolume", volume);
     pboxUIdata->accomLevel = (uint32_t)rk_param_get_int("ui:accomLevel", 100);
@@ -143,7 +146,12 @@ int pbox_app_ui_load(void) {
     pboxUIdata->stereo = (stereo_mode_t)rk_param_get_int("ui:stereo", MODE_STEREO);
     pboxUIdata->outdoor = (inout_door_t)rk_param_get_int("ui:outdoor", OUTDOOR);
     pboxUIdata->eqmode = (equalizer_t)rk_param_get_int("ui:eqmode", EQ_OFF);
+    pboxUIdata->uacRecEnable = (equalizer_t)rk_param_get_bool("ui:uacRecEnable", uacRecEnable);
+    if(pboxUIdata->uacRecEnable != uacRecEnable) {
+        os_env_set_bool("uac_rec_enable", pboxUIdata->uacRecEnable);
+    }
 
+    ALOGW("%s uacRecEnable:%d\n", __func__, pboxUIdata->uacRecEnable);
     for(int i = 0; i < hal_get_mic_guitar_num(); i++) {
         char param_name[20]; // Make sure this is large enough to hold the full parameter name
         sprintf(param_name, "mic%d:micmute", i);

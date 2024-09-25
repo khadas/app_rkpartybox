@@ -32,7 +32,7 @@ extern "C" {
 #define SPK_CODEC_CHANNEL       2
 
 #define KALAOK_REC_CHANNEL      4
-#define KALAOK_POOR_COUNT       (AUDIO_CARD_RKCHIP_UAC?1:0)
+#define KALAOK_POOR_COUNT       1
 #define KALAOK_REF_LAYOUT       0x03
 #define KALAOK_REC_LAYOUT       0x04
 #define KALAOK_REF_CHN_LAYOUT   0x0f

@@ -188,7 +188,7 @@ void pbox_app_drive_passive_player(input_source_t source, play_status_t status, 
 }
 
 void pbox_app_record_start(input_source_t source, bool start, display_t policy) {
-    if (start && (pboxData->inputDevice == SRC_CHIP_UAC))
+    if (start && (pboxData->inputDevice == SRC_CHIP_UAC) && pboxUIdata->uacRecEnable)
         pbox_app_rockit_start_recorder(source, 48000, 2, NULL);
     else
         pbox_app_rockit_stop_recorder(source);
