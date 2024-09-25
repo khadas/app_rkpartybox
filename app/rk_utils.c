@@ -473,3 +473,29 @@ int32_t os_env_set_u32(const char *name, uint32_t value) {
 int32_t os_env_set_str(const char *name, char *value) {
     return setenv(name, value, 1);
 }
+
+/**
+ * Get a boolean value from an environment variable.
+ * Interprets "true" (case insensitive) as true, and any other value as false.
+ */
+int32_t os_env_get_bool(const char *name, bool *value, bool default_value) {
+    char *ptr = getenv(name);
+
+    if (NULL == ptr) {
+        *value = default_value;
+    } else {
+        if (strcasecmp(ptr, "true") == 0) {
+            *value = true;
+        } else {
+            *value = false;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Set an environment variable to "true" or "false" based on the boolean value.
+ */
+int32_t os_env_set_bool(const char *name, bool value) {
+    return setenv(name, value ? "true" : "false", 1);
+}
