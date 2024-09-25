@@ -229,6 +229,7 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, uint8_t loop
     FILE *file = NULL;
     struct rc_pb_player_attr attr;
     struct rc_pb_frame_info frame_info;
+    float mixVolume;
 
     index = index & 0xff;
     memset(&attr, 0, sizeof(attr));
@@ -272,7 +273,13 @@ void audio_sound_prompt(rc_pb_ctx *ptrboxCtx, prompt_audio_t index, uint8_t loop
     ALOGW("%s file:%s loopcount:%d, play start!!!!!\n", __func__, prompt_File[index].fileName, loopcount);
     rc_pb_player_start(*ptrboxCtx, RC_PB_PLAY_SRC_PCM, &attr);
 
-    float mixVolume = AuxPlayerVolume;
+    float midVolume = (MAX_MAIN_VOLUME+MIN_MAIN_VOLUME)/2;
+    if (AuxPlayerVolume < midVolume) {
+        mixVolume = AuxPlayerVolume;
+    } else {
+        mixVolume = midVolume + (AuxPlayerVolume - midVolume)*(0.4);
+    }
+
     if (index == PROMPT_INOUT_SENCE || index == PROMPT_DOA_SENCE) {
         mixVolume = pbox_rockit_get_auxplayer_volume();
     } else if (index == PROMPT_HORIZON || index == PROMPT_VERTICAL) {
