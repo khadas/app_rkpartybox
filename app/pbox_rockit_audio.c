@@ -82,7 +82,6 @@ void *pbox_rockit_record_routine(void *arg) {
     ALOGW("%s cardName: %s, freq:%d, chanel:%d\n", 
             __func__, ctx->audioFormat.cardName, ctx->audioFormat.sampingFreq, ctx->audioFormat.channel);
 
-    //while(os_sem_trywait(ctx->rec_stop_sem) != 0) {
     while(os_sem_trywait(quit_sem) != 0) {
         if(pcm_handle == NULL) {
             snprintf(audioConfig.cardName, sizeof(audioConfig.cardName), "%s", ctx->audioFormat.cardName);
@@ -350,7 +349,6 @@ void* pbox_rockit_aux_player_routine(void *arg) {
     ptrboxCtx = ctx->pboxCtx;
     ALOGD("%s Ctx:%p\n", __func__, ptrboxCtx);
 
-     //while (os_sem_trywait(ctx->auxplay_stop_sem) != 0) {
     while(os_sem_trywait(quit_sem) != 0) {
         struct timeval tv = {
             .tv_sec = 0,

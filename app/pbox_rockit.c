@@ -428,7 +428,6 @@ int rk_demo_music_create(void) {
     int ret = pipe(rockitCtx.signfd);
     rockitCtx.pboxCtx = &partyboxCtx;
     ALOGD("%s %d partyboxCtx:%p, pool_cnt=%d\n", __func__, __LINE__, &partyboxCtx, recorder_attr.pool_cnt);
-    //rockitCtx.auxplay_stop_sem = os_sem_new(0);
     auxplay_looplay_sem = os_sem_new(0);
 
     rockitCtx.auxPlayerTask = os_task_create("pbox_aux_player", pbox_rockit_aux_player_routine, 0, &rockitCtx);
@@ -491,11 +490,6 @@ static void rockit_pbbox_notify_duration(uint32_t duration)
     unix_socket_notify_msg(PBOX_MAIN_ROCKIT, &msg, sizeof(pbox_rockit_msg_t));
     #endif
 }
-
-/*struct _sense_res {
-    size_t scene;
-    uint32_t result;
-} sence_res;*/
 
 static void rockit_pbbox_notify_environment_sence(uint32_t scene, uint32_t result)
 {
@@ -682,12 +676,7 @@ static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFo
     int ret;
     char tid_name[16];
     if(rockitCtx.uacRecordTask && is_os_task_started(rockitCtx.uacRecordTask)) {
-        //if(rockitCtx.rec_stop_sem) {os_sem_post(rockitCtx.rec_stop_sem);}
         os_task_destroy(rockitCtx.uacRecordTask);
-        // if(rockitCtx.rec_stop_sem) {
-        //     os_sem_free(rockitCtx.rec_stop_sem);
-        //     rockitCtx.rec_stop_sem = NULL;
-        // }
     }
 
     snprintf(tid_name, sizeof(tid_name), "pbox_%s_rec", getInputSourceString(source));
@@ -696,17 +685,13 @@ static void pbox_rockit_music_start_recorder(input_source_t source, pbox_audioFo
     snprintf(rockitCtx.audioFormat.cardName, sizeof(rockitCtx.audioFormat.cardName), "%s", audioFormat.cardName);
     ALOGW("%s, rockitCtx:%p, partyboxCtx:%p\n", __func__, &rockitCtx, rockitCtx.pboxCtx);
 
-    //rockitCtx.rec_stop_sem = os_sem_new(0);
     rockitCtx.uacRecordTask = os_task_create(tid_name, pbox_rockit_record_routine, 0, &rockitCtx);
 }
 
 static void pbox_rockit_music_stop_recorder(input_source_t source) {
     int ret;
     if(rockitCtx.uacRecordTask) {
-        // os_sem_post(rockitCtx.rec_stop_sem);
         os_task_destroy(rockitCtx.uacRecordTask);
-        // os_sem_free(rockitCtx.rec_stop_sem);
-        // rockitCtx.rec_stop_sem = NULL;
         rockitCtx.uacRecordTask = NULL;
     }
 }
@@ -1562,7 +1547,6 @@ void pbox_rockit_music_set_eq_mode(input_source_t source, equalizer_t mode) {
     powered_eq_mode = true;
 }
 
-
 void pbox_rockit_music_set_bassboost(input_source_t source, uint8_t value) {
     enum rc_pb_play_src dest = covert2rockitSource(source);
     struct rc_pb_param param;
@@ -2142,13 +2126,10 @@ static void *pbox_rockit_server(void *arg)
     }
 
     pbox_rockit_music_stop_recorder(SRC_CHIP_UAC);
-    //os_sem_post(rockitCtx.auxplay_stop_sem);
     os_sem_post(auxplay_looplay_sem);
     os_task_destroy(rockitCtx.auxPlayerTask);
-    //os_sem_free(rockitCtx.auxplay_stop_sem);
     os_sem_free(auxplay_looplay_sem);
     rockitCtx.auxPlayerTask = NULL;
-    //rockitCtx.auxplay_stop_sem = NULL;
     auxplay_looplay_sem = NULL;
     if (is_tunning_working){
         pbox_tunning_disable();
