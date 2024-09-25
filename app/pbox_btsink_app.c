@@ -184,9 +184,9 @@ void update_bt_karaoke_playing_status(play_status_t status)
     ALOGD("%s :%d\n", __func__, status);
     switch (status) {
         case PLAYING: {
-            //pbox_app_rockit_set_player_volume(pboxData->inputDevice, MIN_MAIN_VOLUME);
+            pbox_app_rockit_set_player_volume(pboxData->inputDevice, MIN_MAIN_VOLUME);
             pbox_app_rockit_resume_player(pboxData->inputDevice);
-            //pbox_app_resume_volume_later(350);
+            pbox_app_resume_volume_later(650);
             pbox_app_echo_playingStatus(true, DISP_All_EXCLUDE_BTMCU);
         } break;
 

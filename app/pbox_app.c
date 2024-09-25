@@ -136,14 +136,15 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
         return;
     }
 
-    //pbox_app_rockit_set_player_volume(source, MIN_MAIN_VOLUME);
     if(restart) {
         pbox_app_rockit_stop_player(source);
     }
 
     switch(source) {
         case SRC_CHIP_BT: {
+            pbox_app_rockit_set_player_volume(source, MIN_MAIN_VOLUME);
             pbox_app_rockit_start_audiocard_player(source, pboxBtSinkdata->pcmSampeFreq, pboxBtSinkdata->pcmChannel, hal_get_audio_card(SRC_CHIP_BT));
+            pbox_app_resume_volume_later(650);
         } break;
 
         case SRC_EXT_BT: {
@@ -163,7 +164,6 @@ void pbox_app_restart_passive_player(input_source_t source, bool restart, displa
     }
 
     pbox_app_music_original_singer_open(!pboxUIdata->vocalSplit, policy);
-    //pbox_app_resume_volume_later(650);
 }
 
 //like BT, uac, or Usb connected with extern MCU, these are passive input source.
